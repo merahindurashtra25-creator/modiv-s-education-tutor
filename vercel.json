@@ -8,6 +8,7 @@
     { "src": "/tutor-dashboard", "dest": "/modivs-tutor-dashboard.html" },
     { "src": "/student-dashboard", "dest": "/modivs-student-dashboard.html" },
     { "src": "/tutor-profile", "dest": "/modivs-tutor-profile.html" },
+    { "src": "/tutor-edit-profile", "dest": "/modivs-tutor-edit-profile.html" },
     { "src": "/student-registration", "dest": "/modivs-student-registration.html" },
     { "src": "/", "dest": "/index.html" }
   ]
