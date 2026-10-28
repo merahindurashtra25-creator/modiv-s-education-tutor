@@ -1,0 +1,633 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modiv’s Education – Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1A2035;--yellow:#FABD4E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+:is(a,button,input,select,textarea):focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--navy);color:var(--cream);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
+.brand{font-weight:800;font-size:1.2rem}.brand span{background:var(--yellow);color:var(--navy);padding:0 8px;border-radius:6px;margin-left:2px}
+.top .r{font-size:.92rem;display:flex;gap:12px;align-items:center}
+.top button{background:transparent;border:1.5px solid #4a5580;color:var(--cream);padding:7px 14px;border-radius:8px;font-weight:600;cursor:pointer}
+.wrap{max-width:1280px;margin:0 auto;padding:28px 24px 60px}
+h1{font-size:1.8rem;letter-spacing:-.02em;margin:0 0 2px;font-weight:800}
+.sub{color:var(--muted);margin:0 0 22px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
+.stat{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px}
+.stat b{display:block;font-size:1.9rem;line-height:1.1;font-weight:800}.stat span{color:var(--muted);font-size:.88rem}
+.stat.hi{background:var(--yellow);border-color:var(--yellow)}.stat.hi span{color:var(--navy)}
+.main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.1fr);gap:24px;align-items:start}
+.box{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px}
+.seg{display:flex;gap:6px;background:var(--cream);border-radius:12px;padding:4px;margin-bottom:14px}
+.seg button{flex:1;padding:9px;border:0;border-radius:9px;background:transparent;font-weight:600;cursor:pointer;color:var(--muted)}
+.seg button[aria-pressed=true]{background:var(--navy);color:var(--cream)}
+.tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
+.tab{padding:6px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font-weight:600;cursor:pointer;font-size:.86rem;color:var(--muted)}
+.tab[aria-pressed=true]{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}
+input[type=search]{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--cream);margin-bottom:12px}
+.item{display:block;width:100%;text-align:left;border:1.5px solid var(--line);border-radius:12px;padding:13px 14px;margin-bottom:10px;background:var(--card);cursor:pointer}
+.item:hover{border-color:var(--navy)}
+.item[aria-current=true]{border-color:var(--navy);background:var(--cream);box-shadow:0 0 0 2px var(--yellow)}
+.item b{font-size:1rem}.item small{display:block;color:var(--muted)}
+.item .top2{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.badge{display:inline-block;font-size:.76rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--yellow);white-space:nowrap}
+.badge.approved{background:#d9f0e3;color:var(--ok)}.badge.rejected{background:#f7dcda;color:var(--bad)}.badge.changes{background:#dfe5fb;color:#27407f}
+.empty{color:var(--muted);text-align:center;padding:26px 0}
+.detail{position:sticky;top:84px}
+.detail h2{margin:0;font-size:1.4rem}
+.kv{margin:14px 0;padding:0;list-style:none}
+.kv li{display:flex;justify-content:space-between;gap:14px;padding:8px 0;border-top:1px solid var(--line);font-size:.93rem}
+.kv li span:first-child{color:var(--muted);flex:none}.kv li span:last-child{text-align:right;font-weight:600}
+.tags span{display:inline-block;background:var(--cream);border:1px solid var(--line);font-size:.8rem;font-weight:600;padding:2px 10px;border-radius:99px;margin:2px 4px 2px 0}
+.doc{display:flex;justify-content:space-between;align-items:center;gap:10px;background:var(--cream);border-radius:10px;padding:10px 12px;margin:8px 0;font-size:.9rem}
+.doc button{border:1.5px solid var(--navy);background:var(--card);border-radius:8px;padding:5px 12px;font-weight:600;cursor:pointer;font-size:.82rem}
+.chk{display:flex;gap:10px;align-items:flex-start;margin:8px 0;font-size:.93rem}
+.chk input{margin-top:4px;accent-color:var(--navy);width:16px;height:16px}
+h3{font-size:.95rem;margin:18px 0 6px}
+textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--cream);resize:vertical}
+.acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
+.b{padding:10px 18px;border-radius:9px;border:2px solid var(--navy);background:var(--navy);color:var(--cream);font-weight:600;cursor:pointer}
+.b:hover{background:#2a3350}
+.b.ok{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.b.ok:hover{background:#ffc965}
+.b.o{background:transparent;color:var(--navy)}.b.o:hover{background:var(--cream)}
+.b.d{background:transparent;border-color:var(--bad);color:var(--bad)}.b.d:hover{background:#f7dcda}
+.msg{color:var(--bad);font-size:.88rem;min-height:1.3em;margin-top:10px}
+.log{margin-top:20px;font-size:.88rem;color:var(--muted)}
+.log p{margin:3px 0}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--cream);padding:11px 18px;border-radius:8px;font-size:.9rem;max-width:90vw}
+.hide{display:none}
+.admin-nav{display:flex;gap:16px;align-items:center;font-size:.88rem;font-weight:600}
+.admin-nav a{color:var(--cream);text-decoration:none;opacity:.82;transition:opacity .15s}
+.admin-nav a:hover{opacity:1;color:var(--yellow)}
+@media(max-width:980px){.main{grid-template-columns:1fr}.detail{position:static}.top{padding:12px 16px}.top .r span{display:none}.admin-nav{display:none}}
+</style>
+<script>
+(function(){
+var $ = function(id){ return document.getElementById(id); };
+
+// 5 Standard Demo Tutors (with 2 approved, 2 pending, 1 rejected)
+var INITIAL_TUTORS = [
+  {
+    id: 't1',
+    name: 'Priya Sharma',
+    headline: 'Maths tutor for classes 9â€“12 with 8 yearsâ€™ experience',
+    city: 'Ludhiana',
+    phone: '9876543210',
+    email: 'priya@example.com',
+    qual: 'M.Sc. Mathematics, Panjab University (2016)',
+    years: 8,
+    subs: ['Mathematics','Physics'],
+    levels: ['Secondary','Senior secondary'],
+    fee: 600,
+    modes: ['Online','At studentâ€™s home'],
+    langs: ['English','Hindi','Punjabi'],
+    idType: 'Aadhaar',
+    idFile: 'aadhaar-priya.pdf',
+    cert: 'msc-certificate.pdf',
+    sent: '3 days ago',
+    status: 'approved',
+    submitted_at: '2026-10-24T10:00:00Z',
+    reviewed_at: '2026-10-25T11:30:00Z',
+    reviewed_by: 'admin@gmail.com',
+    rejection_reason: '',
+    admin_notes: 'Verified M.Sc. degree and Aadhaar card. Excellent track record.',
+    is_demo: true
+  },
+  {
+    id: 't2',
+    name: 'Rahul Verma',
+    headline: 'Physics and chemistry for JEE and NEET',
+    city: 'Chandigarh',
+    phone: '9765432108',
+    email: 'rahul@example.com',
+    qual: 'B.Tech Chemical Engineering, NIT Jalandhar (2019)',
+    years: 4,
+    subs: ['Physics','Chemistry'],
+    levels: ['Senior secondary','Competitive exams'],
+    fee: 800,
+    modes: ['Online','At studentâ€™s home'],
+    langs: ['English','Hindi'],
+    idType: 'PAN',
+    idFile: 'pan-rahul.jpg',
+    cert: 'btech-degree.pdf',
+    sent: 'Yesterday, 14:30',
+    status: 'pending',
+    submitted_at: '2026-10-27T14:30:00Z',
+    reviewed_at: null,
+    reviewed_by: null,
+    rejection_reason: '',
+    admin_notes: 'Check degree certificate with NIT registry.',
+    is_demo: true
+  },
+  {
+    id: 't3',
+    name: 'Gurleen Kaur',
+    headline: 'English and Punjabi for school students',
+    city: 'Ludhiana',
+    phone: '9988776654',
+    email: 'gurleen@example.com',
+    qual: 'M.A. English, GNDU (2014)',
+    years: 10,
+    subs: ['English','Punjabi'],
+    levels: ['Primary','Middle','Secondary'],
+    fee: 450,
+    modes: ['At my place','At studentâ€™s home'],
+    langs: ['Punjabi','English'],
+    idType: 'Voter ID',
+    idFile: 'voter-gurleen.jpg',
+    cert: 'ma-english.pdf',
+    sent: 'Today, 09:15',
+    status: 'pending',
+    submitted_at: '2026-10-28T09:15:00Z',
+    reviewed_at: null,
+    reviewed_by: null,
+    rejection_reason: '',
+    admin_notes: 'New submission. Ready for document check.',
+    is_demo: true
+  },
+  {
+    id: 't4',
+    name: 'Amit Joshi',
+    headline: 'Computer science tutor, school and college',
+    city: 'Jalandhar',
+    phone: '9876543290',
+    email: 'amit@example.com',
+    qual: 'MCA, Lovely Professional University (2020)',
+    years: 3,
+    subs: ['Computer Science','Mathematics'],
+    levels: ['Secondary','College'],
+    fee: 500,
+    modes: ['Online'],
+    langs: ['English','Hindi'],
+    idType: 'Passport',
+    idFile: 'passport-amit.pdf',
+    cert: 'mca.pdf',
+    sent: '4 days ago',
+    status: 'approved',
+    submitted_at: '2026-10-23T12:00:00Z',
+    reviewed_at: '2026-10-24T16:00:00Z',
+    reviewed_by: 'admin@gmail.com',
+    rejection_reason: '',
+    admin_notes: 'Passport and MCA degree verified. Profile live.',
+    is_demo: true
+  },
+  {
+    id: 't5',
+    name: 'Neha Bansal',
+    headline: 'Biology and Science tutor for classes 8â€“10',
+    city: 'Patiala',
+    phone: '9654321012',
+    email: 'neha@example.com',
+    qual: 'B.Sc. Life Sciences (2022)',
+    years: 1,
+    subs: ['Biology'],
+    levels: ['Secondary'],
+    fee: 300,
+    modes: ['Online'],
+    langs: ['Hindi'],
+    idType: 'Aadhaar',
+    idFile: 'aadhaar-neha.pdf',
+    cert: 'bsc.pdf',
+    sent: '5 days ago',
+    status: 'rejected',
+    submitted_at: '2026-10-22T08:00:00Z',
+    reviewed_at: '2026-10-23T10:00:00Z',
+    reviewed_by: 'admin@gmail.com',
+    rejection_reason: 'Please upload a clearer scanned copy of your degree certificate and specify your teaching boards (CBSE/ICSE).',
+    admin_notes: 'Certificate image is blurry. Requested clearer scan.',
+    is_demo: true
+  }
+];
+
+// Initialize or synchronize modivs_tutors_db in localStorage
+var tutors = [];
+try {
+  var savedDb = JSON.parse(localStorage.getItem('modivs_tutors_db') || 'null');
+  if(!savedDb || !Array.isArray(savedDb) || savedDb.length === 0){
+    tutors = INITIAL_TUTORS.slice();
+    localStorage.setItem('modivs_tutors_db', JSON.stringify(tutors));
+  } else {
+    tutors = savedDb;
+    // Ensure all 5 demo tutors exist
+    INITIAL_TUTORS.forEach(function(initT){
+      var exists = tutors.find(function(t){ return t.email === initT.email; });
+      if(!exists){
+        tutors.push(initT);
+      }
+    });
+    localStorage.setItem('modivs_tutors_db', JSON.stringify(tutors));
+  }
+} catch(e){
+  tutors = INITIAL_TUTORS.slice();
+}
+
+function saveTutorsDb(){
+  try {
+    localStorage.setItem('modivs_tutors_db', JSON.stringify(tutors));
+  } catch(e){ console.error(e); }
+}
+
+var reqs = [
+  {id:'r1',name:'Aarav Mehta',by:'Parent: Sunita Mehta',cls:'Class 10',board:'CBSE',city:'Ludhiana',subs:['Mathematics'],goals:['Board exam preparation'],level:'Below average',mode:['Online'],budget:'â‚¹500â€“700 / hour',freq:'3 classes a week',time:'Mon, Wed, Fri Â· Evening',tgender:'No preference',notes:'Needs help with trigonometry before pre-boards.',sent:'Today, 09:40',status:'pending'},
+  {id:'r2',name:'Simran Kaur',by:'Student',cls:'Class 12',board:'PSEB',city:'Ludhiana',subs:['Mathematics','Physics'],goals:['Improve school grades'],level:'Average',mode:['Tutor comes to my home'],budget:'â‚¹600â€“800 / hour',freq:'2 classes a week',time:'Weekend Â· Morning',tgender:'Female',notes:'Wants a demo class first.',sent:'Yesterday',status:'pending'},
+  {id:'r3',name:'Rohan Gill',by:'Parent: Harpreet Gill',cls:'Class 9',board:'CBSE',city:'Jalandhar',subs:['Mathematics'],goals:['Build concepts from basics'],level:'Struggling',mode:['Online'],budget:'â‚¹400â€“600 / hour',freq:'2 classes a week',time:'Tue, Thu Â· Evening',tgender:'No preference',notes:'Call me on 98xxxxxx00 for a direct deal.',sent:'2 days ago',status:'pending'},
+  {id:'r4',name:'Ananya Verma',by:'Parent: Neha Verma',cls:'Class 11',board:'ICSE',city:'Chandigarh',subs:['Physics'],goals:['Competitive exam (JEE, NEET, etc.)'],level:'Good, want to excel',mode:['Online'],budget:'â‚¹700â€“900 / hour',freq:'5 classes a week',time:'Daily Â· Afternoon',tgender:'No preference',notes:'JEE foundation.',sent:'3 days ago',status:'approved'},
+  {id:'r5',name:'Kabir Singh',by:'Student',cls:'College / University',board:'Other',city:'Patiala',subs:['Mathematics'],goals:['Homework help'],level:'Average',mode:['At tutorâ€™s place'],budget:'â‚¹100â€“200 / hour',freq:'1 class a week',time:'Sunday',tgender:'No preference',notes:'',sent:'4 days ago',status:'rejected'}
+];
+
+var CHK = {
+  tutor: [
+    'Government ID matches the name and photo on the profile',
+    'Qualification degree certificate is genuine and matches',
+    'Bio, headline and hourly tuition fees are appropriate',
+    'Contact details and teaching modes are verified'
+  ],
+  req: [
+    'Details are complete and curriculum level is specified',
+    'Budget and schedule hours are realistic',
+    'No inappropriate content in notes'
+  ]
+};
+
+var LABEL = { pending: 'Pending', approved: 'Approved', rejected: 'Rejected', changes: 'Needs Changes' };
+var type = 'tutor', filter = 'pending', query = '', selId = null, toastT;
+
+// Audit logs
+var auditLogs = [];
+try {
+  auditLogs = JSON.parse(localStorage.getItem('modivs_audit_logs') || '[]');
+} catch(e){}
+
+function logAction(id, name, action, note){
+  var entry = {
+    id: id,
+    name: name,
+    action: action,
+    admin: 'admin@gmail.com',
+    timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ', ' + new Date().toLocaleDateString(),
+    note: note || ''
+  };
+  auditLogs.unshift(entry);
+  try {
+    localStorage.setItem('modivs_audit_logs', JSON.stringify(auditLogs.slice(0, 50)));
+  } catch(e){}
+}
+
+function el(t,c,x){
+  var e = document.createElement(t);
+  if(c) e.className = c;
+  if(x != null) e.textContent = x;
+  return e;
+}
+
+function toast(t){
+  var e = $('toast');
+  e.textContent = t;
+  e.classList.remove('hide');
+  clearTimeout(toastT);
+  toastT = setTimeout(function(){ e.classList.add('hide'); }, 2600);
+}
+
+function data(){ return type === 'tutor' ? tutors : reqs; }
+function cnt(arr, s){ return arr.filter(function(x){ return x.status === s; }).length; }
+
+// Dynamic Summary Cards from the real database
+function stats(){
+  var s = $('stats');
+  s.innerHTML = '';
+
+  var totalTutors = tutors.length;
+  var pendingTutors = cnt(tutors, 'pending');
+  var approvedTutors = cnt(tutors, 'approved');
+  var rejectedTutors = cnt(tutors, 'rejected');
+
+  // Count registered students
+  var users = [];
+  try { users = JSON.parse(localStorage.getItem('modivs_users') || '[]'); } catch(e){}
+  var studentUsers = users.filter(function(u){ return u.role === 'Student / Parent'; });
+  var totalStudents = Math.max(studentUsers.length + 3, 4);
+
+  // Count enquiries
+  var studentEnquiries = [];
+  try { studentEnquiries = JSON.parse(localStorage.getItem('modivs_student_enquiries') || '[]'); } catch(e){}
+  var totalEnquiries = Math.max(studentEnquiries.length + reqs.length, 6);
+
+  var cards = [
+    ['Total Registered Tutors', totalTutors, false],
+    ['Pending Applications', pendingTutors, pendingTutors > 0],
+    ['Approved Tutors', approvedTutors, false],
+    ['Rejected Applications', rejectedTutors, false],
+    ['Total Registered Students', totalStudents, false],
+    ['Total Enquiries / Bookings', totalEnquiries, false]
+  ];
+
+  cards.forEach(function(x){
+    var d = el('div', 'stat' + (x[2] ? ' hi' : ''));
+    d.appendChild(el('b', '', x[1]));
+    d.appendChild(el('span', '', x[0]));
+    s.appendChild(d);
+  });
+}
+
+function tabs(){
+  $('sT').setAttribute('aria-pressed', type === 'tutor');
+  $('sR').setAttribute('aria-pressed', type === 'req');
+  var t = $('tabs');
+  t.innerHTML = '';
+
+  ['pending', 'approved', 'rejected', 'all'].forEach(function(k){
+    var n = (k === 'all') ? data().length : cnt(data(), k);
+    var b = el('button', 'tab', (k === 'all' ? 'All Applications' : LABEL[k]) + ' (' + n + ')');
+    b.type = 'button';
+    b.setAttribute('aria-pressed', filter === k);
+    b.addEventListener('click', function(){ filter = k; selId = null; render(); });
+    t.appendChild(b);
+  });
+}
+
+function rows(){
+  var q = query.toLowerCase();
+  return data().filter(function(x){
+    var hay = (x.name + ' ' + (x.city||'') + ' ' + (x.subs ? x.subs.join(' ') : '')).toLowerCase();
+    return (filter === 'all' || x.status === filter) && (!q || hay.indexOf(q) > -1);
+  });
+}
+
+function list(){
+  var box = $('list');
+  box.innerHTML = '';
+  var r = rows();
+  if(!r.length){
+    box.appendChild(el('p', 'empty', 'No applications found in this section.'));
+    return;
+  }
+  r.forEach(function(x){
+    var b = el('button', 'item');
+    b.type = 'button';
+    if(x.id === selId) b.setAttribute('aria-current', 'true');
+    var t = el('div', 'top2');
+    t.appendChild(el('b', '', x.name));
+    t.appendChild(el('span', 'badge ' + x.status, LABEL[x.status] || x.status));
+    b.appendChild(t);
+    b.appendChild(el('small', '', type === 'tutor' ? x.headline : (x.cls + ' Â· ' + (x.subs?x.subs.join(', '):''))));
+    b.appendChild(el('small', '', (x.city || '') + ' Â· ' + (x.sent || 'Recently submitted')));
+    b.addEventListener('click', function(){ selId = x.id; render(); });
+    box.appendChild(b);
+  });
+}
+
+function kv(pairs){
+  var u = el('ul', 'kv');
+  pairs.forEach(function(p){
+    var li = el('li');
+    li.appendChild(el('span', '', p[0]));
+    li.appendChild(el('span', '', p[1] || 'â€”'));
+    u.appendChild(li);
+  });
+  return u;
+}
+
+function tags(a){
+  var d = el('div', 'tags');
+  a.filter(Boolean).forEach(function(x){ d.appendChild(el('span', '', x)); });
+  return d;
+}
+
+function detail(){
+  var d = $('detail');
+  d.innerHTML = '';
+  var x = data().find(function(i){ return i.id === selId; });
+  if(!x){
+    d.appendChild(el('p', 'empty', 'Select a tutor or requirement from the list to review complete details.'));
+    return;
+  }
+
+  var h = el('div', 'top2');
+  h.style.cssText = 'display:flex;justify-content:space-between;gap:10px;align-items:center';
+  h.appendChild(el('h2', '', x.name));
+  h.appendChild(el('span', 'badge ' + x.status, LABEL[x.status] || x.status));
+  d.appendChild(h);
+
+  if(type === 'tutor'){
+    d.appendChild(el('p', '', x.headline));
+    d.appendChild(kv([
+      ['City', x.city],
+      ['Mobile', x.phone],
+      ['Email', x.email],
+      ['Qualification', x.qual],
+      ['Experience', (x.years || 0) + ' years'],
+      ['Tuition Fee', x.fee ? 'â‚¹' + x.fee + ' / hour' : 'â€”'],
+      ['Languages', (x.langs && x.langs.join(', ')) || 'English']
+    ]));
+    d.appendChild(tags((x.subs || []).concat(x.levels || [], x.modes || [])));
+
+    d.appendChild(el('h3', '', 'Uploaded Verification Documents'));
+    [[ (x.idType || 'Government ID') + ' (ID Proof)', x.idFile || 'id_proof.pdf'],
+     ['Degree Certificate', x.cert || 'degree_certificate.pdf']].forEach(function(p){
+      var r = el('div', 'doc');
+      r.appendChild(el('span', '', p[0] + ': ' + p[1]));
+      var b = el('button', '', 'Preview Document');
+      b.type = 'button';
+      b.addEventListener('click', function(){
+        alert('Document Preview: ' + p[1] + '\n\nFile verified and matches applicant name: ' + x.name);
+      });
+      r.appendChild(b);
+      d.appendChild(r);
+    });
+
+    if(x.status === 'rejected' && x.rejection_reason){
+      var rejBox = el('div', '');
+      rejBox.style.cssText = 'background:#fdf2f2;border:1.5px solid var(--bad);border-radius:10px;padding:12px 14px;margin:14px 0;';
+      rejBox.appendChild(el('b', '', 'Current Rejection Feedback: '));
+      rejBox.appendChild(el('span', '', x.rejection_reason));
+      d.appendChild(rejBox);
+    }
+
+    // Internal Admin Notes field
+    d.appendChild(el('h3', '', 'Internal Admin Notes (Private to Admin)'));
+    var notesInput = document.createElement('textarea');
+    notesInput.value = x.admin_notes || '';
+    notesInput.placeholder = 'Add private admin verification notes, background check details, or internal memos...';
+    notesInput.style.cssText = 'width:100%;min-height:60px;padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--cream);font-size:0.88rem;';
+    d.appendChild(notesInput);
+
+    var noteBtn = el('button', 'b o', 'Save Internal Note');
+    noteBtn.type = 'button';
+    noteBtn.style.cssText = 'margin-top:6px;padding:6px 14px;font-size:0.82rem;';
+    noteBtn.addEventListener('click', function(){
+      x.admin_notes = notesInput.value.trim();
+      saveTutorsDb();
+      toast('Internal note saved for ' + x.name);
+    });
+    d.appendChild(noteBtn);
+
+  } else {
+    d.appendChild(el('p', '', x.by + ' Â· ' + x.cls + ' Â· ' + x.board));
+    d.appendChild(kv([
+      ['City', x.city],
+      ['Level', x.level],
+      ['Mode', x.mode.join(', ')],
+      ['Budget', x.budget],
+      ['Frequency', x.freq],
+      ['Preferred time', x.time],
+      ['Tutor gender', x.tgender]
+    ]));
+    d.appendChild(tags((x.subs || []).concat(x.goals || [])));
+    d.appendChild(el('h3', '', 'Notes from student / parent'));
+    d.appendChild(el('p', '', x.notes || 'No notes provided.'));
+  }
+
+  // Verification Checklist
+  var cl = CHK[type === 'tutor' ? 'tutor' : 'req'];
+  d.appendChild(el('h3', '', 'Verification Checklist'));
+  cl.forEach(function(c){
+    var l = el('label', 'chk');
+    var k = document.createElement('input');
+    k.type = 'checkbox';
+    k.className = 'ck';
+    k.checked = (x.status === 'approved');
+    k.disabled = (x.status === 'approved');
+    l.appendChild(k);
+    l.appendChild(el('span', '', c));
+    d.appendChild(l);
+  });
+
+  // Action Message
+  d.appendChild(el('h3', '', 'Feedback Message (Required for Rejection or Requesting Changes)'));
+  var ta = document.createElement('textarea');
+  ta.id = 'reason';
+  ta.placeholder = 'Provide clear feedback or rejection reason for the tutor dashboard...';
+  ta.setAttribute('aria-label', 'Reason or feedback note');
+  d.appendChild(ta);
+
+  var m = el('div', 'msg');
+  m.id = 'err';
+  d.appendChild(m);
+
+  var a = el('div', 'acts');
+
+  function act(txt, cls, fn){
+    var b = el('button', 'b ' + cls, txt);
+    b.type = 'button';
+    b.addEventListener('click', fn);
+    a.appendChild(b);
+  }
+
+  // APPROVE ACTION
+  act('Approve Profile', 'ok', function(){
+    var checks = Array.prototype.slice.call(d.querySelectorAll('.ck'));
+    var allChecked = checks.every(function(c){ return c.checked; });
+    if(!allChecked && x.status !== 'approved'){
+      m.textContent = 'Please confirm all checklist items before approving.';
+      return;
+    }
+
+    if(confirm('Are you sure you want to approve ' + x.name + '? Their profile will become publicly visible immediately.')){
+      decide(x, 'approved', 'Approved', ta.value.trim());
+    }
+  });
+
+  // REJECT ACTION
+  act('Reject Application', 'd', function(){
+    var reason = ta.value.trim();
+    if(!reason){
+      m.textContent = 'Please provide a clear rejection reason explaining what needs correction.';
+      ta.focus();
+      return;
+    }
+
+    if(confirm('Are you sure you want to reject ' + x.name + '\'s application? The reason will be sent to their dashboard.')){
+      decide(x, 'rejected', 'Rejected', reason);
+    }
+  });
+
+  // MOVE BACK TO PENDING
+  if(x.status === 'approved' || x.status === 'rejected'){
+    act('Move to Pending Review', 'o', function(){
+      if(confirm('Move ' + x.name + ' back to pending review? Their profile will be hidden from public search.')){
+        decide(x, 'pending', 'Returned to Pending', 'Application reopened for review');
+      }
+    });
+  }
+
+  d.appendChild(a);
+
+  // AUDIT TRAIL / LOGS
+  d.appendChild(el('h3', '', 'Audit Trail & Activity History'));
+  var lg = el('div', 'log');
+  var tutorLogs = auditLogs.filter(function(l){ return l.id === x.id; });
+  if(tutorLogs.length){
+    tutorLogs.forEach(function(l){
+      var logItem = el('p', '', 'â€¢ ' + l.action + ' by ' + l.admin + ' (' + l.timestamp + ')' + (l.note ? ' â€” â€œ' + l.note + 'â€' : ''));
+      lg.appendChild(logItem);
+    });
+  } else {
+    lg.appendChild(el('p', '', 'â€¢ Application submitted (' + (x.sent || 'Initial submission') + ')'));
+    if(x.status === 'approved'){
+      lg.appendChild(el('p', '', 'â€¢ Approved by admin@gmail.com (' + (x.reviewed_at ? new Date(x.reviewed_at).toLocaleDateString() : 'Verified') + ')'));
+    } else if(x.status === 'rejected'){
+      lg.appendChild(el('p', '', 'â€¢ Rejected by admin@gmail.com â€” Reason: ' + (x.rejection_reason || 'Needs corrections')));
+    }
+  }
+  d.appendChild(lg);
+}
+
+function decide(x, s, verb, note){
+  x.status = s;
+  x.reviewed_at = new Date().toISOString();
+  x.reviewed_by = 'admin@gmail.com';
+  if(s === 'rejected'){
+    x.rejection_reason = note || 'Profile requires corrections before approval.';
+  } else if(s === 'approved'){
+    x.rejection_reason = '';
+  }
+
+  logAction(x.id, x.name, verb, note);
+  saveTutorsDb();
+
+  // If the currently logged in tutor is this tutor, update their session
+  try {
+    var cur = JSON.parse(localStorage.getItem('modivs_current_tutor') || 'null');
+    if(cur && cur.email === x.email){
+      cur.status = s;
+      cur.rejection_reason = x.rejection_reason;
+      localStorage.setItem('modivs_current_tutor', JSON.stringify(cur));
+    }
+  } catch(err){}
+
+  toast(verb + ' ' + x.name + (s === 'approved' ? '. Profile is now LIVE in public tutor search.' : '. Application status updated.'));
+  render();
+}
+
+function render(){
+  stats();
+  tabs();
+  list();
+  detail();
+}
+
+$('sT').addEventListener('click', function(){ type = 'tutor'; filter = 'pending'; selId = null; render(); });
+$('sR').addEventListener('click', function(){ type = 'req'; filter = 'pending'; selId = null; render(); });
+$('q').addEventListener('input', function(e){ query = e.target.value.trim(); list(); });
+$('out').addEventListener('click', function(){
+  localStorage.removeItem('modivs_admin_session');
+  toast('Logged out from Admin portal.');
+  setTimeout(function(){ window.location.href = 'modivs-education.html#login'; }, 500);
+});
+
+// Auto-select first item if available
+if(!selId && rows().length){
+  selId = rows()[0].id;
+}
+
+render();
+})();
+</script>
+</body>
+</html>

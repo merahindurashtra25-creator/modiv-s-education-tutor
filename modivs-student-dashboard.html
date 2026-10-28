@@ -1,0 +1,488 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modiv’s Education – Student Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<script>
+(function(){
+  try {
+    var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
+    var admin = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
+    var isStudent = (u && u.role === 'Student / Parent');
+    var isAdmin = (admin && admin.email === 'admin@gmail.com');
+    if(!isStudent && !isAdmin){
+      window.location.replace('modivs-education.html#student-login');
+    }
+  } catch(e){}
+})();
+</script>
+<style>
+:root{--navy:#1A2035;--navy2:#2a3350;--yellow:#FABD4E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+:is(a,button,input,select,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
+.app{display:grid;grid-template-columns:290px 1fr;gap:24px;max-width:1280px;margin:0 auto;padding:20px 20px 80px;align-items:start}
+.side{background:var(--navy);color:var(--cream);border-radius:22px;padding:18px;position:sticky;top:calc(88px + env(safe-area-inset-top,0px));max-height:calc(100vh - 108px);overflow:auto}
+.brand{font-weight:800;font-size:1.15rem;margin:4px 6px 14px}.brand span{background:var(--yellow);color:var(--navy);padding:0 8px;border-radius:6px;margin-left:2px}
+.topbar{background:#fff;border-bottom:1.5px solid var(--line);padding:8px 24px;position:sticky;top:env(safe-area-inset-top,0px);z-index:10}
+.logo{display:block;max-width:1240px;margin:0 auto}
+.logo img{display:block;height:56px;width:auto}
+.pf{background:var(--navy2);border-radius:16px;padding:18px;text-align:center}
+.ava{width:84px;height:84px;border-radius:50%;background:var(--yellow);color:var(--navy);display:grid;place-items:center;font-size:2rem;font-weight:800;margin:0 auto 10px;border:3px solid var(--cream)}
+.pf h2{margin:0;font-size:1.15rem}
+.pf .hl{color:#c9cde0;font-size:.85rem;margin:2px 0 8px}
+.ver{display:inline-block;background:#d9f0e3;color:var(--ok);font-size:.76rem;font-weight:700;padding:2px 10px;border-radius:99px}
+.mini{list-style:none;margin:12px 0 0;padding:0;text-align:left;font-size:.86rem}
+.mini li{display:flex;justify-content:space-between;gap:8px;padding:6px 0;border-top:1px solid #3d4870}
+.mini span:first-child{color:#aab1cc}.mini span:last-child{font-weight:600;text-align:right}
+.nav{margin:16px 0 4px;display:grid;gap:6px}
+.nav button{display:flex;align-items:center;gap:12px;width:100%;text-align:left;padding:12px 14px;border:0;border-radius:12px;background:transparent;color:var(--cream);font-weight:600;cursor:pointer}
+.nav button:hover{background:var(--navy2)}
+.nav button[aria-current=page]{background:var(--yellow);color:var(--navy)}
+.nav .n{margin-left:auto;background:var(--yellow);color:var(--navy);font-size:.75rem;font-weight:800;border-radius:99px;padding:1px 8px}
+.nav button[aria-current=page] .n{background:var(--navy);color:var(--yellow)}
+main{min-width:0}
+h1{font-size:1.8rem;letter-spacing:-.02em;margin:0 0 2px;font-weight:800}
+.sub{color:var(--muted);margin:0 0 20px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:22px}
+.stat{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px;text-align:center}
+.stat span{color:var(--muted);font-size:.86rem;font-weight:600}
+.stat b{display:block;font-size:1.8rem;line-height:1.2;font-weight:800;margin-top:6px}
+.stat.hi{background:var(--yellow);border-color:var(--yellow)}.stat.hi span{color:var(--navy)}
+.box{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px;margin-bottom:22px}
+.box h2{font-size:1.15rem;margin:0}
+.head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:14px}
+.tools{display:flex;gap:8px;flex-wrap:wrap}
+.tab{padding:6px 14px;border-radius:99px;border:1.5px solid var(--line);background:var(--card);font-weight:600;cursor:pointer;font-size:.88rem;color:var(--muted)}
+.tab[aria-pressed=true]{background:var(--navy);border-color:var(--navy);color:var(--cream)}
+input[type=search]{padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--cream);min-width:200px}
+.lead{border:1.5px solid var(--line);border-radius:12px;padding:16px;margin-bottom:12px;display:grid;grid-template-columns:1fr auto;gap:12px}
+.lead h3{margin:0;font-size:1.05rem}
+.meta{color:var(--muted);font-size:.88rem;margin:2px 0 8px}
+.tags span{display:inline-block;background:var(--cream);border:1px solid var(--line);font-size:.8rem;font-weight:600;padding:2px 10px;border-radius:99px;margin:2px 4px 2px 0}
+.badge{display:inline-block;font-size:.76rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--yellow)}
+.badge.accepted{background:#d9f0e3;color:var(--ok)}.badge.pending{background:#ecdfc6;color:var(--navy)}.badge.demo{background:#dfe5fb;color:#27407f}
+.acts{display:flex;flex-direction:column;gap:8px;align-items:flex-end;justify-content:center}
+.b{padding:9px 16px;border-radius:10px;border:2px solid var(--navy);background:var(--navy);color:var(--cream);font-weight:600;cursor:pointer;font-size:.9rem;white-space:nowrap;text-decoration:none;display:inline-block;text-align:center}
+.b:hover{background:var(--navy2)}
+.b.y{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.b.y:hover{background:#ffc965}
+.b.o{background:transparent;color:var(--navy)}.b.o:hover{background:var(--cream)}
+.empty{color:var(--muted);text-align:center;padding:24px 0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}.two .box{margin-bottom:0}
+.row{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center}.row:last-child{border:0}
+.when{background:var(--navy);color:var(--cream);border-radius:10px;text-align:center;padding:6px 10px;min-width:58px;font-size:.8rem;line-height:1.2}.when b{display:block;font-size:1.15rem;color:var(--yellow)}
+.row p{margin:0}.row small{color:var(--muted)}
+.tutor-top-nav{display:flex;gap:16px;align-items:center;font-size:.92rem;font-weight:600}
+.tutor-top-nav a{color:var(--navy);text-decoration:none;transition:color .15s}
+.tutor-top-nav a:hover{color:var(--ok)}
+dialog{border:0;border-radius:18px;padding:24px;max-width:480px;width:calc(100% - 32px);background:var(--cream);color:var(--navy)}
+dialog::backdrop{background:rgba(26,32,53,.6)}
+dialog h2{margin:0 0 4px}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--cream);padding:11px 18px;border-radius:8px;font-size:.9rem;z-index:99}
+.hide{display:none!important}
+@media(max-width:960px){.app{grid-template-columns:1fr}.side{position:static;max-height:none}.two{grid-template-columns:1fr}}
+@media(max-width:760px){.tutor-top-nav{display:none}}
+</style>
+</head>
+<body>
+<header class="topbar">
+ <div style="max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;">
+  <a class="logo" href="modivs-home.html" aria-label="Modiv’s Education home" style="margin:0;"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav class="tutor-top-nav" aria-label="Quick links">
+   <a href="modivs-home.html">Home</a>
+   <a href="#tutors" id="topFindTutors">Find Tutors</a>
+   <a href="#enquiries" id="topEnquiries">My Enquiries</a>
+   <a href="modivs-student-registration.html">Update Requirements</a>
+   <a href="modivs-education.html#login" id="studentLogoutBtn" style="border:1.5px solid var(--line);padding:4px 10px;border-radius:6px;">Log out</a>
+  </nav>
+ </div>
+</header>
+
+<div class="app">
+ <aside class="side" aria-label="Student menu">
+  <div class="pf">
+   <div class="ava" id="stuAva">AS</div>
+   <h2 id="stuName">Aarav Sharma</h2>
+   <p class="hl" id="stuGrade">Class 10 (CBSE) · Student</p>
+   <span class="ver">Active Learner</span>
+   <ul class="mini">
+    <li><span>City</span><span id="stuCity">Ludhiana</span></li>
+    <li><span>Subjects</span><span>Maths, Science</span></li>
+    <li><span>Mode</span><span>Online & Home</span></li>
+   </ul>
+   <a href="modivs-student-registration.html" class="b y" style="width:100%;margin-top:12px;">Edit Requirements</a>
+  </div>
+  <nav class="nav" aria-label="Student dashboard sections">
+   <button type="button" data-sec="overview" aria-current="page">Dashboard Overview</button>
+   <button type="button" data-sec="tutors">Find Tutors <span class="n" id="tutorCount">6</span></button>
+   <button type="button" data-sec="enquiries">My Requests <span class="n" id="reqCount">3</span></button>
+   <button type="button" data-sec="favourites">Favourites <span class="n" id="favCount">2</span></button>
+   <button type="button" data-sec="schedule">Class Schedule</button>
+  </nav>
+ </aside>
+
+ <main id="viewContainer">
+  <!-- OVERVIEW SECTION -->
+  <section id="sec-overview">
+   <h1>Student Dashboard</h1>
+   <p class="sub">Track your tuition requests, scheduled demo classes, and verified tutors.</p>
+
+   <div class="stats">
+    <div class="stat hi"><span>Upcoming Demo</span><b>Tomorrow</b><div class="v" style="font-size:0.9rem;font-weight:600;">5:00 PM · Mathematics</div></div>
+    <div class="stat"><span>Active Requests</span><b id="statRequests">2</b><div class="v">1 Accepted</div></div>
+    <div class="stat"><span>Shortlisted Tutors</span><b id="statFavs">2</b><div class="v">Ready to contact</div></div>
+    <div class="stat"><span>Learning Hours</span><b>14 hrs</b><div class="v">This month</div></div>
+   </div>
+
+   <div class="two">
+    <div class="box">
+     <div class="head"><h2>Next Scheduled Class</h2><span class="badge demo">Free Demo Class</span></div>
+     <div class="row">
+      <div class="when"><b>29</b>OCT</div>
+      <div>
+       <p><strong>Priya Sharma</strong> · Mathematics</p>
+       <small>Class 10 · Trigonometry Fundamentals (Online)</small>
+      </div>
+      <button class="b y" type="button" style="margin-left:auto;padding:6px 12px;" onclick="alert('Demo class link will open 10 minutes prior to session.')">Class Link</button>
+     </div>
+    </div>
+    <div class="box">
+     <div class="head"><h2>Recent Requests Status</h2><a href="#enquiries" class="b o" style="padding:4px 8px;font-size:0.8rem;" onclick="setSection('enquiries')">View all</a></div>
+     <div class="row">
+      <p><strong>Rahul Verma</strong> (Physics)</p>
+      <span class="badge accepted" style="margin-left:auto;">Accepted</span>
+     </div>
+     <div class="row">
+      <p><strong>Amit Joshi</strong> (Computer Science)</p>
+      <span class="badge pending" style="margin-left:auto;">Under Review</span>
+     </div>
+    </div>
+   </div>
+
+   <div class="box" style="margin-top:22px;">
+    <div class="head">
+     <h2>Recommended Verified Tutors for You</h2>
+     <button class="b o" type="button" onclick="setSection('tutors')">Browse all tutors →</button>
+    </div>
+    <div id="recommendedTutors"></div>
+   </div>
+  </section>
+
+  <!-- TUTORS SEARCH SECTION -->
+  <section id="sec-tutors" class="hide">
+   <div class="head">
+    <div>
+     <h1>Find Verified Tutors</h1>
+     <p class="sub">Connect with background-checked tutors matching your curriculum and fee.</p>
+    </div>
+   </div>
+   <div class="box">
+    <div class="head">
+     <div class="tools" id="subjectFilters">
+      <button class="tab" aria-pressed="true" data-subj="All">All Subjects</button>
+      <button class="tab" aria-pressed="false" data-subj="Mathematics">Mathematics</button>
+      <button class="tab" aria-pressed="false" data-subj="Physics">Physics</button>
+      <button class="tab" aria-pressed="false" data-subj="Chemistry">Chemistry</button>
+      <button class="tab" aria-pressed="false" data-subj="Biology">Biology</button>
+      <button class="tab" aria-pressed="false" data-subj="Computer Science">Computer Science</button>
+     </div>
+     <input type="search" id="tutorSearchInput" placeholder="Search by tutor or subject..." aria-label="Search tutors">
+    </div>
+    <div id="tutorsList"></div>
+   </div>
+  </section>
+
+  <!-- ENQUIRIES / REQUESTS SECTION -->
+  <section id="sec-enquiries" class="hide">
+   <h1>My Tutoring Requests</h1>
+   <p class="sub">Tutors review your learning requirements and reply with availability.</p>
+   <div class="box">
+    <div id="enquiriesList"></div>
+   </div>
+  </section>
+
+  <!-- FAVOURITES SECTION -->
+  <section id="sec-favourites" class="hide">
+   <h1>Saved & Shortlisted Tutors</h1>
+   <p class="sub">Tutors you have saved to compare or contact later.</p>
+   <div class="box">
+    <div id="favouritesList"></div>
+   </div>
+  </section>
+
+  <!-- SCHEDULE SECTION -->
+  <section id="sec-schedule" class="hide">
+   <h1>Tuition Schedule</h1>
+   <p class="sub">Your scheduled classes and free demo sessions.</p>
+   <div class="box">
+    <div class="row">
+     <div class="when"><b>29</b>OCT</div>
+     <div>
+      <p><strong>Demo Class with Priya Sharma</strong> (Class 10 Maths)</p>
+      <small>5:00 PM – 5:45 PM · Online via Google Meet / Zoom</small>
+     </div>
+     <span class="badge demo" style="margin-left:auto;">Demo Confirmed</span>
+    </div>
+    <div class="row">
+     <div class="when"><b>31</b>OCT</div>
+     <div>
+      <p><strong>First Class with Rahul Verma</strong> (Class 10 Physics)</p>
+      <small>6:00 PM – 7:00 PM · At Student's Home (Model Town)</small>
+     </div>
+     <span class="badge accepted" style="margin-left:auto;">Confirmed</span>
+    </div>
+   </div>
+  </section>
+ </main>
+</div>
+
+<!-- BOOK DEMO DIALOG -->
+<dialog id="demoModal">
+ <form method="dialog" id="demoForm">
+  <h2 id="modalTutorName">Book a Free Demo Class</h2>
+  <p class="sub" id="modalTutorMeta" style="margin-bottom:12px;">Select your preferred time slot and topic.</p>
+  <div style="margin-bottom:12px;">
+   <label for="demoTopic" style="display:block;font-weight:600;font-size:0.9rem;margin-bottom:4px;">Topic or Chapter</label>
+   <input type="text" id="demoTopic" placeholder="e.g. Quadratic Equations, Optics..." required style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);">
+  </div>
+  <div style="margin-bottom:14px;">
+   <label for="demoDate" style="display:block;font-weight:600;font-size:0.9rem;margin-bottom:4px;">Preferred Date & Time</label>
+   <input type="text" id="demoDate" placeholder="e.g. Tomorrow at 5:00 PM" required style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;background:var(--card);">
+  </div>
+  <div style="display:flex;justify-content:flex-end;gap:8px;">
+   <button type="button" class="b o" id="closeModalBtn">Cancel</button>
+   <button type="submit" class="b y">Send Request</button>
+  </div>
+ </form>
+</dialog>
+
+<div class="toast hide" id="toast" role="status"></div>
+
+<script>
+(function(){
+  var user = null;
+  try {
+    user = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
+  } catch(e){}
+
+  if(user){
+    document.getElementById('stuName').textContent = user.name || 'Student';
+    var initials = (user.name || 'Student').split(' ').map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
+    document.getElementById('stuAva').textContent = initials || 'ST';
+  }
+
+  // Pre-loaded verified tutors data
+  var tutors = [
+    {id:'t1', name:'Priya Sharma', qual:'M.Sc. Mathematics, Panjab University', exp:'8 yrs exp', subs:['Mathematics','Physics'], fee:600, modes:['Online','Home Tuition'], rating:4.8, city:'Ludhiana', headline:'Maths tutor for classes 9–12 with 8 years’ experience'},
+    {id:'t2', name:'Rahul Verma', qual:'B.Tech Chemical Engineering, NIT Jalandhar', exp:'4 yrs exp', subs:['Physics','Chemistry'], fee:800, modes:['Online','Home Tuition'], rating:4.9, city:'Chandigarh', headline:'Physics and chemistry for JEE & Board exams'},
+    {id:'t3', name:'Gurleen Kaur', qual:'M.A. English, GNDU', exp:'10 yrs exp', subs:['English','Punjabi'], fee:450, modes:['Online','Group Tuitions'], rating:4.7, city:'Ludhiana', headline:'English grammar, speaking and school literature'},
+    {id:'t4', name:'Amit Joshi', qual:'MCA, Lovely Professional University', exp:'3 yrs exp', subs:['Computer Science'], fee:500, modes:['Online'], rating:4.9, city:'Jalandhar', headline:'Computer science, Python, C++, school and college'},
+    {id:'t5', name:'Neha Bansal', qual:'B.Sc. Biology', exp:'2 yrs exp', subs:['Biology'], fee:400, modes:['Online','Home Tuition'], rating:4.6, city:'Patiala', headline:'Biology concepts from basics for classes 8–10'},
+    {id:'t6', name:'Sunil Kapoor', qual:'M.Com, Delhi University', exp:'6 yrs exp', subs:['Accountancy','Economics'], fee:650, modes:['Online','Home Tuition'], rating:4.8, city:'Ludhiana', headline:'Commerce and Economics senior secondary expert'}
+  ];
+
+  var favourites = ['t1', 't3'];
+  var enquiries = [
+    {id:'req1', tutorId:'t1', tutorName:'Priya Sharma', subject:'Mathematics', mode:'Online', status:'accepted', note:'Demo scheduled for Tomorrow at 5:00 PM'},
+    {id:'req2', tutorId:'t2', tutorName:'Rahul Verma', subject:'Physics', mode:'Home Tuition', status:'accepted', note:'Accepted. Starting classes Thursday.'},
+    {id:'req3', tutorId:'t4', tutorName:'Amit Joshi', subject:'Computer Science', mode:'Online', status:'pending', note:'Waiting for tutor availability review'}
+  ];
+
+  function toast(t){
+    var el = document.getElementById('toast');
+    el.textContent = t; el.classList.remove('hide');
+    setTimeout(function(){ el.classList.add('hide'); }, 2400);
+  }
+
+  window.setSection = function(secName){
+    document.querySelectorAll('[id^="sec-"]').forEach(function(sec){
+      sec.classList.toggle('hide', sec.id !== 'sec-' + secName);
+    });
+    document.querySelectorAll('.side .nav button').forEach(function(btn){
+      btn.setAttribute('aria-current', btn.getAttribute('data-sec') === secName ? 'page' : 'false');
+    });
+    window.scrollTo(0,0);
+  };
+
+  document.querySelectorAll('.side .nav button').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      setSection(this.getAttribute('data-sec'));
+    });
+  });
+
+  document.getElementById('topFindTutors').addEventListener('click', function(e){
+    e.preventDefault(); setSection('tutors');
+  });
+  document.getElementById('topEnquiries').addEventListener('click', function(e){
+    e.preventDefault(); setSection('enquiries');
+  });
+
+  document.getElementById('studentLogoutBtn').addEventListener('click', function(e){
+    localStorage.removeItem('modivs_auth_user');
+  });
+
+  function renderTutorCard(t, isFav){
+    return '<div class="lead" id="tutor-'+t.id+'">' +
+      '<div>' +
+        '<h3>' + t.name + ' <span class="ver">Verified</span> <span style="font-size:0.85rem;color:var(--ok);font-weight:700;">★ ' + t.rating + '</span></h3>' +
+        '<p class="meta">' + t.qual + ' · ' + t.exp + ' · ' + t.city + '</p>' +
+        '<div class="tags">' + t.subs.map(function(s){return '<span>'+s+'</span>'}).join('') + t.modes.map(function(m){return '<span style="border-color:var(--ok);color:var(--ok);">'+m+'</span>'}).join('') + '</div>' +
+        '<p style="margin:6px 0 0;font-size:0.9rem;"><strong>Fee:</strong> ₹' + t.fee + ' / hour</p>' +
+      '</div>' +
+      '<div class="acts">' +
+        '<button class="b y" type="button" onclick="openDemoModal(\''+t.id+'\', \''+t.name+'\')">Book Free Demo</button>' +
+        '<button class="b o" type="button" onclick="toggleFav(\''+t.id+'\')">' + (isFav ? '★ Saved' : '☆ Save') + '</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  function renderTutors(subj, query){
+    var list = document.getElementById('tutorsList');
+    var filtered = tutors.filter(function(t){
+      var matchSubj = (!subj || subj === 'All') || t.subs.indexOf(subj) > -1;
+      var matchQ = (!query) || (t.name.toLowerCase().indexOf(query) > -1 || t.subs.some(function(s){return s.toLowerCase().indexOf(query) > -1}));
+      return matchSubj && matchQ;
+    });
+
+    if(!filtered.length){
+      list.innerHTML = '<div class="empty">No tutors found matching your criteria. Try another subject.</div>';
+      return;
+    }
+    list.innerHTML = filtered.map(function(t){
+      return renderTutorCard(t, favourites.indexOf(t.id) > -1);
+    }).join('');
+  }
+
+  function renderFavourites(){
+    var list = document.getElementById('favouritesList');
+    var favTutors = tutors.filter(function(t){ return favourites.indexOf(t.id) > -1; });
+    if(!favTutors.length){
+      list.innerHTML = '<div class="empty">You have no saved tutors yet. Browse tutors and click "Save".</div>';
+      return;
+    }
+    list.innerHTML = favTutors.map(function(t){ return renderTutorCard(t, true); }).join('');
+    document.getElementById('favCount').textContent = favourites.length;
+    document.getElementById('statFavs').textContent = favourites.length;
+  }
+
+  function renderEnquiries(){
+    var list = document.getElementById('enquiriesList');
+    if(!enquiries.length){
+      list.innerHTML = '<div class="empty">No active requests sent yet. Search tutors and book a free demo class.</div>';
+      return;
+    }
+    list.innerHTML = enquiries.map(function(r){
+      return '<div class="lead">' +
+        '<div>' +
+          '<h3>' + r.tutorName + ' <span class="badge ' + r.status + '">' + (r.status === 'accepted' ? 'Accepted' : 'Under Review') + '</span></h3>' +
+          '<p class="meta">Subject: ' + r.subject + ' · Format: ' + r.mode + '</p>' +
+          '<p style="margin:4px 0 0;font-size:0.92rem;color:var(--navy);">' + r.note + '</p>' +
+        '</div>' +
+        '<div class="acts">' +
+          '<button class="b y" type="button" onclick="alert(\'Message sent to tutor ' + r.tutorName + '\')">Message Tutor</button>' +
+        '</div>' +
+      '</div>';
+    }).join('');
+    document.getElementById('reqCount').textContent = enquiries.length;
+    document.getElementById('statRequests').textContent = enquiries.length;
+  }
+
+  window.toggleFav = function(id){
+    var idx = favourites.indexOf(id);
+    if(idx > -1){
+      favourites.splice(idx, 1);
+      toast('Tutor removed from favourites.');
+    } else {
+      favourites.push(id);
+      toast('Tutor added to favourites!');
+    }
+    renderTutors(activeSubj, document.getElementById('tutorSearchInput').value.trim().toLowerCase());
+    renderFavourites();
+  };
+
+  var activeSubj = 'All';
+  document.getElementById('subjectFilters').addEventListener('click', function(e){
+    var tab = e.target.closest('.tab');
+    if(!tab) return;
+    document.querySelectorAll('#subjectFilters .tab').forEach(function(t){ t.setAttribute('aria-pressed', 'false'); });
+    tab.setAttribute('aria-pressed', 'true');
+    activeSubj = tab.getAttribute('data-subj');
+    renderTutors(activeSubj, document.getElementById('tutorSearchInput').value.trim().toLowerCase());
+  });
+
+  document.getElementById('tutorSearchInput').addEventListener('input', function(e){
+    renderTutors(activeSubj, e.target.value.trim().toLowerCase());
+  });
+
+  // Modal logic
+  var modal = document.getElementById('demoModal');
+  var currentBookingTutor = null;
+  window.openDemoModal = function(id, name){
+    currentBookingTutor = tutors.find(function(t){ return t.id === id; });
+    document.getElementById('modalTutorName').textContent = 'Book Free Demo with ' + name;
+    document.getElementById('modalTutorMeta').textContent = currentBookingTutor ? currentBookingTutor.headline : '';
+    modal.showModal();
+  };
+  document.getElementById('closeModalBtn').addEventListener('click', function(){ modal.close(); });
+  document.getElementById('demoForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var topic = document.getElementById('demoTopic').value.trim();
+    var date = document.getElementById('demoDate').value.trim();
+    if(currentBookingTutor){
+      var newReq = {
+        id: 'req_' + Date.now(),
+        tutorId: currentBookingTutor.id,
+        tutorName: currentBookingTutor.name,
+        subject: (currentBookingTutor.subs && currentBookingTutor.subs[0]) || 'General',
+        mode: (currentBookingTutor.modes && currentBookingTutor.modes[0]) || 'Online',
+        status: 'pending',
+        note: 'Requested: ' + topic + ' (' + date + ')',
+        studentName: user ? user.name : 'Aarav Sharma',
+        studentEmail: user ? user.email : 'student@example.com',
+        sentAt: new Date().toISOString()
+      };
+      enquiries.unshift(newReq);
+
+      try {
+        var allEnquiries = JSON.parse(localStorage.getItem('modivs_student_enquiries') || '[]');
+        allEnquiries.unshift(newReq);
+        localStorage.setItem('modivs_student_enquiries', JSON.stringify(allEnquiries));
+      } catch(err){}
+
+      renderEnquiries();
+      toast('Demo request sent to ' + currentBookingTutor.name + '! They will confirm shortly.');
+    }
+    modal.close();
+    setSection('enquiries');
+  });
+
+  // Init recommendations and lists
+  document.getElementById('recommendedTutors').innerHTML = tutors.slice(0,3).map(function(t){
+    return renderTutorCard(t, favourites.indexOf(t.id) > -1);
+  }).join('');
+  renderTutors('All', '');
+  renderFavourites();
+  renderEnquiries();
+
+  // Check search intent from home page
+  try {
+    var intent = JSON.parse(localStorage.getItem('modivs_search_intent') || 'null');
+    if(intent && intent.subject){
+      activeSubj = intent.subject;
+      var matchTab = Array.from(document.querySelectorAll('#subjectFilters .tab')).find(function(b){ return b.getAttribute('data-subj') === intent.subject; });
+      if(matchTab){
+        document.querySelectorAll('#subjectFilters .tab').forEach(function(t){ t.setAttribute('aria-pressed', 'false'); });
+        matchTab.setAttribute('aria-pressed', 'true');
+      }
+      setSection('tutors');
+      renderTutors(activeSubj, '');
+      localStorage.removeItem('modivs_search_intent');
+    }
+  } catch(e){}
+})();
+</script>
+</body>
+</html>
