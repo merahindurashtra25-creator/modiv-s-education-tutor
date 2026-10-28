@@ -285,6 +285,29 @@ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: tutorData.name, 
        queue.unshift(newAdminEntry);
      }
      localStorage.setItem('modivs_submitted_tutors', JSON.stringify(queue));
+
+      // 3. Persist to canonical database modivs_tutors_db
+      var dbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
+      var dbIdx = dbTutors.findIndex(function(item){ return item.email === tutorData.email; });
+      if(dbIdx >= 0){
+        newAdminEntry.id = dbTutors[dbIdx].id || newAdminEntry.id;
+        dbTutors[dbIdx] = Object.assign({}, dbTutors[dbIdx], newAdminEntry);
+      } else {
+        dbTutors.unshift(newAdminEntry);
+      }
+      localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
+
+      // 4. Log audit entry
+      var logs = JSON.parse(localStorage.getItem('modivs_audit_logs') || '[]');
+      logs.unshift({
+        id: newAdminEntry.id,
+        name: newAdminEntry.name,
+        action: 'Application Submitted',
+        admin: 'System',
+        timestamp: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) + ', ' + new Date().toLocaleDateString(),
+        note: 'Complete tutor profile submitted with verification documents. Status set to pending.'
+      });
+      localStorage.setItem('modivs_audit_logs', JSON.stringify(logs.slice(0, 50)));
    } catch(err){
      console.error('Storage error:', err);
    }

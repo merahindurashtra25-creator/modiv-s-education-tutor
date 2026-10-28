@@ -274,15 +274,35 @@ dialog h2{margin:0 0 4px}
     document.getElementById('stuAva').textContent = initials || 'ST';
   }
 
-  // Pre-loaded verified tutors data
-  var tutors = [
-    {id:'t1', name:'Priya Sharma', qual:'M.Sc. Mathematics, Panjab University', exp:'8 yrs exp', subs:['Mathematics','Physics'], fee:600, modes:['Online','Home Tuition'], rating:4.8, city:'Ludhiana', headline:'Maths tutor for classes 9–12 with 8 years’ experience'},
-    {id:'t2', name:'Rahul Verma', qual:'B.Tech Chemical Engineering, NIT Jalandhar', exp:'4 yrs exp', subs:['Physics','Chemistry'], fee:800, modes:['Online','Home Tuition'], rating:4.9, city:'Chandigarh', headline:'Physics and chemistry for JEE & Board exams'},
-    {id:'t3', name:'Gurleen Kaur', qual:'M.A. English, GNDU', exp:'10 yrs exp', subs:['English','Punjabi'], fee:450, modes:['Online','Group Tuitions'], rating:4.7, city:'Ludhiana', headline:'English grammar, speaking and school literature'},
-    {id:'t4', name:'Amit Joshi', qual:'MCA, Lovely Professional University', exp:'3 yrs exp', subs:['Computer Science'], fee:500, modes:['Online'], rating:4.9, city:'Jalandhar', headline:'Computer science, Python, C++, school and college'},
-    {id:'t5', name:'Neha Bansal', qual:'B.Sc. Biology', exp:'2 yrs exp', subs:['Biology'], fee:400, modes:['Online','Home Tuition'], rating:4.6, city:'Patiala', headline:'Biology concepts from basics for classes 8–10'},
-    {id:'t6', name:'Sunil Kapoor', qual:'M.Com, Delhi University', exp:'6 yrs exp', subs:['Accountancy','Economics'], fee:650, modes:['Online','Home Tuition'], rating:4.8, city:'Ludhiana', headline:'Commerce and Economics senior secondary expert'}
-  ];
+// Dynamic tutor data loading strictly from canonical modivs_tutors_db (Only Approved Tutors)
+  var rawDbTutors = [];
+  try {
+    rawDbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || 'null');
+  } catch(e){}
+
+  if(!rawDbTutors || !Array.isArray(rawDbTutors) || !rawDbTutors.length){
+    // Standard initial seed matching admin default
+    rawDbTutors = [
+      {id:'t1', name:'Priya Sharma', qual:'M.Sc. Mathematics, Panjab University', years:8, subs:['Mathematics','Physics'], fee:600, modes:['Online','At studentâ€™s home'], city:'Ludhiana', headline:'Maths tutor for classes 9â€“12 with 8 yearsâ€™ experience', status:'approved', rating:4.8},
+      {id:'t4', name:'Amit Joshi', qual:'MCA, Lovely Professional University', years:3, subs:['Computer Science'], fee:500, modes:['Online'], city:'Jalandhar', headline:'Computer science tutor, school and college', status:'approved', rating:4.9}
+    ];
+  }
+
+  // Strictly filter only APPROVED tutors for student browsing
+  var tutors = rawDbTutors.filter(function(t){ return t.status === 'approved'; }).map(function(t){
+    return {
+      id: t.id,
+      name: t.name,
+      qual: t.qual || 'Verified Qualifications',
+      exp: (t.years || 0) + ' yrs exp',
+      subs: (t.subs && t.subs.length) ? t.subs : ['General'],
+      fee: t.fee || 500,
+      modes: (t.modes && t.modes.length) ? t.modes : ['Online'],
+      city: t.city || 'Punjab',
+      headline: t.headline || 'Experienced verified tutor on Modivâ€™s Education',
+      rating: t.rating || 4.8
+    };
+  });
 
   var favourites = ['t1', 't3'];
   var enquiries = [

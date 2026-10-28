@@ -380,12 +380,65 @@ input.bad{border-color:var(--err)}
     localStorage.setItem('modivs_auth_user', JSON.stringify({ name: newUser.name, email: newUser.email, role: newUser.role }));
 
     if(role === 'Tutor'){
+      // Immediately track incomplete tutor in database so admin dashboard sees them
+      try {
+        var dbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
+        if(!dbTutors.some(function(t){ return t.email === mail; })){
+          dbTutors.push({
+            id: 't_user_' + (mail.replace(/[^a-z0-9]/gi, '_')),
+            name: newUser.name,
+            email: mail,
+            phone: 'â€”',
+            city: 'â€”',
+            headline: 'Account registered. Profile setup incomplete.',
+            qual: 'Profile setup pending',
+            years: 0,
+            subs: ['General'],
+            levels: ['Secondary'],
+            fee: 0,
+            modes: ['Online'],
+            langs: ['English'],
+            idType: 'Pending upload',
+            idFile: '',
+            cert: '',
+            sent: 'Registration completed',
+            status: 'incomplete',
+            submitted_at: new Date().toISOString(),
+            is_demo: false
+          });
+          localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
+        }
+      } catch(err){}
+
       toast('Tutor account created! Redirecting to tutor profile setup...');
       setTimeout(function(){
         window.location.href = 'modivs-tutor-profile.html';
       }, 600);
       return;
     }
+
+    // Immediately track registered student in database
+    try {
+      var dbStudents = JSON.parse(localStorage.getItem('modivs_students_db') || '[]');
+      if(!dbStudents.some(function(s){ return s.email === mail; })){
+        dbStudents.push({
+          id: 'stu_' + (mail.replace(/[^a-z0-9]/gi, '_')),
+          name: newUser.name,
+          parentName: newUser.name,
+          email: mail,
+          phone: 'â€”',
+          city: 'Punjab',
+          cls: 'Class 10',
+          board: 'CBSE',
+          subs: ['General'],
+          budget: 'â‚¹500â€“700 / hour',
+          status: 'active',
+          sent: 'Registered student',
+          registered_at: new Date().toISOString()
+        });
+        localStorage.setItem('modivs_students_db', JSON.stringify(dbStudents));
+      }
+    } catch(err){}
 
     toast('Student account created! Redirecting to student dashboard...');
     setTimeout(function(){

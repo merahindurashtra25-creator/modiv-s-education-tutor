@@ -137,6 +137,53 @@ function render(){
    if(submitted){
     try {
       localStorage.setItem('modivs_auth_user', JSON.stringify({ name: D.regName, email: D.email, role: 'Student / Parent' }));
+
+      // Save student user account
+      var users = JSON.parse(localStorage.getItem('modivs_users') || '[]');
+      if(!users.some(function(u){ return u.email === D.email.toLowerCase(); })){
+        users.push({
+          name: D.regName,
+          email: D.email.toLowerCase(),
+          pass: D.pass || 'student123',
+          phone: D.phone,
+          city: D.city,
+          role: 'Student / Parent',
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('modivs_users', JSON.stringify(users));
+      }
+
+      // Save student profile requirement to database
+      var studentReq = {
+        id: 'stu_' + Date.now(),
+        name: D.stuName || D.regName,
+        parentName: D.regName,
+        email: D.email.toLowerCase(),
+        phone: D.phone,
+        city: D.city,
+        cls: D.cls,
+        board: D.board,
+        school: D.school || '',
+        subs: (D.subjects && D.subjects.length) ? D.subjects : ['General'],
+        level: D.level || 'Average',
+        goals: D.goals || ['Academic improvement'],
+        notes: D.notes || '',
+        mode: D.modes || ['Online'],
+        budget: 'â‚¹' + (D.budgetMin || 500) + 'â€“' + (D.budgetMax || 800) + ' / hour',
+        freq: D.freq || '3 classes a week',
+        status: 'pending',
+        sent: 'Just now',
+        registered_at: new Date().toISOString()
+      };
+      var studentsDb = JSON.parse(localStorage.getItem('modivs_students_db') || '[]');
+      var exIdx = studentsDb.findIndex(function(s){ return s.email === studentReq.email; });
+      if(exIdx >= 0){
+        studentsDb[exIdx] = studentReq;
+      } else {
+        studentsDb.unshift(studentReq);
+      }
+      localStorage.setItem('modivs_students_db', JSON.stringify(studentsDb));
+      localStorage.setItem('modivs_student_req', JSON.stringify(studentReq));
     } catch(err){}
     f.innerHTML='<div class="done-box"><h1>Requirements saved!</h1><p class="sub">Thanks, '+esc(D.regName.split(' ')[0])+'. We have set up your Student Dashboard and matched verified tutors for '+esc(D.stuName)+'.</p><p><span class="status">Your Student Dashboard is ready</span></p><div class="nav" style="justify-content:center;gap:12px;margin-top:20px;"><a href="modivs-student-dashboard.html" class="btn" style="text-decoration:none;display:inline-flex;align-items:center;padding:12px 24px;">Open Student Dashboard &rarr;</a><button type="button" class="btn ghost" data-act="edit">Edit requirements</button></div></div>';
     return;
