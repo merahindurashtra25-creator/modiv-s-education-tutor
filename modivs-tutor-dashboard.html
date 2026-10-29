@@ -89,6 +89,20 @@ dialog{border:0;border-radius:18px;padding:24px;max-width:480px;width:calc(100% 
 dialog::backdrop{background:rgba(26,32,53,.6)}
 dialog h2{margin:0 0 4px}
 .ask{position:fixed;right:20px;bottom:calc(20px + env(safe-area-inset-bottom,0px));background:var(--yellow);color:var(--navy);border:2px solid var(--navy);border-radius:99px;padding:12px 20px;font-weight:800;cursor:pointer;box-shadow:0 6px 18px rgba(26,32,53,.25)}
+
+.mvw{position:fixed;inset:0;z-index:200;background:rgba(26,32,53,.6);display:grid;place-items:center;padding:16px}
+.mvw[hidden]{display:none}
+.mvw-card{position:relative;background:var(--cream);color:var(--navy);border-radius:20px;max-width:440px;width:100%;padding:34px 28px 26px;text-align:center;box-shadow:0 20px 60px rgba(0,0,0,.35);border-top:6px solid var(--yellow)}
+.mvw-x{position:absolute;top:10px;right:12px;background:transparent;border:0;font-size:1.6rem;line-height:1;cursor:pointer;color:var(--navy);padding:4px 10px}
+.mvw-emoji{font-size:2.6rem;line-height:1}
+.mvw h2{margin:10px 0 8px;font-size:1.5rem}
+.mvw p{margin:0 0 10px;color:var(--navy)}
+.mvw .mvw-sub{color:var(--muted);font-size:.9rem}
+.mvw .mvw-time{color:var(--muted);font-size:.78rem;margin-top:14px}
+.mvw-act{display:flex;gap:10px;justify-content:center;flex-wrap:wrap;margin-top:16px}
+.mvw-act a,.mvw-act button{font:inherit;font-weight:600;font-size:.92rem;padding:10px 18px;border-radius:10px;border:2px solid var(--navy);cursor:pointer;text-decoration:none}
+.mvw-ok{background:var(--yellow);border-color:var(--yellow)!important;color:var(--navy)}
+.mvw-ln{background:transparent;color:var(--navy)}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--cream);padding:11px 18px;border-radius:8px;font-size:.9rem;max-width:90vw;z-index:20}
 .hide{display:none}
 .tutor-top-nav{display:flex;gap:14px;align-items:center;font-size:.88rem;font-weight:600}
@@ -170,7 +184,8 @@ dialog h2{margin:0 0 4px}
 <script>
 (function(){
 var $=function(id){return document.getElementById(id)};
-var state={view:'dash',coins:20,filter:'new',q:'',tT:null};
+var savedC = localStorage.getItem('modivs_tutor_coins');
+var state={view:'dash',coins:savedC != null ? +savedC : 20,filter:'new',q:'',tT:null};
 var COST=10;
 var leads=[
  {id:1,name:'Aarav Mehta',who:'Parent: Sunita Mehta',phone:'98xxxxxx11',cls:'Class 10',board:'CBSE',city:'Ludhiana',subs:['Mathematics'],mode:'Online',budget:'₹500–700',when:'Mon, Wed, Fri evening',note:'Needs help with trigonometry before pre-boards.',time:'2 hours ago',status:'new',unlocked:false},
@@ -229,7 +244,41 @@ function newLeads(){return leads.filter(function(l){return !l.unlocked&&l.status
 function unlockedCount(){return leads.filter(function(l){return l.unlocked}).length}
 
 function openRecharge(){$('dlg').showModal()}
-function recharge(c,price){state.coins+=c;hist.unshift({t:'Recharged '+c+' coins ('+price+')',d:'Today',a:c});$('dlg').close();toast(c+' coins added.');render()}
+window.openRecharge = openRecharge;
+
+function recharge(c,price){
+ state.coins+=c;
+ localStorage.setItem('modivs_tutor_coins', String(state.coins));
+ var authU = null; try { authU = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
+ var exp = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
+ var subObj = { active: true, planId: String(price), expiresAt: exp, coins: state.coins };
+ if(authU){
+   authU.subscription = subObj;
+   localStorage.setItem('modivs_auth_user', JSON.stringify(authU));
+ }
+ if(window.MY_TUTOR){
+   window.MY_TUTOR.subscription = subObj;
+   try {
+     var tdb = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
+     tdb.forEach(function(t){ if(t.email === window.MY_TUTOR.email) t.subscription = subObj; });
+     localStorage.setItem('modivs_tutors_db', JSON.stringify(tdb));
+   } catch(e){}
+ }
+ if(window.EducationBFirebase && window.EducationBFirebase.db && authU){
+   var uidKey = authU.uid || (authU.email && authU.email.replace(/[^a-z0-9]/gi, '_'));
+   if(uidKey){
+     window.EducationBFirebase.db.collection('users').doc(uidKey).set({
+       subscription: subObj,
+       coins: state.coins,
+       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+     }, { merge: true }).catch(function(){});
+   }
+ }
+ hist.unshift({t:'Recharged '+c+' coins ('+price+')',d:'Today',a:c});
+ $('dlg').close();
+ toast(c+' coins added. Paid plan is now ACTIVE!');
+ render();
+}
 function unlock(l){
  if(state.coins<COST){toast('Not enough coins. Recharge to unlock this lead.');openRecharge();return}
  state.coins-=COST;l.unlocked=true;hist.unshift({t:'Unlocked '+l.name,d:'Today',a:-COST});toast('Unlocked '+l.name+'. Contact details are now visible.');render()
@@ -304,7 +353,17 @@ function vLeads(v){
  q.addEventListener('input',function(e){state.q=e.target.value.trim();fill()});fill()
 }
 function vChat(v){
- v.appendChild(el('h1','','Messages'));v.appendChild(el('p','sub','Chat with students connected to your authorized leads.'));
+ v.appendChild(el('h1','','Messages'));
+ var myTutor = window.MY_TUTOR || {};
+ var hasPlan = window.ModivsChat ? ModivsChat.hasTutorPlan(myTutor) : false;
+ if(!hasPlan){
+   var notice = el('div','box');
+   notice.style.cssText = 'background:#ebf5ff;border:1.5px solid #2196f3;color:#0d47a1;border-radius:14px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;';
+   notice.innerHTML = '<div><b style="font-size:1.05rem;">🔒 Tutor Plan Required</b><p style="margin:4px 0 0;font-size:0.88rem;color:#1565c0;">Direct student inquiries appear in blue below. Upgrade or recharge coins to read message history, view student profile info, and reply in real time.</p></div><button type="button" class="b y" onclick="openRecharge()" style="background:#0d47a1;color:#fff;border:0;padding:8px 18px;font-weight:700;">Select Plan</button>';
+   v.appendChild(notice);
+ } else {
+   v.appendChild(el('p','sub','Chat directly with students. Messages are retained for 4 days (96 hours).'));
+ }
  var box=el('section','box');var list=el('div');box.appendChild(list);v.appendChild(box);
  if(window.ModivsChat) ModivsChat.inbox(list,function(c){ModivsChat.open({student:c.student,tutor:c.tutor});});
 }
@@ -430,6 +489,36 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
       '</div>';
     }
   }
+
+  // ---- Welcome pop-up: shown for 72 hours after a new tutor profile is created ----
+  try{
+    var WIN=72*3600*1000, wmap=JSON.parse(localStorage.getItem('modivs_tutor_welcome')||'{}'), rec=wmap[tutor.email];
+    if(rec && (tutor.status==='pending'||tutor.status==='approved')){
+      var verified=tutor.status==='approved';
+      if(verified && !rec.approved){rec.approved=new Date().toISOString();wmap[tutor.email]=rec;localStorage.setItem('modivs_tutor_welcome',JSON.stringify(wmap));}
+      var wStart=new Date(verified?rec.approved:rec.created).getTime(), wLeft=wStart+WIN-Date.now();
+      var wClosed=false;try{wClosed=!!sessionStorage.getItem('modivs_welcome_closed')}catch(x){}
+      if(!isNaN(wStart) && wLeft>0 && !wClosed){
+        var hrs=Math.max(1,Math.ceil(wLeft/3600000));
+        var ov=document.createElement('div');ov.className='mvw';ov.setAttribute('role','dialog');ov.setAttribute('aria-modal','true');ov.setAttribute('aria-labelledby','mvwT');
+        ov.innerHTML='<div class="mvw-card"><button type="button" class="mvw-x" aria-label="Close">&times;</button>'+
+          '<div class="mvw-emoji" aria-hidden="true">🎉</div><h2 id="mvwT">Welcome, Modivian!</h2>'+
+          (verified
+            ?'<p>You have successfully created your tutor profile and verified it.</p><p class="mvw-sub">Your profile is live. Students and parents can now find you and send requests.</p>'
+            :'<p>You have successfully created your tutor profile.</p><p class="mvw-sub">Our team is verifying your documents. You will go live in tutor search as soon as you are approved.</p>')+
+          '<div class="mvw-act"><button type="button" class="mvw-ok">Go to my dashboard</button><a class="mvw-ln" href="modivs-tutors.html#tutor-materials">Study material guidelines</a></div>'+
+          '<div class="mvw-time">This message shows for about '+hrs+' more hour'+(hrs>1?'s':'')+'.</div></div>';
+        document.body.appendChild(ov);
+        var closeW=function(){try{sessionStorage.setItem('modivs_welcome_closed','1')}catch(x){} ov.remove();document.removeEventListener('keydown',onKey)};
+        var onKey=function(e){if(e.key==='Escape')closeW()};
+        ov.querySelector('.mvw-x').addEventListener('click',closeW);
+        ov.querySelector('.mvw-ok').addEventListener('click',closeW);
+        ov.addEventListener('click',function(e){if(e.target===ov)closeW()});
+        document.addEventListener('keydown',onKey);
+        ov.querySelector('.mvw-ok').focus();
+      }
+    }
+  }catch(e){}
 })();
 
 function render(){
@@ -445,5 +534,14 @@ if(window.ModivsChat) ModivsChat.subscribe(render);
 render();
 })();
 </script>
+<!-- mv-footer -->
+<footer class="mv-foot"><style>
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
+.mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
+.mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
+.mv-foot a[aria-current=page]{color:#EBB92E}
+.mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
+</style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
 </body>
 </html>

@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Terms and Conditions | Modiv’s Education</title>
+<meta name="description" content="The rules for using the Modivs Education website: cookies, licence, comments, linking, content liability and disclaimer.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='.9em' font-size='90'%3E📄%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1A2035;--yellow:#EBB92E;--cream:#FEF7EA;--muted:#555b78;--line:#eadfc9;--card:#fff;--teal:#0b5c4c;--teal-bg:#dff1ec;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:96px;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.7}
+a{color:inherit}
+:is(a,button,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* header (same as the rest of the site) */
+header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
+.brand img{height:44px;width:auto;display:block;mix-blend-mode:multiply}
+nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
+nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;white-space:nowrap}
+nav a:hover,nav a[aria-current]{background:var(--yellow)}
+.btn{display:inline-block;padding:9px 16px;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;border:2px solid var(--navy);background:var(--navy);color:var(--cream);font-family:inherit}
+.btn.y{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.btn.y:hover{background:#D9A41C;border-color:#D9A41C}
+
+/* title */
+.hero{padding:48px 0 28px;border-bottom:1px solid var(--line)}
+.stamp{display:inline-block;background:var(--yellow);padding:4px 14px;border-radius:99px;font-weight:600;font-size:.82rem}
+h1{font-size:clamp(2rem,4.6vw,3rem);line-height:1.1;letter-spacing:-.02em;margin:16px 0 12px}
+.lede{color:var(--muted);max-width:660px;margin:0;font-size:1.02rem}
+
+/* layout: contents rail + document */
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:56px;padding-top:40px;padding-bottom:72px;align-items:start}
+.toc{position:sticky;top:96px;max-height:calc(100vh - 120px);overflow:auto;padding-right:6px}
+.toc h2{font-size:.95rem;margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--line)}
+.toc a{display:block;padding:6px 14px;margin-left:-2px;border-left:2px solid transparent;text-decoration:none;font-size:.88rem;color:var(--muted);line-height:1.4}
+.toc a:hover{color:var(--navy)}
+.toc a.on{color:var(--navy);font-weight:600;border-left-color:var(--navy)}
+.toc-m{display:none}
+
+.doc{max-width:740px}
+.doc section{padding-top:8px;margin-bottom:44px}
+.doc h2{font-size:1.5rem;line-height:1.25;letter-spacing:-.01em;margin:0 0 14px}
+.doc h3{font-size:1.1rem;margin:28px 0 8px}
+.doc h4{font-size:.98rem;margin:22px 0 6px}
+.doc p{margin:0 0 14px}
+.doc ul{margin:0 0 16px;padding-left:22px}
+.doc li{margin:6px 0}
+.doc li::marker{color:var(--yellow)}
+.doc a{color:var(--teal);text-underline-offset:3px}
+.doc a:hover{color:var(--navy)}
+
+.summary{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:18px 22px;margin:0 0 40px}
+.summary p{margin:0}
+
+dl.defs{margin:0;border-top:1px solid var(--line)}
+dl.defs div{display:grid;grid-template-columns:170px 1fr;gap:6px 20px;padding:12px 0;border-bottom:1px solid var(--line)}
+dl.defs dt{font-weight:600}
+dl.defs dd{margin:0}
+
+.doc ul.list-inline{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0 0 16px}
+.list-inline li{margin:0;background:var(--teal-bg);color:var(--teal);border:1px solid #b9dfd5;border-radius:99px;padding:2px 14px;font-size:.88rem;font-weight:600}
+
+.cookie{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px 20px;margin:0 0 12px}
+.cookie h4{margin:0 0 4px}
+.cookie .meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin:0 0 8px;font-size:.82rem}
+.cookie .meta span{background:var(--cream);border:1px solid var(--line);border-radius:99px;padding:1px 10px}
+.cookie p{margin:0}
+
+.doc section.contact{background:var(--navy);color:var(--cream);border-radius:16px;padding:24px 28px}
+.contact h2{margin-top:0}
+.contact p{margin:0 0 6px}
+.contact a{color:var(--yellow);font-weight:600}
+
+.doc ul.plain{list-style:disc}
+.note{background:var(--card);border:1.5px solid var(--line);border-left:4px solid var(--yellow);border-radius:10px;padding:14px 18px;margin:0 0 16px}
+.note p{margin:0}
+
+/* footer (same as the home page) */
+footer{background:var(--navy);color:var(--cream);padding:40px 0 28px}
+footer .row{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
+footer ul{list-style:none;display:flex;gap:20px;padding:0;margin:0;flex-wrap:wrap}
+footer a{text-decoration:none;color:#d8dcec}footer a:hover{color:var(--yellow)}
+footer .copy{margin-top:24px;padding-top:18px;border-top:1px solid #34406a;color:#9aa1bd;font-size:.88rem}
+
+@media (max-width:900px){
+ .layout{grid-template-columns:1fr;gap:8px;padding-top:24px}
+ .toc{display:none}
+ .toc-m{display:block;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:4px 16px;margin-bottom:24px}
+ .toc-m summary{cursor:pointer;font-weight:600;padding:10px 0}
+ .toc-m ol{margin:0 0 10px;padding-left:20px}
+ .toc-m li{margin:4px 0}
+ .toc-m a{text-decoration:none;font-size:.92rem}
+}
+@media (max-width:640px){
+ .bar{height:auto;padding:10px 0;flex-wrap:wrap}
+ nav ul{flex-wrap:wrap}
+ #navJoin{display:none}
+ dl.defs div{grid-template-columns:1fr}
+ .doc section.contact{padding:20px}
+}
+@media print{header,.toc,.toc-m,footer{display:none}.layout{display:block}body{background:#fff}}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="wrap bar">
+  <a class="brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav aria-label="Main menu"><ul>
+   <li><a href="index.html">Home</a></li>
+   <li><a href="modivs-tutors.html">Tutors</a></li>
+   <li><a href="modivs-active-leads.html">Active leads</a></li>
+   <li><a href="modivs-contact.html">Contact us</a></li>
+  </ul></nav>
+  <a class="btn y" id="navJoin" href="modivs-education.html#tutor-signup">Become a tutor</a>
+ </div>
+</header>
+
+<main>
+ <div class="hero">
+  <div class="wrap">
+   <span class="stamp">Website terms of use</span>
+   <h1>Terms and Conditions</h1>
+   <p class="lede">The rules and regulations for using the Modivs Education website. Please read them before you continue.</p>
+  </div>
+ </div>
+
+ <div class="wrap layout">
+
+  <aside class="toc" aria-label="On this page">
+   <h2>On this page</h2>
+   <ol id="tocList"><li><a href="#intro">Introduction</a></li><li><a href="#cookies">Cookies</a></li><li><a href="#license">License</a></li><li><a href="#hyperlinking">Hyperlinking to our content</a></li><li><a href="#iframes">iFrames</a></li><li><a href="#liability">Content liability</a></li><li><a href="#reservation">Reservation of rights</a></li><li><a href="#removal">Removal of links from our website</a></li><li><a href="#disclaimer">Disclaimer</a></li></ol>
+  </aside>
+
+  <article class="doc">
+
+   <details class="toc-m">
+    <summary>On this page</summary>
+    <ol><li><a href="#intro">Introduction</a></li><li><a href="#cookies">Cookies</a></li><li><a href="#license">License</a></li><li><a href="#hyperlinking">Hyperlinking to our content</a></li><li><a href="#iframes">iFrames</a></li><li><a href="#liability">Content liability</a></li><li><a href="#reservation">Reservation of rights</a></li><li><a href="#removal">Removal of links from our website</a></li><li><a href="#disclaimer">Disclaimer</a></li></ol>
+   </details>
+
+   <section id="intro">
+    <div class="summary">
+     <p>Welcome to Modivs Education! These terms and conditions outline the rules and regulations for the use of Modivs Education’s Website, located at <a href="https://www.modivhometutors.com/" rel="noopener">https://www.modivhometutors.com/</a>.</p>
+    </div>
+    <p>By accessing this website we assume you accept these terms and conditions. Do not continue to use Modivs Education if you do not agree to take all of the terms and conditions stated on this page.</p>
+    <p>The following terminology applies to these Terms and Conditions, Privacy Statement and Disclaimer Notice and all Agreements: “Client”, “You” and “Your” refers to you, the person log on this website and compliant to the Company’s terms and conditions. “The Company”, “Ourselves”, “We”, “Our” and “Us”, refers to our Company. “Party”, “Parties”, or “Us”, refers to both the Client and ourselves. All terms refer to the offer, acceptance and consideration of payment necessary to undertake the process of our assistance to the Client in the most appropriate manner for the express purpose of meeting the Client’s needs in respect of provision of the Company’s stated services, in accordance with and subject to, prevailing law of in. Any use of the above terminology or other words in the singular, plural, capitalization and/or he/she or they, are taken as interchangeable and therefore as referring to same.</p>
+   </section>
+
+   <section id="cookies">
+    <h2>Cookies</h2>
+    <p>We employ the use of cookies. By accessing Modivs Education, you agreed to use cookies in agreement with the Modivs Education’s <a href="modivs-privacy-policy.html">Privacy Policy</a>.</p>
+    <p>Most interactive websites use cookies to let us retrieve the user’s details for each visit. Cookies are used by our website to enable the functionality of certain areas to make it easier for people visiting our website. Some of our affiliate/advertising partners may also use cookies.</p>
+   </section>
+
+   <section id="license">
+    <h2>License</h2>
+    <p>Unless otherwise stated, Modivs Education and/or its licensors own the intellectual property rights for all material on Modivs Education. All intellectual property rights are reserved. You may access this from Modivs Education for your own personal use subjected to restrictions set in these terms and conditions.</p>
+    <p>You must not:</p>
+    <ul><li>Republish material from Modivs Education</li><li>Sell, rent or sub-license material from Modivs Education</li><li>Reproduce, duplicate or copy material from Modivs Education</li><li>Redistribute content from Modivs Education</li></ul>
+    <p>This Agreement shall begin on the date hereof.</p>
+    <p>Parts of this website offer an opportunity for users to post and exchange opinions and information in certain areas of the website. Modivs Education does not filter, edit, publish or review Comments prior to their presence on the website. Comments do not reflect the views and opinions of Modivs Education, its agents and/or affiliates. Comments reflect the views and opinions of the person who post their views and opinions. To the extent permitted by applicable laws, Modivs Education shall not be liable for the Comments or for any liability, damages or expenses caused and/or suffered as a result of any use of and/or posting of and/or appearance of the Comments on this website.</p>
+    <p>Modivs Education reserves the right to monitor all Comments and to remove any Comments which can be considered inappropriate, offensive or causes breach of these Terms and Conditions.</p>
+    <p>You warrant and represent that:</p>
+    <ul><li>You are entitled to post the Comments on our website and have all necessary licenses and consents to do so;</li><li>The Comments do not invade any intellectual property right, including without limitation copyright, patent or trademark of any third party;</li><li>The Comments do not contain any defamatory, libelous, offensive, indecent or otherwise unlawful material which is an invasion of privacy</li><li>The Comments will not be used to solicit or promote business or custom or present commercial activities or unlawful activity.</li></ul>
+    <p>You hereby grant Modivs Education a non-exclusive license to use, reproduce, edit and authorize others to use, reproduce and edit any of your Comments in any and all forms, formats or media.</p>
+   </section>
+
+   <section id="hyperlinking">
+    <h2>Hyperlinking to our content</h2>
+    <p>The following organizations may link to our Website without prior written approval:</p>
+    <ul><li>Government agencies;</li><li>Search engines;</li><li>News organizations;</li><li>Online directory distributors may link to our Website in the same manner as they hyperlink to the Websites of other listed businesses; and</li><li>System wide Accredited Businesses except soliciting non-profit organizations, charity shopping malls, and charity fundraising groups which may not hyperlink to our Web site.</li></ul>
+    <p>These organizations may link to our home page, to publications or to other Website information so long as the link: (a) is not in any way deceptive; (b) does not falsely imply sponsorship, endorsement or approval of the linking party and its products and/or services; and (c) fits within the context of the linking party’s site.</p>
+    <p>We may consider and approve other link requests from the following types of organizations:</p>
+    <ul><li>commonly-known consumer and/or business information sources;</li><li>dot.com community sites;</li><li>associations or other groups representing charities;</li><li>online directory distributors;</li><li>internet portals;</li><li>accounting, law and consulting firms; and</li><li>educational institutions and trade associations.</li></ul>
+    <p>We will approve link requests from these organizations if we decide that: (a) the link would not make us look unfavorably to ourselves or to our accredited businesses; (b) the organization does not have any negative records with us; (c) the benefit to us from the visibility of the hyperlink compensates the absence of Modivs Education; and (d) the link is in the context of general resource information.</p>
+    <p>These organizations may link to our home page so long as the link: (a) is not in any way deceptive; (b) does not falsely imply sponsorship, endorsement or approval of the linking party and its products or services; and (c) fits within the context of the linking party’s site.</p>
+    <p>If you are one of the organizations listed in paragraph 2 above and are interested in linking to our website, you must inform us by sending an e-mail to Modivs Education. Please include your name, your organization name, contact information as well as the URL of your site, a list of any URLs from which you intend to link to our Website, and a list of the URLs on our site to which you would like to link. Wait 2-3 weeks for a response.</p>
+    <p>Approved organizations may hyperlink to our Website as follows:</p>
+    <ul><li>By use of our corporate name; or</li><li>By use of the uniform resource locator being linked to; or</li><li>By use of any other description of our Website being linked to that makes sense within the context and format of content on the linking party’s site.</li></ul>
+    <p>No use of Modivs Education’s logo or other artwork will be allowed for linking absent a trademark license agreement.</p>
+   </section>
+
+   <section id="iframes">
+    <h2>iFrames</h2>
+    <p>Without prior approval and written permission, you may not create frames around our Webpages that alter in any way the visual presentation or appearance of our Website.</p>
+   </section>
+
+   <section id="liability">
+    <h2>Content liability</h2>
+    <p>We shall not be hold responsible for any content that appears on your Website. You agree to protect and defend us against all claims that is rising on your Website. No link(s) should appear on any Website that may be interpreted as libelous, obscene or criminal, or which infringes, otherwise violates, or advocates the infringement or other violation of, any third party rights.</p>
+   </section>
+
+   <section id="reservation">
+    <h2>Reservation of rights</h2>
+    <p>We reserve the right to request that you remove all links or any particular link to our Website. You approve to immediately remove all links to our Website upon request. We also reserve the right to amen these terms and conditions and it’s linking policy at any time. By continuously linking to our Website, you agree to be bound to and follow these linking terms and conditions.</p>
+   </section>
+
+   <section id="removal">
+    <h2>Removal of links from our website</h2>
+    <p>If you find any link on our Website that is offensive for any reason, you are free to contact and inform us any moment. We will consider requests to remove links but we are not obligated to or so or to respond to you directly.</p>
+    <p>We do not ensure that the information on this website is correct, we do not warrant its completeness or accuracy; nor do we promise to ensure that the website remains available or that the material on the website is kept up to date.</p>
+   </section>
+
+   <section id="disclaimer">
+    <h2>Disclaimer</h2>
+    <p>To the maximum extent permitted by applicable law, we exclude all representations, warranties and conditions relating to our website and the use of this website. Nothing in this disclaimer will:</p>
+    <ul><li>limit or exclude our or your liability for death or personal injury;</li><li>limit or exclude our or your liability for fraud or fraudulent misrepresentation;</li><li>limit any of our or your liabilities in any way that is not permitted under applicable law; or</li><li>exclude any of our or your liabilities that may not be excluded under applicable law.</li></ul>
+    <p>The limitations and prohibitions of liability set in this Section and elsewhere in this disclaimer: (a) are subject to the preceding paragraph; and (b) govern all liabilities arising under the disclaimer, including liabilities arising in contract, in tort and for breach of statutory duty.</p>
+    <p>As long as the website and the information and services on the website are provided free of charge, we will not be liable for any loss or damage of any nature.</p>
+   </section>
+
+  </article>
+ </div>
+</main>
+
+<footer>
+ <div class="wrap">
+  <div class="row">
+   <a class="brand" href="index.html" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;"><img src="logo.png" alt="Modiv’s Education" style="height:36px;display:block;mix-blend-mode:normal;"></a>
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-tutors.html">Tutors</a></li>
+    <li><a href="modivs-privacy-policy.html">Privacy Policy</a></li>
+    <li><a href="modivs-terms.html" aria-current="page">Terms and Conditions</a></li>
+    <li><a href="modivs-refund-policy.html">Refund Policy</a></li>
+    <li><a href="modivs-contact.html">Contact us</a></li>
+   </ul>
+  </div>
+  <div class="copy">© 2026 Modiv’s Education. All rights reserved.</div>
+ </div>
+</footer>
+
+<script>
+// Highlight the current section in the contents rail while scrolling.
+(function(){
+ var links=[].slice.call(document.querySelectorAll('#tocList a'));
+ if(!links.length||!('IntersectionObserver' in window))return;
+ var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a});
+ var io=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+   if(e.isIntersecting){links.forEach(function(a){a.classList.remove('on')});var a=map[e.target.id];if(a)a.classList.add('on')}
+  });
+ },{rootMargin:'-96px 0px -70% 0px',threshold:0});
+ Object.keys(map).forEach(function(id){var s=document.getElementById(id);if(s)io.observe(s)});
+})();
+</script>
+</body>
+</html>

@@ -1,0 +1,340 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modiv’s Education – Contact us</title>
+<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1A2035;--yellow:#FABD4E;--cream:#FEF7EA;--muted:#555b78;--line:#eadfc9;--card:#fff;--bad:#b3261e;--ok:#1d7a4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+a{color:inherit}
+button,input,select,textarea{font:inherit;color:inherit}
+:is(a,button,input,select,textarea,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+.hide{display:none!important}
+.wrap{max-width:1220px;margin:0 auto;padding:0 24px}
+.brand{text-decoration:none;display:inline-flex;align-items:center}.brand img{height:44px;width:auto;display:block;mix-blend-mode:multiply}
+
+header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
+nav{display:flex;align-items:center}
+nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
+nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;white-space:nowrap}
+nav a:hover,nav a[aria-current]{background:var(--yellow)}
+.acts{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.btn{display:inline-block;padding:11px 20px;border-radius:10px;font-weight:600;text-decoration:none;border:2px solid var(--navy);background:var(--navy);color:var(--cream);cursor:pointer}
+.btn:hover{background:#2a3350}
+.btn.y{background:var(--yellow);color:var(--navy);border-color:var(--yellow)}.btn.y:hover{background:#ffc965}
+.btn.o{background:transparent;color:var(--navy)}.btn.o:hover{background:var(--navy);color:var(--cream)}
+.acts .btn{padding:8px 15px;font-size:.88rem;border-radius:8px;white-space:nowrap}
+.burger{display:none;background:var(--navy);color:var(--cream);border:0;border-radius:8px;padding:8px 12px;font-weight:600;cursor:pointer}
+
+.hero{padding:56px 0 36px}
+h1{font-size:clamp(2rem,4.6vw,3.2rem);line-height:1.08;letter-spacing:-.03em;font-weight:800;margin:0 0 14px;max-width:760px}
+.lead{font-size:1.1rem;color:var(--muted);max-width:620px;margin:0}
+
+.grid{display:grid;grid-template-columns:minmax(0,1.25fr) minmax(0,.75fr);gap:40px;align-items:start;padding-bottom:56px}
+.formbox{background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:30px}
+.formbox h2,.side h2,.faq h2{font-size:1.35rem;margin:0 0 4px;letter-spacing:-.01em}
+.formbox .sub{color:var(--muted);margin:0 0 6px;font-size:.93rem}
+label,.lab{display:block;font-weight:600;font-size:.88rem;margin:16px 0 6px}
+.hint{font-weight:400;color:var(--muted);font-size:.82rem}
+input[type=text],input[type=email],input[type=tel],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:9px;background:var(--cream)}
+input:focus,select:focus,textarea:focus{background:#fff;border-color:var(--navy)}
+textarea{min-height:130px;resize:vertical}
+.bad{border-color:var(--bad)!important;background:#fff8f7!important}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative;margin:0;font-weight:400}.chip input{position:absolute;opacity:0}
+.chip span{display:block;padding:8px 15px;border:1.5px solid var(--line);border-radius:999px;cursor:pointer;font-size:.9rem;background:var(--cream)}
+.chip input:checked+span{background:var(--yellow);border-color:var(--yellow);font-weight:600}
+.chip input:focus-visible+span{outline:3px solid var(--navy);outline-offset:2px}
+.count{float:right;font-weight:400;color:var(--muted);font-size:.8rem}
+.check{display:flex;gap:10px;align-items:flex-start;font-weight:400;font-size:.88rem;margin-top:16px}
+.check input{margin-top:4px;accent-color:var(--navy);width:17px;height:17px;flex:none}
+.err{color:var(--bad);font-weight:600;font-size:.9rem;margin:14px 0 0;min-height:1.3em}
+.send{margin-top:8px;width:100%;padding:13px 20px;font-size:1rem}
+.done{text-align:center;padding:30px 6px}
+.done .tick{width:60px;height:60px;border-radius:50%;background:var(--yellow);display:grid;place-items:center;margin:0 auto 14px;font-size:1.8rem;font-weight:800}
+.done h2{margin-bottom:8px}.done p{color:var(--muted);margin:0 auto 18px;max-width:420px}
+.ref{display:inline-block;background:var(--cream);border:1.5px dashed var(--navy);border-radius:8px;padding:6px 14px;font-weight:600;margin-bottom:18px}
+
+.side{display:grid;gap:14px}
+.ch{display:flex;gap:14px;align-items:center;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px 18px;text-decoration:none}
+a.ch:hover{border-color:var(--navy)}
+.ch i{width:44px;height:44px;border-radius:12px;background:var(--yellow);display:grid;place-items:center;font-style:normal;flex:none}
+.ch i svg{width:22px;height:22px;stroke:var(--navy);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ch b{display:block}.ch small{display:block;color:var(--muted)}
+.hours{background:var(--navy);color:var(--cream);border-radius:14px;padding:18px 20px}
+.hours b{color:var(--yellow);display:block;margin-bottom:2px}
+.hours p{margin:0;color:#d8dcec;font-size:.93rem}
+.ch small a{text-decoration:none}.ch small a:hover{color:var(--navy);text-decoration:underline}
+.social{display:flex;flex-wrap:wrap;gap:8px}
+.social a{text-decoration:none;font-weight:600;font-size:.85rem;border:1.5px solid var(--line);background:var(--card);border-radius:999px;padding:6px 14px}
+.social a:hover{border-color:var(--navy)}
+
+.faq{padding:8px 0 64px;border-top:1.5px solid var(--line)}
+.faq h2{margin:32px 0 14px}
+.faq .list{max-width:820px}
+details{border-bottom:1.5px solid var(--line);padding:4px 0}
+summary{cursor:pointer;font-weight:600;padding:14px 30px 14px 0;list-style:none;position:relative}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"+";position:absolute;right:4px;top:12px;font-size:1.4rem;font-weight:400;line-height:1}
+details[open] summary::after{content:"–"}
+details p{margin:0 0 16px;color:var(--muted);max-width:680px}
+
+footer{background:var(--navy);color:var(--cream);padding:40px 0 28px}
+footer .row{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
+footer a{text-decoration:none;color:#d8dcec}footer a:hover{color:var(--yellow)}
+footer ul{list-style:none;padding:0;margin:0;display:flex;gap:20px;flex-wrap:wrap}
+footer .copy{margin-top:24px;padding-top:16px;border-top:1px solid #34406a;color:#9aa1bd;font-size:.88rem}
+
+@media(max-width:1024px){
+ .burger{display:block}
+ nav{position:absolute;left:0;right:0;top:72px;background:var(--cream);border-bottom:1px solid var(--line);box-shadow:0 12px 24px rgba(26,32,53,.08);display:none;padding:16px 24px 20px}
+ nav.open{display:block}nav ul{flex-direction:column;gap:8px}
+}
+@media(max-width:860px){.grid{grid-template-columns:1fr;gap:28px}.side{order:-1}}
+@media(max-width:560px){.two{grid-template-columns:1fr}.formbox{padding:22px 18px}.hero{padding:36px 0 24px}.acts .o{display:none}.brand img{height:36px}}
+@media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+</style>
+</head>
+<body>
+<header>
+ <div class="wrap bar">
+  <a class="brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="nav" aria-label="Main menu">
+   <ul>
+    <li><a href="modivs-student-registration.html">Find a tutor</a></li>
+    <li><a href="modivs-tutor-profile.html">For tutors</a></li>
+    <li><a href="modivs-contact.html" aria-current="page">Contact us</a></li>
+   </ul>
+  </nav>
+  <div class="acts">
+   <a class="btn o" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" href="modivs-student-registration.html">Sign up</a>
+   <button class="burger" id="burger" aria-expanded="false" aria-controls="nav">Menu</button>
+  </div>
+ </div>
+</header>
+
+<main>
+ <section class="hero">
+  <div class="wrap">
+   <h1>Questions about tutoring? Ask us directly.</h1>
+   <p class="lead">Parents, students and tutors can reach the Modiv’s team here. Send a message and we will reply on the phone number or email you give us.</p>
+  </div>
+ </section>
+
+ <div class="wrap grid">
+  <section class="formbox" aria-labelledby="fh">
+   <div id="formView">
+    <h2 id="fh">Send us a message</h2>
+    <p class="sub">All fields marked * are needed so we can get back to you.</p>
+    <form id="cf" novalidate>
+     <div class="lab" id="whoLab">I am a *</div>
+     <div class="chips" role="radiogroup" aria-labelledby="whoLab" id="who">
+      <label class="chip"><input type="radio" name="who" value="Student / Parent"><span>Student or parent</span></label>
+      <label class="chip"><input type="radio" name="who" value="Tutor"><span>Tutor</span></label>
+      <label class="chip"><input type="radio" name="who" value="Other"><span>Something else</span></label>
+     </div>
+
+     <div class="two">
+      <div><label for="name">Your name *</label><input id="name" type="text" autocomplete="name"></div>
+      <div><label for="phone">Mobile number *</label><input id="phone" type="tel" autocomplete="tel" inputmode="tel"></div>
+     </div>
+     <label for="email">Email <span class="hint">optional</span></label><input id="email" type="email" autocomplete="email">
+
+     <label for="topic">What is this about? *</label>
+     <select id="topic"><option value="">Choose a topic</option></select>
+
+     <label for="msg">Your message * <span class="count" id="cnt">0 / 1000</span></label>
+     <textarea id="msg" maxlength="1000" placeholder="Tell us what you need. For tutor requests, mention the class, subject and area."></textarea>
+
+     <label class="check"><input type="checkbox" id="ok"><span>I agree that Modiv’s Education may contact me on the number or email above about this message.</span></label>
+     <div class="err" id="err" role="alert"></div>
+     <button type="submit" class="btn y send">Send message</button>
+    </form>
+   </div>
+
+   <div id="doneView" class="done hide" role="status">
+    <div class="tick" aria-hidden="true">✓</div>
+    <h2>Message sent</h2>
+    <p id="doneTxt">Thanks. We will get back to you soon.</p>
+    <div class="ref" id="ref"></div><br>
+    <button type="button" class="btn o" id="again">Send another message</button>
+   </div>
+  </section>
+
+  <aside class="side" aria-label="Other ways to reach us">
+   <h2>Prefer to talk?</h2>
+   <div class="ch" id="chPhone"><i><svg viewBox="0 0 24 24"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></i><span><b>Call us</b><small><a id="tPhone" href="#"></a></small><small><a id="tPhone2" href="#"></a></small></span></div>
+   <a class="ch" id="chWa" href="#" target="_blank" rel="noopener"><i><svg viewBox="0 0 24 24"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.5 2 2.5 4 5 5l1.5-1.2-2-1.3-.9.7c-.8-.4-1.5-1.1-1.9-1.9l.7-.9-1.3-2z"/></svg></i><span><b>WhatsApp</b><small id="tWa">Chat with us</small></span></a>
+   <a class="ch" id="chMail" href="#"><i><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Email</b><small id="tMail"></small></span></a>
+   <div class="ch hide" id="chAddr"><i><svg viewBox="0 0 24 24"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></i><span><b>Visit us</b><small id="tAddr"></small></span></div>
+   <div class="hours"><b>Support hours</b><p id="tHours"></p><p id="tReply" style="margin-top:6px"></p></div>
+   <div class="social" id="social" aria-label="Follow Modiv’s Education"></div>
+  </aside>
+ </div>
+
+ <section class="faq" id="faq" aria-labelledby="qh">
+  <div class="wrap">
+   <h2 id="qh">Quick answers</h2>
+   <div class="list">
+    <details><summary>How do I find a tutor?</summary><p>Fill in the student or parent form with the class, subject, board and area. We show you verified tutors who match, and you can ask for a demo class before you decide.</p></details>
+    <details><summary>How are tutors verified?</summary><p>Every tutor uploads a profile photo, a government ID and a qualification certificate. Our admin team checks them, and only approved profiles are shown to students.</p></details>
+    <details><summary>I am a tutor. How do I get student leads?</summary><p>Create your profile and wait for approval. Approved tutors see new student requests in their dashboard and unlock the ones they want with coins.</p></details>
+    <details><summary>My profile was rejected. What now?</summary><p>Open your tutor dashboard to see the exact reasons, such as a blurry photo or an invalid ID. Fix those details using Edit profile and save, and your profile goes back for review.</p></details>
+    <details><summary>Can I change my details after signing up?</summary><p>Yes. Tutors can update their photo, contact numbers, subjects and fees any time from Edit profile. Changing a photo, name or document sends the profile for a quick re-check.</p></details>
+   </div>
+  </div>
+ </section>
+</main>
+
+<footer>
+ <div class="wrap">
+  <div class="row">
+   <a class="brand" href="index.html" style="background:#fff;padding:6px 12px;border-radius:10px"><img src="logo.png" alt="Modiv’s Education" style="height:36px;mix-blend-mode:normal"></a>
+   <ul><li><a href="modivs-student-registration.html">Find a tutor</a></li><li><a href="modivs-tutor-profile.html">Become a tutor</a></li><li><a href="modivs-education.html#login">Log in</a></li><li><a href="modivs-privacy-policy.html">Privacy Policy</a></li><li><a href="modivs-terms.html">Terms &amp; Conditions</a></li><li><a href="modivs-refund-policy.html">Refund Policy</a></li></ul>
+  </div>
+  <div class="copy">© 2026 Modiv’s Education. All rights reserved.</div>
+ </div>
+</footer>
+
+<script>
+(function(){
+// ===== Contact details, taken from the Contact Us page at modivhometutors.com. Leave a value empty ('') to hide it. =====
+var CONTACT={
+ phone:'+91 98969 30443',
+ phone2:'+91 80541 67008',
+ whatsappLink:'https://wa.me/message/AZVJXD4HG3DOG1',
+ email:'support@modivhometutors.com',
+ address:'Chandigarh, India',
+ hours:'Monday to Saturday, 9 AM to 6 PM',
+ replyTime:'',
+ social:[
+  ['Facebook','https://www.facebook.com/modivseducation/'],
+  ['Instagram','https://www.instagram.com/modivs_education/'],
+  ['YouTube','https://www.youtube.com/channel/UC1PXZRzp5Yp1kihDURNhkpg'],
+  ['X (Twitter)','https://twitter.com/modiv_education'],
+  ['LinkedIn','https://www.linkedin.com/in/modiv-education-554176143/']
+ ]
+};
+// =======================================================================================
+
+var TOPICS={
+ 'Student / Parent':[
+  'Book a free demo class',
+  'Find a home tutor',
+  'Find an online tutor',
+  'Group tuition or batch classes',
+  'Exam preparation (NEET, JEE, CUET, Olympiads)',
+  'Change my tutor',
+  'Tutor did not turn up or class issue',
+  'Fees, refund or cancellation',
+  'Weekly progress report',
+  'Login or account help',
+  'Something else'],
+ 'Tutor':[
+  'I want to become a tutor',
+  'Profile verification status',
+  'My profile was rejected',
+  'Photo or document upload problem',
+  'Update my phone or WhatsApp number',
+  'Coins, recharge or payment issue',
+  'Problem unlocking a student lead',
+  'Report a student or parent',
+  'Login or account help',
+  'Something else'],
+ 'Other':[
+  'School or institute partnership',
+  'Media and press',
+  'Feedback or suggestion',
+  'Report a problem on the website',
+  'Something else']
+};
+function $(i){return document.getElementById(i)}
+function rd(k,d){try{var v=JSON.parse(localStorage.getItem(k));return v==null?d:v}catch(e){return d}}
+function digits(s){return String(s||'').replace(/[^\d]/g,'')}
+
+// menu
+var b=$('burger'),n=$('nav');
+b.addEventListener('click',function(){var o=n.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+
+// contact channels
+function chan(id,txtId,val,href){var a=$(id);if(!val){a.classList.add('hide');return}$(txtId).textContent=val;if(href)a.setAttribute('href',href)}
+function tel(v){return 'tel:'+v.replace(/[^\d+]/g,'')}
+if(CONTACT.phone){$('tPhone').textContent=CONTACT.phone;$('tPhone').href=tel(CONTACT.phone);
+ if(CONTACT.phone2){$('tPhone2').textContent=CONTACT.phone2;$('tPhone2').href=tel(CONTACT.phone2)}else $('tPhone2').parentNode.classList.add('hide')}
+else $('chPhone').classList.add('hide');
+if(CONTACT.whatsappLink)$('chWa').href=CONTACT.whatsappLink;else $('chWa').classList.add('hide');
+chan('chMail','tMail',CONTACT.email,'mailto:'+CONTACT.email);
+if(CONTACT.address){$('chAddr').classList.remove('hide');$('tAddr').textContent=CONTACT.address}
+$('tHours').textContent=CONTACT.hours||'';$('tReply').textContent=CONTACT.replyTime||'';
+if(!CONTACT.hours&&!CONTACT.replyTime)document.querySelector('.hours').classList.add('hide');
+if(CONTACT.social&&CONTACT.social.length){CONTACT.social.forEach(function(x){var a=document.createElement('a');a.textContent=x[0];a.href=x[1];a.target='_blank';a.rel='noopener';$('social').appendChild(a)})}else $('social').classList.add('hide');
+
+// topics depend on who is writing
+function setTopics(who){
+ var t=$('topic'),cur=t.value;
+ t.innerHTML='<option value="">Choose a topic</option>'+(TOPICS[who]||[]).map(function(x){return '<option>'+x+'</option>'}).join('');
+ if((TOPICS[who]||[]).indexOf(cur)>-1)t.value=cur;
+}
+document.querySelectorAll('input[name=who]').forEach(function(r){r.addEventListener('change',function(){setTopics(r.value)})});
+function pickWho(v){var r=document.querySelector('input[name=who][value="'+v+'"]');if(r){r.checked=true;setTopics(v)}}
+
+// prefill for logged-in users
+var au=rd('modivs_auth_user',null);
+if(au){
+ if(au.name)$('name').value=au.name;
+ if(au.email)$('email').value=au.email;
+ pickWho(au.role==='Tutor'?'Tutor':(au.role==='Student / Parent'?'Student / Parent':'Other'));
+ var ct=rd('modivs_current_tutor',null);
+ if(au.role==='Tutor'&&ct&&ct.email===au.email&&ct.phone)$('phone').value=ct.phone;
+}
+// ?who=tutor|student&topic=... lets other pages deep-link into the form
+var qs=new URLSearchParams(location.search);
+if(qs.get('who')==='tutor')pickWho('Tutor');else if(qs.get('who')==='student')pickWho('Student / Parent');
+if(qs.get('topic')&&Array.prototype.some.call($('topic').options,function(o){return o.value===qs.get('topic')}))$('topic').value=qs.get('topic');
+
+$('msg').addEventListener('input',function(){$('cnt').textContent=this.value.length+' / 1000'});
+
+// submit
+function flag(id,m){var e=$(id);if(e){e.classList.add('bad');e.focus()}$('err').textContent=m;return false}
+function clearBad(){$('cf').querySelectorAll('.bad').forEach(function(e){e.classList.remove('bad')});$('err').textContent=''}
+$('cf').addEventListener('input',clearBad);$('cf').addEventListener('change',clearBad);
+
+$('cf').addEventListener('submit',function(e){
+ e.preventDefault();clearBad();
+ var who=(document.querySelector('input[name=who]:checked')||{}).value,
+     name=$('name').value.trim(),phone=$('phone').value.trim(),email=$('email').value.trim(),
+     topic=$('topic').value,msg=$('msg').value.trim();
+ if(!who){$('err').textContent='Choose who you are: student or parent, tutor, or something else.';$('who').scrollIntoView({block:'center'});return}
+ if(!name)return flag('name','Enter your name.');
+ if(!/^[+0-9\s-]{10,15}$/.test(phone))return flag('phone','Enter a valid mobile number so we can call you back.');
+ if(email&&!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return flag('email','Enter a valid email address, or leave it blank.');
+ if(!topic)return flag('topic','Choose a topic.');
+ if(msg.length<15)return flag('msg','Write a few more words so we understand your question (at least 15 characters).');
+ if(!$('ok').checked){$('err').textContent='Please tick the box to let us contact you.';$('ok').focus();return}
+
+ var ref='MQ-'+Date.now().toString(36).toUpperCase().slice(-6);
+ var rec={ref:ref,who:who,name:name,phone:phone,email:email,topic:topic,message:msg,status:'new',createdAt:new Date().toISOString()};
+ try{var all=rd('modivs_contact_messages',[]);all.unshift(rec);localStorage.setItem('modivs_contact_messages',JSON.stringify(all.slice(0,200)))}
+ catch(x){$('err').textContent='Could not send. Please try again, or contact us by phone.';return}
+
+ $('ref').textContent='Reference: '+ref;
+ $('doneTxt').textContent='Thanks, '+name.split(' ')[0]+'. '+(CONTACT.replyTime||'We will get back to you soon.')+' We will use '+(email?'your mobile number or email':'your mobile number')+'.';
+ $('formView').classList.add('hide');$('doneView').classList.remove('hide');
+ $('doneView').scrollIntoView({block:'center'});
+});
+$('again').addEventListener('click',function(){
+ $('msg').value='';$('cnt').textContent='0 / 1000';$('topic').value='';$('ok').checked=false;
+ $('doneView').classList.add('hide');$('formView').classList.remove('hide');$('msg').focus();
+});
+})();
+</script>
+</body>
+</html>

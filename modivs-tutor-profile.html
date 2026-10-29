@@ -328,6 +328,7 @@ f.addEventListener('submit',function(e){e.preventDefault();
    if(tutorData.waSame) tutorData.whatsapp = tutorData.phone;
    try {
      localStorage.setItem('modivs_current_tutor', JSON.stringify(tutorData));
+     if(!EDIT){var wm=JSON.parse(localStorage.getItem('modivs_tutor_welcome')||'{}');wm[tutorData.email]={created:tutorData.submittedAt,approved:null};localStorage.setItem('modivs_tutor_welcome',JSON.stringify(wm));try{sessionStorage.removeItem('modivs_welcome_closed')}catch(x){}}
 localStorage.setItem('modivs_auth_user', JSON.stringify({ name: tutorData.name, email: tutorData.email, role: 'Tutor' }));
 
      // 2. Add to admin approval queue
@@ -390,10 +391,21 @@ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: tutorData.name, 
 
       // Sync to Firebase if connected
       if(window.EducationBFirebase && window.EducationBFirebase.db){
-        window.EducationBFirebase.db.collection('tutors').doc(String(newAdminEntry.id).replace(/[/]/g, '_')).set(
-          Object.assign({}, newAdminEntry, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }),
+        var tId = String(newAdminEntry.id).replace(/[/]/g, '_');
+        window.EducationBFirebase.db.collection('tutors').doc(tId).set(
+          Object.assign({}, newAdminEntry, { status: finalStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }),
           { merge: true }
         ).catch(function(){});
+
+        var uId = (newAdminEntry.uid) || String(newAdminEntry.email).replace(/[^a-z0-9]/gi, '_');
+        window.EducationBFirebase.db.collection('users').doc(uId).set({
+          uid: uId,
+          name: newAdminEntry.name,
+          email: newAdminEntry.email,
+          role: 'Tutor',
+          verificationStatus: finalStatus,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(function(){});
       }
 
       // 4. Log audit entry
@@ -466,5 +478,14 @@ function readLoose(){ // store current inputs without validating
 render();
 })();
 </script>
+<!-- mv-footer -->
+<footer class="mv-foot"><style>
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
+.mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
+.mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
+.mv-foot a[aria-current=page]{color:#EBB92E}
+.mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
+</style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
 </body>
 </html>

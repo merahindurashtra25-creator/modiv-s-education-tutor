@@ -67,7 +67,7 @@ h2.t{font-size:clamp(1.6rem,3vw,2.2rem);letter-spacing:-.02em;margin:0 0 8px;fon
 .step h3{margin:0 0 4px}.step p{margin:0;color:var(--muted)}
 
 footer{background:var(--navy);color:var(--cream);padding:48px 0 32px}
-footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr;gap:32px}
+footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
 footer h4{color:var(--yellow);margin:0 0 10px}
 footer ul{list-style:none;padding:0;margin:0}
 footer li{margin:6px 0}
@@ -103,6 +103,25 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
  .acts{gap:6px}
  .acts .btn{padding:6px 10px;font-size:.78rem}
 }
+
+/* contact section */
+#contact .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:stretch}
+#contact .cbox{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:28px}
+#contact .cbox h3{margin:0 0 6px;font-size:1.2rem}
+#contact .cbox p{margin:0 0 16px;color:var(--muted)}
+#contact .cbox.dark{background:var(--navy);color:var(--cream);border-color:var(--navy)}
+#contact .cbox.dark p{color:#c9cde0}
+#contact .clist{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+#contact .clist li{display:flex;gap:12px;align-items:flex-start}
+#contact .clist i{flex:0 0 38px;height:38px;border-radius:10px;background:var(--yellow);display:grid;place-items:center}
+#contact .clist svg{width:20px;height:20px;fill:none;stroke:var(--navy);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#contact .clist b{display:block;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+#contact .clist a{text-decoration:none;font-weight:600}
+#contact .clist a:hover{text-decoration:underline}
+#contact .cbox.dark .btn{margin-top:4px}
+#contact .cbox.dark .btn.o{color:var(--cream);border-color:var(--cream);margin-left:8px}
+#contact .cbox.dark .btn.o:hover{background:var(--cream);color:var(--navy)}
+@media(max-width:768px){#contact .cgrid{grid-template-columns:1fr}#contact .cbox.dark .btn.o{margin-left:0}}
 </style>
 <script src="modivs-import-data.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
@@ -122,6 +141,7 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
     <li><a href="#subjects" id="navSubjects">Subjects</a></li>
     <li><a href="#how" id="navHow">How it works</a></li>
     <li><a href="modivs-active-leads.html" id="navActiveLeads">Active leads</a></li>
+    <li><a href="#contact" id="navContact">Contact us</a></li>
    </ul>
   </nav>
   <div class="acts" id="navActs">
@@ -212,14 +232,37 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
    </div>
   </div>
  </section>
+ <section id="contact" style="background:var(--card)">
+  <div class="wrap">
+   <h2 class="t">Contact us</h2><p class="s">Questions about tutoring? Reach the Modiv’s team any way you like.</p>
+   <div class="cgrid">
+    <div class="cbox">
+     <ul class="clist">
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></i><span><b>Call us</b><a href="tel:+919896930443">+91 98969 30443</a><br><a href="tel:+918054167008">+91 80541 67008</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.5 2 2.5 4 5 5l1.5-1.2-2-1.3-.9.7c-.8-.4-1.5-1.1-1.9-1.9l.7-.9-1.3-2z"/></svg></i><span><b>WhatsApp</b><a href="https://wa.me/message/AZVJXD4HG3DOG1" target="_blank" rel="noopener">Chat with us</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Email</b><a href="mailto:support@modivhometutors.com">support@modivhometutors.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></i><span><b>Visit us</b>Chandigarh, India</span></li>
+     </ul>
+    </div>
+    <div class="cbox dark">
+     <h3>Send us a message</h3>
+     <p>Parents, students and tutors can write to us on the contact page. Tell us what you need and we will reply on the phone number or email you share.</p>
+     <p style="margin-bottom:16px"><b>Support hours:</b> Monday to Saturday, 9 AM to 6 PM</p>
+     <a class="btn y" href="modivs-contact.html">Go to contact page</a>
+     <a class="btn o" href="modivs-contact.html#faq">Quick answers</a>
+    </div>
+   </div>
+  </div>
+ </section>
 </main>
 
 <footer>
  <div class="wrap">
   <div class="cols">
    <div><a class="brand" href="#top" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;margin-bottom:12px;"><img src="logo.png" alt="Modiv’s Education" style="height:36px;display:block;mix-blend-mode:normal;"></a><p style="color:#c9cde0;max-width:320px">Connecting tutors with students and parents, one class at a time.</p></div>
-   <div><h4>Explore</h4><ul><li><a href="#find">Find a tutor</a></li><li><a href="modivs-tutors.html">Tutors</a></li><li><a href="#subjects">Subjects</a></li><li><a href="#how">How it works</a></li></ul></div>
+   <div><h4>Explore</h4><ul><li><a href="#find">Find a tutor</a></li><li><a href="modivs-tutors.html">Tutors</a></li><li><a href="#subjects">Subjects</a></li><li><a href="#how">How it works</a></li><li><a href="modivs-contact.html">Contact us</a></li></ul></div>
    <div><h4>Account</h4><ul><li><a href="modivs-education.html#login">Log in</a></li><li><a href="modivs-tutor-dashboard.html">Tutor dashboard</a></li><li><a href="modivs-student-registration.html">Student / parent sign up</a></li><li><a href="modivs-education.html#tutor-signup">Tutor sign up</a></li></ul></div>
+   <div><h4>Legal</h4><ul><li><a href="modivs-privacy-policy.html">Privacy Policy</a></li><li><a href="modivs-terms.html">Terms &amp; Conditions</a></li><li><a href="modivs-refund-policy.html">Refund Policy</a></li><li><a href="modivs-contact.html">Contact us</a></li></ul></div>
   </div>
   <div class="copy">© 2026 Modiv’s Education. All rights reserved.</div>
  </div>

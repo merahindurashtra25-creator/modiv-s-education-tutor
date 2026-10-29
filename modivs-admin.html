@@ -772,13 +772,39 @@ function detail(){
   d.innerHTML = '';
   if(currentSection === 'chat'){
     var chat = ModivsChat.conversations().filter(function(c){ return c.id === selId; })[0];
-    d.appendChild(el('h2', '', 'Chat monitoring'));
-    d.appendChild(el('p', 'sub', 'Read-only access for authorized administrators. Students and tutors are informed that administrators can review chats.'));
-    if(!chat){ d.appendChild(el('p', 'empty', 'Select a conversation to view its complete history.')); return; }
-    d.appendChild(el('p', '', chat.student.name + ' (' + chat.student.email + ') ↔ ' + chat.tutor.name + ' (' + chat.tutor.email + ')'));
+    d.appendChild(el('h2', '', 'Chat Monitoring'));
+    d.appendChild(el('p', 'sub', 'Real-time administrative monitoring. Reviewing retained messages (4-day / 96-hour window) for moderation, safety, and support.'));
+    if(!chat){ d.appendChild(el('p', 'empty', 'Select a conversation from the list to view its complete history.')); return; }
+
+    var isTutorSubscribed = chat.tutor && chat.tutor.hasPlan;
+    var subBadge = isTutorSubscribed ? 'Tutor Plan: Active' : 'Tutor Plan: Unsubscribed (Pending Plan)';
+    var metaP = el('p', '', chat.student.name + ' (' + chat.student.email + ') ↔ ' + chat.tutor.name + ' (' + chat.tutor.email + ')');
+    metaP.style.fontWeight = '600';
+    d.appendChild(metaP);
+
+    var statTag = el('span', 'badge ' + (isTutorSubscribed ? 'approved' : 'pending'), subBadge);
+    d.appendChild(statTag);
+
     var history = el('div', 'log');
-    if(!chat.messages.length) history.appendChild(el('p', '', 'No messages yet.'));
-    chat.messages.forEach(function(m){ history.appendChild(el('p', '', m.senderName + ' · ' + new Date(m.createdAt).toLocaleString() + ': ' + m.text)); });
+    history.style.marginTop = '14px';
+    var activeMsgs = (chat.messages || []).filter(function(m){
+      return !m.expiresAt || new Date(m.expiresAt) > new Date();
+    });
+    if(!activeMsgs.length){
+      history.appendChild(el('p', '', 'No active messages in the 96-hour retention window.'));
+    } else {
+      activeMsgs.forEach(function(m){
+        var item = el('p', '', m.senderName + ' (' + (m.senderRole || 'User') + ') · ' + new Date(m.createdAt).toLocaleString() + ': ' + m.text);
+        if(ModivsChat.detectPhoneNumber && ModivsChat.detectPhoneNumber(m.text)){
+          item.style.background = '#fff3cd';
+          item.style.padding = '6px 10px';
+          item.style.borderRadius = '6px';
+          item.style.borderLeft = '4px solid #b3261e';
+          item.appendChild(el('span', '', ' ⚠️ Phone Number Shared'));
+        }
+        history.appendChild(item);
+      });
+    }
     d.appendChild(history);
     return;
   }
@@ -1094,6 +1120,24 @@ function decide(x, s, verb, note, reasons){
     }
   } catch(err){}
 
+  // Sync verification status to Firestore
+  if(window.EducationBFirebase && window.EducationBFirebase.db){
+    var firestore = window.EducationBFirebase.db;
+    var tDocId = String(x.id || x.email).replace(/[/]/g, '_');
+    firestore.collection('tutors').doc(tDocId).set(
+      Object.assign({}, x, { status: s, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }),
+      { merge: true }
+    ).catch(function(err){ console.warn('Firestore tutor status sync notice:', err); });
+
+    if(x.uid || x.email){
+      var uDocId = String(x.uid || x.email).replace(/[/]/g, '_');
+      firestore.collection('users').doc(uDocId).set({
+        verificationStatus: s,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(function(){});
+    }
+  }
+
   toast(verb + ' ' + x.name + (s === 'approved' ? '. Profile is now LIVE in public tutor search & student dashboard.' : '. Application status updated.'));
   render();
 }
@@ -1116,6 +1160,73 @@ $('q').addEventListener('input', function(e){
 });
 if(window.ModivsChat) ModivsChat.subscribe(function(){ if(currentSection === 'chat'){ list(); detail(); } });
 
+// Real-Time Safety Alerts (Phone Number Sharing Detection)
+var activeAlertIds = {};
+function listenForSafetyAlerts(){
+  if(!window.EducationBFirebase || !window.EducationBFirebase.db) return;
+  window.EducationBFirebase.db.collection('adminChatAlerts')
+    .where('processingStatus', '==', 'unread')
+    .onSnapshot(function(snap){
+      if(snap.empty) return;
+      snap.docs.forEach(function(doc){
+        var al = doc.data();
+        if(!activeAlertIds[doc.id]){
+          activeAlertIds[doc.id] = true;
+          showSafetyAlertPopup(al, doc.id);
+        }
+      });
+    }, function(err){ console.warn('Safety alerts listener Notice:', err.message); });
+}
+
+function showSafetyAlertPopup(al, docId){
+  var alertDlg = document.createElement('dialog');
+  alertDlg.style.cssText = 'border:0;border-radius:18px;padding:0;max-width:540px;width:calc(100% - 32px);background:#fff;color:#1A2035;box-shadow:0 24px 60px rgba(0,0,0,0.35);z-index:9999;';
+  alertDlg.innerHTML =
+    '<div style="background:#b3261e;color:#fff;padding:16px 22px;border-top-left-radius:18px;border-top-right-radius:18px;display:flex;align-items:center;justify-content:space-between;">' +
+      '<h2 style="margin:0;font-size:1.15rem;display:flex;align-items:center;gap:8px;">⚠️ Safety Alert: Contact Number Shared</h2>' +
+      '<button type="button" id="closeAl" style="background:transparent;border:0;color:#fff;font-size:1.2rem;cursor:pointer;">✕</button>' +
+    '</div>' +
+    '<div style="padding:22px;">' +
+      '<p style="margin:0 0 12px;font-size:0.95rem;">A telephone number pattern was detected in a student-tutor conversation:</p>' +
+      '<div style="background:#fff8db;border:1px solid #eedda6;border-radius:10px;padding:12px;margin-bottom:16px;font-size:0.9rem;">' +
+        '<p style="margin:0 0 6px;"><b>Sender:</b> ' + (al.senderName || 'User') + ' (' + (al.senderRole || 'User') + ')</p>' +
+        '<p style="margin:0 0 6px;"><b>Participants:</b> ' + (al.studentName || 'Student') + ' ↔ ' + (al.tutorName || 'Tutor') + '</p>' +
+        '<p style="margin:0 0 6px;color:#b3261e;"><b>Detected Number:</b> <code>' + (al.detectedNumber || '') + '</code></p>' +
+        '<p style="margin:0;color:#555b78;"><b>Snippet:</b> "' + (al.messageSnippet || '') + '"</p>' +
+      '</div>' +
+      '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
+        '<button type="button" id="dismissAl" style="padding:9px 16px;border-radius:8px;border:1px solid #dfe5ee;background:#fff;cursor:pointer;font-weight:600;">Dismiss</button>' +
+        '<button type="button" id="reviewAl" style="padding:9px 18px;border-radius:8px;border:0;background:#1A2035;color:#EBB92E;cursor:pointer;font-weight:700;">Open Conversation</button>' +
+      '</div>' +
+    '</div>';
+
+  document.body.appendChild(alertDlg);
+  alertDlg.showModal();
+
+  function markReviewed(){
+    if(window.EducationBFirebase && window.EducationBFirebase.db){
+      window.EducationBFirebase.db.collection('adminChatAlerts').doc(docId).update({
+        processingStatus: 'reviewed',
+        reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
+        reviewedBy: 'admin@gmail.com'
+      }).catch(function(){});
+    }
+  }
+
+  alertDlg.querySelector('#closeAl').onclick = function(){ alertDlg.close(); markReviewed(); alertDlg.remove(); };
+  alertDlg.querySelector('#dismissAl').onclick = function(){ alertDlg.close(); markReviewed(); alertDlg.remove(); };
+  alertDlg.querySelector('#reviewAl').onclick = function(){
+    alertDlg.close();
+    markReviewed();
+    alertDlg.remove();
+    currentSection = 'chat';
+    selId = al.conversationId;
+    render();
+  };
+}
+
+setTimeout(listenForSafetyAlerts, 1500);
+
 $('syncFb').addEventListener('click', function(){
   if(!window.ModivsFirebaseSync){ toast('Firebase sync module is not ready.'); return; }
   toast('Syncing all data to Firebase...');
@@ -1137,5 +1248,14 @@ $('out').addEventListener('click', function(){
 render();
 })();
 </script>
+<!-- mv-footer -->
+<footer class="mv-foot"><style>
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
+.mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
+.mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
+.mv-foot a[aria-current=page]{color:#EBB92E}
+.mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
+</style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
 </body>
 </html>
