@@ -42,12 +42,12 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:40px 0 6px;letter-spacing:-.01em}
 .empty{grid-column:1/-1;text-align:center;padding:48px 16px;background:var(--card);border:1.5px dashed var(--line);border-radius:14px;color:var(--muted)}
 @media(max-width:760px){nav{display:none}.grid{grid-template-columns:1fr}}
 </style>
-<script src="modivs-import-data.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js" defer></script>
-<script src="firebase-sync.js" defer></script>
+<script src="modivs-import-data.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
 </head>
 <body>
 <header>
@@ -76,11 +76,7 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:40px 0 6px;letter-spacing:-.01em}
 
 <script>
 (function(){
-var SEED=[
- {id:'r1',name:'Aarav Mehta',by:'Parent: Sunita Mehta',email:'aarav@example.com',phone:'9876543200',cls:'Class 10',board:'CBSE',city:'Ludhiana',subs:['Mathematics'],goals:['Board exam preparation'],mode:['Online'],budget:'₹500–700 / hour',freq:'3 classes a week',notes:'Needs help with trigonometry before pre-boards.',sent:'Today, 09:40'},
- {id:'r2',name:'Simran Kaur',by:'Student',email:'simran@example.com',phone:'9876543201',cls:'Class 12',board:'PSEB',city:'Ludhiana',subs:['Mathematics','Physics'],goals:['Improve school grades'],mode:['Tutor comes to my home'],budget:'₹600–800 / hour',freq:'2 classes a week',notes:'Wants a demo class first.',sent:'Yesterday'},
- {id:'r3',name:'Rohan Gill',by:'Parent: Harpreet Gill',email:'rohan@example.com',phone:'9876543202',cls:'Class 9',board:'CBSE',city:'Jalandhar',subs:['Mathematics'],goals:['Build concepts from basics'],mode:['Online'],budget:'₹400–600 / hour',freq:'2 classes a week',notes:'Contact parent directly for scheduling.',sent:'2 days ago'}
-];
+var SEED=[];
 function read(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function ago(l){
@@ -94,13 +90,12 @@ function load(){
  var all=read('modivs_active_leads').concat(read('modivs_students_db'));
  var seen={},out=[];
  all.forEach(function(l){
-  if(!l||!l.name)return;
+  if(!l||!l.name||l.is_demo||/example\.com/.test(l.email||''))return;
   var key=(l.email||l.id||l.name).toLowerCase();
   if(seen[key])return;seen[key]=1;
   if(l.status==='closed'||l.status==='rejected')return;
   out.push(l);
  });
- if(!out.length)SEED.forEach(function(l){out.push(l)}); // demo leads only while there are no real ones
  out.sort(function(a,b){return (new Date(b.registered_at||0))-(new Date(a.registered_at||0))});
  return out;
 }
@@ -150,11 +145,32 @@ function render(){
   var hay=[l.name,l.city,l.cls,l.board,(l.subs||[]).join(' '),(l.goals||[]).join(' ')].join(' ').toLowerCase();
   return !q||hay.indexOf(q)>-1;
  });
- if(!rows.length){g.appendChild(el('p','empty','No active leads match your search.'));return}
+ if(!rows.length){g.appendChild(el('p','empty',leads.length?'No active leads match your search filters.':'No tuition requirements posted yet. Real inquiries from students and parents will appear here.'));return}
  rows.forEach(function(l){g.appendChild(card(l))});
 }
 ['q','fCity','fMode','fAge'].forEach(function(i){$(i).addEventListener('input',render)});
 stats();render();
+
+function subscribeLeads(){
+  if(!window.EducationBFirebase || !window.EducationBFirebase.db) return;
+  window.EducationBFirebase.db.collection('leads').onSnapshot(function(snap){
+    var list = [];
+    snap.docs.forEach(function(doc){
+      var l = doc.data();
+      if(l && l.name && !l.is_demo && !/example\.com/.test(l.email || '')){
+        list.push(Object.assign({ id: doc.id }, l));
+      }
+    });
+    if(list.length){
+      leads = list;
+      stats();
+      render();
+    }
+  }, function(err){ console.warn('Leads firestore error:', err.message); });
+}
+
+subscribeLeads();
+if(!window.EducationBFirebase) setTimeout(subscribeLeads, 1000);
 })();
 </script>
 <!-- mv-footer -->

@@ -337,8 +337,13 @@ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: tutorData.name, 
        ? (tutorData.quals[0].degree + ', ' + (tutorData.quals[0].inst || '') + ' (' + (tutorData.quals[0].year || '') + ')') 
        : 'Certificate on file';
 
+     var fbUser = window.EducationBFirebase && window.EducationBFirebase.auth && window.EducationBFirebase.auth.currentUser;
+     var curAuthUser = null; try { curAuthUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
+     var currentUid = (fbUser && fbUser.uid) || (curAuthUser && curAuthUser.uid) || tutorData.uid || '';
+
      var newAdminEntry = {
-       id: 't_user_' + Date.now(),
+       id: (tutorData.id && tutorData.id.indexOf('t_user_') === 0) ? tutorData.id : ('t_user_' + (currentUid || Date.now())),
+       uid: currentUid,
        name: tutorData.name,
        headline: tutorData.headline,
        city: tutorData.city,

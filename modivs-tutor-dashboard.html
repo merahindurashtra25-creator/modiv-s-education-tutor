@@ -187,17 +187,17 @@ var $=function(id){return document.getElementById(id)};
 var savedC = localStorage.getItem('modivs_tutor_coins');
 var state={view:'dash',coins:savedC != null ? +savedC : 20,filter:'new',q:'',tT:null};
 var COST=10;
-var leads=[
- {id:1,name:'Aarav Mehta',who:'Parent: Sunita Mehta',phone:'98xxxxxx11',cls:'Class 10',board:'CBSE',city:'Ludhiana',subs:['Mathematics'],mode:'Online',budget:'₹500–700',when:'Mon, Wed, Fri evening',note:'Needs help with trigonometry before pre-boards.',time:'2 hours ago',status:'new',unlocked:false},
- {id:2,name:'Simran Kaur',who:'Student',phone:'97xxxxxx22',cls:'Class 12',board:'PSEB',city:'Ludhiana',subs:['Mathematics','Physics'],mode:'Home',budget:'₹600–800',when:'Weekend morning',note:'Wants a demo class first.',time:'Yesterday',status:'new',unlocked:false},
- {id:6,name:'Harleen Dhillon',who:'Parent: Jaspal Dhillon',phone:'99xxxxxx33',cls:'Class 8',board:'CBSE',city:'Ludhiana',subs:['Mathematics'],mode:'Home',budget:'₹400–500',when:'Daily evening',note:'Weak in fractions and geometry.',time:'Yesterday',status:'new',unlocked:false},
- {id:7,name:'Vikram Arora',who:'Student',phone:'96xxxxxx44',cls:'Class 11',board:'ICSE',city:'Ludhiana',subs:['Physics'],mode:'Online',budget:'₹700–900',when:'Tue, Thu evening',note:'JEE foundation.',time:'2 days ago',status:'new',unlocked:false},
- {id:3,name:'Rohan Gill',who:'Parent: Harpreet Gill',phone:'98xxxxxx55',cls:'Class 9',board:'CBSE',city:'Ludhiana',subs:['Mathematics'],mode:'Online',budget:'₹400–600',when:'Tue, Thu evening',note:'Struggling with algebra basics.',time:'2 days ago',status:'demo',unlocked:true},
- {id:4,name:'Ananya Verma',who:'Parent: Neha Verma',phone:'97xxxxxx66',cls:'Class 11',board:'ICSE',city:'Ludhiana',subs:['Physics'],mode:'Online',budget:'₹700–900',when:'Daily afternoon',note:'JEE foundation, 5 classes a week.',time:'3 days ago',status:'accepted',unlocked:true},
- {id:5,name:'Kabir Singh',who:'Student',phone:'96xxxxxx77',cls:'College',board:'Other',city:'Ludhiana',subs:['Mathematics'],mode:'At tutor’s place',budget:'₹300–400',when:'Sunday',note:'Budget is below your fee.',time:'4 days ago',status:'declined',unlocked:true}
-];
-var hist=[{t:'Joined bonus',d:'Oct 20',a:30},{t:'Unlocked Ananya Verma',d:'Oct 24',a:-10}];
-var classes=[['28','Oct','Ananya Verma','Physics · 5:00 PM · Online'],['29','Oct','Rohan Gill','Demo class · 6:00 PM · Online'],['31','Oct','Simran Kaur','Mathematics · 10:00 AM · Home']];
+function loadTutorLeads(){
+  try {
+    var raw = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]');
+    return Array.isArray(raw) ? raw.filter(function(l){
+      return l && !l.is_demo && !/example\.com/.test(l.email || '');
+    }) : [];
+  } catch(e){ return []; }
+}
+var leads = loadTutorLeads();
+var hist = [];
+var classes = [];
 var PACKS=[[50,'₹500'],[120,'₹1,000'],[300,'₹2,000']];
 var LABEL={new:'New',demo:'Demo scheduled',accepted:'Accepted',declined:'Declined'};
 function profileCompletion(t){
@@ -406,7 +406,7 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
     authUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
   } catch(e){}
 
-  var email = (authUser && authUser.role === 'Tutor') ? authUser.email : 'priya@example.com';
+  var email = (authUser && authUser.role === 'Tutor') ? authUser.email : '';
   var allTutors = [];
   try {
     allTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
@@ -425,11 +425,11 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
   }
   if(!tutor){
     tutor = {
-      name: 'Priya Sharma',
-      headline: 'Maths tutor · 8 years’ experience',
-      city: 'Ludhiana',
-      fee: 600,
-      status: 'approved'
+      name: (authUser && authUser.name) || 'Tutor',
+      headline: 'Account Registered',
+      city: '—',
+      fee: 0,
+      status: 'pending'
     };
   }
 

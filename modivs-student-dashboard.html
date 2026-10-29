@@ -312,12 +312,8 @@ dialog h2{margin:0 0 4px}
     rawDbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || 'null');
   } catch(e){}
 
-  if(!rawDbTutors || !Array.isArray(rawDbTutors) || !rawDbTutors.length){
-    // Standard initial seed matching admin default
-    rawDbTutors = [
-      {id:'t1', name:'Priya Sharma', qual:'M.Sc. Mathematics, Panjab University', years:8, subs:['Mathematics','Physics'], fee:600, modes:['Online','At studentâ€™s home'], city:'Ludhiana', headline:'Maths tutor for classes 9â€“12 with 8 yearsâ€™ experience', status:'approved', rating:4.8},
-      {id:'t4', name:'Amit Joshi', qual:'MCA, Lovely Professional University', years:3, subs:['Computer Science'], fee:500, modes:['Online'], city:'Jalandhar', headline:'Computer science tutor, school and college', status:'approved', rating:4.9}
-    ];
+  if(!rawDbTutors || !Array.isArray(rawDbTutors)){
+    rawDbTutors = [];
   }
 
   // Strictly filter only APPROVED tutors for student browsing
@@ -336,12 +332,11 @@ dialog h2{margin:0 0 4px}
     };
   });
 
-  var favourites = ['t1', 't3'];
-  var enquiries = [
-    {id:'req1', tutorId:'t1', tutorName:'Priya Sharma', subject:'Mathematics', mode:'Online', status:'accepted', note:'Demo scheduled for Tomorrow at 5:00 PM'},
-    {id:'req2', tutorId:'t2', tutorName:'Rahul Verma', subject:'Physics', mode:'Home Tuition', status:'accepted', note:'Accepted. Starting classes Thursday.'},
-    {id:'req3', tutorId:'t4', tutorName:'Amit Joshi', subject:'Computer Science', mode:'Online', status:'pending', note:'Waiting for tutor availability review'}
-  ];
+  var favourites = [];
+  var enquiries = [];
+  try {
+    enquiries = JSON.parse(localStorage.getItem('modivs_student_enquiries') || '[]');
+  } catch(e){ enquiries = []; }
 
   function toast(t){
     var el = document.getElementById('toast');

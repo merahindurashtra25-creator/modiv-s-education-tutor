@@ -66,6 +66,10 @@ input:disabled{background:var(--mist);color:var(--muted)}
 .empty{text-align:center;padding:60px 0}
 @media(max-width:700px){.two{grid-template-columns:1fr}.top{padding:8px 14px}}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
 </head>
 <body>
 <header class="top"><div class="in">
@@ -293,6 +297,27 @@ function persist(){
     timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),
     note:'Tutor updated their profile. Status: '+status+'.'});
   localStorage.setItem('modivs_audit_logs',JSON.stringify(logs.slice(0,50)));
+
+  if(window.EducationBFirebase && window.EducationBFirebase.db){
+    var firestore = window.EducationBFirebase.db;
+    var tId = String(full.id).replace(/[/]/g, '_');
+    firestore.collection('tutors').doc(tId).set(Object.assign({}, full, {
+      status: status,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }), { merge: true }).catch(function(){});
+
+    var fbUser = window.EducationBFirebase.auth && window.EducationBFirebase.auth.currentUser;
+    var uId = (fbUser && fbUser.uid) || (full.uid) || String(full.email).replace(/[^a-z0-9]/gi, '_');
+    firestore.collection('users').doc(uId).set({
+      name: full.name,
+      email: full.email,
+      role: 'Tutor',
+      verificationStatus: status,
+      status: status,
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(function(){});
+  }
+
   return status;
 }
 

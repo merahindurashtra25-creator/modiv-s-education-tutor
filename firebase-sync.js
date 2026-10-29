@@ -6,6 +6,16 @@
   function syncCollection(collectionName, items, idKey){
     var firestore = db();
     if(!firestore || !items || !items.length) return Promise.resolve(0);
+    items = items.filter(function(item){
+      if(!item) return false;
+      if(item.is_demo === true || item.imported === true) return false;
+      var em = String(item.email || '').toLowerCase();
+      if(/example\.com|modivhometutors\.invalid/.test(em)) return false;
+      var id = String(item.id || '');
+      if(/^mht-|^t[1-5]$|^r[1-5]$/.test(id)) return false;
+      return true;
+    });
+    if(!items.length) return Promise.resolve(0);
     var batch = firestore.batch();
     var count = 0;
     items.slice(0, 450).forEach(function(item){
@@ -63,10 +73,42 @@
     });
   }
 
+  function purgeDemoFromFirestore(){
+    var firestore = db();
+    if(!firestore) return Promise.resolve(0);
+    return firestore.collection('tutors').get().then(function(snap){
+      var batch = firestore.batch();
+      var count = 0;
+      snap.docs.forEach(function(doc){
+        var d = doc.data();
+        if(d.is_demo === true || d.imported === true || /example\.com|invalid/.test(d.email || '') || /^mht-|^t[1-5]$/.test(doc.id)){
+          batch.delete(doc.ref);
+          count++;
+        }
+      });
+      return firestore.collection('leads').get().then(function(leadSnap){
+        leadSnap.docs.forEach(function(doc){
+          var d = doc.data();
+          if(d.is_demo === true || d.imported === true || /example\.com/.test(d.email || '') || /^r[1-5]$/.test(doc.id)){
+            batch.delete(doc.ref);
+            count++;
+          }
+        });
+        if(count > 0){
+          return batch.commit().then(function(){
+            console.log('Purged ' + count + ' demo records from Firestore.');
+            return count;
+          });
+        }
+        return 0;
+      });
+    }).catch(function(){ return 0; });
+  }
+
   function syncAll(){
     if(!db()) return Promise.resolve({ success: false, reason: 'Firebase not connected' });
-    return Promise.all([syncTutors(), syncLeads(), syncStudents(), syncEnquiries(), cleanupExpiredChats()]).then(function(res){
-      return { success: true, tutors: res[0], leads: res[1], students: res[2], enquiries: res[3], expiredChatsDeleted: res[4] ? res[4].deletedCount : 0 };
+    return Promise.all([syncTutors(), syncLeads(), syncStudents(), syncEnquiries(), cleanupExpiredChats(), purgeDemoFromFirestore()]).then(function(res){
+      return { success: true, tutors: res[0], leads: res[1], students: res[2], enquiries: res[3], expiredChatsDeleted: res[4] ? res[4].deletedCount : 0, demoPurged: res[5] || 0 };
     });
   }
 
@@ -76,18 +118,22 @@
     syncLeads: syncLeads,
     syncStudents: syncStudents,
     syncEnquiries: syncEnquiries,
-    cleanupExpiredChats: cleanupExpiredChats
+    cleanupExpiredChats: cleanupExpiredChats,
+    purgeDemoFromFirestore: purgeDemoFromFirestore
   };
 
   // Auto-sync in background after initial page load
   if(typeof window !== 'undefined'){
     setTimeout(function(){
-      if(db() && !localStorage.getItem('modivs_fb_initial_synced')){
-        syncAll().then(function(res){
-          if(res && res.success) localStorage.setItem('modivs_fb_initial_synced', '1');
-        });
+      if(db()){
+        purgeDemoFromFirestore();
+        if(!localStorage.getItem('modivs_fb_initial_synced')){
+          syncAll().then(function(res){
+            if(res && res.success) localStorage.setItem('modivs_fb_initial_synced', '1');
+          });
+        }
       }
-    }, 2000);
+    }, 1500);
   }
 })();
 

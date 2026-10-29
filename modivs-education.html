@@ -425,6 +425,31 @@ input.bad{border-color:var(--err)}
       localStorage.setItem('modivs_users', JSON.stringify(users));
     } catch(err){}
 
+    var tutorDocId = 't_user_' + (firebaseSignupUid || mail.replace(/[^a-z0-9]/gi, '_'));
+    var initialTutorData = {
+      id: tutorDocId,
+      uid: firebaseSignupUid,
+      name: newUser.name,
+      email: mail,
+      phone: '—',
+      city: '—',
+      headline: 'Account registered. Verification pending.',
+      qual: 'Profile setup pending',
+      years: 0,
+      subs: ['General'],
+      levels: ['Secondary'],
+      fee: 0,
+      modes: ['Online'],
+      langs: ['English'],
+      idType: 'Pending upload',
+      idFile: '',
+      cert: '',
+      sent: 'Just now',
+      status: 'pending',
+      submitted_at: new Date().toISOString(),
+      is_demo: false
+    };
+
     if(window.EducationBFirebase && window.EducationBFirebase.db){
       var uidKey = firebaseSignupUid || mail.replace(/[^a-z0-9]/gi, '_');
       window.EducationBFirebase.db.collection('users').doc(uidKey).set({
@@ -432,40 +457,30 @@ input.bad{border-color:var(--err)}
         email: mail,
         role: role,
         uid: firebaseSignupUid,
+        status: 'pending',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true }).catch(function(){});
+
+      window.EducationBFirebase.db.collection('tutors').doc(tutorDocId).set(Object.assign({}, initialTutorData, {
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }), { merge: true }).catch(function(){});
     }
 
-    localStorage.setItem('modivs_auth_user', JSON.stringify({ name: newUser.name, email: newUser.email, role: newUser.role }));
+    localStorage.setItem('modivs_auth_user', JSON.stringify({ name: newUser.name, email: newUser.email, role: newUser.role, uid: firebaseSignupUid }));
 
-    // Immediately track incomplete tutor in database so admin dashboard sees them
+    // Immediately track tutor in database so admin dashboard sees them
     try {
       var dbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
-      if(!dbTutors.some(function(t){ return t.email === mail; })){
-        dbTutors.push({
-          id: 't_user_' + (mail.replace(/[^a-z0-9]/gi, '_')),
-          name: newUser.name,
-          email: mail,
-          phone: '—',
-          city: '—',
-          headline: 'Account registered. Profile setup incomplete.',
-          qual: 'Profile setup pending',
-          years: 0,
-          subs: ['General'],
-          levels: ['Secondary'],
-          fee: 0,
-          modes: ['Online'],
-          langs: ['English'],
-          idType: 'Pending upload',
-          idFile: '',
-          cert: '',
-          sent: 'Registration completed',
-          status: 'incomplete',
-          submitted_at: new Date().toISOString(),
-          is_demo: false
-        });
-        localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
-      }
+      var tIdx = dbTutors.findIndex(function(t){ return t.email === mail; });
+      if(tIdx >= 0) dbTutors[tIdx] = Object.assign({}, dbTutors[tIdx], initialTutorData);
+      else dbTutors.unshift(initialTutorData);
+      localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
+
+      var q = JSON.parse(localStorage.getItem('modivs_submitted_tutors') || '[]');
+      var qIdx = q.findIndex(function(t){ return t.email === mail; });
+      if(qIdx >= 0) q[qIdx] = Object.assign({}, q[qIdx], initialTutorData);
+      else q.unshift(initialTutorData);
+      localStorage.setItem('modivs_submitted_tutors', JSON.stringify(q));
     } catch(err){}
 
     toast('Tutor account created! Redirecting to tutor profile setup...');

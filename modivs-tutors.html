@@ -73,13 +73,13 @@ footer{background:var(--navy);color:#d8dcec;padding:28px 0;font-size:.88rem}
 @media(max-width:560px){.mats{padding:22px 18px}}
 @media(max-width:820px){nav{display:none}.grid{grid-template-columns:1fr}}
 </style>
-<script src="modivs-import-data.js" defer></script>
-<script src="modivs-chat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js" defer></script>
-<script src="firebase-sync.js" defer></script>
+<script src="modivs-import-data.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
+<script src="modivs-chat.js"></script>
 </head>
 <body>
 <header>
@@ -143,23 +143,20 @@ footer{background:var(--navy);color:#d8dcec;padding:28px 0;font-size:.88rem}
 
 <script>
 (function(){
-var SEED=[
- {id:'t1',name:'Priya Sharma',headline:'Maths tutor for classes 9–12 with 8 years’ experience',city:'Ludhiana',qual:'M.Sc. Mathematics, Panjab University (2016)',years:8,subs:['Mathematics','Physics'],levels:['Secondary','Senior secondary'],fee:600,modes:['Online','At student’s home'],langs:['English','Hindi','Punjabi'],boards:['CBSE','PSEB'],trial:'Free demo class',bio:'I help students understand maths instead of memorising it. Classes are built around your child’s textbook and past papers, with weekly practice tests and honest progress updates for parents.',status:'approved',is_demo:true,submitted_at:'2026-10-24T10:00:00Z',email:'priya@example.com'},
- {id:'t4',name:'Amit Joshi',headline:'Computer science tutor, school and college',city:'Jalandhar',qual:'MCA, Lovely Professional University (2020)',years:3,subs:['Computer Science','Mathematics'],levels:['Secondary','College'],fee:500,modes:['Online'],langs:['English','Hindi'],boards:['CBSE','ICSE'],trial:'Free demo class',bio:'From first lines of Python to data structures for college exams, I teach with small coding exercises so you learn by building. Notes and recordings are shared after every class.',status:'approved',is_demo:true,submitted_at:'2026-10-23T12:00:00Z',email:'amit@example.com'}
-];
+var SEED=[];
 function read(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function arr(x){return Array.isArray(x)?x.filter(Boolean):[]}
 function load(){
  var by={};
- SEED.forEach(function(t){by[t.email]=t});
  read('modivs_tutors_db').concat(read('modivs_submitted_tutors')).forEach(function(t){
-  if(t&&t.email){by[t.email]=Object.assign({},by[t.email]||{},t)}
+  if(t && t.email && !t.is_demo && !/example\.com|invalid/.test(t.email)){
+   by[t.email]=Object.assign({},by[t.email]||{},t);
+  }
  });
- var all=Object.keys(by).map(function(k){return by[k]}).filter(function(t){return t.status==='approved'&&t.name});
- // demo profiles only appear while there are no real ones
- var real=all.filter(function(t){return !t.is_demo});
- return real.length?real:all;
+ return Object.keys(by).map(function(k){return by[k]}).filter(function(t){
+  return t.status==='approved' && t.name && !t.is_demo && !/example\.com|invalid/.test(t.email);
+ });
 }
 var tutors=load(),$=function(i){return document.getElementById(i)};
 function initials(n){return String(n).split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()}
@@ -282,29 +279,31 @@ function render(){
   return (+b.years||0)-(+a.years||0);
  });
  $('count').textContent=rows.length+(rows.length===1?' tutor':' tutors')+' found';
- if(!rows.length){g.appendChild(el('p','empty','No tutors match your search yet. Try removing a filter.'));return}
+ if(!rows.length){g.appendChild(el('p','empty',tutors.length?'No tutors match your search filters. Try clearing a filter.':'No verified tutors available yet. Tutors will appear here once approved by our admin team.'));return}
  rows.forEach(function(t){g.appendChild(card(t))});
 }
 ['q','fSub','fCity','fMode','fSort'].forEach(function(i){$(i).addEventListener('input',render)});
 $('dlg').addEventListener('click',function(e){if(e.target===$('dlg'))$('dlg').close()});
 stats();render();
 
-if(window.EducationBFirebase && window.EducationBFirebase.db){
+function subscribeTutors(){
+  if(!window.EducationBFirebase || !window.EducationBFirebase.db) return;
   window.EducationBFirebase.db.collection('tutors').where('status', '==', 'approved').onSnapshot(function(snap){
-    if(snap.empty) return;
-    var updated = false;
+    var list = [];
     snap.docs.forEach(function(doc){
       var t = doc.data();
-      if(t && t.email && t.status === 'approved'){
-        var cur = tutors.find(function(x){ return x.email === t.email; });
-        if(cur) Object.assign(cur, t);
-        else tutors.push(t);
-        updated = true;
+      if(t && t.name && !t.is_demo && !/example\.com|invalid/.test(t.email || '')){
+        list.push(Object.assign({ id: doc.id }, t));
       }
     });
-    if(updated){ stats(); render(); }
+    tutors = list;
+    stats();
+    render();
   }, function(err){ console.warn('Firestore tutors listener Notice:', err.message); });
 }
+
+subscribeTutors();
+if(!window.EducationBFirebase) setTimeout(subscribeTutors, 1000);
 })();
 </script>
 </body>
