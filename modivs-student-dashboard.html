@@ -380,6 +380,7 @@ dialog h2{margin:0 0 4px}
       return total + ModivsChat.unread(c, user && user.email);
     }, 0);
     document.getElementById('chatCount').textContent = count;
+    if(ModivsChat.checkStudentDashboardNotifications) ModivsChat.checkStudentDashboardNotifications(box);
   }
   window.openStudentChat = function(tutorId, tutorName){
     if(!user || !window.ModivsChat) return;

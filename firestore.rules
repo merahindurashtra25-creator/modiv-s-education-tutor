@@ -11,9 +11,15 @@ service cloud.firestore {
     function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
 
     function tutorHasActivePlan(tutorUid) {
-      let userDoc = get(/databases/$(database)/documents/users/$(tutorUid)).data;
-      return userDoc.subscription.active == true &&
-        (userDoc.subscription.expiresAt == null || request.time < userDoc.subscription.expiresAt);
+      let inUsers = exists(/databases/$(database)/documents/users/$(tutorUid)) &&
+        get(/databases/$(database)/documents/users/$(tutorUid)).data.subscription.active == true &&
+        (get(/databases/$(database)/documents/users/$(tutorUid)).data.subscription.expiresAt == null ||
+         request.time < get(/databases/$(database)/documents/users/$(tutorUid)).data.subscription.expiresAt);
+      let inTutors = exists(/databases/$(database)/documents/tutors/$(tutorUid)) &&
+        get(/databases/$(database)/documents/tutors/$(tutorUid)).data.subscription.active == true &&
+        (get(/databases/$(database)/documents/tutors/$(tutorUid)).data.subscription.expiresAt == null ||
+         request.time < get(/databases/$(database)/documents/tutors/$(tutorUid)).data.subscription.expiresAt);
+      return inUsers || inTutors;
     }
 
     // Users Collection
@@ -98,10 +104,11 @@ service cloud.firestore {
 
         allow create: if signedIn() && (
           admin() ||
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds ||
-          request.auth.token.email in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds ||
           request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.studentId ||
-          request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.tutorId
+          request.auth.token.email == get(/databases/$(database)/documents/conversations/$(conversationId)).data.student.email ||
+          ((request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.tutorId ||
+            request.auth.token.email == get(/databases/$(database)/documents/conversations/$(conversationId)).data.tutor.email) &&
+           tutorHasActivePlan(request.auth.uid))
         ) && request.resource.data.senderId == request.auth.uid
           && request.resource.data.text is string
           && request.resource.data.text.size() > 0

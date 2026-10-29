@@ -212,7 +212,21 @@ function card(t){
  var tg=el('div','tags');arr(t.subs).forEach(function(x){tg.appendChild(el('span','s',x))});normModes(t.modes).forEach(function(x){tg.appendChild(el('span','',x))});c.appendChild(tg);
  c.appendChild(el('p','about',about(t)));
  var ft=el('div','foot'),fee=el('div','fee');fee.appendChild(el('b','','₹'+(t.fee||'—')));fee.appendChild(el('small','',' / hour'));ft.appendChild(fee);
- var b=el('button','btn y','View profile');b.type='button';b.addEventListener('click',function(){openProfile(t)});ft.appendChild(b);c.appendChild(ft);
+ var b=el('button','btn y','View profile');b.type='button';b.addEventListener('click',function(){openProfile(t)});ft.appendChild(b);
+ if(window.ModivsChat){
+  var cb=el('button','btn o','Chat');cb.type='button';cb.style.marginLeft='6px';
+  cb.addEventListener('click',function(e){
+   e.stopPropagation();
+   if(!au){
+    try{sessionStorage.setItem('modivs_chat_target_tutor',JSON.stringify({id:t.id,name:t.name,email:t.email}))}catch(x){}
+    window.location.href='modivs-education.html#login';
+    return;
+   }
+   ModivsChat.open({student:au,tutor:t});
+  });
+  ft.appendChild(cb);
+ }
+ c.appendChild(ft);
  return c;
 }
 function section(body,title,list){
@@ -234,10 +248,18 @@ function openProfile(t){
  if(t.trial){b.appendChild(el('h4','','Demo class'));b.appendChild(el('p','',t.trial))}
  var cta=el('div');cta.style.cssText='margin-top:22px;display:flex;gap:10px;flex-wrap:wrap';
  var r=el('a','btn y','Request this tutor');r.href=studentHref;cta.appendChild(r);
- if(window.ModivsChat && au && au.role === 'Student / Parent'){
+ if(window.ModivsChat){
   var msgBtn = el('button', 'btn', 'Message tutor');
   msgBtn.type = 'button';
-  msgBtn.addEventListener('click', function(){ $('dlg').close(); ModivsChat.open({ student: au, tutor: t }); });
+  msgBtn.addEventListener('click', function(){
+   if(!au){
+    try{sessionStorage.setItem('modivs_chat_target_tutor',JSON.stringify({id:t.id,name:t.name,email:t.email}));}catch(x){}
+    window.location.href='modivs-education.html#login';
+    return;
+   }
+   $('dlg').close();
+   ModivsChat.open({ student: au, tutor: t });
+  });
   cta.appendChild(msgBtn);
  }
  var c=el('button','btn o','Close');c.type='button';c.addEventListener('click',function(){$('dlg').close()});cta.appendChild(c);b.appendChild(cta);

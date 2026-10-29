@@ -49,7 +49,7 @@
       return new Date(sub.expiresAt) > new Date();
     }
 
-    // Check tutor database for subscription / coins
+    // Check tutor database for verified subscription
     var list = read('modivs_tutors_db', []);
     var match = (Array.isArray(list) ? list : []).filter(function(x){
       return (u.email && x.email === u.email) || (u.uid && x.uid === u.uid);
@@ -58,12 +58,6 @@
       if(!match.subscription.expiresAt) return true;
       return new Date(match.subscription.expiresAt) > new Date();
     }
-
-    // Check if tutor has unlocked coins in dashboard
-    try {
-      var st = JSON.parse(localStorage.getItem('modivs_tutor_coins') || 'null');
-      if(st && st > 0) return true;
-    } catch(e){}
 
     return false;
   }
@@ -131,12 +125,16 @@
   }
 
   function studentRecord(student){
-    if(typeof student === 'object' && student) return student;
+    var base = typeof student === 'object' && student ? student : null;
+    var sId = base ? (base.id || base.email || base.name) : student;
     var list = read('modivs_students_db', []);
     var match = (Array.isArray(list) ? list : []).filter(function(x){
-      return x.id === student || x.name === student || emailOf(x) === emailOf(student);
+      return x.id === sId || emailOf(x) === emailOf(sId) || x.name === sId;
     })[0];
-    return match || { id: String(student || ''), name: String(student || 'Student'), email: String(student && student.indexOf('@') > 0 ? student : '') };
+    var out = Object.assign({}, match || {}, base || { id: String(sId || ''), name: String(sId || 'Student'), email: String(sId && sId.indexOf('@') > 0 ? sId : '') });
+    out.name = out.name || out.displayName || 'Student';
+    out.photo = out.photo || out.avatar || (base && (base.photo || base.avatar)) || (match && (match.photo || match.avatar)) || '';
+    return out;
   }
 
   function convKey(student, tutor){
@@ -169,7 +167,7 @@
       c = {
         id: id,
         docId: safeDocId(id),
-        student: { id: student.id || '', name: nameOf(student), email: emailOf(student), uid: student.uid || '' },
+        student: { id: student.id || '', name: nameOf(student), email: emailOf(student), uid: student.uid || '', photo: student.photo || '' },
         tutor: { id: tutor.id || '', name: nameOf(tutor), email: emailOf(tutor), uid: tutor.uid || '', hasPlan: hasTutorPlan(tutor) },
         participantIds: [student.uid, tutor.uid, student.email, tutor.email].filter(Boolean),
         messages: [],
@@ -178,6 +176,11 @@
       };
       all.unshift(c);
       save(all);
+    } else {
+      if(!c.student.photo && student.photo){
+        c.student.photo = student.photo;
+        save(all);
+      }
     }
     syncConversationToFirestore(c);
     return c;
@@ -194,10 +197,10 @@
       id: c.id,
       studentId: c.student.uid || c.student.id || c.student.email,
       tutorId: c.tutor.uid || c.tutor.id || c.tutor.email,
-      student: { name: c.student.name, email: c.student.email },
+      student: { name: c.student.name, email: c.student.email, photo: c.student.photo || '' },
       tutor: { name: c.tutor.name, email: c.tutor.email },
       participantIds: [c.student.email, c.tutor.email, c.student.uid, c.tutor.uid].filter(Boolean),
-      lastMessage: lastMsg ? lastMsg.text : 'No active messages',
+      lastMessage: lastMsg ? (c.tutor && c.tutor.hasPlan ? lastMsg.text : 'New student enquiry waiting') : 'No active messages',
       lastMessageAt: lastMsg ? lastMsg.createdAt : firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
     }, { merge: true }).catch(function(){});
@@ -241,7 +244,7 @@
               readAt: d.readAt || ''
             });
             updated = true;
-          }
+          } 
         });
 
         if(updated){
@@ -331,7 +334,7 @@
     var d = document.createElement('dialog');
     d.className = 'mc-dialog';
     d.innerHTML =
-      '<div class="mc-head">' +
+      '<div class="mc-head" style="background:#0d47a1;">' +
         '<h2>Subscription Plan Required</h2>' +
         '<button class="mc-close" type="button">Close</button>' +
       '</div>' +
@@ -340,7 +343,7 @@
         '<h3>Unlock Chat with ' + escapeHtml(otherName) + '</h3>' +
         '<p>A student has sent you an inquiry! Tutors require an active paid subscription plan to read student messages, view contact details, and reply in real time.</p>' +
         '<div class="mc-upgrade-act">' +
-          '<button type="button" class="btn y" id="mcGoUpgrade" style="background:#0e7c66;color:#fff;border:0;padding:12px 24px;border-radius:8px;font-weight:700;cursor:pointer;">Select Plan / Recharge</button>' +
+          '<button type="button" class="btn y" id="mcGoUpgrade" style="background:#0d47a1;color:#fff;border:0;padding:12px 24px;border-radius:8px;font-weight:700;cursor:pointer;">Upgrade Plan</button>' +
           '<button type="button" class="btn o" id="mcCloseUp" style="background:transparent;border:1.5px solid #1A2035;padding:12px 20px;border-radius:8px;font-weight:600;cursor:pointer;">Close</button>' +
         '</div>' +
       '</div>';
@@ -558,17 +561,24 @@
 
       // SECTION 5: Tutor without an active paid plan
       // The chat entry or chat card must appear in blue
-      // Can see that a new chat exists and unread status, but CANNOT read student's message content
+      // Shows student's profile photo and permitted display name, but CANNOT read message text or open conversation
       if(tutorNeedsPlan){
+        var studentPhoto = c.student && c.student.photo;
+        var studentName = (c.student && c.student.name) || 'Student';
+        var studentInits = studentName.split(' ').filter(Boolean).map(function(w){ return w[0]; }).slice(0, 2).join('').toUpperCase() || 'ST';
+        var avatarContent = studentPhoto
+          ? '<img src="' + escapeHtml(studentPhoto) + '" alt="' + escapeHtml(studentName) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">'
+          : escapeHtml(studentInits);
+
         return '<div class="mc-row mc-row-blue" data-chat-id="' + escapeHtml(c.id) + '" data-needs-plan="1">' +
           '<div class="mc-row-left">' +
-            '<div class="mc-avatar mc-avatar-blue">' + escapeHtml(initials) + '</div>' +
+            '<div class="mc-avatar mc-avatar-blue" style="overflow:hidden;">' + avatarContent + '</div>' +
             '<div>' +
-              '<b>' + escapeHtml(other) + ' <span class="mc-tag-blue">Plan Required</span></b>' +
-              '<small style="color:#0d47a1;font-weight:500;">🔒 New student enquiry waiting · Upgrade plan to view messages and reply</small>' +
+              '<b>' + escapeHtml(studentName) + ' <span class="mc-tag-blue">Plan Required</span></b>' +
+              '<small style="color:#0d47a1;font-weight:500;">🔒 ' + escapeHtml(studentName) + ' messaged you · Upgrade plan to view messages and reply</small>' +
             '</div>' +
           '</div>' +
-          '<button type="button" class="mc-btn-upgrade">Select Plan</button>' +
+          '<button type="button" class="mc-btn-upgrade" onclick="event.stopPropagation();if(window.openRecharge)window.openRecharge();else if(window.ModivsChat)ModivsChat.showUpgradeModal(\'' + escapeHtml(studentName) + '\');">Upgrade Plan</button>' +
         '</div>';
       }
 
@@ -644,6 +654,210 @@
     });
   }
 
+  function checkTutorDashboardNotifications(container){
+    var meUser = user();
+    if(!meUser || meUser.role !== 'Tutor') return;
+    var meEmail = emailOf(meUser);
+    var myConvs = conversations().filter(function(c){
+      return emailOf(c.tutor) === meEmail || (c.tutor && c.tutor.uid && c.tutor.uid === meUser.uid) || (c.participantIds && c.participantIds.indexOf(meEmail) > -1);
+    });
+    if(!myConvs.length) return;
+
+    var activeConvs = myConvs.filter(function(c){
+      var msgs = filterActiveMessages(c.messages);
+      return msgs.length > 0;
+    });
+    if(!activeConvs.length) return;
+
+    activeConvs.sort(function(a, b){
+      var aMsgs = filterActiveMessages(a.messages);
+      var bMsgs = filterActiveMessages(b.messages);
+      var aTime = aMsgs.length ? new Date(aMsgs[aMsgs.length - 1].createdAt).getTime() : 0;
+      var bTime = bMsgs.length ? new Date(bMsgs[bMsgs.length - 1].createdAt).getTime() : 0;
+      return bTime - aTime;
+    });
+
+    var latestConv = activeConvs[0];
+    var studentName = (latestConv.student && latestConv.student.name) || 'A student';
+    var hasPlan = hasTutorPlan(meUser);
+
+    // 1. Dashboard notification banner
+    var bannerEl = container || document.getElementById('statusBanner');
+    var existingAlert = document.getElementById('mcTutorMsgBanner');
+    if(!existingAlert && bannerEl && bannerEl.parentNode){
+      var banner = document.createElement('div');
+      banner.id = 'mcTutorMsgBanner';
+      banner.style.cssText = hasPlan
+        ? 'background:#eef8f2;border:1.5px solid var(--ok, #0e7c66);border-radius:14px;padding:14px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;'
+        : 'background:#ebf5ff;border:1.5px solid #2196f3;border-radius:14px;padding:14px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;color:#0d47a1;';
+
+      banner.innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px;">' +
+          '<span style="font-size:1.6rem;" aria-hidden="true">💬</span>' +
+          '<div>' +
+            '<h4 style="margin:0;font-size:1.05rem;font-weight:700;color:' + (hasPlan ? 'var(--ok, #0e7c66)' : '#0d47a1') + ';">' + escapeHtml(studentName) + ' messaged you.</h4>' +
+            '<p style="margin:3px 0 0;font-size:0.88rem;color:' + (hasPlan ? 'var(--navy, #1a2035)' : '#1565c0') + ';">' +
+              (hasPlan ? 'You have an active inquiry from ' + escapeHtml(studentName) + '. Open your Messages tab to reply.' : 'A student has contacted you regarding tuition. Upgrade your plan to read messages and reply.') +
+            '</p>' +
+          '</div>' +
+        '</div>' +
+        '<div style="display:flex;gap:8px;">' +
+          (hasPlan
+            ? '<button type="button" class="b y" id="mcOpenChatBtn" style="padding:8px 18px;font-weight:700;cursor:pointer;">View Message</button>'
+            : '<button type="button" class="b y" id="mcUpgradeBtn" style="background:#0d47a1;color:#fff;border:0;padding:8px 18px;font-weight:700;cursor:pointer;">Upgrade Plan</button>') +
+        '</div>';
+
+      bannerEl.parentNode.insertBefore(banner, bannerEl.nextSibling);
+
+      var upBtn = banner.querySelector('#mcUpgradeBtn');
+      if(upBtn){
+        upBtn.onclick = function(){
+          if(window.openRecharge) window.openRecharge();
+          else showUpgradeModal(studentName);
+        };
+      }
+      var openBtn = banner.querySelector('#mcOpenChatBtn');
+      if(openBtn){
+        openBtn.onclick = function(){
+          open({ student: latestConv.student, tutor: latestConv.tutor });
+        };
+      }
+    }
+
+    // 2. Dashboard modal popup (shows once per session per conversation)
+    var sessionKey = 'modivs_notified_msg_' + latestConv.id;
+    if(!sessionStorage.getItem(sessionKey)){
+      showTutorMessagePopup(studentName, hasPlan, latestConv);
+      sessionStorage.setItem(sessionKey, '1');
+    }
+  }
+
+  function showTutorMessagePopup(studentName, hasPlan, conv){
+    ensureStyles();
+    var d = document.createElement('dialog');
+    d.className = 'mc-dialog';
+    var studentPhoto = conv && conv.student && conv.student.photo;
+    var initials = studentName.split(' ').filter(Boolean).map(function(w){ return w[0]; }).slice(0, 2).join('').toUpperCase();
+
+    d.innerHTML =
+      '<div class="mc-head" style="' + (hasPlan ? '' : 'background:#0d47a1;') + '">' +
+        '<div class="mc-user">' +
+          '<div class="mc-avatar" style="' + (hasPlan ? '' : 'background:#2196f3;color:#fff;') + 'overflow:hidden;">' +
+            (studentPhoto ? '<img src="' + escapeHtml(studentPhoto) + '" alt="' + escapeHtml(studentName) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;">' : escapeHtml(initials)) +
+          '</div>' +
+          '<div>' +
+            '<h2>' + escapeHtml(studentName) + ' messaged you.</h2>' +
+            '<div class="mc-status">' + (hasPlan ? 'Active Inquiry' : 'Plan Required') + '</div>' +
+          '</div>' +
+        '</div>' +
+        '<button class="mc-close" type="button">Close</button>' +
+      '</div>' +
+      '<div class="mc-upgrade-modal">' +
+        '<div style="font-size:2.2rem;margin-bottom:8px;">' + (hasPlan ? '📩' : '🔒') + '</div>' +
+        '<h3>' + escapeHtml(studentName) + ' messaged you.</h3>' +
+        '<p>' +
+          (hasPlan
+            ? 'A student is reaching out to discuss classes and demo lessons. Open the conversation to reply in real time.'
+            : 'A student has contacted you regarding tuition. Tutors must have an active paid subscription plan to read message content and reply.') +
+        '</p>' +
+        '<div class="mc-upgrade-act">' +
+          (hasPlan
+            ? '<button type="button" class="btn y" id="mcPopOpen" style="background:#0e7c66;color:#fff;border:0;padding:12px 24px;border-radius:8px;font-weight:700;cursor:pointer;">Open Chat</button>'
+            : '<button type="button" class="btn y" id="mcPopUpgrade" style="background:#0d47a1;color:#fff;border:0;padding:12px 24px;border-radius:8px;font-weight:700;cursor:pointer;">Upgrade Plan</button>') +
+          '<button type="button" class="btn o" id="mcPopClose" style="background:transparent;border:1.5px solid #1A2035;padding:12px 20px;border-radius:8px;font-weight:600;cursor:pointer;">Close</button>' +
+        '</div>' +
+      '</div>';
+
+    document.body.appendChild(d);
+    d.querySelector('.mc-close').onclick = function(){ d.close(); };
+    d.querySelector('#mcPopClose').onclick = function(){ d.close(); };
+    var popUpgrade = d.querySelector('#mcPopUpgrade');
+    if(popUpgrade){
+      popUpgrade.onclick = function(){
+        d.close();
+        if(window.openRecharge) window.openRecharge();
+        else showUpgradeModal(studentName);
+      };
+    }
+    var popOpen = d.querySelector('#mcPopOpen');
+    if(popOpen){
+      popOpen.onclick = function(){
+        d.close();
+        open({ student: conv.student, tutor: conv.tutor });
+      };
+    }
+    d.addEventListener('close', function(){ d.remove(); });
+    d.showModal();
+  }
+
+  function checkStudentDashboardNotifications(container){
+    var meUser = user();
+    if(!meUser || (meUser.role !== 'Student / Parent' && meUser.role !== 'Student' && meUser.role !== 'Parent')) return;
+    var meEmail = emailOf(meUser);
+    var myConvs = conversations().filter(function(c){
+      return emailOf(c.student) === meEmail || (c.student && c.student.uid && c.student.uid === meUser.uid) || (c.participantIds && c.participantIds.indexOf(meEmail) > -1);
+    });
+    if(!myConvs.length) return;
+
+    var unreadConvs = myConvs.filter(function(c){ return unread(c, meEmail) > 0; });
+    if(!unreadConvs.length) return;
+
+    var latestConv = unreadConvs[0];
+    var tutorName = (latestConv.tutor && latestConv.tutor.name) || 'Your tutor';
+
+    var bannerEl = container || document.getElementById('studentChatInbox');
+    var existingAlert = document.getElementById('mcStudentMsgBanner');
+    if(!existingAlert && bannerEl && bannerEl.parentNode){
+      var banner = document.createElement('div');
+      banner.id = 'mcStudentMsgBanner';
+      banner.style.cssText = 'background:#eef8f2;border:1.5px solid var(--ok, #0e7c66);border-radius:14px;padding:14px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;';
+      banner.innerHTML =
+        '<div style="display:flex;align-items:center;gap:12px;">' +
+          '<span style="font-size:1.6rem;" aria-hidden="true">💬</span>' +
+          '<div>' +
+            '<h4 style="margin:0;font-size:1.05rem;font-weight:700;color:var(--ok, #0e7c66);">' + escapeHtml(tutorName) + ' replied to your message.</h4>' +
+            '<p style="margin:3px 0 0;font-size:0.88rem;color:var(--navy, #1a2035);">You have new unread messages from ' + escapeHtml(tutorName) + '.</p>' +
+          '</div>' +
+        '</div>' +
+        '<button type="button" class="b y" id="mcStudentOpenChat" style="padding:8px 18px;font-weight:700;cursor:pointer;">View Reply</button>';
+
+      bannerEl.parentNode.insertBefore(banner, bannerEl);
+      var openBtn = banner.querySelector('#mcStudentOpenChat');
+      if(openBtn){
+        openBtn.onclick = function(){
+          open({ student: latestConv.student, tutor: latestConv.tutor });
+        };
+      }
+    }
+  }
+
+  function syncTutorSubscription(){
+    var firestore = db();
+    var meUser = user();
+    if(!firestore || !meUser || meUser.role !== 'Tutor') return;
+    var uid = (fbAuth() && fbAuth().currentUser && fbAuth().currentUser.uid) || meUser.uid || meUser.id;
+    if(!uid) return;
+
+    firestore.collection('users').doc(uid).get().then(function(doc){
+      if(doc.exists){
+        var data = doc.data();
+        if(data && data.subscription){
+          meUser.subscription = data.subscription;
+          try {
+            var authU = read('modivs_auth_user', {});
+            authU.subscription = data.subscription;
+            localStorage.setItem('modivs_auth_user', JSON.stringify(authU));
+          } catch(e){}
+        }
+      }
+    }).catch(function(){});
+  }
+
+  // Trigger subscription verification when Firebase is ready
+  if(typeof window !== 'undefined'){
+    setTimeout(syncTutorSubscription, 1000);
+  }
+
   window.ModivsChat = {
     open: open,
     inbox: inbox,
@@ -655,6 +869,11 @@
     detectPhoneNumber: detectPhoneNumber,
     filterActiveMessages: filterActiveMessages,
     hasTutorPlan: hasTutorPlan,
+    checkTutorDashboardNotifications: checkTutorDashboardNotifications,
+    showTutorMessagePopup: showTutorMessagePopup,
+    checkStudentDashboardNotifications: checkStudentDashboardNotifications,
+    syncTutorSubscription: syncTutorSubscription,
+    showUpgradeModal: showUpgradeModal,
     firebaseReady: function(){ return !!(fbAuth() && fbAuth().currentUser); }
   };
 })();

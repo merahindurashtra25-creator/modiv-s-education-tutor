@@ -264,17 +264,22 @@ function recharge(c,price){
      localStorage.setItem('modivs_tutors_db', JSON.stringify(tdb));
    } catch(e){}
  }
- if(window.EducationBFirebase && window.EducationBFirebase.db && authU){
-   var uidKey = authU.uid || (authU.email && authU.email.replace(/[^a-z0-9]/gi, '_'));
-   if(uidKey){
-     window.EducationBFirebase.db.collection('users').doc(uidKey).set({
-       subscription: subObj,
-       coins: state.coins,
-       updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-     }, { merge: true }).catch(function(){});
-   }
- }
  hist.unshift({t:'Recharged '+c+' coins ('+price+')',d:'Today',a:c});
+ if(window.EducationBFirebase && window.EducationBFirebase.db){
+  var uidKey = (window.EducationBFirebase.auth && window.EducationBFirebase.auth.currentUser && window.EducationBFirebase.auth.currentUser.uid) ||
+               (authU && authU.uid) || (authU && authU.email && authU.email.replace(/[^a-z0-9]/gi, '_'));
+  if(uidKey){
+   window.EducationBFirebase.db.collection('users').doc(uidKey).set({
+    subscription: subObj,
+    coins: state.coins,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+   }, { merge: true }).catch(function(){});
+   window.EducationBFirebase.db.collection('tutors').doc(uidKey).set({
+    subscription: subObj,
+    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+   }, { merge: true }).catch(function(){});
+  }
+ }
  $('dlg').close();
  toast(c+' coins added. Paid plan is now ACTIVE!');
  render();
@@ -524,7 +529,8 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
 function render(){
  $('coins').textContent=state.coins;nav();
  var v=$('view');v.innerHTML='';
- ({dash:vDash,leads:vLeads,profile:vProfile,chat:vChat,credits:vCredits,settings:vSettings})[state.view](v)
+ ({dash:vDash,leads:vLeads,profile:vProfile,chat:vChat,credits:vCredits,settings:vSettings})[state.view](v);
+ if(window.ModivsChat && ModivsChat.checkTutorDashboardNotifications) ModivsChat.checkTutorDashboardNotifications();
 }
 var pk=$('packs');PACKS.forEach(function(p){var b=el('button','pack');b.type='button';b.appendChild(el('b','',p[0]+' coins'));b.appendChild(el('small','',p[1]));b.addEventListener('click',function(){recharge(p[0],p[1])});pk.appendChild(b)});
 $('rech').addEventListener('click',openRecharge);$('close').addEventListener('click',function(){$('dlg').close()});
