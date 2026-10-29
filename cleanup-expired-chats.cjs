@@ -3,9 +3,14 @@
  * Scans conversations for messages older than 96 hours and permanently deletes them from Firestore.
  * Idempotent and safe to run periodically as a scheduled job or backend cron.
  */
-const admin = require('firebase-admin');
+let admin;
+try {
+  admin = require('firebase-admin');
+} catch (e) {
+  console.log('Notice: firebase-admin is not installed. To run standalone server-side cleanup, run: npm install firebase-admin');
+}
 
-if (!admin.apps.length) {
+if (admin && !admin.apps.length) {
   try {
     admin.initializeApp({
       credential: admin.credential.applicationDefault()
@@ -16,7 +21,7 @@ if (!admin.apps.length) {
 }
 
 async function cleanupExpiredMessages() {
-  if (!admin.apps.length) return { success: false, reason: 'Firebase Admin not initialized' };
+  if (!admin || !admin.apps.length) return { success: false, reason: 'Firebase Admin not initialized' };
   const db = admin.firestore();
   const now = new Date();
   console.log(`[${now.toISOString()}] Starting 96-hour chat cleanup...`);
