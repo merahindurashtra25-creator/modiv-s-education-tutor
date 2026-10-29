@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "routes": [
+    { "src": "/admin", "dest": "/modivs-admin.html" },
+    { "src": "/login", "dest": "/modivs-education.html" },
+    { "src": "/tutor-dashboard", "dest": "/modivs-tutor-dashboard.html" },
+    { "src": "/student-dashboard", "dest": "/modivs-student-dashboard.html" },
+    { "src": "/tutor-profile", "dest": "/modivs-tutor-profile.html" },
+    { "src": "/tutor-edit-profile", "dest": "/modivs-tutor-edit-profile.html" },
+    { "src": "/student-registration", "dest": "/modivs-student-registration.html" },
+    { "src": "/tutors", "dest": "/modivs-tutors.html" },
+    { "src": "/active-leads", "dest": "/modivs-active-leads.html" },
+    { "src": "/contact", "dest": "/modivs-contact.html" },
+    { "src": "/privacy-policy", "dest": "/modivs-privacy-policy.html" },
+    { "src": "/terms", "dest": "/modivs-terms.html" },
+    { "src": "/refund-policy", "dest": "/modivs-refund-policy.html" },
+    { "src": "/", "dest": "/index.html" }
+  ]
+}

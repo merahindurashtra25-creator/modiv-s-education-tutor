@@ -1,0 +1,372 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modiv’s Education – Edit tutor profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
+:root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--tint:#e8f5f1;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--mist);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+.hide{display:none!important}
+.top{background:var(--white);border-bottom:1.5px solid var(--line);padding:8px 24px;position:sticky;top:0;z-index:10}
+.top .in{max-width:860px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.top img{height:48px;width:auto;display:block}
+.top a.back{color:var(--accent-d);font-weight:600;text-decoration:none}
+.wrap{max-width:860px;margin:0 auto;padding:28px 20px 120px}
+h1{font-size:1.8rem;margin:0 0 4px;letter-spacing:-.02em;font-weight:800}
+.sub{color:var(--muted);margin:0 0 20px}
+.banner{background:#fff4d6;color:#7a5600;border-radius:10px;padding:12px 16px;margin-bottom:18px;font-size:.92rem}
+.sec{background:var(--white);border:1px solid var(--line);border-radius:14px;padding:22px;margin-bottom:18px}
+.sec h2{margin:0 0 4px;font-size:1.15rem}
+.sec>.hint{display:block;margin-bottom:6px}
+label,.lab{display:block;font-weight:600;font-size:.9rem;margin:16px 0 6px}
+.req{color:var(--err);font-weight:700;margin-left:2px}
+.phone-row{display:flex;gap:8px}.phone-row select{width:auto;flex:0 0 132px;padding-left:8px;padding-right:4px}.phone-row input{flex:1;min-width:0}
+.hint{font-weight:400;color:var(--muted);font-size:.82rem}
+input[type=text],input[type=email],input[type=tel],input[type=number],input[type=date],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:8px;background:var(--white)}
+textarea{min-height:110px;resize:vertical}
+input:disabled{background:var(--mist);color:var(--muted)}
+:is(input,select,textarea,button,summary):focus-visible{outline:3px solid #7fd1bd;outline-offset:2px}
+.bad{border-color:var(--err)!important}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative;margin:0;font-weight:400}.chip input{position:absolute;opacity:0}
+.chip span{display:block;padding:8px 14px;border:1.5px solid var(--line);border-radius:999px;cursor:pointer;font-size:.92rem}
+.chip input:checked+span{background:var(--tint);border-color:var(--accent);font-weight:600}
+.chip input:focus-visible+span{outline:3px solid #7fd1bd;outline-offset:2px}
+.card{background:var(--mist);border-radius:12px;padding:16px;margin:12px 0;position:relative}
+.card .rm{position:absolute;top:10px;right:10px;border:0;background:none;color:var(--muted);cursor:pointer;font-weight:600}
+.add{border:1.5px dashed var(--accent);background:var(--white);color:var(--accent-d);font-weight:600;border-radius:8px;padding:10px 14px;cursor:pointer;margin-top:6px}
+.btn{padding:12px 22px;border-radius:8px;border:0;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;text-decoration:none;display:inline-block}
+.btn:hover{background:var(--accent-d)}
+.btn.ghost{background:var(--white);border:1.5px solid var(--line);color:var(--ink)}.btn.ghost:hover{background:var(--mist)}
+.btn.sm{padding:8px 16px;font-size:.9rem}
+.savebar{position:fixed;left:0;right:0;bottom:0;background:var(--white);border-top:1.5px solid var(--line);padding:12px 20px calc(12px + env(safe-area-inset-bottom,0px));z-index:20}
+.savebar .in{max-width:860px;margin:0 auto;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}
+.msg{color:var(--err);font-size:.9rem;font-weight:600}
+.days{width:100%;border-collapse:collapse;font-size:.88rem}
+.days th,.days td{padding:6px 4px;text-align:center;border-bottom:1px solid var(--line)}
+.days th:first-child,.days td:first-child{text-align:left;font-weight:600}
+.days input{width:18px;height:18px;accent-color:var(--accent)}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:8px;font-weight:400}
+.check input{margin-top:4px;accent-color:var(--accent)}
+.dp-row{display:flex;gap:18px;align-items:center;flex-wrap:wrap}
+.dp{width:96px;height:96px;border-radius:50%;background:var(--tint);color:var(--accent-d);display:grid;place-items:center;font-weight:800;font-size:1.6rem;overflow:hidden;border:2px solid var(--line);flex:none}
+.dp img{width:100%;height:100%;object-fit:cover;display:block}
+.dp-side{display:flex;flex-direction:column;gap:8px;align-items:flex-start;flex:1;min-width:200px}
+.dp-btns{display:flex;gap:8px;flex-wrap:wrap}
+.dp-warn{color:#7a5600;font-size:.85rem;min-height:1.2em}
+.up{border:1.5px dashed var(--line);border-radius:12px;padding:14px;background:var(--white)}
+.up small{display:block;color:var(--muted)}
+.up input{margin-top:8px;max-width:100%}
+.toast{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;font-size:.9rem;z-index:30}
+.empty{text-align:center;padding:60px 0}
+@media(max-width:700px){.two{grid-template-columns:1fr}.top{padding:8px 14px}}
+</style>
+</head>
+<body>
+<header class="top"><div class="in">
+ <a href="modivs-home.html"><img src="logo.png" alt="Modiv’s Education"></a>
+ <a class="back" href="modivs-tutor-dashboard.html">&larr; Back to dashboard</a>
+</div></header>
+
+<div class="wrap" id="app"></div>
+
+<div class="savebar hide" id="savebar"><div class="in">
+ <div class="msg" id="msg" role="alert"></div>
+ <div style="display:flex;gap:10px"><a class="btn ghost" href="modivs-tutor-dashboard.html">Cancel</a><button type="button" class="btn" id="saveBtn">Save changes</button></div>
+</div></div>
+<div class="toast hide" id="toast" role="status"></div>
+
+<script>
+(function(){
+var SUBJECTS=['Mathematics','Science','Physics','Chemistry','Biology','English','Hindi','Punjabi','Sanskrit','Urdu','Social Science','History','Geography','Political Science','Economics','Accountancy','Business Studies','Computer Science','Coding / Programming','Environmental Science','French','German','Spanish','Music','Art','Dance','Yoga','Spoken English','Abacus / Vedic Maths'];
+var LEVELS=['Primary (1–5)','Middle (6–8)','Secondary (9–10)','Senior secondary (11–12)','College / University','Competitive exams'];
+var BOARDS=['CBSE','ICSE','PSEB','IB','IGCSE','State board'];
+var LANGS=['English','Hindi','Punjabi','Urdu','Other'];
+var MODES=['Online','Offline (At student’s home)','Offline (At my place / Centre)'];
+var FORMATS=['1-on-1 Individual tuition','Group tuition (Small batches)'];
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],SLOTS=['Morning','Afternoon','Evening'];
+var STAR=' <span class="req" aria-hidden="true">*</span>';
+var PH=/^[+0-9\s-]{10,15}$/;
+var COUNTRIES=[['India','+91'],['United States / Canada','+1'],['United Kingdom','+44'],['United Arab Emirates','+971'],['Saudi Arabia','+966'],['Qatar','+974'],['Kuwait','+965'],['Oman','+968'],['Bahrain','+973'],['Singapore','+65'],['Malaysia','+60'],['Australia','+61'],['New Zealand','+64'],['Nepal','+977'],['Bhutan','+975'],['Bangladesh','+880'],['Sri Lanka','+94'],['Pakistan','+92'],['Afghanistan','+93'],['Germany','+49'],['France','+33'],['Italy','+39'],['Spain','+34'],['Netherlands','+31'],['Ireland','+353'],['Switzerland','+41'],['Sweden','+46'],['Russia','+7'],['China','+86'],['Japan','+81'],['South Korea','+82'],['Hong Kong','+852'],['Thailand','+66'],['Indonesia','+62'],['Philippines','+63'],['South Africa','+27'],['Nigeria','+234'],['Kenya','+254'],['Egypt','+20'],['Turkey','+90'],['Brazil','+55'],['Mexico','+52']];
+function splitPhone(p){p=String(p||'').trim();var raw=p.replace(/[\s-]/g,'');
+ if(raw.charAt(0)==='+'){var best='';COUNTRIES.forEach(function(c){if(raw.indexOf(c[1])===0&&c[1].length>best.length)best=c[1]});
+  if(best)return {cc:best,num:raw.slice(best.length).replace(/\D/g,'')}}
+ return {cc:'+91',num:raw.replace(/\D/g,'')}}
+function phoneField(id,label,val,hint,dis){var s=splitPhone(val),d=dis?' disabled':'';
+ return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><div class="phone-row"><select id="'+id+'_cc" aria-label="Country code"'+d+'>'+COUNTRIES.map(function(c){return '<option value="'+c[1]+'"'+(c[1]===s.cc?' selected':'')+'>'+c[1]+' '+esc(c[0])+'</option>'}).join('')+'</select><input id="'+id+'" type="tel" inputmode="numeric" autocomplete="tel-national" value="'+esc(s.num)+'" placeholder="Phone number"'+d+'></div>'}
+function getPhone(id){var e=document.getElementById(id),c=document.getElementById(id+'_cc'),n=e?e.value.replace(/\D/g,''):'';return n?(c?c.value:'+91')+' '+n:''}
+function validPhone(p){var m=/^(\+\d{1,4}) (\d+)$/.exec(p||'');if(!m)return false;if(m[1]==='+91')return /^[6-9]\d{9}$/.test(m[2]);return m[2].length>=6&&m[2].length<=14}
+function phoneMsg(p,what){var m=/^(\+\d{1,4})/.exec(p||'');return (m&&m[1]==='+91')?'Enter a valid 10-digit '+what+' (Indian numbers start with 6, 7, 8 or 9).':'Enter a valid '+what+' for the selected country (6–14 digits).'}
+function samePhone(a,b){return String(a).replace(/\D/g,'')===String(b).replace(/\D/g,'')}
+function syncWa(){var c=document.getElementById('waSame'),w=document.getElementById('whatsapp'),wc=document.getElementById('whatsapp_cc'),p=document.getElementById('phone'),pc=document.getElementById('phone_cc');
+ if(!c||!w||!wc||!p||!pc)return;if(c.checked){w.value=p.value.replace(/\D/g,'');wc.value=pc.value}w.disabled=wc.disabled=c.checked}
+
+var app=document.getElementById('app'),toastT,D=null,ORIG=null;
+
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function digits(x){return String(x||'').replace(/\D/g,'').slice(-10)}
+function initials(n){return String(n||'').split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()||'TR'}
+function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toastT);toastT=setTimeout(function(){e.classList.add('hide')},2600)}
+function jget(k,d){try{var x=JSON.parse(localStorage.getItem(k)||'null');return x==null?d:x}catch(e){return d}}
+function field(id,label,val,type,hint,ph){return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'}
+function chips(name,list,sel){sel=sel||[];return '<div class="chips" role="group">'+list.map(function(x){return '<label class="chip"><input type="checkbox" data-group="'+name+'" value="'+esc(x)+'"'+(sel.indexOf(x)>-1?' checked':'')+'><span>'+esc(x)+'</span></label>'}).join('')+'</div>'}
+function sel(id,label,val,opts){return '<label for="'+id+'">'+label+'</label><select id="'+id+'"><option value="">Select</option>'+opts.map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select>'}
+function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
+function group(n){return Array.prototype.map.call(app.querySelectorAll('input[data-group="'+n+'"]:checked'),function(x){return x.value})}
+
+/* ---------- load the tutor ---------- */
+function load(){
+  var cur=jget('modivs_current_tutor',null);
+  var auth=jget('modivs_auth_user',null);
+  var db=jget('modivs_tutors_db',[]);
+  var email=(cur&&cur.email)||(auth&&auth.role==='Tutor'&&auth.email)||'';
+  var rec=db.find(function(t){return t.email===email})||null;
+  if(!cur&&!rec)return null;
+  // current_tutor holds the full form data; db entry may only hold admin-summary fields
+  var base={email:email,name:'',phone:'',altPhone:'',whatsapp:'',waSame:false,photo:'',photoBlur:false,city:'',gender:'',dob:'',headline:'',bio:'',langs:[],
+    quals:[{degree:'',inst:'',field:'',year:''}],exp:[],totalYears:'',subjects:[],levels:[],boards:[],modes:['Online'],formats:['1-on-1 Individual tuition'],
+    groupFee:'',maxBatch:'6 students',travel:'',fee:'',trial:'',avail:{},notice:'',idType:'',idName:'',certName:'',status:'pending'};
+  var d=Object.assign({},base,rec||{},cur||{});
+  if(!(d.subjects&&d.subjects.length)&&rec&&rec.subs)d.subjects=rec.subs.slice();
+  if(!d.totalYears&&rec&&rec.years!=null)d.totalYears=rec.years;
+  if(!d.idName&&rec&&rec.idFile)d.idName=rec.idFile;
+  if(!d.certName&&rec&&rec.cert)d.certName=rec.cert;
+  if(!d.quals||!d.quals.length)d.quals=[{degree:'',inst:'',field:'',year:''}];
+  if(!d.exp)d.exp=[];
+  d.status=(rec&&rec.status)||d.status||'pending';
+  return d;
+}
+
+/* ---------- render ---------- */
+function dpInner(){return D.photo?'<img src="'+esc(D.photo)+'" alt="Your profile photo">':esc(initials(D.name))}
+function render(){
+  var rows=DAYS.map(function(d){return '<tr><td>'+d+'</td>'+SLOTS.map(function(s){var k=d+'-'+s;return '<td><input type="checkbox" data-avail="'+k+'" aria-label="'+d+' '+s+'"'+(D.avail&&D.avail[k]?' checked':'')+'></td>'}).join('')+'</tr>'}).join('');
+  var st=D.status==='approved'?'':'<div class="banner">Your profile is currently <b>'+(D.status==='rejected'?'marked as needing changes':'pending admin review')+'</b>. Saving will send it to admins again.</div>';
+  app.innerHTML='<h1>Edit your profile</h1><p class="sub">Update your details below. Fields marked <span class="req">*</span> are required. Changes appear on your tutor profile as soon as you save.</p>'+st+
+
+  '<section class="sec"><h2>Photo &amp; basics</h2>'+
+  '<div class="lab">Profile photo'+STAR+'</div><div class="dp-row"><div class="dp" id="dpBox">'+dpInner()+'</div><div class="dp-side"><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="hide"><div class="dp-btns"><button type="button" class="btn ghost sm" data-act="pickPhoto">'+(D.photo?'Change photo':'Upload photo')+'</button>'+(D.photo?'<button type="button" class="btn ghost sm" data-act="removePhoto">Remove</button>':'')+'</div><span class="hint">Clear, front-facing photo. JPG, PNG or WebP, up to 5 MB.</span><div class="dp-warn" role="status">'+(D.photo&&D.photoBlur?'This photo looks a little blurry. A sharper photo is approved faster.':'')+'</div></div></div>'+
+  field('name','Full name'+STAR,D.name)+
+  '<label for="email">Email <span class="hint">login email, cannot be changed here</span></label><input id="email" type="email" value="'+esc(D.email)+'" disabled>'+
+  phoneField('whatsapp','WhatsApp number'+STAR,D.waSame?D.phone:D.whatsapp,'',D.waSame)+'<label class="check"><input type="checkbox" id="waSame"'+(D.waSame?' checked':'')+'><span>Same as my mobile number</span></label>'+
+  '<div class="two"><div>'+phoneField('phone','Mobile number'+STAR,D.phone)+'</div><div>'+phoneField('altPhone','Alternate phone number'+STAR,D.altPhone)+'</div></div>'+
+  field('city','City'+STAR,D.city)+
+  '<div class="two"><div>'+sel('gender','Gender'+STAR,D.gender,['Female','Male','Other','Prefer not to say'])+'</div><div>'+field('dob','Date of birth'+STAR,D.dob,'date')+'</div></div>'+
+  field('headline','Profile headline'+STAR,D.headline,'text','one line','e.g. Maths tutor for classes 9–12 with 8 years’ experience')+
+  '<label for="bio">About you'+STAR+' <span class="hint">at least 80 characters</span></label><textarea id="bio">'+esc(D.bio)+'</textarea>'+
+  '<div class="lab">Languages you teach in'+STAR+'</div>'+chips('langs',LANGS,D.langs)+'</section>'+
+
+  '<section class="sec"><h2>Qualifications</h2><span class="hint">Highest qualification first.</span><div id="quals">'+D.quals.map(function(q,i){return '<div class="card">'+(D.quals.length>1?'<button type="button" class="rm" data-rm="quals" data-i="'+i+'">Remove</button>':'')+
+   field('q_degree'+i,'Degree or certificate'+STAR,q.degree,'text','','e.g. M.Sc. Mathematics')+field('q_inst'+i,'Institution'+STAR,q.inst)+'<div class="two"><div>'+field('q_field'+i,'Field of study'+STAR,q.field)+'</div><div>'+field('q_year'+i,'Year completed'+STAR,q.year,'number')+'</div></div></div>'}).join('')+'</div><button type="button" class="add" data-add="quals">+ Add qualification</button></section>'+
+
+  '<section class="sec"><h2>Teaching experience</h2>'+field('totalYears','Total years of teaching'+STAR,D.totalYears,'number')+'<div id="exp">'+D.exp.map(function(x,i){return '<div class="card"><button type="button" class="rm" data-rm="exp" data-i="'+i+'">Remove</button>'+
+   field('e_title'+i,'Role',x.title,'text','','e.g. Mathematics teacher')+field('e_org'+i,'School, institute or “Private tutoring”',x.org)+'<div class="two"><div>'+field('e_from'+i,'From (year)',x.from,'number')+'</div><div>'+field('e_to'+i,'To (year or “Present”)',x.to)+'</div></div><label for="e_desc'+i+'">What you did</label><textarea id="e_desc'+i+'" style="min-height:70px">'+esc(x.desc)+'</textarea></div>'}).join('')+'</div><button type="button" class="add" data-add="exp">+ Add experience</button></section>'+
+
+  '<section class="sec"><h2>Subjects you teach</h2><div class="lab">Subjects'+STAR+'</div>'+chips('subjects',allSubjects(),D.subjects)+'<div class="lab">Add your own subject <span class="hint">not in the list above? Type it and press Add</span></div>'+'<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="customSubject" type="text" maxlength="40" placeholder="e.g. Robotics, IELTS, Kathak" style="flex:1;min-width:200px"><button type="button" class="btn ghost" data-act="addSubject" style="padding:10px 18px">Add</button></div>'+'<div class="lab">Levels'+STAR+'</div>'+chips('levels',LEVELS,D.levels)+'<div class="lab">Boards'+STAR+'</div>'+chips('boards',BOARDS,D.boards)+'</section>'+
+
+  '<section class="sec"><h2>Fees &amp; availability</h2><div class="lab">Teaching mode'+STAR+'</div>'+chips('modes',MODES,D.modes)+'<div class="lab">Tuition format offered'+STAR+'</div>'+chips('formats',FORMATS,D.formats)+
+  '<div class="two"><div>'+field('fee','1-on-1 fee per hour (₹)'+STAR,D.fee,'number')+'</div><div>'+field('groupFee','Group fee per student/hr (₹)'+STAR,D.groupFee,'number','required if you offer group tuition')+'</div></div>'+
+  '<div class="two"><div>'+sel('trial','Free demo class'+STAR,D.trial,['Yes, 30 minutes','Yes, 1 class','No'])+'</div><div>'+sel('maxBatch','Max group batch size'+STAR,D.maxBatch,['4 students','6 students','8 students','10–12 students'])+'</div></div>'+
+  field('travel','Areas you can travel to'+STAR,D.travel,'text','required for offline home tuition','e.g. Model Town, Sarabha Nagar')+
+  '<div class="lab">Weekly availability'+STAR+'</div><table class="days"><thead><tr><th></th>'+SLOTS.map(function(s){return '<th>'+s+'</th>'}).join('')+'</tr></thead><tbody>'+rows+'</tbody></table>'+
+  sel('notice','Notice needed before a new class'+STAR,D.notice,['Same day','1 day','2–3 days','1 week'])+'</section>'+
+
+  '<section class="sec"><h2>Verification documents</h2><span class="hint">Replacing a document or changing your name or photo sends your profile for admin re-verification.</span>'+
+  sel('idType','Government ID type'+STAR,D.idType,['Aadhaar','PAN','Passport','Voter ID','Driving licence'])+
+  '<label for="idFile">ID document'+STAR+'</label><div class="up"><small>JPG, PNG or PDF, up to 5 MB</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="idCur">'+(D.idName?'Current: '+esc(D.idName):'')+'</small></div>'+
+  '<label for="certFile">Highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF, up to 5 MB</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="certCur">'+(D.certName?'Current: '+esc(D.certName):'')+'</small></div></section>';
+  document.getElementById('savebar').classList.remove('hide');
+}
+
+/* ---------- read form into D ---------- */
+function readAll(){
+  var w=document.getElementById('waSame');
+  D.name=v('name');D.phone=getPhone('phone');D.altPhone=getPhone('altPhone');D.waSame=!!(w&&w.checked);D.whatsapp=D.waSame?D.phone:getPhone('whatsapp');
+  D.city=v('city');D.gender=v('gender');D.dob=v('dob');D.headline=v('headline');D.bio=v('bio');D.langs=group('langs');
+  D.quals.forEach(function(q,i){q.degree=v('q_degree'+i);q.inst=v('q_inst'+i);q.field=v('q_field'+i);q.year=v('q_year'+i)});
+  D.totalYears=v('totalYears');
+  D.exp.forEach(function(x,i){x.title=v('e_title'+i);x.org=v('e_org'+i);x.from=v('e_from'+i);x.to=v('e_to'+i);x.desc=v('e_desc'+i)});
+  D.subjects=readSubjects();D.levels=group('levels');D.boards=group('boards');
+  D.modes=group('modes');D.formats=group('formats');D.fee=v('fee');D.groupFee=v('groupFee');D.maxBatch=v('maxBatch');D.trial=v('trial');D.travel=v('travel');D.notice=v('notice');
+  D.avail={};app.querySelectorAll('input[data-avail]').forEach(function(c){if(c.checked)D.avail[c.getAttribute('data-avail')]=1});
+  D.idType=v('idType');
+  var a=document.getElementById('idFile'),b=document.getElementById('certFile');
+  a=a&&a.files[0];b=b&&b.files[0];
+  if(a)D.idName=a.name;if(b)D.certName=b.name;
+  return {idFile:a,certFile:b};
+}
+
+function readSubjects(){var a=group('subjects'),c=v('customSubject').replace(/\s+/g,' ').slice(0,40);
+ if(c&&!a.concat(SUBJECTS).some(function(x){return x.toLowerCase()===c.toLowerCase()}))a.push(c);
+ else if(c){var m=SUBJECTS.filter(function(x){return x.toLowerCase()===c.toLowerCase()})[0];if(m&&a.indexOf(m)<0)a.push(m)}
+ return a}
+function allSubjects(){return SUBJECTS.concat((D.subjects||[]).filter(function(x){return SUBJECTS.indexOf(x)<0}))}
+function fail(id,m){var e=document.getElementById(id);if(e)e.classList.add('bad');document.getElementById('msg').textContent=m;if(e){e.focus();if(e.scrollIntoView)e.scrollIntoView({block:'center'})}return false}
+function validate(files){
+  app.querySelectorAll('.bad').forEach(function(e){e.classList.remove('bad')});
+  document.getElementById('msg').textContent='';
+  if(!D.photo)return fail('dpBox','Upload a clear profile photo of your face.');
+  if(!D.name)return fail('name','Enter your full name.');
+  if(!D.waSame&&!D.whatsapp)return fail('whatsapp','Enter your WhatsApp number, or tick “Same as my mobile number”.');
+  if(!D.waSame&&!validPhone(D.whatsapp))return fail('whatsapp',phoneMsg(D.whatsapp,'WhatsApp number'));
+  if(!validPhone(D.phone))return fail('phone',phoneMsg(D.phone,'mobile number'));
+  if(!D.altPhone)return fail('altPhone','Enter your alternate phone number.');
+  if(!validPhone(D.altPhone))return fail('altPhone',phoneMsg(D.altPhone,'alternate phone number'));
+  if(samePhone(D.altPhone,D.phone))return fail('altPhone','Alternate number must be different from your mobile number.');
+  if(!D.city)return fail('city','Enter your city.');
+  if(!D.gender)return fail('gender','Select your gender.');
+  if(!D.dob)return fail('dob','Enter your date of birth.');
+  if(!D.headline)return fail('headline','Add a one-line headline.');
+  if(D.bio.length<80)return fail('bio','Write at least 80 characters about yourself ('+D.bio.length+' so far).');
+  if(!D.langs.length)return fail('bio','Choose at least one language you teach in.');
+  for(var i=0;i<D.quals.length;i++){var q=D.quals[i];
+    if(!q.degree)return fail('q_degree'+i,'Enter the degree or certificate.');
+    if(!q.inst)return fail('q_inst'+i,'Enter the institution.');
+    if(!q.field)return fail('q_field'+i,'Enter your field of study.');
+    if(!/^(19|20)\d\d$/.test(q.year))return fail('q_year'+i,'Enter a valid year, like 2018.')}
+  if(D.totalYears===''||+D.totalYears<0)return fail('totalYears','Enter your total years of teaching (0 if none).');
+  if(!D.subjects.length)return fail('name','Choose at least one subject.');
+  if(!D.levels.length)return fail('name','Choose at least one level.');
+  if(!D.boards.length)return fail('name','Choose at least one board.');
+  if(!D.modes.length)return fail('fee','Choose at least one teaching mode.');
+  if(!D.formats.length)return fail('fee','Choose at least one tuition format.');
+  if(!(+D.fee>0))return fail('fee','Enter your 1-on-1 fee per hour.');
+  if(D.formats.indexOf(FORMATS[1])>-1&&!(+D.groupFee>0))return fail('groupFee','Enter your group tuition fee per student per hour.');
+  if(!D.trial)return fail('trial','Choose your free demo class option.');
+  if(D.formats.indexOf(FORMATS[1])>-1&&!D.maxBatch)return fail('maxBatch','Choose a max group batch size.');
+  if(D.modes.indexOf(MODES[1])>-1&&!D.travel)return fail('travel','Add the areas you can travel to for offline home tuition.');
+  if(!Object.keys(D.avail).length)return fail('fee','Select at least one available slot.');
+  if(!D.notice)return fail('notice','Choose how much notice you need.');
+  if(!D.idType)return fail('idType','Choose an ID type.');
+  if(!D.idName)return fail('idFile','Upload your ID.');
+  if(!D.certName)return fail('certFile','Upload your qualification certificate.');
+  if((files.idFile&&files.idFile.size>5242880)||(files.certFile&&files.certFile.size>5242880))return fail('idFile','Each file must be 5 MB or smaller.');
+  return true;
+}
+
+/* ---------- save everywhere the dashboard/admin read from ---------- */
+function persist(){
+  var sensitive=D.photo!==ORIG.photo||D.name!==ORIG.name||D.idType!==ORIG.idType||D.idName!==ORIG.idName||D.certName!==ORIG.certName;
+  var status=(ORIG.status==='approved'&&!sensitive)?'approved':'pending';
+  var t=Object.assign({},D);
+  if(t.waSame)t.whatsapp=t.phone;
+  t.status=status;t.submittedAt=new Date().toISOString();
+  if(status==='pending'){t.rejection_reason='';t.rejection_reasons=[];t.rejection_note=''}
+  localStorage.setItem('modivs_current_tutor',JSON.stringify(t));
+  localStorage.setItem('modivs_auth_user',JSON.stringify({name:t.name,email:t.email,role:'Tutor'}));
+
+  var qualDesc=(t.quals[0]&&t.quals[0].degree)?(t.quals[0].degree+', '+(t.quals[0].inst||'')+' ('+(t.quals[0].year||'')+')'):'Certificate on file';
+  var summary={name:t.name,headline:t.headline,city:t.city,phone:t.phone,altPhone:t.altPhone||'',whatsapp:t.whatsapp||'',photo:t.photo||'',email:t.email,
+    qual:qualDesc,years:t.totalYears||0,subs:t.subjects,levels:t.levels,fee:+t.fee||0,modes:t.modes,langs:t.langs,
+    idType:t.idType,idFile:t.idName,cert:t.certName,sent:'Just now',status:status};
+  if(status==='pending'){summary.rejection_reason='';summary.rejection_reasons=[];summary.rejection_note=''}
+
+  // canonical DB — merge full profile so the dashboard shows every edited field
+  var db=jget('modivs_tutors_db',[]);
+  var i=db.findIndex(function(x){return x.email===t.email});
+  var full=Object.assign({},t,summary);
+  delete full.pass;delete full.agree;
+  if(i>=0){full.id=db[i].id||('t_user_'+Date.now());db[i]=Object.assign({},db[i],full)}
+  else{full.id='t_user_'+Date.now();db.unshift(full)}
+  localStorage.setItem('modivs_tutors_db',JSON.stringify(db));
+
+  // admin queue only if re-verification is needed
+  if(status==='pending'){
+    var q=jget('modivs_submitted_tutors',[]);
+    var entry=Object.assign({id:full.id},summary);
+    var qi=q.findIndex(function(x){return x.email===t.email});
+    if(qi>=0)q[qi]=entry;else q.unshift(entry);
+    localStorage.setItem('modivs_submitted_tutors',JSON.stringify(q));
+  }else{
+    var q2=jget('modivs_submitted_tutors',[]);
+    var q2i=q2.findIndex(function(x){return x.email===t.email});
+    if(q2i>=0){q2[q2i]=Object.assign({},q2[q2i],summary);localStorage.setItem('modivs_submitted_tutors',JSON.stringify(q2))}
+  }
+
+  var logs=jget('modivs_audit_logs',[]);
+  logs.unshift({id:full.id,name:t.name,action:'Profile Edited',admin:'System',
+    timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),
+    note:'Tutor updated their profile. Status: '+status+'.'});
+  localStorage.setItem('modivs_audit_logs',JSON.stringify(logs.slice(0,50)));
+  return status;
+}
+
+function save(){
+  var files=readAll();
+  if(!validate(files))return;
+  var status;
+  try{status=persist()}catch(err){console.error(err);document.getElementById('msg').textContent='Could not save. Your browser storage may be full (try a smaller photo).';return}
+  document.getElementById('savebar').classList.add('hide');
+  app.innerHTML='<div class="empty"><div style="font-size:3rem">✅</div><h1 style="color:var(--accent-d)">Profile updated</h1><p class="sub">'+
+    (status==='approved'?'Your changes are saved and now show on your profile.':'Your changes are saved and sent to admins for re-verification, because your photo, name or documents changed.')+
+    '</p><a class="btn" href="modivs-tutor-dashboard.html">Back to dashboard</a> <a class="btn ghost" href="modivs-tutor-edit-profile.html">Keep editing</a><p class="hint" style="margin-top:14px">Taking you to your dashboard in <b id="cd">3</b>s…</p></div>';
+  var n=3,iv=setInterval(function(){n--;var c=document.getElementById('cd');if(c)c.textContent=n;if(n<=0){clearInterval(iv);location.href='modivs-tutor-dashboard.html'}},1000);
+}
+
+/* ---------- photo ---------- */
+function sharpness(cv,S){var T=200,c=document.createElement('canvas');c.width=c.height=T;var x=c.getContext('2d');x.drawImage(cv,0,0,S,S,0,0,T,T);
+ var d=x.getImageData(0,0,T,T).data,g=new Float32Array(T*T),i,j;
+ for(i=0;i<T*T;i++)g[i]=.299*d[i*4]+.587*d[i*4+1]+.114*d[i*4+2];
+ var sum=0,sq=0,n=0,l;
+ for(i=1;i<T-1;i++)for(j=1;j<T-1;j++){l=g[(i-1)*T+j]+g[(i+1)*T+j]+g[i*T+j-1]+g[i*T+j+1]-4*g[i*T+j];sum+=l;sq+=l*l;n++}
+ return sq/n-(sum/n)*(sum/n)}
+function handlePhoto(file){
+ if(!file)return;
+ if(!/^image\/(jpeg|png|webp)$/.test(file.type)){toast('Please choose a JPG, PNG or WebP image.');return}
+ if(file.size>5242880){toast('Photo must be 5 MB or smaller.');return}
+ var fr=new FileReader();
+ fr.onerror=function(){toast('Could not read that file. Try another photo.')};
+ fr.onload=function(){var img=new Image();
+  img.onerror=function(){toast('That file is not a valid image.')};
+  img.onload=function(){
+   if(Math.min(img.width,img.height)<200){toast('Photo is too small. Use at least 200 × 200 pixels.');return}
+   var S=400,c=document.createElement('canvas');c.width=c.height=S;var x=c.getContext('2d');
+   var m=Math.min(img.width,img.height);x.drawImage(img,(img.width-m)/2,(img.height-m)/2,m,m,0,0,S,S);
+   var blur=sharpness(c,S)<60;
+   readAll();D.photo=c.toDataURL('image/jpeg',0.85);D.photoBlur=blur;render();toast('Photo added. Click Save changes to keep it.')};
+  img.src=fr.result};
+ fr.readAsDataURL(file)}
+
+/* ---------- events ---------- */
+app.addEventListener('click',function(e){var t=e.target;
+ if(t.getAttribute('data-act')==='addSubject'){if(!v('customSubject')){toast('Type a subject name first.');return}readAll();render();toast('Subject added')}
+ if(t.getAttribute('data-act')==='pickPhoto')document.getElementById('photoFile').click();
+ if(t.getAttribute('data-act')==='removePhoto'){readAll();D.photo='';D.photoBlur=false;render()}
+ if(t.getAttribute('data-add')){readAll();if(t.getAttribute('data-add')==='quals')D.quals.push({degree:'',inst:'',field:'',year:''});else D.exp.push({title:'',org:'',from:'',to:'',desc:''});render()}
+ if(t.getAttribute('data-rm')){readAll();var k=t.getAttribute('data-rm');D[k].splice(+t.getAttribute('data-i'),1);render()}});
+app.addEventListener('input',function(e){if(e.target.id==='phone')syncWa()});
+app.addEventListener('change',function(e){var t=e.target;
+ if(t.id==='photoFile')handlePhoto(t.files[0]);
+ if(t.id==='waSame'||t.id==='phone_cc')syncWa();});
+app.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='customSubject'){e.preventDefault();if(!v('customSubject'))return;readAll();render();toast('Subject added')}});
+document.getElementById('saveBtn').addEventListener('click',save);
+
+/* ---------- start ---------- */
+D=load();
+if(!D){
+  app.innerHTML='<div class="empty"><h1>No tutor profile found</h1><p class="sub">Create your tutor account first, then you can edit your profile here.</p><a class="btn" href="modivs-education.html#tutor-signup">Create tutor account</a></div>';
+}else{
+  ORIG=JSON.parse(JSON.stringify({photo:D.photo,name:D.name,idType:D.idType,idName:D.idName,certName:D.certName,status:D.status}));
+  render();
+}
+})();
+</script>
+<!-- mv-footer -->
+<footer class="mv-foot"><style>
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
+.mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
+.mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
+.mv-foot a[aria-current=page]{color:#EBB92E}
+.mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
+</style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+</body>
+</html>

@@ -1,0 +1,169 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modiv’s Education – Active Leads</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
+:root{--navy:#1A2035;--yellow:#EBB92E;--cream:#FEF7EA;--muted:#555b78;--line:#eadfc9;--card:#fff;--ok:#1d7a4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+a{color:inherit}
+:is(a,button,input,select):focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+.wrap{max-width:1220px;margin:0 auto;padding:0 24px}
+header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
+.brand img{height:44px;width:auto;display:block;mix-blend-mode:multiply}
+nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
+nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;white-space:nowrap}
+nav a:hover,nav a[aria-current]{background:var(--yellow)}
+.btn{display:inline-block;padding:8px 15px;border-radius:8px;font-weight:600;font-size:.88rem;text-decoration:none;border:2px solid var(--yellow);background:var(--yellow);color:var(--navy)}
+.btn:hover{background:#D9A41C}
+h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:40px 0 6px;letter-spacing:-.01em}
+.sub{color:var(--muted);margin:0 0 24px;max-width:640px}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
+.stat{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px}
+.stat b{display:block;font-size:1.6rem;line-height:1.1}.stat span{color:var(--muted);font-size:.85rem}
+.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
+.tools input,.tools select{font:inherit;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy)}
+.tools input{flex:1;min-width:220px}
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:48px}
+.card{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.card .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
+.card h3{margin:0;font-size:1.08rem}
+.by{color:var(--muted);font-size:.84rem}
+.badge{background:#e6f4ec;color:var(--ok);font-weight:600;font-size:.74rem;padding:3px 10px;border-radius:99px;white-space:nowrap}
+.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin:0;font-size:.86rem}
+.meta dt{color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.03em}.meta dd{margin:0;font-weight:600}
+.tags{display:flex;gap:6px;flex-wrap:wrap}.tags span{background:var(--cream);border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:.78rem}
+.note{font-size:.86rem;color:var(--muted);margin:0}
+.foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted)}
+.empty{grid-column:1/-1;text-align:center;padding:48px 16px;background:var(--card);border:1.5px dashed var(--line);border-radius:14px;color:var(--muted)}
+@media(max-width:760px){nav{display:none}.grid{grid-template-columns:1fr}}
+</style>
+<script src="modivs-import-data.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js" defer></script>
+<script src="firebase-sync.js" defer></script>
+</head>
+<body>
+<header>
+ <div class="wrap bar">
+  <a class="brand" href="modivs-home.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav aria-label="Main menu"><ul>
+   <li><a href="modivs-home.html">Home</a></li>
+   <li><a href="modivs-active-leads.html" aria-current="page">Active leads</a></li>
+  </ul></nav>
+  <a class="btn" href="modivs-student-registration.html">Post a requirement</a>
+ </div>
+</header>
+
+<main class="wrap">
+ <h1>Active Leads</h1>
+ <p class="sub">Every requirement submitted by a student or parent appears here. Contact details stay private until a tutor unlocks the lead from the Tutor dashboard.</p>
+ <div class="stats" id="stats"></div>
+ <div class="tools">
+  <input type="search" id="q" placeholder="Search by name, subject, city or class…" aria-label="Search leads">
+  <select id="fCity" aria-label="Filter by city"><option value="">All cities</option></select>
+  <select id="fMode" aria-label="Filter by teaching mode"><option value="">All modes</option></select>
+  <select id="fAge" aria-label="Filter by how recently posted"><option value="">Any time</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
+ </div>
+ <div class="grid" id="grid" aria-live="polite"></div>
+</main>
+
+<script>
+(function(){
+var SEED=[];
+function read(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function ago(l){
+ if(!l.registered_at)return l.sent||'Recently';
+ var m=Math.round((Date.now()-new Date(l.registered_at).getTime())/60000);
+ if(isNaN(m)||m<2)return 'Just now';if(m<60)return m+' min ago';
+ var h=Math.round(m/60);if(h<24)return h+' hr ago';var d=Math.round(h/24);return d+(d===1?' day':' days')+' ago';
+}
+function maskPhone(p){p=String(p||'').replace(/\D/g,'');return p.length>=4?p.slice(0,2)+'xxxxxx'+p.slice(-2):'Hidden'}
+function load(){
+ var all=read('modivs_active_leads').concat(read('modivs_students_db'));
+ var seen={},out=[];
+ all.forEach(function(l){
+  if(!l||!l.name)return;
+  var key=(l.email||l.id||l.name).toLowerCase();
+  if(seen[key])return;seen[key]=1;
+  if(l.status==='closed'||l.status==='rejected')return;
+  out.push(l);
+ });
+ if(!out.length)SEED.forEach(function(l){out.push(l)}); // demo leads only while there are no real ones
+ out.sort(function(a,b){return (new Date(b.registered_at||0))-(new Date(a.registered_at||0))});
+ return out;
+}
+var leads=load(),$=function(i){return document.getElementById(i)};
+function fillSelect(id,vals){var s=$(id);Array.from(new Set(vals.filter(Boolean))).sort().forEach(function(v){var o=el('option','',v);o.value=v;s.appendChild(o)})}
+fillSelect('fCity',leads.map(function(l){return l.city}));
+var MODE_OPTS=['Online','At student’s place','At tutor’s place'];
+function normMode(m){
+ var s=String(m||'').toLowerCase();
+ if(!s)return '';
+ if(s.indexOf('online')>-1)return 'Online';
+ if(/comes to|student|my home|at home/.test(s))return 'At student’s place';
+ if(/tutor|my place|cent(re|er)/.test(s))return 'At tutor’s place';
+ return '';
+}
+function normModes(list){var out=[];(Array.isArray(list)?list:[]).forEach(function(m){var n=normMode(m);if(n&&out.indexOf(n)<0)out.push(n)});return MODE_OPTS.filter(function(m){return out.indexOf(m)>-1})}
+function fillModes(id){var s=$(id);MODE_OPTS.forEach(function(v){var o=el('option','',v);o.value=v;s.appendChild(o)})}
+fillModes('fMode');
+
+function stats(){
+ var s=$('stats');s.innerHTML='';
+ var today=leads.filter(function(l){return l.registered_at&&Date.now()-new Date(l.registered_at).getTime()<864e5}).length;
+ var subs={};leads.forEach(function(l){(l.subs||[]).forEach(function(x){subs[x]=1})});
+ [['Active leads',leads.length],['New in last 24 hrs',today],['Subjects requested',Object.keys(subs).length]].forEach(function(x){
+  var d=el('div','stat');d.appendChild(el('b','',x[1]));d.appendChild(el('span','',x[0]));s.appendChild(d)});
+}
+function card(l){
+ var c=el('article','card'),t=el('div','top'),n=el('div');
+ n.appendChild(el('h3','',l.name));n.appendChild(el('div','by',l.by||(l.parentName&&l.parentName!==l.name?'Parent: '+l.parentName:'Student')));
+ t.appendChild(n);t.appendChild(el('span','badge','Active'));c.appendChild(t);
+ var d=el('dl','meta');
+ [['Class',[l.cls,l.board].filter(Boolean).join(' · ')],['City',(l.area?l.area+', ':'')+(l.city||'')],['Mode',normModes(l.mode).join(', ')],['Budget',l.budget],['Days',l.freq],['Contact',l.phone?maskPhone(l.phone):'']].filter(function(p){return p[1]}).forEach(function(p){
+  var w=el('div');w.appendChild(el('dt','',p[0]));w.appendChild(el('dd','',p[1]||'—'));d.appendChild(w)});
+ c.appendChild(d);
+ var tg=el('div','tags');(l.subs||[]).concat(l.goals||[]).forEach(function(x){tg.appendChild(el('span','',x))});c.appendChild(tg);
+ if(l.notes)c.appendChild(el('p','note','“'+l.notes+'”'));
+ var f=el('div','foot');f.appendChild(el('span','',ago(l)));
+ var a=el('a','',"Unlock in Tutor dashboard →");a.href='modivs-tutor-dashboard.html';a.style.fontWeight='600';f.appendChild(a);
+ c.appendChild(f);return c;
+}
+function render(){
+ var q=$('q').value.toLowerCase(),city=$('fCity').value,mode=$('fMode').value,age=+$('fAge').value,g=$('grid');g.innerHTML='';
+ var rows=leads.filter(function(l){
+  if(city&&l.city!==city)return false;
+  if(mode&&normModes(l.mode).indexOf(mode)<0)return false;
+  if(age&&l.registered_at&&(Date.now()-new Date(l.registered_at).getTime())>age*864e5)return false;
+  var hay=[l.name,l.city,l.cls,l.board,(l.subs||[]).join(' '),(l.goals||[]).join(' ')].join(' ').toLowerCase();
+  return !q||hay.indexOf(q)>-1;
+ });
+ if(!rows.length){g.appendChild(el('p','empty','No active leads match your search.'));return}
+ rows.forEach(function(l){g.appendChild(card(l))});
+}
+['q','fCity','fMode','fAge'].forEach(function(i){$(i).addEventListener('input',render)});
+stats();render();
+})();
+</script>
+<!-- mv-footer -->
+<footer class="mv-foot"><style>
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
+.mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
+.mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
+.mv-foot a[aria-current=page]{color:#EBB92E}
+.mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
+</style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+</body>
+</html>

@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() { return request.auth != null; }
+    function admin() {
+      return signedIn() && (
+        request.auth.token.admin == true ||
+        request.auth.token.email == 'admin@gmail.com'
+      );
+    }
+    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
+
+    // Users
+    match /users/{uid} {
+      allow read: if true;
+      allow write: if isOwner(uid) || admin();
+    }
+
+    // Tutors Directory
+    match /tutors/{tutorId} {
+      allow read: if true;
+      allow write: if signedIn() || admin();
+    }
+
+    // Students Directory
+    match /students/{studentId} {
+      allow read: if true;
+      allow write: if signedIn() || admin();
+    }
+
+    // Leads & Enquiries
+    match /leads/{leadId} {
+      allow read: if true;
+      allow write: if true;
+    }
+    match /enquiries/{enquiryId} {
+      allow read: if true;
+      allow write: if true;
+    }
+
+    // Relationships
+    match /relationships/{relId} {
+      allow read, write: if true;
+    }
+
+    // 1-to-1 Conversations and Messages
+    match /conversations/{conversationId} {
+      allow read, write: if true;
+
+      match /messages/{messageId} {
+        allow read, write: if true;
+      }
+    }
+  }
+}

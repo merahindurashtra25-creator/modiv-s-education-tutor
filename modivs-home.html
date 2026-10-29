@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modiv’s Education – Home</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
+:root{--navy:#1A2035;--yellow:#EBB92E;--cream:#FEF7EA;--muted:#555b78;--line:#eadfc9;--card:#fff;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth;scroll-padding-top:80px}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+a{color:inherit}
+:is(a,button):focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+.wrap{max-width:1220px;margin:0 auto;padding:0 24px}
+.brand{font-weight:800;font-size:1.3rem;letter-spacing:-.01em;text-decoration:none;display:inline-flex;align-items:center}.brand img{height:44px;width:auto;display:block;mix-blend-mode:multiply}.brand span{background:var(--yellow);padding:0 8px;border-radius:6px;margin-left:2px}
+
+/* menu bar */
+header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line);box-shadow:0 1px 4px rgba(26,32,53,0.03)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
+nav{display:flex;align-items:center}
+nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
+nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;color:var(--navy);white-space:nowrap;transition:background .2s}
+nav a:hover{background:var(--yellow)}
+.acts{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.acts .btn{padding:8px 15px;font-size:.88rem;border-radius:8px;white-space:nowrap}
+.btn{display:inline-block;padding:11px 20px;border-radius:10px;font-weight:600;text-decoration:none;border:2px solid var(--navy);background:var(--navy);color:var(--cream);cursor:pointer;transition:all .15s ease}
+.btn:hover{background:#2a3350}
+.btn.y{background:var(--yellow);color:var(--navy);border-color:var(--yellow)}.btn.y:hover{background:#D9A41C}
+.btn.o{background:transparent;color:var(--navy)}.btn.o:hover{background:var(--navy);color:var(--cream)}
+.burger{display:none;background:var(--navy);color:var(--cream);border:0;border-radius:8px;padding:8px 12px;font:inherit;font-weight:600;cursor:pointer}
+
+/* hero */
+.hero{padding:72px 0 64px}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:48px;align-items:center}
+.pill{display:inline-block;background:var(--yellow);padding:5px 14px;border-radius:99px;font-weight:600;font-size:.85rem}
+h1{font-size:clamp(2.2rem,5vw,3.6rem);line-height:1.05;letter-spacing:-.03em;font-weight:800;margin:18px 0}
+.lead{font-size:1.15rem;color:var(--muted);max-width:520px;margin:0 0 28px}
+.cta{display:flex;gap:12px;flex-wrap:wrap}
+.panel{background:var(--navy);color:var(--cream);border-radius:20px;padding:28px}
+.panel h2{margin:0 0 4px;font-size:1.2rem}
+.panel p{margin:0 0 18px;color:#c9cde0;font-size:.92rem}
+.panel label{display:block;font-weight:600;font-size:.85rem;margin:12px 0 5px}
+.panel select{width:100%;padding:11px 12px;border-radius:8px;border:0;font:inherit;background:var(--cream);color:var(--navy)}
+.panel .btn{width:100%;margin-top:18px;text-align:center}
+
+/* sections */
+section{padding:64px 0}
+h2.t{font-size:clamp(1.6rem,3vw,2.2rem);letter-spacing:-.02em;margin:0 0 8px;font-weight:800}
+.s{color:var(--muted);margin:0 0 32px}
+.grid4{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:14px}
+.sub{display:block;padding:20px;background:var(--card);border:1.5px solid var(--line);border-radius:14px;text-decoration:none;font-weight:600}
+.sub:hover{border-color:var(--navy);background:var(--yellow)}
+.sub small{display:block;font-weight:400;color:var(--muted)}
+.sub:hover small{color:var(--navy)}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:20px}
+.role{padding:32px;border-radius:20px}
+.role.n{background:var(--navy);color:var(--cream)}
+.role.y{background:var(--yellow)}
+.role h3{margin:0 0 8px;font-size:1.5rem}
+.role ul{padding-left:18px;margin:12px 0 22px}
+.role.n .btn{background:var(--yellow);color:var(--navy);border-color:var(--yellow)}
+.role.y .btn{background:var(--navy);color:var(--cream)}
+.steps{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:20px;counter-reset:s}
+.step{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:22px}
+.step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--navy);color:var(--yellow);font-weight:800;margin-bottom:12px}
+.step h3{margin:0 0 4px}.step p{margin:0;color:var(--muted)}
+
+footer{background:var(--navy);color:var(--cream);padding:48px 0 32px}
+footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
+footer h4{color:var(--yellow);margin:0 0 10px}
+footer ul{list-style:none;padding:0;margin:0}
+footer li{margin:6px 0}
+footer a{text-decoration:none;color:#d8dcec}footer a:hover{color:var(--yellow)}
+footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color:#9aa1bd;font-size:.88rem}
+
+/* featured tutors */
+.tgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:18px;margin-bottom:26px}
+.tc{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:10px;cursor:pointer;transition:transform .15s ease, border-color .15s ease}
+.tc:hover{border-color:var(--navy);transform:translateY(-2px)}
+.tc .h{display:flex;gap:12px;align-items:center}
+.tc .av{width:56px;height:56px;border-radius:50%;background:var(--navy);color:var(--yellow);display:grid;place-items:center;font-weight:800;overflow:hidden;flex-shrink:0}
+.tc .av img{width:100%;height:100%;object-fit:cover}
+.tc h3{margin:0;font-size:1.05rem}.tc .hl{margin:0;font-size:.9rem;font-weight:600}
+.tc .tg{display:flex;gap:6px;flex-wrap:wrap}.tc .tg span{background:var(--yellow);border-radius:99px;padding:2px 10px;font-size:.78rem;font-weight:600}
+.tc .ft{margin-top:auto;display:flex;justify-content:space-between;align-items:center;padding-top:10px;border-top:1px solid var(--line);font-size:.85rem;color:var(--muted)}
+.tc .ft b{color:var(--navy);font-size:1.1rem}
+
+@media(max-width:1024px){
+ .burger{display:block}
+ nav{position:absolute;left:0;right:0;top:72px;background:var(--cream);border-bottom:1px solid var(--line);box-shadow:0 12px 24px rgba(26,32,53,0.08);display:none;padding:16px 24px 20px}
+ nav.open{display:block}
+ nav ul{flex-direction:column;gap:8px}
+}
+@media(max-width:768px){
+ .hero .wrap,.two,footer .cols{grid-template-columns:1fr}
+ .hero{padding:40px 0}
+ .acts .o{display:none}
+ .acts .btn{padding:7px 12px;font-size:.82rem}
+}
+@media(max-width:480px){
+ .brand img{height:36px}
+ .acts{gap:6px}
+ .acts .btn{padding:6px 10px;font-size:.78rem}
+}
+
+/* contact section */
+#contact .cgrid{display:grid;grid-template-columns:1fr 1fr;gap:24px;align-items:stretch}
+#contact .cbox{background:var(--cream);border:1px solid var(--line);border-radius:16px;padding:28px}
+#contact .cbox h3{margin:0 0 6px;font-size:1.2rem}
+#contact .cbox p{margin:0 0 16px;color:var(--muted)}
+#contact .cbox.dark{background:var(--navy);color:var(--cream);border-color:var(--navy)}
+#contact .cbox.dark p{color:#c9cde0}
+#contact .clist{list-style:none;margin:0;padding:0;display:grid;gap:14px}
+#contact .clist li{display:flex;gap:12px;align-items:flex-start}
+#contact .clist i{flex:0 0 38px;height:38px;border-radius:10px;background:var(--yellow);display:grid;place-items:center}
+#contact .clist svg{width:20px;height:20px;fill:none;stroke:var(--navy);stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+#contact .clist b{display:block;font-size:.8rem;text-transform:uppercase;letter-spacing:.04em;color:var(--muted)}
+#contact .clist a{text-decoration:none;font-weight:600}
+#contact .clist a:hover{text-decoration:underline}
+#contact .cbox.dark .btn{margin-top:4px}
+#contact .cbox.dark .btn.o{color:var(--cream);border-color:var(--cream);margin-left:8px}
+#contact .cbox.dark .btn.o:hover{background:var(--cream);color:var(--navy)}
+@media(max-width:768px){#contact .cgrid{grid-template-columns:1fr}#contact .cbox.dark .btn.o{margin-left:0}}
+</style>
+<script src="modivs-import-data.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js" defer></script>
+<script src="firebase-sync.js" defer></script>
+</head>
+<body>
+<header>
+ <div class="wrap bar">
+  <a class="brand" href="#top"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="nav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html" id="navHome" aria-current="page">Home</a></li>
+    <li><a href="modivs-tutors.html" id="navTutors">Tutors</a></li>
+    <li><a href="#subjects" id="navSubjects">Subjects</a></li>
+    <li><a href="#how" id="navHow">How it works</a></li>
+    <li><a href="modivs-active-leads.html" id="navActiveLeads">Active leads</a></li>
+    <li><a href="#contact" id="navContact">Contact us</a></li>
+   </ul>
+  </nav>
+  <div class="acts" id="navActs">
+   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" id="navSignupStudent" href="modivs-student-registration.html">Sign up (student)</a>
+   <a class="btn y" id="navSignupTutor" href="modivs-education.html#tutor-signup">Sign up as a tutor</a>
+   <button class="burger" id="burger" aria-expanded="false" aria-controls="nav">Menu</button>
+  </div>
+ </div>
+</header>
+
+<main id="top">
+ <div class="hero">
+  <div class="wrap">
+   <div>
+    <span class="pill">Tutors and learners, together</span>
+    <h1>Find the right tutor for every learner.</h1>
+    <p class="lead">Browse verified tutors for online, offline and group tuitions by subject, level and fee. Send a request in minutes and start learning with a demo class.</p>
+    <div class="cta">
+     <a class="btn y" id="heroFindTutor" href="modivs-student-registration.html">Find a tutor</a>
+     <a class="btn" id="heroBecomeTutor" href="modivs-education.html#tutor-signup">Become a tutor</a>
+    </div>
+   </div>
+   <form class="panel" id="find" aria-label="Quick search">
+    <h2>Quick search</h2><p>Tell us what you need to get started.</p>
+    <label for="qs">Subject</label>
+    <select id="qs"><option>Mathematics</option><option>Physics</option><option>Chemistry</option><option>Biology</option><option>English</option><option>Computer Science</option></select>
+    <label for="ql">Level</label>
+    <select id="ql"><option>Primary (1–5)</option><option>Middle (6–8)</option><option>Secondary (9–10)</option><option>Senior secondary (11–12)</option><option>College / University</option></select>
+    <label for="qm">Teaching mode</label>
+    <select id="qm"><option>Online</option><option>Offline (At my home)</option><option>Offline (At tutor’s place)</option><option>Both Online &amp; Offline</option></select>
+    <label for="qt">Tuition format</label>
+    <select id="qt"><option>1-on-1 Individual tuition</option><option>Group tuition (Small batches)</option><option>Flexible (1-on-1 or Group)</option></select>
+    <button type="submit" class="btn y" id="btnSearchTutors" style="width:100%;text-align:center;border:0;cursor:pointer;">Search tutors</button>
+   </form>
+  </div>
+ </div>
+
+ <section id="tutors" style="background:var(--card)">
+  <div class="wrap">
+   <h2 class="t">Meet our verified tutors</h2><p class="s">Real profiles, reviewed and approved by our team. See subjects, experience and fees before you send a request.</p>
+   <div class="tgrid" id="featTutors"></div>
+   <a class="btn y" href="modivs-tutors.html">View all tutors</a>
+  </div>
+ </section>
+
+ <section id="subjects" style="background:var(--card)">
+  <div class="wrap">
+   <h2 class="t">Popular subjects</h2><p class="s">Pick a subject to see tutors who teach it.</p>
+   <div class="grid4">
+    <a class="sub" href="modivs-student-registration.html">Mathematics<small>Classes 1–12, exams</small></a>
+    <a class="sub" href="modivs-student-registration.html">Physics<small>Senior secondary, JEE</small></a>
+    <a class="sub" href="modivs-student-registration.html">Chemistry<small>Senior secondary, NEET</small></a>
+    <a class="sub" href="modivs-student-registration.html">Biology<small>Classes 9–12, NEET</small></a>
+    <a class="sub" href="modivs-student-registration.html">English<small>Grammar, writing, speaking</small></a>
+    <a class="sub" href="modivs-student-registration.html">Computer Science<small>School and college</small></a>
+    <a class="sub" href="modivs-student-registration.html">Hindi and Punjabi<small>Reading, writing, literature</small></a>
+    <a class="sub" href="modivs-student-registration.html">Music and Art<small>Beginner to advanced</small></a>
+   </div>
+  </div>
+ </section>
+
+ <section id="how">
+  <div class="wrap">
+   <h2 class="t">How it works</h2><p class="s">Four steps from sign up to first class.</p>
+   <div class="steps">
+    <div class="step"><h3>Register</h3><p>Create a parent, student or tutor account.</p></div>
+    <div class="step"><h3>Share needs</h3><p>Choose subjects, online/offline mode, 1-on-1 or group tuitions, and budget.</p></div>
+    <div class="step"><h3>Pick a tutor</h3><p>Compare verified profiles and send a request.</p></div>
+    <div class="step"><h3>Start learning</h3><p>Book a demo class and set your weekly schedule.</p></div>
+   </div>
+  </div>
+ </section>
+
+ <section id="join" style="padding-top:0">
+  <div class="wrap two">
+   <div class="role n">
+    <h3>For students and parents</h3>
+    <p>Find tutors who match your learning goals and budget.</p>
+    <ul><li>Search by subject, level, fee, online/offline mode and group tuitions</li><li>Choose 1-on-1 personalized attention or interactive group batches</li><li>Send direct requests and book demo classes</li></ul>
+    <a class="btn" href="modivs-student-registration.html">Register as student or parent</a>
+   </div>
+   <div class="role y">
+    <h3>For tutors</h3>
+    <p>Build a profile and reach learners near you or online.</p>
+    <ul><li>Offer online, offline home tuition, or host group tuition batches</li><li>Set your own fees, batch sizes and availability</li><li>Manage student requests and schedule classes easily</li></ul>
+    <a class="btn" id="regTutorBtn" href="modivs-education.html#tutor-signup">Register as a tutor</a>
+   </div>
+  </div>
+ </section>
+ <section id="contact" style="background:var(--card)">
+  <div class="wrap">
+   <h2 class="t">Contact us</h2><p class="s">Questions about tutoring? Reach the Modiv’s team any way you like.</p>
+   <div class="cgrid">
+    <div class="cbox">
+     <ul class="clist">
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></i><span><b>Call us</b><a href="tel:+919896930443">+91 98969 30443</a><br><a href="tel:+918054167008">+91 80541 67008</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.5 2 2.5 4 5 5l1.5-1.2-2-1.3-.9.7c-.8-.4-1.5-1.1-1.9-1.9l.7-.9-1.3-2z"/></svg></i><span><b>WhatsApp</b><a href="https://wa.me/message/AZVJXD4HG3DOG1" target="_blank" rel="noopener">Chat with us</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Email</b><a href="mailto:support@modivhometutors.com">support@modivhometutors.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></i><span><b>Visit us</b>Chandigarh, India</span></li>
+     </ul>
+    </div>
+    <div class="cbox dark">
+     <h3>Send us a message</h3>
+     <p>Parents, students and tutors can write to us on the contact page. Tell us what you need and we will reply on the phone number or email you share.</p>
+     <p style="margin-bottom:16px"><b>Support hours:</b> Monday to Saturday, 9 AM to 6 PM</p>
+     <a class="btn y" href="modivs-contact.html">Go to contact page</a>
+     <a class="btn o" href="modivs-contact.html#faq">Quick answers</a>
+    </div>
+   </div>
+  </div>
+ </section>
+</main>
+
+<footer>
+ <div class="wrap">
+  <div class="cols">
+   <div><a class="brand" href="#top" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;margin-bottom:12px;"><img src="logo.png" alt="Modiv’s Education" style="height:36px;display:block;mix-blend-mode:normal;"></a><p style="color:#c9cde0;max-width:320px">Connecting tutors with students and parents, one class at a time.</p></div>
+   <div><h4>Explore</h4><ul><li><a href="#find">Find a tutor</a></li><li><a href="modivs-tutors.html">Tutors</a></li><li><a href="#subjects">Subjects</a></li><li><a href="#how">How it works</a></li><li><a href="modivs-contact.html">Contact us</a></li></ul></div>
+   <div><h4>Account</h4><ul><li><a href="modivs-education.html#login">Log in</a></li><li><a href="modivs-tutor-dashboard.html">Tutor dashboard</a></li><li><a href="modivs-student-registration.html">Student / parent sign up</a></li><li><a href="modivs-education.html#tutor-signup">Tutor sign up</a></li></ul></div>
+   <div><h4>Legal</h4><ul><li><a href="modivs-privacy-policy.html">Privacy Policy</a></li><li><a href="modivs-terms.html">Terms &amp; Conditions</a></li><li><a href="modivs-refund-policy.html">Refund Policy</a></li><li><a href="modivs-contact.html">Contact us</a></li></ul></div>
+  </div>
+  <div class="copy">© 2026 Modiv’s Education. All rights reserved.</div>
+ </div>
+</footer>
+
+<script>
+(function(){
+ var b=document.getElementById('burger'),n=document.getElementById('nav');
+ if(b&&n){
+  b.addEventListener('click',function(){var o=n.classList.toggle('open');b.setAttribute('aria-expanded',o)});
+  n.addEventListener('click',function(e){if(e.target.tagName==='A'){n.classList.remove('open');b.setAttribute('aria-expanded',false)}});
+ }
+
+ var authUser = null;
+ try {
+  authUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
+ } catch(err){}
+
+ var navLogin = document.getElementById('navLoginBtn');
+ var heroFind = document.getElementById('heroFindTutor');
+ var heroTutor = document.getElementById('heroBecomeTutor');
+ var regTutor = document.getElementById('regTutorBtn');
+
+ // Featured tutors (approved profiles only)
+ (function(){
+  var box=document.getElementById('featTutors');if(!box)return;
+  var seed=[];
+  function rd(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+  var by={};seed.forEach(function(t){by[t.email]=t});
+  rd('modivs_tutors_db').concat(rd('modivs_submitted_tutors')).forEach(function(t){if(t&&t.email)by[t.email]=Object.assign({},by[t.email]||{},t)});
+  var all=Object.keys(by).map(function(k){return by[k]}).filter(function(t){return t.status==='approved'&&t.name});
+  var real=all.filter(function(t){return !t.is_demo});
+  var list=(real.length?real:all).sort(function(a,b){return (+b.years||0)-(+a.years||0)}).slice(0,3);
+  function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+  list.forEach(function(t){
+   var c=el('article','tc'),h=el('div','h'),av=el('div','av');
+   var ini=String(t.name).split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
+   if(typeof t.photo==='string'&&(t.photo.indexOf('data:image/')===0||t.photo.indexOf('https://www.modivhometutors.com/')===0)){var i=document.createElement('img');i.alt='Photo of '+t.name;i.loading='lazy';i.referrerPolicy='no-referrer';i.onerror=function(){av.textContent=ini};i.src=t.photo;av.appendChild(i)}
+   else av.textContent=ini;
+   h.appendChild(av);h.appendChild(el('h3','',t.name));c.appendChild(h);
+   c.appendChild(el('p','hl',t.headline||''));
+   var tg=el('div','tg');(t.subs||[]).slice(0,3).forEach(function(x){tg.appendChild(el('span','',x))});c.appendChild(tg);
+   var ft=el('div','ft');ft.appendChild(el('span','',(t.city||'Online')+' · '+(+t.years>0?t.years+' yrs':'Fresher')));
+   var f=el('span');f.appendChild(el('b','','₹'+(t.fee||'—')));f.appendChild(document.createTextNode('/hr'));ft.appendChild(f);c.appendChild(ft);
+   c.addEventListener('click', function(){ window.location.href = 'modivs-tutors.html'; });
+   box.appendChild(c);
+  });
+ })();
+
+ var findForm = document.getElementById('find');
+
+ if(authUser && authUser.role === 'Student / Parent'){
+  if(navLogin){ navLogin.textContent = 'Dashboard'; navLogin.href = 'modivs-student-dashboard.html'; }
+  if(heroFind){ heroFind.href = 'modivs-student-dashboard.html'; heroFind.textContent = 'Go to Dashboard'; }
+ } else if(authUser && authUser.role === 'Tutor'){
+  if(navLogin){ navLogin.textContent = 'Dashboard'; navLogin.href = 'modivs-tutor-dashboard.html'; }
+  if(heroTutor){ heroTutor.href = 'modivs-tutor-dashboard.html'; heroTutor.textContent = 'Go to Dashboard'; }
+  if(regTutor){ regTutor.href = 'modivs-tutor-dashboard.html'; regTutor.textContent = 'Go to Dashboard'; }
+ }
+
+ if(authUser && (authUser.role === 'Student / Parent' || authUser.role === 'Tutor')){
+  ['navSignupStudent','navSignupTutor'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none'});
+  if(navLogin && !document.getElementById('navLogoutBtn')){
+   var lo=document.createElement('a');lo.className='btn o';lo.id='navLogoutBtn';lo.href='modivs-education.html#login';lo.textContent='Log out';
+   lo.addEventListener('click',function(){try{localStorage.removeItem('modivs_auth_user')}catch(e){}});
+   navLogin.parentNode.insertBefore(lo,navLogin.nextSibling);
+  }
+ }
+
+ if(findForm){
+  findForm.addEventListener('submit', function(e){
+   e.preventDefault();
+   var searchIntent = {
+    subject: document.getElementById('qs').value,
+    level: document.getElementById('ql').value,
+    mode: document.getElementById('qm').value,
+    format: document.getElementById('qt').value
+   };
+   try {
+    localStorage.setItem('modivs_search_intent', JSON.stringify(searchIntent));
+   } catch(err){}
+
+   if(authUser && authUser.role === 'Student / Parent'){
+    window.location.href = 'modivs-student-dashboard.html';
+   } else {
+    window.location.href = 'modivs-student-registration.html';
+   }
+  });
+ }
+})();
+</script>
+</body>
+</html>

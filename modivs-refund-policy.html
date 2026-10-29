@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Refund and Cancellation Policy | Modiv’s Education</title>
+<meta name="description" content="Modivs Education’s refund and cancellation policy for digital products, tuition classes and educational services.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
+:root{--navy:#1A2035;--yellow:#EBB92E;--cream:#FEF7EA;--muted:#555b78;--line:#eadfc9;--card:#fff;--teal:#0b5c4c;--teal-bg:#dff1ec;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-padding-top:96px;scroll-behavior:smooth}
+@media (prefers-reduced-motion:reduce){html{scroll-behavior:auto}}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.7}
+a{color:inherit}
+:is(a,button,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:3px;border-radius:4px}
+.wrap{max-width:1120px;margin:0 auto;padding:0 24px}
+
+/* header (same as the rest of the site) */
+header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line)}
+.bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
+.brand img{height:44px;width:auto;display:block;mix-blend-mode:multiply}
+nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
+nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;white-space:nowrap}
+nav a:hover,nav a[aria-current]{background:var(--yellow)}
+.btn{display:inline-block;padding:9px 16px;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;border:2px solid var(--navy);background:var(--navy);color:var(--cream);font-family:inherit}
+.btn.y{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.btn.y:hover{background:#D9A41C;border-color:#D9A41C}
+
+/* title */
+.hero{padding:48px 0 28px;border-bottom:1px solid var(--line)}
+.stamp{display:inline-block;background:var(--yellow);padding:4px 14px;border-radius:99px;font-weight:600;font-size:.82rem}
+h1{font-size:clamp(2rem,4.6vw,3rem);line-height:1.1;letter-spacing:-.02em;margin:16px 0 12px}
+.lede{color:var(--muted);max-width:660px;margin:0;font-size:1.02rem}
+
+/* layout: contents rail + document */
+.layout{display:grid;grid-template-columns:240px minmax(0,1fr);gap:56px;padding-top:40px;padding-bottom:72px;align-items:start}
+.toc{position:sticky;top:96px;max-height:calc(100vh - 120px);overflow:auto;padding-right:6px}
+.toc h2{font-size:.95rem;margin:0 0 10px}
+.toc ol{list-style:none;margin:0;padding:0;border-left:2px solid var(--line)}
+.toc a{display:block;padding:6px 14px;margin-left:-2px;border-left:2px solid transparent;text-decoration:none;font-size:.88rem;color:var(--muted);line-height:1.4}
+.toc a:hover{color:var(--navy)}
+.toc a.on{color:var(--navy);font-weight:600;border-left-color:var(--navy)}
+.toc-m{display:none}
+
+.doc{max-width:740px}
+.doc section{padding-top:8px;margin-bottom:44px}
+.doc h2{font-size:1.5rem;line-height:1.25;letter-spacing:-.01em;margin:0 0 14px}
+.doc h3{font-size:1.1rem;margin:28px 0 8px}
+.doc h4{font-size:.98rem;margin:22px 0 6px}
+.doc p{margin:0 0 14px}
+.doc ul{margin:0 0 16px;padding-left:22px}
+.doc li{margin:6px 0}
+.doc li::marker{color:var(--yellow)}
+.doc a{color:var(--teal);text-underline-offset:3px}
+.doc a:hover{color:var(--navy)}
+
+.summary{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:18px 22px;margin:0 0 40px}
+.summary p{margin:0}
+
+dl.defs{margin:0;border-top:1px solid var(--line)}
+dl.defs div{display:grid;grid-template-columns:170px 1fr;gap:6px 20px;padding:12px 0;border-bottom:1px solid var(--line)}
+dl.defs dt{font-weight:600}
+dl.defs dd{margin:0}
+
+.doc ul.list-inline{display:flex;flex-wrap:wrap;gap:8px;list-style:none;padding:0;margin:0 0 16px}
+.list-inline li{margin:0;background:var(--teal-bg);color:var(--teal);border:1px solid #b9dfd5;border-radius:99px;padding:2px 14px;font-size:.88rem;font-weight:600}
+
+.cookie{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px 20px;margin:0 0 12px}
+.cookie h4{margin:0 0 4px}
+.cookie .meta{display:flex;flex-wrap:wrap;gap:6px 10px;margin:0 0 8px;font-size:.82rem}
+.cookie .meta span{background:var(--cream);border:1px solid var(--line);border-radius:99px;padding:1px 10px}
+.cookie p{margin:0}
+
+.doc section.contact{background:var(--navy);color:var(--cream);border-radius:16px;padding:24px 28px}
+.contact h2{margin-top:0}
+.contact p{margin:0 0 6px}
+.contact a{color:var(--yellow);font-weight:600}
+
+.contact{background:var(--navy);color:var(--cream);border-radius:16px;padding:24px 28px}
+.contact h2{margin-top:0}
+.contact p{margin:0 0 6px}
+.contact a{color:var(--yellow);font-weight:600}
+.doc ul.plain{list-style:disc}
+.note{background:var(--card);border:1.5px solid var(--line);border-left:4px solid var(--yellow);border-radius:10px;padding:14px 18px;margin:0 0 16px}
+.note p{margin:0}
+
+/* footer (same as the home page) */
+footer{background:var(--navy);color:var(--cream);padding:40px 0 28px}
+footer .row{display:flex;justify-content:space-between;gap:24px;flex-wrap:wrap;align-items:center}
+footer ul{list-style:none;display:flex;gap:20px;padding:0;margin:0;flex-wrap:wrap}
+footer a{text-decoration:none;color:#d8dcec}footer a:hover{color:var(--yellow)}
+footer .copy{margin-top:24px;padding-top:18px;border-top:1px solid #34406a;color:#9aa1bd;font-size:.88rem}
+
+@media (max-width:900px){
+ .layout{grid-template-columns:1fr;gap:8px;padding-top:24px}
+ .toc{display:none}
+ .toc-m{display:block;background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:4px 16px;margin-bottom:24px}
+ .toc-m summary{cursor:pointer;font-weight:600;padding:10px 0}
+ .toc-m ol{margin:0 0 10px;padding-left:20px}
+ .toc-m li{margin:4px 0}
+ .toc-m a{text-decoration:none;font-size:.92rem}
+}
+@media (max-width:640px){
+ .bar{height:auto;padding:10px 0;flex-wrap:wrap}
+ nav ul{flex-wrap:wrap}
+ #navJoin{display:none}
+ dl.defs div{grid-template-columns:1fr}
+ .doc section.contact{padding:20px}
+}
+@media print{header,.toc,.toc-m,footer{display:none}.layout{display:block}body{background:#fff}}
+</style>
+</head>
+<body>
+
+<header>
+ <div class="wrap bar">
+  <a class="brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav aria-label="Main menu"><ul>
+   <li><a href="index.html">Home</a></li>
+   <li><a href="modivs-tutors.html">Tutors</a></li>
+   <li><a href="modivs-active-leads.html">Active leads</a></li>
+   <li><a href="modivs-contact.html">Contact us</a></li>
+  </ul></nav>
+  <a class="btn y" id="navJoin" href="modivs-education.html#tutor-signup">Become a tutor</a>
+ </div>
+</header>
+
+<main>
+ <div class="hero">
+  <div class="wrap">
+   <span class="stamp">Modivs Education, Chandigarh</span>
+   <h1>Refund and Cancellation Policy</h1>
+   <p class="lede">Please read this refund and return policy carefully before you make a purchase.</p>
+  </div>
+ </div>
+
+ <div class="wrap layout">
+
+  <aside class="toc" aria-label="On this page">
+   <h2>On this page</h2>
+   <ol id="tocList"><li><a href="#intro">Introduction</a></li><li><a href="#policy">No refund and cancellation policy</a></li><li><a href="#exceptions">Exceptional circumstances</a></li><li><a href="#contact">Contact us</a></li></ol>
+  </aside>
+
+  <article class="doc">
+
+   <details class="toc-m">
+    <summary>On this page</summary>
+    <ol><li><a href="#intro">Introduction</a></li><li><a href="#policy">No refund and cancellation policy</a></li><li><a href="#exceptions">Exceptional circumstances</a></li><li><a href="#contact">Contact us</a></li></ol>
+   </details>
+
+   <section id="intro">
+    <div class="summary">
+     <p>Welcome to Modivs Education! We appreciate your interest in our digital products and tuition classes. Please read our refund and return policy carefully before making a purchase.</p>
+    </div>
+   </section>
+
+   <section id="policy">
+    <h2>No refund and cancellation policy</h2>
+    <p>At Modivs Education, we strive to provide the best educational services and digital products to our customers. As our products and services are digital in nature and delivered instantly, we have a strict no refund and no cancellation policy. By purchasing our products and services, you agree to the following terms:</p>
+
+    <h3>Non-refundable products and services</h3>
+    <ul>
+     <li>All sales of digital products, including e-books, online courses, and digital resources, are final. Once a digital product has been purchased, it cannot be refunded.</li>
+     <li>All tuition classes and educational services offered by Modivs Education are non-refundable. This includes any fees paid for enrollment, classes, tutoring sessions, or educational consultations.</li>
+    </ul>
+
+    <h3>No cancellation of orders</h3>
+    <p>Once an order for a digital product or service has been placed and payment has been processed, it cannot be canceled. Please ensure that you review your order carefully before making a purchase.</p>
+   </section>
+
+   <section id="exceptions">
+    <h2>Exceptional circumstances</h2>
+    <div class="note">
+     <p>In rare and exceptional cases, such as technical issues that prevent access to digital content or unforeseen circumstances affecting the delivery of services, Modivs Education may consider a refund or rescheduling of services on a case-by-case basis. Any such decisions will be made at the sole discretion of Modivs Education.</p>
+    </div>
+   </section>
+
+   <section id="contact" class="contact">
+    <h2>Contact us</h2>
+    <p>If you have any questions or concerns regarding our refund and return policy, please feel free to contact us at <a href="mailto:modivhometutions@gmail.com">modivhometutions@gmail.com</a> or visit our website at <a href="https://www.modivhometutors.com" rel="noopener">www.modivhometutors.com</a>.</p>
+    <p>Thank you for choosing Modivs Education. We are committed to providing you with high-quality educational services and digital products. Your satisfaction is important to us, and we are here to support your learning journey.</p>
+    <p><strong>Modivs Education Chandigarh</strong></p>
+   </section>
+
+  </article>
+ </div>
+</main>
+
+<footer>
+ <div class="wrap">
+  <div class="row">
+   <a class="brand" href="index.html" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;"><img src="logo.png" alt="Modiv’s Education" style="height:36px;display:block;mix-blend-mode:normal;"></a>
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-tutors.html">Tutors</a></li>
+    <li><a href="modivs-privacy-policy.html">Privacy Policy</a></li>
+    <li><a href="modivs-terms.html">Terms and Conditions</a></li>
+    <li><a href="modivs-refund-policy.html" aria-current="page">Refund Policy</a></li>
+    <li><a href="modivs-contact.html">Contact us</a></li>
+   </ul>
+  </div>
+  <div class="copy">© 2026 Modiv’s Education. All rights reserved.</div>
+ </div>
+</footer>
+
+<script>
+// Highlight the current section in the contents rail while scrolling.
+(function(){
+ var links=[].slice.call(document.querySelectorAll('#tocList a'));
+ if(!links.length||!('IntersectionObserver' in window))return;
+ var map={};links.forEach(function(a){map[a.getAttribute('href').slice(1)]=a});
+ var io=new IntersectionObserver(function(entries){
+  entries.forEach(function(e){
+   if(e.isIntersecting){links.forEach(function(a){a.classList.remove('on')});var a=map[e.target.id];if(a)a.classList.add('on')}
+  });
+ },{rootMargin:'-96px 0px -70% 0px',threshold:0});
+ Object.keys(map).forEach(function(id){var s=document.getElementById(id);if(s)io.observe(s)});
+})();
+</script>
+</body>
+</html>

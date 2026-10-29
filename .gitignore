@@ -1,0 +1,12 @@
+# Vercel
+.vercel
+node_modules
+.env*.local
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Antigravity / Agent Scratch
+scratch/
+*.log
