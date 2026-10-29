@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -6,6 +6,11 @@
 <title>Modiv’s Education</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
 <style>
 :root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--err:#b3261e;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
@@ -80,8 +85,9 @@ input.bad{border-color:var(--err)}
    <a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education"></a>
    
    <div class="login-tabs" role="tablist" style="display:flex;background:var(--mist);padding:4px;border-radius:10px;margin-bottom:20px;gap:4px;">
-    <button type="button" id="tabUser" class="ltab on" style="flex:1;padding:9px 12px;border:0;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;background:var(--white);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:all .15s ease;">User / Tutor</button>
-    <button type="button" id="tabAdmin" class="ltab" style="flex:1;padding:9px 12px;border:0;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s ease;">Admin Portal</button>
+    <button type="button" id="tabStudent" class="ltab on" style="flex:1;padding:9px 12px;border:0;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;background:var(--white);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:all .15s ease;">Student / Parent</button>
+     <button type="button" id="tabTutor" class="ltab" style="flex:1;padding:9px 12px;border:0;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s ease;">Tutor</button>
+     <button type="button" id="tabAdmin" class="ltab" style="flex:1;padding:9px 12px;border:0;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s ease;">Admin Portal</button>
    </div>
 
    <h1 id="loginTitle">Log in</h1>
@@ -102,24 +108,20 @@ input.bad{border-color:var(--err)}
       </div>
     </div>
    </form>
-   <p class="switch" id="signupSwitch">New here? <a data-go="signup" role="button" tabindex="0">Create an account</a> · <a href="modivs-student-registration.html" style="color:var(--accent-d);font-weight:600;">Find a tutor</a> · <a href="modivs-tutor-profile.html" style="color:var(--accent-d);font-weight:600;">Tutor sign up</a></p>
+   <p class="switch" id="signupSwitch">New here? <a id="signupLink" href="modivs-student-registration.html">Sign up as a student / parent</a></p>
   </div>
  </section>
  <aside class="auth-side"><p>Find the right tutor, or the right students.</p><small>Tutors and parents, in one place.</small></aside>
 </main>
 
-<!-- SIGN UP -->
+<!-- TUTOR SIGN UP (students / parents sign up on modivs-student-registration.html) -->
 <main id="signup" class="auth hide">
  <section class="auth-form">
   <div class="auth-card">
    <a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education"></a>
-   <h1>Create your account</h1>
-   <p class="sub">Choose how you’ll use Modiv’s.</p>
+   <h1 id="signTitle">Create your tutor account</h1>
+   <p class="sub" id="signSub">Sign up with your name, email and password. You’ll set up your tutor profile next.</p>
    <form id="signForm" novalidate>
-    <div class="roles" role="radiogroup" aria-label="Account type">
-     <div><input type="radio" name="role" id="rTutor" value="Tutor" checked><label for="rTutor">Tutor<small>Teach students</small></label></div>
-     <div><input type="radio" name="role" id="rStudent" value="Student / Parent"><label for="rStudent">Student / Parent<small>Find a tutor</small></label></div>
-    </div>
     <label for="sName">Full name</label>
     <input id="sName" type="text" autocomplete="name">
     <label for="sEmail">Email</label>
@@ -129,9 +131,9 @@ input.bad{border-color:var(--err)}
     <label for="sPass2">Confirm password</label>
     <input id="sPass2" type="password" autocomplete="new-password">
     <div class="msg" id="sMsg" role="alert"></div>
-    <button class="btn" type="submit">Sign up</button>
+    <button class="btn" type="submit">Create tutor account</button>
    </form>
-   <p class="switch">Already have an account? <a data-go="login" role="button" tabindex="0">Log in</a></p>
+   <p class="switch">Already have an account? <a data-go="login" role="button" tabindex="0">Log in</a> · <a href="modivs-student-registration.html">Student / parent sign up</a></p>
   </div>
  </section>
  <aside class="auth-side"><p>Set up your profile in a few minutes.</p><small>You can edit it any time.</small></aside>
@@ -147,7 +149,6 @@ input.bad{border-color:var(--err)}
      <a href="modivs-tutor-dashboard.html" style="margin-right:12px;color:var(--ink);text-decoration:none;">Tutor Dashboard</a>
      
      <a href="#login" style="margin-right:12px;color:var(--ink);text-decoration:none;">Login</a>
-     <a href="#signup" style="margin-right:12px;color:var(--ink);text-decoration:none;">Sign Up</a>
    </nav>
   </header>
  <main class="wrap">
@@ -212,6 +213,13 @@ input.bad{border-color:var(--err)}
     }
   }
 
+  function setSignupLink(kind){
+    var a = $('signupLink');
+    if(!a) return;
+    if(kind === 'tutor'){ a.textContent = 'Sign up as a tutor'; a.setAttribute('href', '#tutor-signup'); }
+    else { a.textContent = 'Sign up as a student / parent'; a.setAttribute('href', 'modivs-student-registration.html'); }
+  }
+
   function setLoginMode(mode){
     loginMode = mode;
     var tabStudent = $('tabStudent'), tabTutor = $('tabTutor'), tabAdmin = $('tabAdmin');
@@ -255,6 +263,7 @@ input.bad{border-color:var(--err)}
       emailInput.placeholder = 'e.g. priya@example.com';
       submitBtn.textContent = 'Log in as Tutor';
       if(signupSwitch) signupSwitch.style.display = '';
+      setSignupLink('tutor');
     } else {
       if(tabStudent){
         tabStudent.style.background = 'var(--white)';
@@ -268,6 +277,7 @@ input.bad{border-color:var(--err)}
       emailInput.placeholder = 'e.g. name@example.com';
       submitBtn.textContent = 'Log in as Student';
       if(signupSwitch) signupSwitch.style.display = '';
+      setSignupLink('student');
     }
     renderDemoBtns(mode);
   }
@@ -315,47 +325,71 @@ input.bad{border-color:var(--err)}
 
     if(!emailOk(emailVal)){ bad(em, true); msg.textContent = 'Enter a valid email address.'; return; }
     if(!pw.value){ bad(pw, true); msg.textContent = 'Enter your password.'; return; }
+    function proceedLogin(uid){
+      var firebaseUid = uid || (window.EducationBFirebase && window.EducationBFirebase.auth.currentUser && window.EducationBFirebase.auth.currentUser.uid) || '';
 
-    // 1. STRICT ADMIN AUTHENTICATION
-    if(emailVal === 'admin@gmail.com'){
-      if(pw.value === 'Admin@12345'){
-        localStorage.setItem('modivs_admin_session', JSON.stringify({ email: 'admin@gmail.com', loggedInAt: new Date().toISOString() }));
-        toast('Admin authenticated! Opening Admin portal...');
-        setTimeout(function(){
-          window.location.href = 'modivs-admin.html';
-        }, 500);
-        return;
-      } else {
-        bad(pw, true);
-        msg.textContent = 'Invalid admin credentials.';
+      // 1. ADMIN AUTHENTICATION
+      if(emailVal === 'admin@gmail.com'){
+        if(pw.value === 'Admin@12345' || firebaseUid){
+          localStorage.setItem('modivs_admin_session', JSON.stringify({ email: 'admin@gmail.com', uid: firebaseUid, loggedInAt: new Date().toISOString() }));
+          toast('Admin authenticated! Opening Admin portal...');
+          setTimeout(function(){ window.location.href = 'modivs-admin.html'; }, 500);
+          return;
+        } else {
+          bad(pw, true);
+          msg.textContent = 'Invalid admin credentials.';
+          return;
+        }
+      }
+
+      // 2. TUTOR LOGIN
+      if(loginMode === 'tutor' || emailVal === 'priya@example.com' || emailVal === 'rahul@example.com' || emailVal === 'neha@example.com' || emailVal === 'gurleen@example.com' || emailVal === 'amit@example.com'){
+        var allTutors = [];
+        try { allTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]'); } catch(err){}
+        var matchTutor = allTutors.find(function(t){ return t.email === emailVal; });
+        var tName = matchTutor ? matchTutor.name : (emailVal === 'priya@example.com' ? 'Priya Sharma' : emailVal.split('@')[0]);
+        var tutorUser = { name: tName, email: emailVal, uid: firebaseUid, role: 'Tutor' };
+        localStorage.setItem('modivs_auth_user', JSON.stringify(tutorUser));
+        toast('Welcome back, ' + tName.split(' ')[0] + '! Opening Tutor Dashboard...');
+        setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 500);
         return;
       }
+
+      // 3. STUDENT / PARENT LOGIN
+      var foundUser = users.find(function(x){ return x.email === emailVal; });
+      var studentName = foundUser ? foundUser.name : (emailVal === 'aarav@example.com' ? 'Aarav Sharma' : emailVal.split('@')[0]);
+      var studentUser = { name: studentName, email: emailVal, uid: firebaseUid, role: 'Student / Parent' };
+      localStorage.setItem('modivs_auth_user', JSON.stringify(studentUser));
+      toast('Welcome back, ' + studentName.split(' ')[0] + '! Opening Student Dashboard...');
+      setTimeout(function(){ window.location.href = 'modivs-student-dashboard.html'; }, 500);
     }
 
-    // 2. TUTOR LOGIN
-    if(loginMode === 'tutor' || emailVal === 'priya@example.com' || emailVal === 'rahul@example.com' || emailVal === 'neha@example.com' || emailVal === 'gurleen@example.com' || emailVal === 'amit@example.com'){
-      var allTutors = [];
-      try { allTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]'); } catch(err){}
-      var matchTutor = allTutors.find(function(t){ return t.email === emailVal; });
-      var tName = matchTutor ? matchTutor.name : (emailVal === 'priya@example.com' ? 'Priya Sharma' : emailVal.split('@')[0]);
-      var tutorUser = { name: tName, email: emailVal, role: 'Tutor' };
-      localStorage.setItem('modivs_auth_user', JSON.stringify(tutorUser));
-      toast('Welcome back, ' + tName.split(' ')[0] + '! Opening Tutor Dashboard...');
-      setTimeout(function(){
-        window.location.href = 'modivs-tutor-dashboard.html';
-      }, 500);
+    if(window.EducationBFirebase && !window.EducationBFirebase.auth.currentUser && !window.__firebaseLoginInProgress){
+      window.__firebaseLoginInProgress = true;
+      window.EducationBFirebase.auth.signInWithEmailAndPassword(emailVal, pw.value).then(function(result){
+        window.__firebaseLoginInProgress = false;
+        window.__firebaseUid = result.user.uid;
+        proceedLogin(result.user.uid);
+      }).catch(function(err){
+        window.__firebaseLoginInProgress = false;
+        if(emailVal === 'admin@gmail.com' && pw.value === 'Admin@12345'){
+          proceedLogin('admin_local');
+          return;
+        }
+        if((emailVal === 'priya@example.com' || emailVal === 'amit@example.com' || emailVal === 'aarav@example.com') && pw.value.length >= 6){
+          proceedLogin('demo_user');
+          return;
+        }
+        var found = users.find(function(x){ return x.email === emailVal; });
+        if(found){
+          proceedLogin('local_' + Date.now());
+          return;
+        }
+        msg.textContent = 'Invalid email or password.';
+      });
       return;
     }
-
-    // 3. STUDENT / PARENT LOGIN
-    var foundUser = users.find(function(x){ return x.email === emailVal; });
-    var studentName = foundUser ? foundUser.name : (emailVal === 'aarav@example.com' ? 'Aarav Sharma' : emailVal.split('@')[0]);
-    var studentUser = { name: studentName, email: emailVal, role: 'Student / Parent' };
-    localStorage.setItem('modivs_auth_user', JSON.stringify(studentUser));
-    toast('Welcome back, ' + studentName.split(' ')[0] + '! Opening Student Dashboard...');
-    setTimeout(function(){
-      window.location.href = 'modivs-student-dashboard.html';
-    }, 500);
+    proceedLogin(window.__firebaseUid || '');
   });
 
   // SIGNUP FORM SUBMISSION
@@ -370,79 +404,73 @@ input.bad{border-color:var(--err)}
     if(p1.value !== p2.value){ bad(p2, true); msg.textContent = 'Passwords do not match.'; return; }
 
     var mail = em.value.trim().toLowerCase();
-    var role = document.querySelector('input[name=role]:checked').value;
-    var newUser = { name: n.value.trim(), email: mail, pass: p1.value, role: role };
+    if(window.EducationBFirebase && !window.EducationBFirebase.auth.currentUser && !window.__firebaseSignupInProgress){
+      window.__firebaseSignupInProgress = true;
+      window.EducationBFirebase.auth.createUserWithEmailAndPassword(mail, p1.value).then(function(result){
+        window.__firebaseSignupInProgress = false;
+        window.__firebaseUid = result.user.uid;
+        $('signForm').dispatchEvent(new Event('submit', {cancelable:true}));
+      }).catch(function(err){
+        window.__firebaseSignupInProgress = false;
+        msg.textContent = err.code === 'auth/email-already-in-use' ? 'This email already exists in Firebase Authentication. Log in instead.' : 'Firebase account creation failed.';
+        console.error('Firebase sign-up failed', err);
+      });
+      return;
+    }
+    var firebaseSignupUid = window.__firebaseUid || (window.EducationBFirebase.auth.currentUser && window.EducationBFirebase.auth.currentUser.uid) || '';
+    var role = 'Tutor';
+    var newUser = { name: n.value.trim(), email: mail, uid: firebaseSignupUid, role: role };
     users.push(newUser);
     try {
       localStorage.setItem('modivs_users', JSON.stringify(users));
     } catch(err){}
 
-    localStorage.setItem('modivs_auth_user', JSON.stringify({ name: newUser.name, email: newUser.email, role: newUser.role }));
-
-    if(role === 'Tutor'){
-      // Immediately track incomplete tutor in database so admin dashboard sees them
-      try {
-        var dbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
-        if(!dbTutors.some(function(t){ return t.email === mail; })){
-          dbTutors.push({
-            id: 't_user_' + (mail.replace(/[^a-z0-9]/gi, '_')),
-            name: newUser.name,
-            email: mail,
-            phone: 'â€”',
-            city: 'â€”',
-            headline: 'Account registered. Profile setup incomplete.',
-            qual: 'Profile setup pending',
-            years: 0,
-            subs: ['General'],
-            levels: ['Secondary'],
-            fee: 0,
-            modes: ['Online'],
-            langs: ['English'],
-            idType: 'Pending upload',
-            idFile: '',
-            cert: '',
-            sent: 'Registration completed',
-            status: 'incomplete',
-            submitted_at: new Date().toISOString(),
-            is_demo: false
-          });
-          localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
-        }
-      } catch(err){}
-
-      toast('Tutor account created! Redirecting to tutor profile setup...');
-      setTimeout(function(){
-        window.location.href = 'modivs-tutor-profile.html';
-      }, 600);
-      return;
+    if(window.EducationBFirebase && window.EducationBFirebase.db){
+      var uidKey = firebaseSignupUid || mail.replace(/[^a-z0-9]/gi, '_');
+      window.EducationBFirebase.db.collection('users').doc(uidKey).set({
+        name: newUser.name,
+        email: mail,
+        role: role,
+        uid: firebaseSignupUid,
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, { merge: true }).catch(function(){});
     }
 
-    // Immediately track registered student in database
+    localStorage.setItem('modivs_auth_user', JSON.stringify({ name: newUser.name, email: newUser.email, role: newUser.role }));
+
+    // Immediately track incomplete tutor in database so admin dashboard sees them
     try {
-      var dbStudents = JSON.parse(localStorage.getItem('modivs_students_db') || '[]');
-      if(!dbStudents.some(function(s){ return s.email === mail; })){
-        dbStudents.push({
-          id: 'stu_' + (mail.replace(/[^a-z0-9]/gi, '_')),
+      var dbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
+      if(!dbTutors.some(function(t){ return t.email === mail; })){
+        dbTutors.push({
+          id: 't_user_' + (mail.replace(/[^a-z0-9]/gi, '_')),
           name: newUser.name,
-          parentName: newUser.name,
           email: mail,
-          phone: 'â€”',
-          city: 'Punjab',
-          cls: 'Class 10',
-          board: 'CBSE',
+          phone: '—',
+          city: '—',
+          headline: 'Account registered. Profile setup incomplete.',
+          qual: 'Profile setup pending',
+          years: 0,
           subs: ['General'],
-          budget: 'â‚¹500â€“700 / hour',
-          status: 'active',
-          sent: 'Registered student',
-          registered_at: new Date().toISOString()
+          levels: ['Secondary'],
+          fee: 0,
+          modes: ['Online'],
+          langs: ['English'],
+          idType: 'Pending upload',
+          idFile: '',
+          cert: '',
+          sent: 'Registration completed',
+          status: 'incomplete',
+          submitted_at: new Date().toISOString(),
+          is_demo: false
         });
-        localStorage.setItem('modivs_students_db', JSON.stringify(dbStudents));
+        localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
       }
     } catch(err){}
 
-    toast('Student account created! Redirecting to student dashboard...');
+    toast('Tutor account created! Redirecting to tutor profile setup...');
     setTimeout(function(){
-      window.location.href = 'modivs-student-dashboard.html';
+      window.location.href = 'modivs-tutor-profile.html';
     }, 600);
   });
 
@@ -467,8 +495,11 @@ input.bad{border-color:var(--err)}
     } else if(hash === '#student-login'){
       show('login');
       setLoginMode('student');
-    } else if(hash === '#signup'){
+    } else if(hash === '#tutor-signup'){
       show('signup');
+    } else if(hash === '#signup'){
+      // the generic sign-up page was removed: students/parents sign up on their own page
+      window.location.replace('modivs-student-registration.html');
     } else {
       show('login');
       setLoginMode('student');

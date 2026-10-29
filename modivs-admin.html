@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -18,7 +18,7 @@
 })();
 </script>
 <style>
-:root{--navy:#1A2035;--yellow:#FABD4E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--navy:#1A2035;--yellow:#EBB92E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--cream);color:var(--navy);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -54,7 +54,7 @@ input[type=search]{width:100%;padding:10px 14px;border:1.5px solid var(--line);b
 .badge.pending{background:#fff3cd;color:#856404}
 .badge.rejected{background:#f7dcda;color:var(--bad)}
 .badge.incomplete{background:#e2e3e5;color:#495057}
-.badge.demo{background:#e8f4fd;color:#0b5ed7}
+.badge.demo{background:#e8f4fd;color:#1A2035}
 .empty{color:var(--muted);text-align:center;padding:26px 0}
 .detail{position:sticky;top:84px}
 .detail h2{margin:0;font-size:1.4rem}
@@ -72,7 +72,7 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 .acts{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}
 .b{padding:10px 18px;border-radius:9px;border:2px solid var(--navy);background:var(--navy);color:var(--cream);font-weight:600;cursor:pointer}
 .b:hover{background:#2a3350}
-.b.ok{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.b.ok:hover{background:#ffc965}
+.b.ok{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.b.ok:hover{background:#D9A41C}
 .b.o{background:transparent;color:var(--navy)}.b.o:hover{background:var(--cream)}
 .b.d{background:transparent;border-color:var(--bad);color:var(--bad)}.b.d:hover{background:#f7dcda}
 .msg{color:var(--bad);font-size:.88rem;min-height:1.3em;margin-top:10px}
@@ -100,24 +100,34 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 .lightbox img{max-width:min(90vw,520px);max-height:80vh;border-radius:14px;background:#fff}
 @media(max-width:980px){.main{grid-template-columns:1fr}.detail{position:static}.top{padding:12px 16px}.top .r span{display:none}.admin-nav{display:none}}
 </style>
+<script src="modivs-import-data.js"></script>
+<script src="modivs-chat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
+<script src="firebase-chat.js"></script>
 </head>
 <body>
 <header class="top">
   <a href="modivs-home.html" class="brand">Modiv’s<span>Admin</span></a>
   <div class="admin-nav">
     <a href="modivs-home.html">Home</a>
+    <a href="modivs-active-leads.html">Active Leads</a>
     <a href="modivs-student-dashboard.html">Student Portal</a>
     <a href="modivs-tutor-dashboard.html">Tutor Portal</a>
   </div>
   <div class="r">
     <span id="adminSessionInfo">Logged in as <b>admin@gmail.com</b></span>
+    <button type="button" id="syncFb" style="background:#0e7c66;color:#fff;border:0;border-radius:8px;padding:7px 12px;font-weight:600;cursor:pointer;">Sync to Firebase</button>
     <button type="button" id="out">Log out</button>
   </div>
 </header>
 
 <div class="wrap">
   <h1>Admin Dashboard</h1>
-  <p class="sub">Review all registered tutor profiles, approve pending applications, and manage student requirements.</p>
+  <p class="sub">Review all registered tutor profiles, approve pending applications, and view registered students.</p>
 
   <div class="stats" id="stats"></div>
 
@@ -125,6 +135,12 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
     <section class="box" aria-label="Applications Queue">
       <div class="tools" id="tabs" role="group" aria-label="Admin Navigation Tabs"></div>
       <input type="search" id="q" placeholder="Search by name, email, phone, city or subject..." aria-label="Search">
+      <div id="chatFilters" class="hide" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
+        <input type="search" id="chatStudent" placeholder="Filter student" aria-label="Filter student">
+        <input type="search" id="chatTutor" placeholder="Filter tutor" aria-label="Filter tutor">
+        <label style="font-size:.82rem;color:var(--muted);">From <input type="date" id="chatFrom" aria-label="Chat date from"></label>
+        <label style="font-size:.82rem;color:var(--muted);">To <input type="date" id="chatTo" aria-label="Chat date to"></label>
+      </div>
       <div id="list"></div>
       <div id="pagination"></div>
     </section>
@@ -287,7 +303,6 @@ var INITIAL_REQS = [
 // Synchronize and Reconcile Database Records
 var tutors = [];
 var students = [];
-var reqs = INITIAL_REQS.slice();
 
 function syncDatabases(){
   // 1. Tutors Database
@@ -507,11 +522,10 @@ var LABEL = {
   approved: 'Approved Tutors',
   rejected: 'Rejected Applications',
   students: 'Registered Students',
-  reqs: 'Student Requirements',
   incomplete: 'Profile Incomplete'
 };
 
-var currentSection = 'all'; // 'all' | 'pending' | 'approved' | 'rejected' | 'students' | 'reqs'
+var currentSection = 'all'; // 'all' | 'pending' | 'approved' | 'rejected' | 'students' | 'chat'
 var query = '';
 var selId = null;
 var currentPage = 1;
@@ -571,7 +585,7 @@ function stats(){
 
   var studentEnquiries = [];
   try { studentEnquiries = JSON.parse(localStorage.getItem('modivs_student_enquiries') || '[]'); } catch(e){}
-  var totalEnquiries = Math.max(studentEnquiries.length + reqs.length, 6);
+  var totalEnquiries = Math.max(studentEnquiries.length + students.length, 6);
 
   var cards = [
     ['Total Registered Tutors', totalTutors, false],
@@ -601,7 +615,7 @@ function tabs(){
     { key: 'approved', label: 'Approved Tutors (' + cnt(tutors, 'approved') + ')' },
     { key: 'rejected', label: 'Rejected Applications (' + cnt(tutors, 'rejected') + ')' },
     { key: 'students', label: 'Registered Students (' + students.length + ')' },
-    { key: 'reqs', label: 'Student Requirements (' + reqs.length + ')' }
+    { key: 'chat', label: 'Chat Monitoring' }
   ];
 
   sections.forEach(function(sec){
@@ -621,7 +635,6 @@ function tabs(){
 // Filtered data rows
 function getActiveDataset(){
   if(currentSection === 'students') return students;
-  if(currentSection === 'reqs') return reqs;
   // Tutor sections
   if(currentSection === 'pending') return tutors.filter(function(x){ return x.status === 'pending'; });
   if(currentSection === 'approved') return tutors.filter(function(x){ return x.status === 'approved'; });
@@ -674,6 +687,16 @@ function renderPagination(totalItems){
 function list(){
   var box = $('list');
   box.innerHTML = '';
+  $('chatFilters').classList.toggle('hide', currentSection !== 'chat');
+  $('q').classList.toggle('hide', currentSection === 'chat');
+  if(currentSection === 'chat'){
+    ModivsChat.adminList(box, {
+      student:$('chatStudent').value.trim(), tutor:$('chatTutor').value.trim(),
+      from:$('chatFrom').value, to:$('chatTo').value
+    }, function(c){ selId=c.id; list(); detail(); });
+    $('pagination').innerHTML = '';
+    return;
+  }
   var allMatches = filteredRows();
   renderPagination(allMatches.length);
 
@@ -699,7 +722,7 @@ function list(){
     var nameWithInitial = el('span', '', '');
     nameWithInitial.style.cssText = 'font-weight:700;display:inline-flex;align-items:center;gap:6px;';
     nameWithInitial.textContent = '';
-    if(currentSection !== 'students' && currentSection !== 'reqs'){ nameWithInitial.appendChild(avatar(x, false)); }
+    if(currentSection !== 'students'){ nameWithInitial.appendChild(avatar(x, false)); }
     nameWithInitial.appendChild(document.createTextNode(x.name));
     t.appendChild(nameWithInitial);
 
@@ -712,9 +735,6 @@ function list(){
     if(currentSection === 'students'){
       b.appendChild(el('small', '', (x.cls || 'Student') + ' · ' + (x.city || 'Punjab') + ' · ' + (x.email || '—')));
       b.appendChild(el('small', '', (x.subs ? x.subs.join(', ') : 'General') + ' · Budget: ' + (x.budget || '—')));
-    } else if(currentSection === 'reqs'){
-      b.appendChild(el('small', '', (x.cls || '') + ' · ' + (x.subs ? x.subs.join(', ') : '')));
-      b.appendChild(el('small', '', (x.city || '') + ' · ' + (x.sent || 'Recently submitted')));
     } else {
       // Tutor records
       b.appendChild(el('small', '', x.headline || (x.status === 'incomplete' ? 'Registered tutor account' : 'Verified Tutor')));
@@ -750,7 +770,19 @@ function tags(a){
 function detail(){
   var d = $('detail');
   d.innerHTML = '';
-  var allData = (currentSection === 'students') ? students : ((currentSection === 'reqs') ? reqs : tutors);
+  if(currentSection === 'chat'){
+    var chat = ModivsChat.conversations().filter(function(c){ return c.id === selId; })[0];
+    d.appendChild(el('h2', '', 'Chat monitoring'));
+    d.appendChild(el('p', 'sub', 'Read-only access for authorized administrators. Students and tutors are informed that administrators can review chats.'));
+    if(!chat){ d.appendChild(el('p', 'empty', 'Select a conversation to view its complete history.')); return; }
+    d.appendChild(el('p', '', chat.student.name + ' (' + chat.student.email + ') ↔ ' + chat.tutor.name + ' (' + chat.tutor.email + ')'));
+    var history = el('div', 'log');
+    if(!chat.messages.length) history.appendChild(el('p', '', 'No messages yet.'));
+    chat.messages.forEach(function(m){ history.appendChild(el('p', '', m.senderName + ' · ' + new Date(m.createdAt).toLocaleString() + ': ' + m.text)); });
+    d.appendChild(history);
+    return;
+  }
+  var allData = (currentSection === 'students') ? students : tutors;
   var x = allData.find(function(i){ return i.id === selId; });
 
   if(!x){
@@ -805,26 +837,6 @@ function detail(){
     } else {
       d.appendChild(el('p', 'sub', 'No demo classes requested yet.'));
     }
-    return;
-  }
-
-  // SECTION 2: STUDENT REQUIREMENTS VIEW
-  if(currentSection === 'reqs'){
-    d.appendChild(el('p', '', x.by + ' · ' + x.cls + ' · ' + x.board));
-    d.appendChild(kv([
-      ['City', x.city],
-      ['Mobile Phone', x.phone],
-      ['Email Address', x.email],
-      ['Curriculum Level', x.level],
-      ['Teaching Mode', x.mode ? x.mode.join(', ') : 'Online'],
-      ['Budget Range', x.budget],
-      ['Class Frequency', x.freq],
-      ['Preferred Time', x.time],
-      ['Tutor Gender Pref', x.tgender]
-    ]));
-    d.appendChild(tags((x.subs || []).concat(x.goals || [])));
-    d.appendChild(el('h3', '', 'Requirement Notes from Student / Parent'));
-    d.appendChild(el('p', '', x.notes || 'No notes provided.'));
     return;
   }
 
@@ -1098,6 +1110,22 @@ $('q').addEventListener('input', function(e){
   currentPage = 1;
   list();
   detail();
+});
+['chatStudent','chatTutor','chatFrom','chatTo'].forEach(function(id){
+  $(id).addEventListener('input', function(){ if(currentSection === 'chat') list(); });
+});
+if(window.ModivsChat) ModivsChat.subscribe(function(){ if(currentSection === 'chat'){ list(); detail(); } });
+
+$('syncFb').addEventListener('click', function(){
+  if(!window.ModivsFirebaseSync){ toast('Firebase sync module is not ready.'); return; }
+  toast('Syncing all data to Firebase...');
+  window.ModivsFirebaseSync.syncAll().then(function(res){
+    if(res && res.success){
+      toast('Firebase synced! Tutors: ' + res.tutors + ', Leads: ' + res.leads + ', Students: ' + res.students);
+    } else {
+      toast('Firebase sync notice: ' + (res && res.reason || 'Complete'));
+    }
+  });
 });
 
 $('out').addEventListener('click', function(){

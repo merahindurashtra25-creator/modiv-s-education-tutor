@@ -1,10 +1,15 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Student / Parent registration</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js" defer></script>
+<script src="firebase-sync.js" defer></script>
 <style>
 :root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--tint:#e8f5f1;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
@@ -15,6 +20,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .shell{display:grid;grid-template-columns:70fr 30fr;min-height:100vh}
 .main{padding:36px 28px 60px;display:flex;justify-content:center}
 .col{width:100%;max-width:640px}
+.topl{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.topl .links{display:flex;gap:8px;align-items:center}.topl .links a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.88rem;border:1.5px solid var(--line);padding:6px 12px;border-radius:8px;background:#fff}.topl .links a:hover{border-color:var(--ink)}
 .side{background:var(--ink);color:#fff;padding:36px 26px}
 .side h2{font-size:1rem;margin:28px 0 14px;font-weight:600;color:#aab6cc}
 .steps{list-style:none;margin:0;padding:0}
@@ -63,7 +69,7 @@ textarea{min-height:100px;resize:vertical}
 <body>
 <div class="shell">
  <main class="main"><div class="col">
-  <a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education"></a>
+  <div class="topl"><a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education"></a><div class="links" id="topLinks"><a href="modivs-home.html">Home</a></div></div>
   <div class="bar" aria-hidden="true"><div id="fill"></div></div>
   <form id="form" novalidate></form>
  </div></main>
@@ -89,25 +95,62 @@ var D={role:'Parent',email:'',pass:'',regName:'',phone:'',city:'',
  stuName:'',stuAge:'',cls:'',board:'',school:'',
  subjects:[],level:'',goals:[],weak:'',notes:'',
  modes:['Online'],formats:['1-on-1 Individual tuition'],area:'',budgetMin:'',budgetMax:'',freq:'',days:[],times:[],start:'',tGender:'',langs:[],demo:'',agree:false};
-var step=0,submitted=false,tT;
+
+/* ---- logged-in students: update the saved requirement instead of signing up again ---- */
+var AU=null;try{AU=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
+var EDIT=!!(AU&&AU.role==='Student / Parent'&&AU.email);
+var SAVED_ID='',SAVED_STATUS='';
+function jget(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+if(EDIT){
+ var em=String(AU.email).toLowerCase();
+ var user=(jget('modivs_users',[])||[]).filter(function(u){return u.email===em})[0]||{};
+ var req=jget('modivs_student_req',null);
+ if(!req||String(req.email).toLowerCase()!==em){req=(jget('modivs_students_db',[])||[]).filter(function(x){return String(x.email).toLowerCase()===em})[0]||null}
+ var form=jget('modivs_student_form',null);
+ if(form&&String(form.email).toLowerCase()!==em)form=null;
+ D.email=em;D.regName=AU.name||user.name||'';D.phone=user.phone||'';D.city=user.city||'';D.pass=user.pass||'';
+ if(req){
+  SAVED_ID=req.id||'';SAVED_STATUS=req.status||'';
+  D.regName=req.parentName||D.regName;D.phone=req.phone||D.phone;D.city=req.city||D.city;
+  D.stuName=req.name||'';D.cls=req.cls||'';D.board=req.board||'';D.school=req.school||'';
+  D.subjects=Array.isArray(req.subs)?req.subs.filter(function(x){return x!=='General'}):[];D.level=req.level||'';
+  D.goals=Array.isArray(req.goals)?req.goals:[];D.notes=req.notes||'';
+  D.modes=Array.isArray(req.mode)&&req.mode.length?req.mode:D.modes;
+  var nums=String(req.budget||'').replace(/,/g,'').match(/\d+/g)||[];D.budgetMin=nums[0]||'';D.budgetMax=nums[1]||nums[0]||'';
+  var fm=String(req.freq||'').match(/\d+/);D.freq=fm?(+fm[0]>=6?'6 or more':fm[0]):'';
+  D.role=/^Parent/.test(req.by||'')?'Parent':(req.by==='Student'?'Student':D.role);
+ }
+ if(!req&&!form&&em==='aarav@example.com'){D.regName=D.regName||'Aarav Sharma';D.city=D.city||'Ludhiana';D.stuName='Aarav Sharma';D.cls='Class 10';D.board='CBSE';D.subjects=['Mathematics','Physics'];D.modes=['Online','Offline (Tutor comes to my home)']}
+ if(!req&&!form&&!D.stuName)D.stuName=D.regName;
+ if(form){Object.keys(form).forEach(function(k){if(k!=='pass'&&k!=='agree'&&form[k]!=null)D[k]=form[k]});D.email=em}
+ D.agree=false;
+}
+var intent = jget('modivs_search_intent', null);
+if(intent && !EDIT){
+ if(intent.subject && D.subjects.indexOf(intent.subject) === -1) D.subjects.push(intent.subject);
+ if(intent.level) D.level = intent.level;
+ if(intent.mode && D.modes.indexOf(intent.mode) === -1) D.modes = [intent.mode];
+ if(intent.format && D.formats.indexOf(intent.format) === -1) D.formats = [intent.format];
+}
+var step=EDIT?1:0,submitted=false,tT;
 var f=document.getElementById('form');
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(tT);tT=setTimeout(function(){e.classList.add('hide')},2400)}
 function field(id,label,val,type,hint,ph){return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'}
 function chips(name,list,sel){return '<div class="chips" role="group">'+list.map(function(x){return '<label class="chip"><input type="checkbox" data-group="'+name+'" value="'+esc(x)+'"'+(sel.indexOf(x)>-1?' checked':'')+'><span>'+esc(x)+'</span></label>'}).join('')+'</div>'}
 function sel(id,label,val,opts){return '<label for="'+id+'">'+label+'</label><select id="'+id+'"><option value="">Select</option>'+opts.map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select>'}
-function nav(last){return '<div class="nav"><button type="button" class="btn ghost" data-act="back"'+(step===0?' style="visibility:hidden"':'')+'>Back</button><button type="submit" class="btn">'+(last?'Submit requirements':(step===0?'Create account':'Save and continue'))+'</button></div>'}
+function nav(last){return '<div class="nav"><button type="button" class="btn ghost" data-act="back"'+(step===(EDIT?1:0)?' style="visibility:hidden"':'')+'>Back</button>'+(EDIT&&!last?'<button type="button" class="btn ghost" data-act="save">Save changes</button>':'')+'<button type="submit" class="btn">'+(last?(EDIT?'Update requirements':'Submit requirements'):(step===0?'Create account':'Save and continue'))+'</button></div>'}
 var MSG='<div class="msg" id="msg" role="alert"></div>';
 
 var views=[
-function(){return '<h1>Create your account</h1><p class="sub">Register as a parent or as a student, then tell us what you need.</p>'+
+function(){return '<h1>Student / Parent sign up</h1><p class="sub">Create your account as a parent or as a student, then tell us what you need.</p>'+
  '<div class="lab">I am a</div><div class="roles">'+['Parent','Student'].map(function(r){return '<label class="chip"><input type="radio" name="role" value="'+r+'"'+(D.role===r?' checked':'')+'><span>'+r+'<small>'+(r==='Parent'?'Registering for my child':'Registering for myself')+'</small></span></label>'}).join('')+'</div>'+
  field('regName','Your full name',D.regName)+'<div class="two"><div>'+field('phone','Mobile number',D.phone,'tel')+'</div><div>'+field('city','City',D.city)+'</div></div>'+
- field('email','Email',D.email,'email')+field('pass','Password',D.pass,'password','at least 8 characters')+field('pass2','Confirm password','','password')+MSG+nav()+'<p class="sub" style="margin-top:16px;font-size:0.9rem;">Already have an account? <a href="modivs-education.html#login" style="color:var(--accent-d);font-weight:600;">Log in</a> · <a href="modivs-tutor-profile.html" style="color:var(--accent-d);font-weight:600;">Tutor sign up</a></p>'},
+ field('email','Email',D.email,'email')+field('pass','Password',D.pass,'password','at least 8 characters')+field('pass2','Confirm password','','password')+MSG+nav()+'<p class="sub" style="margin-top:16px;font-size:0.9rem;">Already have an account? <a href="modivs-education.html#login" style="color:var(--accent-d);font-weight:600;">Log in</a> · <a href="modivs-education.html#tutor-signup" style="color:var(--accent-d);font-weight:600;">Tutor sign up</a></p>'},
 function(){var p=D.role==='Parent';return '<h1>'+(p?'Your child’s details':'About you')+'</h1><p class="sub">This helps us match the right tutor.</p>'+
  field('stuName',p?'Child’s name':'Your name',D.stuName)+'<div class="two"><div>'+field('stuAge','Age',D.stuAge,'number')+'</div><div>'+sel('cls','Class / level',D.cls,CLASSES)+'</div></div>'+
  '<div class="two"><div>'+sel('board','Board',D.board,BOARDS)+'</div><div>'+field('school','School or college',D.school,'text','optional')+'</div></div>'+MSG+nav()},
-function(){return '<h1>What do you need help with?</h1><p class="sub">Choose subjects and goals. Tutors see this when you send a request.</p>'+
+function(){return '<h1>'+(EDIT?'Update your requirements':'What do you need help with?')+'</h1><p class="sub">Choose subjects and goals. Tutors see this when you send a request.</p>'+
  '<div class="lab">Subjects needed</div>'+chips('subjects',SUBJECTS,D.subjects)+
  sel('level','Current level in these subjects',D.level,['Struggling','Below average','Average','Good, want to excel'])+
  '<div class="lab">Goals</div>'+chips('goals',GOALS,D.goals)+
@@ -123,7 +166,7 @@ function(){return '<h1>Tutor preferences</h1><p class="sub">Tell us how and when
  '<div class="two"><div>'+sel('tGender','Tutor gender',D.tGender,['No preference','Female','Male'])+'</div><div>'+sel('demo','Demo class',D.demo,['Yes, I want a demo first','No, not needed'])+'</div></div>'+
  '<div class="lab">Language of teaching</div>'+chips('langs',LANGS,D.langs)+MSG+nav()},
 function(){function tags(a){return a.map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join('')||'<span class="hint">None</span>'}
- return '<h1>Review your requirements</h1><p class="sub">Check everything, then submit to see matching tutors.</p><div class="prev"><h3>'+esc(D.stuName)+'</h3>'+
+ return '<h1>Review your requirements</h1><p class="sub">Check everything, then '+(EDIT?'save your changes.':'submit to see matching tutors.')+'</p><div class="prev"><h3>'+esc(D.stuName)+'</h3>'+
  '<p class="hint">'+esc(D.cls)+' · '+esc(D.board)+' · '+esc(D.city)+(D.school?' · '+esc(D.school):'')+'</p>'+
  '<p><b>Subjects</b><br>'+tags(D.subjects)+'</p><p><b>Goals</b><br>'+tags(D.goals)+'</p>'+(D.weak?'<p><b>Needs help with</b><br>'+esc(D.weak)+'</p>':'')+
  '<p><b>Mode</b><br>'+tags(D.modes)+'</p><p><b>Tuition format</b><br>'+tags(D.formats)+'</p><p><b>Schedule</b><br>'+esc(D.freq)+' class(es) a week · '+esc(D.days.join(', '))+' · '+esc(D.times.join(', '))+'</p>'+
@@ -133,7 +176,7 @@ function(){function tags(a){return a.map(function(x){return '<span class="tag">'
 
 function render(){
  document.getElementById('fill').style.width=(submitted?100:(step/(STEPS.length-1))*100)+'%';
- document.getElementById('steps').innerHTML=STEPS.map(function(s,i){var c=submitted||i<step?'done':(i===step?'on':'');return '<li class="'+c+'"><i>'+(c==='done'?'✓':i+1)+'</i>'+s+'</li>'}).join('');
+ document.getElementById('steps').innerHTML=STEPS.map(function(s,i){var c=submitted||i<step?'done':(i===step?'on':'');return '<li class="'+c+'"'+(EDIT&&i>=1?' data-go="'+i+'" style="cursor:pointer" tabindex="0"':'')+'><i>'+(c==='done'?'✓':i+1)+'</i>'+s+'</li>'}).join('');
    if(submitted){
     try {
       localStorage.setItem('modivs_auth_user', JSON.stringify({ name: D.regName, email: D.email, role: 'Student / Parent' }));
@@ -144,7 +187,6 @@ function render(){
         users.push({
           name: D.regName,
           email: D.email.toLowerCase(),
-          pass: D.pass || 'student123',
           phone: D.phone,
           city: D.city,
           role: 'Student / Parent',
@@ -155,7 +197,7 @@ function render(){
 
       // Save student profile requirement to database
       var studentReq = {
-        id: 'stu_' + Date.now(),
+        id: SAVED_ID || ('stu_' + Date.now()),
         name: D.stuName || D.regName,
         parentName: D.regName,
         email: D.email.toLowerCase(),
@@ -169,10 +211,10 @@ function render(){
         goals: D.goals || ['Academic improvement'],
         notes: D.notes || '',
         mode: D.modes || ['Online'],
-        budget: 'â‚¹' + (D.budgetMin || 500) + 'â€“' + (D.budgetMax || 800) + ' / hour',
+        budget: '₹' + (D.budgetMin || 500) + '–' + (D.budgetMax || 800) + ' / hour',
         freq: D.freq || '3 classes a week',
-        status: 'pending',
-        sent: 'Just now',
+        status: SAVED_STATUS || 'pending',
+        sent: EDIT ? 'Updated just now' : 'Just now',
         registered_at: new Date().toISOString()
       };
       var studentsDb = JSON.parse(localStorage.getItem('modivs_students_db') || '[]');
@@ -184,8 +226,40 @@ function render(){
       }
       localStorage.setItem('modivs_students_db', JSON.stringify(studentsDb));
       localStorage.setItem('modivs_student_req', JSON.stringify(studentReq));
+      var keep=JSON.parse(JSON.stringify(D));delete keep.pass;localStorage.setItem('modivs_student_form', JSON.stringify(keep));
+      // keep the saved account details in sync
+      var us2=JSON.parse(localStorage.getItem('modivs_users') || '[]');us2.forEach(function(u){if(u.email===D.email.toLowerCase()){u.name=D.regName;u.phone=D.phone;u.city=D.city}});localStorage.setItem('modivs_users',JSON.stringify(us2));
+
+      // Publish the requirement to the Active Leads page
+      var leadsDb = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]');
+      var lead = Object.assign({}, studentReq, { status: 'active', by: D.role === 'Parent' ? 'Parent: ' + D.regName : 'Student' });
+      var lIdx = leadsDb.findIndex(function(l){ return l.email === lead.email; });
+      if(lIdx >= 0){ leadsDb[lIdx] = lead; } else { leadsDb.unshift(lead); }
+      localStorage.setItem('modivs_active_leads', JSON.stringify(leadsDb));
+
+      // Sync to Firebase if connected
+      if(window.EducationBFirebase){
+        var fbAuth = window.EducationBFirebase.auth, firestore = window.EducationBFirebase.db;
+        if(fbAuth && D.pass && !fbAuth.currentUser){
+          fbAuth.createUserWithEmailAndPassword(D.email.toLowerCase(), D.pass).then(function(res){
+            if(res && res.user) res.user.updateProfile({ displayName: D.regName });
+          }).catch(function(){});
+        }
+        if(firestore){
+          firestore.collection('students').doc(studentReq.id).set(studentReq, { merge: true }).catch(function(){});
+          firestore.collection('leads').doc(studentReq.id).set(lead, { merge: true }).catch(function(){});
+          firestore.collection('users').doc(D.email.toLowerCase().replace(/[^a-zA-Z0-9_-]/g, '_')).set({
+            name: D.regName,
+            email: D.email.toLowerCase(),
+            phone: D.phone,
+            city: D.city,
+            role: 'Student / Parent',
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true }).catch(function(){});
+        }
+      }
     } catch(err){}
-    f.innerHTML='<div class="done-box"><h1>Requirements saved!</h1><p class="sub">Thanks, '+esc(D.regName.split(' ')[0])+'. We have set up your Student Dashboard and matched verified tutors for '+esc(D.stuName)+'.</p><p><span class="status">Your Student Dashboard is ready</span></p><div class="nav" style="justify-content:center;gap:12px;margin-top:20px;"><a href="modivs-student-dashboard.html" class="btn" style="text-decoration:none;display:inline-flex;align-items:center;padding:12px 24px;">Open Student Dashboard &rarr;</a><button type="button" class="btn ghost" data-act="edit">Edit requirements</button></div></div>';
+    f.innerHTML='<div class="done-box"><h1>'+(EDIT?'Requirements updated!':'Requirements saved!')+'</h1><p class="sub">Thanks, '+esc(D.regName.split(' ')[0])+'. We have set up your Student Dashboard and matched verified tutors for '+esc(D.stuName)+'.</p><p><span class="status">Your Student Dashboard is ready</span></p><div class="nav" style="justify-content:center;gap:12px;margin-top:20px;"><a href="modivs-student-dashboard.html" class="btn" style="text-decoration:none;display:inline-flex;align-items:center;padding:12px 24px;">Open Student Dashboard &rarr;</a><a href="modivs-home.html" class="btn ghost" style="text-decoration:none;display:inline-flex;align-items:center;padding:12px 24px;">Home</a><button type="button" class="btn ghost" data-act="edit">Edit requirements</button></div></div>';
     return;
   }
  f.innerHTML=views[step]();window.scrollTo(0,0);
@@ -236,9 +310,22 @@ function check(){
 f.addEventListener('submit',function(e){e.preventDefault();read();if(!check())return;
  if(step===4){submitted=true;render();return}
  step++;render();toast('Progress saved')});
+function saveAll(){ // edit mode: validate steps 1-3, then save without walking through the review step
+ read();var keep=step;
+ for(var st=1;st<=3;st++){step=st;render();if(!check())return}
+ D.agree=true;submitted=true;render()}
+document.getElementById('steps').addEventListener('click',function(e){
+ var li=e.target.closest('li[data-go]');if(!li||!EDIT||submitted)return;
+ read();step=+li.getAttribute('data-go');render()});
+document.getElementById('steps').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){var li=e.target.closest('li[data-go]');if(li){e.preventDefault();li.click()}}});
 f.addEventListener('click',function(e){var a=e.target.getAttribute('data-act');
+ if(a==='save'){saveAll();return}
  if(a==='back'){read();step--;render()}
  if(a==='edit'){submitted=false;step=1;render()}});
+(function(){var t=document.getElementById('topLinks');if(!t)return;
+ var au=null;try{au=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
+ if(au&&au.role==='Student / Parent'){var a=document.createElement('a');a.href='modivs-student-dashboard.html';a.textContent='My dashboard';t.appendChild(a)}
+})();
 render();
 })();
 </script>

@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -6,7 +6,7 @@
 <title>Modiv’s Education – Tutor dashboard</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{--navy:#1A2035;--navy2:#2a3350;--yellow:#FABD4E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--navy:#1A2035;--navy2:#2a3350;--yellow:#EBB92E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--cream);color:var(--navy);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select{font:inherit;color:inherit}
@@ -70,7 +70,7 @@ input[type=search]{padding:8px 12px;border:1.5px solid var(--line);border-radius
 .acts{display:flex;flex-direction:column;gap:8px;align-items:flex-end;justify-content:center}
 .b{padding:9px 16px;border-radius:10px;border:2px solid var(--navy);background:var(--navy);color:var(--cream);font-weight:600;cursor:pointer;font-size:.9rem;white-space:nowrap}
 .b:hover{background:var(--navy2)}
-.b.y{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.b.y:hover{background:#ffc965}
+.b.y{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.b.y:hover{background:#D9A41C}
 .b.o{background:transparent;color:var(--navy)}.b.o:hover{background:var(--cream)}
 .empty{color:var(--muted);text-align:center;padding:24px 0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:22px}.two .box{margin-bottom:0}
@@ -111,6 +111,13 @@ dialog h2{margin:0 0 4px}
   } catch(e){}
 })();
 </script>
+<script src="modivs-chat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
+<script src="firebase-chat.js"></script>
 </head>
 <body>
 <header class="topbar">
@@ -119,7 +126,7 @@ dialog h2{margin:0 0 4px}
   <nav class="tutor-top-nav" aria-label="Quick links">
    <a href="modivs-home.html">Home</a>
    <a href="modivs-tutor-edit-profile.html">Tutor Profile</a>
-   <a href="modivs-student-registration.html">Find Students</a>
+   <a href="modivs-active-leads.html">Find Students</a>
    <a href="modivs-education.html#login" id="tutorLogoutBtn" style="border:1.5px solid var(--line);padding:4px 10px;border-radius:6px;">Log out</a>
   </nav>
  </div>
@@ -178,7 +185,42 @@ var hist=[{t:'Joined bonus',d:'Oct 20',a:30},{t:'Unlocked Ananya Verma',d:'Oct 2
 var classes=[['28','Oct','Ananya Verma','Physics · 5:00 PM · Online'],['29','Oct','Rohan Gill','Demo class · 6:00 PM · Online'],['31','Oct','Simran Kaur','Mathematics · 10:00 AM · Home']];
 var PACKS=[[50,'₹500'],[120,'₹1,000'],[300,'₹2,000']];
 var LABEL={new:'New',demo:'Demo scheduled',accepted:'Accepted',declined:'Declined'};
-var PROFILE_PCT=86,VERIFIED=true;
+function profileCompletion(t){
+ function has(a){return Array.isArray(a)&&a.filter(Boolean).length>0}
+ function txt(x){return typeof x==='string'&&x.trim()!==''&&x!=='—'&&x!=='Pending upload'}
+ if(t.status==='incomplete')return {pct:10,missing:['Complete your tutor profile (all 7 steps)']};
+ var q=t.quals&&t.quals[0]||{};
+ var subj=(t.subjects&&t.subjects.length?t.subjects:t.subs)||[];
+ var checks=[
+  ['profile photo',txt(t.photo)],
+  ['full name',txt(t.name)],
+  ['mobile number',txt(t.phone)],
+  ['WhatsApp number',txt(t.whatsapp)||!!t.waSame],
+  ['alternate phone number',txt(t.altPhone)],
+  ['city',txt(t.city)],
+  ['gender',txt(t.gender)],
+  ['date of birth',txt(t.dob)],
+  ['profile headline',txt(t.headline)&&t.headline.indexOf('Account registered')!==0],
+  ['“About you” (at least 80 characters)',txt(t.bio)&&t.bio.trim().length>=80],
+  ['languages you teach in',has(t.langs)],
+  ['qualification details',(txt(q.degree)&&txt(q.inst)&&txt(q.field)&&txt(q.year))||(txt(t.qual)&&t.qual!=='Profile setup pending'&&t.qual!=='Certificate on file')],
+  ['years of teaching experience',(t.totalYears!==undefined&&t.totalYears!==null&&t.totalYears!=='')||+t.years>0],
+  ['subjects',has(subj)&&!(subj.length===1&&subj[0]==='General')],
+  ['levels you teach',has(t.levels)],
+  ['boards',has(t.boards)],
+  ['teaching mode',has(t.modes)],
+  ['tuition format',has(t.formats)],
+  ['hourly fee',+t.fee>0],
+  ['free demo class option',txt(t.trial)],
+  ['weekly availability',!!t.avail&&Object.keys(t.avail).length>0],
+  ['notice period',txt(t.notice)],
+  ['ID document',txt(t.idName)||txt(t.idFile)],
+  ['qualification certificate',txt(t.certName)||txt(t.cert)]
+ ];
+ var done=checks.filter(function(c){return c[1]}).length;
+ return {pct:Math.round(done/checks.length*100),missing:checks.filter(function(c){return !c[1]}).map(function(c){return c[0]})};
+}
+function verifyLabel(t){var s=t.status;return s==='approved'?'Verified ✓':(s==='pending'?'Pending review':(s==='rejected'?'Changes needed':'Create Profile'))}
 
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function toast(t){var e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(state.tT);state.tT=setTimeout(function(){e.classList.add('hide')},2600)}
@@ -194,7 +236,10 @@ function unlock(l){
 }
 
 function nav(){
- var N=[['dash','🏠','My Dashboard'],['profile','👤','My Profile'],['leads','🎯','New Leads',newLeads().length],['credits','🪙','My Credits'],['settings','⚙️','Settings']];
+ var currentChatUser = null;
+ try { currentChatUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
+ var chatUnread = window.ModivsChat ? ModivsChat.conversations().reduce(function(total,c){ return total + ModivsChat.unread(c, currentChatUser && currentChatUser.email); }, 0) : 0;
+ var N=[['dash','🏠','My Dashboard'],['profile','👤','My Profile'],['leads','🎯','New Leads',newLeads().length],['chat','💬','Chat',chatUnread],['credits','🪙','My Credits'],['settings','⚙️','Settings']];
  var b=$('nav');b.innerHTML='';
  N.forEach(function(x){var btn=el('button');btn.type='button';var i=el('span',null,x[1]);i.setAttribute('aria-hidden','true');btn.appendChild(i);btn.appendChild(el('span',null,x[2]));
   if(x[3]){btn.appendChild(el('span','n',x[3]))}
@@ -215,9 +260,15 @@ function leadCard(l){
  function btn(x,cls,fn){var b=el('button','b '+cls,x);b.type='button';b.addEventListener('click',fn);A.appendChild(b)}
  function set(s,m){l.status=s;toast(m);render()}
  if(!l.unlocked)btn('Unlock · '+COST+' coins','y',function(){unlock(l)});
- else if(l.status==='new'){btn('Accept','y',function(){set('accepted','Accepted '+l.name+'.')});btn('Offer demo','',function(){set('demo','Demo offered to '+l.name+'.')});btn('Decline','o',function(){set('declined','Declined '+l.name+'.')})}
- else if(l.status==='demo'){btn('Accept','y',function(){set('accepted','Accepted '+l.name+'.')});btn('Decline','o',function(){set('declined','Declined '+l.name+'.')})}
- else btn('Message','o',function(){toast('Messaging opens here once chat is built.')});
+ else {
+   if(l.status==='new'){btn('Accept','y',function(){set('accepted','Accepted '+l.name+'.')});btn('Offer demo','',function(){set('demo','Demo offered to '+l.name+'.')});btn('Decline','o',function(){set('declined','Declined '+l.name+'.')})}
+   else if(l.status==='demo'){btn('Accept','y',function(){set('accepted','Accepted '+l.name+'.')});btn('Decline','o',function(){set('declined','Declined '+l.name+'.')})}
+   btn('Message','o',function(){
+     var chatUser = null;
+     try { chatUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
+     if(window.ModivsChat) ModivsChat.open({student:{name:l.name,email:l.email || l.studentEmail || ''},tutor:window.MY_TUTOR || chatUser});
+   });
+ }
  c.appendChild(L);c.appendChild(A);return c
 }
 
@@ -225,8 +276,12 @@ function vDash(v){
  v.appendChild(el('h1','','My Dashboard'));v.appendChild(el('p','sub','Your leads, coins and profile at a glance.'));
  var s=el('div','stats');
  s.appendChild(stat('Available Coins',state.coins,'hi'));s.appendChild(stat('New Leads',newLeads().length));s.appendChild(stat('Unlocked Leads',unlockedCount()));
- s.appendChild(stat('Verification',VERIFIED?'Verified ✓':'Create Profile','',1));v.appendChild(s);
- var p=el('div','prog');p.appendChild(el('p','','Profile Completion: '+PROFILE_PCT+'%'));var d=el('div');var i=el('i');i.style.width=PROFILE_PCT+'%';d.appendChild(i);p.appendChild(d);v.appendChild(p);
+ s.appendChild(stat('Verification',verifyLabel(window.MY_TUTOR||{}),'',1));v.appendChild(s);
+ var pc=profileCompletion(window.MY_TUTOR||{});
+ var p=el('div','prog');p.appendChild(el('p','','Profile Completion: '+pc.pct+'%'));var d=el('div');var i=el('i');i.style.width=pc.pct+'%';d.appendChild(i);p.appendChild(d);
+ if(pc.missing.length){var mm=el('p','','Still to add: '+pc.missing.slice(0,5).join(', ')+(pc.missing.length>5?' and '+(pc.missing.length-5)+' more':'')+'.');mm.style.cssText='margin:8px 0 0;font-size:.88rem';p.appendChild(mm);var eb=el('button','link','Complete my profile');eb.type='button';eb.addEventListener('click',editProfile);p.appendChild(eb)}
+ else{var ok=el('p','','Your profile is 100% complete.');ok.style.cssText='margin:8px 0 0;font-size:.88rem';p.appendChild(ok)}
+ v.appendChild(p);
  var box=el('section','box');var hd=el('div','head');hd.appendChild(el('h2','','Latest new leads'));var all=el('button','link','See all leads');all.type='button';all.addEventListener('click',function(){state.view='leads';render()});hd.appendChild(all);box.appendChild(hd);
  var nl=newLeads().slice(0,2);if(!nl.length)box.appendChild(el('p','empty','No new leads right now.'));nl.forEach(function(l){box.appendChild(leadCard(l))});v.appendChild(box);
  var two=el('div','two'),a=el('section','box');a.appendChild(el('h2','','Upcoming classes'));
@@ -248,6 +303,11 @@ function vLeads(v){
   if(!r.length)list.appendChild(el('p','empty','No leads match.'));r.forEach(function(l){list.appendChild(leadCard(l))})}
  q.addEventListener('input',function(e){state.q=e.target.value.trim();fill()});fill()
 }
+function vChat(v){
+ v.appendChild(el('h1','','Messages'));v.appendChild(el('p','sub','Chat with students connected to your authorized leads.'));
+ var box=el('section','box');var list=el('div');box.appendChild(list);v.appendChild(box);
+ if(window.ModivsChat) ModivsChat.inbox(list,function(c){ModivsChat.open({student:c.student,tutor:c.tutor});});
+}
 function vProfile(v){
  v.appendChild(el('h1','','My Profile'));v.appendChild(el('p','sub','How students and parents see you.'));
  var box=el('section','box');
@@ -257,7 +317,7 @@ function vProfile(v){
  if(t.photo){var im=document.createElement('img');im.src=t.photo;im.alt='Your profile photo';av.appendChild(im)}else{av.textContent=((t.name||'Priya Sharma').split(' ').map(function(w){return w[0]}).slice(0,2).join('')).toUpperCase()}
  ph.appendChild(av);var pn=el('div');pn.appendChild(el('b','',t.name||'Priya Sharma'));if(!t.photo){var np=el('small','','No profile photo yet. Add one from Edit profile.');np.style.display='block';pn.appendChild(np)}ph.appendChild(pn);box.appendChild(ph);
  function list(a,d){return a&&a.length?a.join(', '):d}
- var u=el('ul','kv');[['Name',t.name||'Priya Sharma'],['About',t.bio||'Not added'],['Headline',t.headline||'Maths tutor for classes 9–12 with 8 years’ experience'],['City',t.city||'Ludhiana'],['Mobile number',t.phone||'—'],['Alternate number',t.altPhone||'Not added'],['WhatsApp number',t.whatsapp||'Not added'],['Qualification',t.qual||(t.quals&&t.quals[0]&&t.quals[0].degree?t.quals[0].degree+', '+(t.quals[0].inst||''):'M.Sc. Mathematics, Panjab University')],['Experience',(t.years!=null?t.years:(t.totalYears!=null&&t.totalYears!==''?t.totalYears:8))+' years'],['Subjects',list(t.subs||t.subjects,'Mathematics, Physics')],['Levels',list(t.levels,'Secondary, Senior secondary')],['Fee','₹'+(t.fee||600)+' / hour'],['Group fee',t.groupFee?'₹'+t.groupFee+' / student / hour':'Not offered'],['Boards',list(t.boards,'Not added')],['Teaching format',list(t.formats,'1-on-1 Individual tuition')],['Mode',list(t.modes,'Online, at student’s home')],['Languages',list(t.langs,'English, Hindi, Punjabi')],['Verification',t.status?(t.status==='approved'?'Verified':(t.status==='rejected'?'Changes needed':'Pending')):(VERIFIED?'Verified':'Pending')]].forEach(function(p){var li=el('li');li.appendChild(el('span','',p[0]));li.appendChild(el('span','',p[1]));u.appendChild(li)});
+ var u=el('ul','kv');[['Name',t.name||'Priya Sharma'],['About',t.bio||'Not added'],['Headline',t.headline||'Maths tutor for classes 9–12 with 8 years’ experience'],['City',t.city||'Ludhiana'],['Mobile number',t.phone||'—'],['Alternate number',t.altPhone||'Not added'],['WhatsApp number',t.whatsapp||'Not added'],['Qualification',t.qual||(t.quals&&t.quals[0]&&t.quals[0].degree?t.quals[0].degree+', '+(t.quals[0].inst||''):'M.Sc. Mathematics, Panjab University')],['Experience',(t.years!=null?t.years:(t.totalYears!=null&&t.totalYears!==''?t.totalYears:8))+' years'],['Subjects',list(t.subs||t.subjects,'Mathematics, Physics')],['Levels',list(t.levels,'Secondary, Senior secondary')],['Fee','₹'+(t.fee||600)+' / hour'],['Group fee',t.groupFee?'₹'+t.groupFee+' / student / hour':'Not offered'],['Boards',list(t.boards,'Not added')],['Teaching format',list(t.formats,'1-on-1 Individual tuition')],['Mode',list(t.modes,'Online, at student’s home')],['Languages',list(t.langs,'English, Hindi, Punjabi')],['Verification',t.status?(t.status==='approved'?'Verified':(t.status==='rejected'?'Changes needed':'Pending')):'Pending']].forEach(function(p){var li=el('li');li.appendChild(el('span','',p[0]));li.appendChild(el('span','',p[1]));u.appendChild(li)});
  box.appendChild(u);var b=el('button','b y','Edit profile');b.type='button';b.style.marginTop='16px';b.addEventListener('click',editProfile);box.appendChild(b);v.appendChild(box)
 }
 function vCredits(v){
@@ -289,10 +349,15 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
   } catch(e){}
 
   var tutor = allTutors.find(function(t){ return t.email === email; });
-  if(!tutor){
-    try {
-      tutor = JSON.parse(localStorage.getItem('modivs_current_tutor') || 'null');
-    } catch(e){}
+  var fullProfile = null;
+  try {
+    fullProfile = JSON.parse(localStorage.getItem('modivs_current_tutor') || 'null');
+  } catch(e){}
+  if(tutor && fullProfile && fullProfile.email === email){
+    // merge the full profile the tutor filled in with the admin record (admin fields such as status win)
+    tutor = Object.assign({}, fullProfile, tutor);
+  } else if(!tutor){
+    tutor = fullProfile;
   }
   if(!tutor){
     tutor = {
@@ -370,12 +435,13 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
 function render(){
  $('coins').textContent=state.coins;nav();
  var v=$('view');v.innerHTML='';
- ({dash:vDash,leads:vLeads,profile:vProfile,credits:vCredits,settings:vSettings})[state.view](v)
+ ({dash:vDash,leads:vLeads,profile:vProfile,chat:vChat,credits:vCredits,settings:vSettings})[state.view](v)
 }
 var pk=$('packs');PACKS.forEach(function(p){var b=el('button','pack');b.type='button';b.appendChild(el('b','',p[0]+' coins'));b.appendChild(el('small','',p[1]));b.addEventListener('click',function(){recharge(p[0],p[1])});pk.appendChild(b)});
 $('rech').addEventListener('click',openRecharge);$('close').addEventListener('click',function(){$('dlg').close()});
 $('editTop').addEventListener('click',editProfile);$('editLink').addEventListener('click',editProfile);
 $('ask').addEventListener('click',function(){toast('Support chat opens here once a WhatsApp number is connected.')});
+if(window.ModivsChat) ModivsChat.subscribe(render);
 render();
 })();
 </script>

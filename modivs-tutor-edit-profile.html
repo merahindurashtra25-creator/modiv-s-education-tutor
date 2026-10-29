@@ -349,7 +349,7 @@ document.getElementById('saveBtn').addEventListener('click',save);
 /* ---------- start ---------- */
 D=load();
 if(!D){
-  app.innerHTML='<div class="empty"><h1>No tutor profile found</h1><p class="sub">Create your tutor account first, then you can edit your profile here.</p><a class="btn" href="modivs-tutor-profile.html">Create tutor profile</a></div>';
+  app.innerHTML='<div class="empty"><h1>No tutor profile found</h1><p class="sub">Create your tutor account first, then you can edit your profile here.</p><a class="btn" href="modivs-education.html#tutor-signup">Create tutor account</a></div>';
 }else{
   ORIG=JSON.parse(JSON.stringify({photo:D.photo,name:D.name,idType:D.idType,idName:D.idName,certName:D.certName,status:D.status}));
   render();

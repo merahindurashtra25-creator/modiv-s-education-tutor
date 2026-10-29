@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -19,7 +19,7 @@
 })();
 </script>
 <style>
-:root{--navy:#1A2035;--navy2:#2a3350;--yellow:#FABD4E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+:root{--navy:#1A2035;--navy2:#2a3350;--yellow:#EBB92E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
 body{margin:0;background:var(--cream);color:var(--navy);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select,textarea{font:inherit;color:inherit}
@@ -68,7 +68,7 @@ input[type=search]{padding:8px 12px;border:1.5px solid var(--line);border-radius
 .acts{display:flex;flex-direction:column;gap:8px;align-items:flex-end;justify-content:center}
 .b{padding:9px 16px;border-radius:10px;border:2px solid var(--navy);background:var(--navy);color:var(--cream);font-weight:600;cursor:pointer;font-size:.9rem;white-space:nowrap;text-decoration:none;display:inline-block;text-align:center}
 .b:hover{background:var(--navy2)}
-.b.y{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.b.y:hover{background:#ffc965}
+.b.y{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.b.y:hover{background:#D9A41C}
 .b.o{background:transparent;color:var(--navy)}.b.o:hover{background:var(--cream)}
 .empty{color:var(--muted);text-align:center;padding:24px 0}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:22px}.two .box{margin-bottom:0}
@@ -86,6 +86,14 @@ dialog h2{margin:0 0 4px}
 @media(max-width:960px){.app{grid-template-columns:1fr}.side{position:static;max-height:none}.two{grid-template-columns:1fr}}
 @media(max-width:760px){.tutor-top-nav{display:none}}
 </style>
+<script src="modivs-import-data.js"></script>
+<script src="modivs-chat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
+<script src="firebase-chat.js"></script>
 </head>
 <body>
 <header class="topbar">
@@ -110,8 +118,8 @@ dialog h2{margin:0 0 4px}
    <span class="ver">Active Learner</span>
    <ul class="mini">
     <li><span>City</span><span id="stuCity">Ludhiana</span></li>
-    <li><span>Subjects</span><span>Maths, Science</span></li>
-    <li><span>Mode</span><span>Online & Home</span></li>
+    <li><span>Subjects</span><span id="stuSubs">Maths, Science</span></li>
+    <li><span>Mode</span><span id="stuMode">Online & Home</span></li>
    </ul>
    <a href="modivs-student-registration.html" class="b y" style="width:100%;margin-top:12px;">Edit Requirements</a>
   </div>
@@ -121,6 +129,7 @@ dialog h2{margin:0 0 4px}
    <button type="button" data-sec="enquiries">My Requests <span class="n" id="reqCount">3</span></button>
    <button type="button" data-sec="favourites">Favourites <span class="n" id="favCount">2</span></button>
    <button type="button" data-sec="schedule">Class Schedule</button>
+   <button type="button" data-sec="chat">Chat <span class="n" id="chatCount">0</span></button>
   </nav>
  </aside>
 
@@ -236,6 +245,12 @@ dialog h2{margin:0 0 4px}
     </div>
    </div>
   </section>
+
+  <section id="sec-chat" class="hide">
+   <h1>Messages</h1>
+   <p class="sub">Chat with tutors about your authorized tutoring requests.</p>
+   <div class="box"><div id="studentChatInbox"></div></div>
+  </section>
  </main>
 </div>
 
@@ -273,6 +288,23 @@ dialog h2{margin:0 0 4px}
     var initials = (user.name || 'Student').split(' ').map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
     document.getElementById('stuAva').textContent = initials || 'ST';
   }
+
+// Show the requirement the student saved (Update Requirements writes it)
+  try {
+    var em = user && user.email ? String(user.email).toLowerCase() : '';
+    var sr = JSON.parse(localStorage.getItem('modivs_student_req') || 'null');
+    if(!sr || String(sr.email).toLowerCase() !== em){
+      sr = (JSON.parse(localStorage.getItem('modivs_students_db') || '[]') || []).filter(function(x){ return String(x.email).toLowerCase() === em; })[0] || null;
+    }
+    if(sr){
+      var setT = function(id, v){ var e = document.getElementById(id); if(e && v) e.textContent = v; };
+      setT('stuGrade', [sr.cls, sr.board ? '(' + sr.board + ')' : ''].filter(Boolean).join(' ') + ' · Student');
+      setT('stuCity', sr.city);
+      setT('stuSubs', (sr.subs || []).join(', '));
+      var md = (sr.mode || []).map(function(m){ return /online/i.test(m) ? 'Online' : (/comes to|student|home/i.test(m) ? 'At home' : 'At tutor’s place'); });
+      setT('stuMode', md.filter(function(x, i){ return md.indexOf(x) === i; }).join(' · '));
+    }
+  } catch(e){}
 
 // Dynamic tutor data loading strictly from canonical modivs_tutors_db (Only Approved Tutors)
   var rawDbTutors = [];
@@ -340,6 +372,25 @@ dialog h2{margin:0 0 4px}
     e.preventDefault(); setSection('enquiries');
   });
 
+  function renderStudentChats(){
+    var box = document.getElementById('studentChatInbox');
+    if(!box || !window.ModivsChat) return;
+    ModivsChat.inbox(box, function(c){ ModivsChat.open({student:c.student, tutor:c.tutor}); });
+    var count = ModivsChat.conversations().reduce(function(total, c){
+      return total + ModivsChat.unread(c, user && user.email);
+    }, 0);
+    document.getElementById('chatCount').textContent = count;
+  }
+  window.openStudentChat = function(tutorId, tutorName){
+    if(!user || !window.ModivsChat) return;
+    ModivsChat.open({student:user, tutor:tutorId || tutorName});
+    renderStudentChats();
+  };
+  if(window.ModivsChat){
+    ModivsChat.subscribe(renderStudentChats);
+    renderStudentChats();
+  }
+
   document.getElementById('studentLogoutBtn').addEventListener('click', function(e){
     localStorage.removeItem('modivs_auth_user');
   });
@@ -354,6 +405,7 @@ dialog h2{margin:0 0 4px}
       '</div>' +
       '<div class="acts">' +
         '<button class="b y" type="button" onclick="openDemoModal(\''+t.id+'\', \''+t.name+'\')">Book Free Demo</button>' +
+        '<button class="b o" type="button" onclick="openStudentChat(\''+t.id+'\', \''+t.name.replace(/'/g, "\\'")+'\')">Chat</button>' +
         '<button class="b o" type="button" onclick="toggleFav(\''+t.id+'\')">' + (isFav ? '★ Saved' : '☆ Save') + '</button>' +
       '</div>' +
     '</div>';
@@ -402,7 +454,7 @@ dialog h2{margin:0 0 4px}
           '<p style="margin:4px 0 0;font-size:0.92rem;color:var(--navy);">' + r.note + '</p>' +
         '</div>' +
         '<div class="acts">' +
-          '<button class="b y" type="button" onclick="alert(\'Message sent to tutor ' + r.tutorName + '\')">Message Tutor</button>' +
+          '<button class="b y" type="button" onclick="openStudentChat(\'' + r.tutorId + '\', \'' + r.tutorName.replace(/'/g, "\\'") + '\')">Message Tutor</button>' +
         '</div>' +
       '</div>';
     }).join('');

@@ -1,10 +1,15 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Tutor registration</title>
 <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js" defer></script>
+<script src="firebase-sync.js" defer></script>
 <style>
 :root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--tint:#e8f5f1;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
@@ -15,6 +20,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .shell{display:grid;grid-template-columns:70fr 30fr;min-height:100vh}
 .main{padding:36px 28px 60px;display:flex;justify-content:center}
 .col{width:100%;max-width:640px}
+.topl{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.topl .links{display:flex;gap:8px;align-items:center}.topl .links a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.88rem;border:1.5px solid var(--line);padding:6px 12px;border-radius:8px;background:#fff}.topl .links a:hover{border-color:var(--ink)}
 .side{background:var(--ink);color:#fff;padding:36px 26px}
 .side h2{font-size:1rem;margin:28px 0 14px;font-weight:600;color:#aab6cc}
 .steps{list-style:none;margin:0;padding:0}
@@ -80,7 +86,7 @@ textarea{min-height:110px;resize:vertical}
 <body>
 <div class="shell">
  <main class="main"><div class="col">
-  <a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education"></a>
+  <div class="topl"><a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education"></a><div class="links"><a href="modivs-home.html">Home</a><a href="modivs-tutor-dashboard.html">My dashboard</a></div></div>
   <div class="bar" aria-hidden="true"><div id="fill"></div></div>
   <form id="form" novalidate></form>
  </div></main>
@@ -112,9 +118,22 @@ try {
   }
 } catch(e){}
 
+// Account is created on the Create Account page; prefill from it
+try {
+  var au = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
+  if(!au || au.role !== 'Tutor'){ window.location.replace('modivs-education.html#tutor-signup'); }
+  else {
+    if(!D.email) D.email = au.email || '';
+    if(!D.name) D.name = au.name || '';
+    if(!D.pass){
+      var uu = JSON.parse(localStorage.getItem('modivs_users') || '[]').filter(function(u){ return u.email === String(au.email).toLowerCase(); })[0];
+      if(uu) D.pass = uu.pass || '';
+    }
+  }
+} catch(e){}
 var EDIT=/[?&]edit=1/.test(location.search)&&!!(D.name&&D.email);
 var ORIG=JSON.parse(JSON.stringify({photo:D.photo,name:D.name,idType:D.idType,idName:D.idName,certName:D.certName,status:D.status||''}));
-var step=EDIT?1:0,submitted=false,toastT,finalStatus='pending';
+var step=1,submitted=false,toastT,finalStatus='pending';
 var f=document.getElementById('form');
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
@@ -141,7 +160,7 @@ function toast(t){var e=document.getElementById('toast');e.textContent=t;e.class
 function field(id,label,val,type,hint,ph){return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'}
 function chips(name,list,sel){return '<div class="chips" role="group">'+list.map(function(x,i){return '<label class="chip" style="margin:0;font-weight:400"><input type="checkbox" data-group="'+name+'" value="'+esc(x)+'"'+(sel.indexOf(x)>-1?' checked':'')+'><span>'+esc(x)+'</span></label>'}).join('')+'</div>'}
 function sel(id,label,val,opts){return '<label for="'+id+'">'+label+'</label><select id="'+id+'"><option value="">Select</option>'+opts.map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select>'}
-function nav(last){return '<div class="nav"><button type="button" class="btn ghost" data-act="back"'+(step===(EDIT?1:0)?' style="visibility:hidden"':'')+'>Back</button><button type="submit" class="btn">'+(last?(EDIT?'Save changes':'Submit for verification'):(step===0?'Create account':'Save and continue'))+'</button></div>'}
+function nav(last){return '<div class="nav"><button type="button" class="btn ghost" data-act="back"'+(step===1?' style="visibility:hidden"':'')+'>Back</button><button type="submit" class="btn">'+(last?(EDIT?'Save changes':'Submit for verification'):(step===0?'Create account':'Save and continue'))+'</button></div>'}
 
 var views=[
 function(){return '<h1>Create your tutor account</h1><p class="sub">Start with your login details. You’ll build your profile next.</p>'+
@@ -191,8 +210,8 @@ function(){function tags(a){return a.map(function(x){return '<span class="tag">'
 ];
 
 function render(){
- document.getElementById('fill').style.width=(submitted?100:(step/(STEPS.length-1))*100)+'%';
- document.getElementById('steps').innerHTML=STEPS.map(function(s,i){if(EDIT&&i===0)return '';var c=submitted||i<step?'done':(i===step?'on':'');return '<li class="'+c+'"'+(EDIT?' data-go="'+i+'" style="cursor:pointer" tabindex="0"':'')+'><i>'+(c==='done'?'✓':(EDIT?i:i+1))+'</i>'+s+'</li>'}).join('');
+ document.getElementById('fill').style.width=(submitted?100:((step-1)/(STEPS.length-2))*100)+'%';
+ document.getElementById('steps').innerHTML=STEPS.map(function(s,i){if(i===0)return '';var c=submitted||i<step?'done':(i===step?'on':'');return '<li class="'+c+'"'+(EDIT?' data-go="'+i+'" style="cursor:pointer" tabindex="0"':'')+'><i>'+(c==='done'?'✓':i)+'</i>'+s+'</li>'}).join('');
  if(submitted){
    f.innerHTML='<div class="done-box">' +
      '<div style="font-size:3.2rem;margin-bottom:12px;">🎉</div>' +
@@ -326,6 +345,11 @@ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: tutorData.name, 
        altPhone: tutorData.altPhone || '',
        whatsapp: tutorData.whatsapp || '',
        photo: tutorData.photo || '',
+       bio: tutorData.bio || '',
+       boards: tutorData.boards || [],
+       formats: tutorData.formats || [],
+       groupFee: tutorData.groupFee || '',
+       trial: tutorData.trial || '',
        rejection_reason: '',
        rejection_reasons: [],
        rejection_note: '',
@@ -363,6 +387,14 @@ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: tutorData.name, 
         dbTutors.unshift(newAdminEntry);
       }
       localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
+
+      // Sync to Firebase if connected
+      if(window.EducationBFirebase && window.EducationBFirebase.db){
+        window.EducationBFirebase.db.collection('tutors').doc(String(newAdminEntry.id).replace(/[/]/g, '_')).set(
+          Object.assign({}, newAdminEntry, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }),
+          { merge: true }
+        ).catch(function(){});
+      }
 
       // 4. Log audit entry
       var logs = JSON.parse(localStorage.getItem('modivs_audit_logs') || '[]');

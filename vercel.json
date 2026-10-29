@@ -10,6 +10,8 @@
     { "src": "/tutor-profile", "dest": "/modivs-tutor-profile.html" },
     { "src": "/tutor-edit-profile", "dest": "/modivs-tutor-edit-profile.html" },
     { "src": "/student-registration", "dest": "/modivs-student-registration.html" },
+    { "src": "/tutors", "dest": "/modivs-tutors.html" },
+    { "src": "/active-leads", "dest": "/modivs-active-leads.html" },
     { "src": "/", "dest": "/index.html" }
   ]
 }
