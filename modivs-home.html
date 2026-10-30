@@ -380,7 +380,7 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
  <div class="wrap">
   <div class="cols">
    <div><a class="brand" href="#top" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;margin-bottom:12px;"><img src="logo.png" alt="Modiv’s Education" style="height:36px;display:block;mix-blend-mode:normal;"></a><p style="color:#c9cde0;max-width:320px">Connecting tutors with students and parents, one class at a time.</p></div>
-   <div><h4>Explore</h4><ul><li><a href="#find">Find a tutor</a></li><li><a href="modivs-tutors.html">Tutors</a></li><li><a href="#subjects">Subjects</a></li><li><a href="#how">How it works</a></li><li><a href="#locations">Locations</a></li><li><a href="#faq">FAQs</a></li><li><a href="modivs-contact.html">Contact us</a></li></ul></div>
+   <div><h4>Explore</h4><ul><li><a href="#find" id="footFindTutor">Find a tutor</a></li><li><a href="modivs-tutors.html">Tutors</a></li><li><a href="#subjects">Subjects</a></li><li><a href="#how">How it works</a></li><li><a href="#locations">Locations</a></li><li><a href="#faq">FAQs</a></li><li><a href="modivs-contact.html">Contact us</a></li></ul></div>
    <div><h4>Account</h4><ul><li><a href="modivs-education.html#login">Log in</a></li><li><a href="modivs-tutor-dashboard.html">Tutor dashboard</a></li><li><a href="modivs-student-registration.html">Student / parent sign up</a></li><li><a href="modivs-education.html#tutor-signup">Tutor sign up</a></li></ul></div>
    <div><h4>Legal</h4><ul><li><a href="modivs-privacy-policy.html">Privacy Policy</a></li><li><a href="modivs-terms.html">Terms &amp; Conditions</a></li><li><a href="modivs-refund-policy.html">Refund Policy</a></li><li><a href="modivs-contact.html">Contact us</a></li></ul></div>
   </div>
@@ -597,6 +597,9 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
  } else if(authUser && authUser.role === 'Tutor'){
   if(navLogin){ navLogin.textContent = 'Dashboard'; navLogin.href = 'modivs-tutor-dashboard.html'; }
   if(heroTutor){ heroTutor.href = 'modivs-tutor-dashboard.html'; heroTutor.textContent = 'Go to Dashboard'; }
+  // Tutors do not look for tutors: remove every "Find a tutor" option
+  if(heroFind){ heroFind.style.display = 'none'; }
+  var ff = document.getElementById('footFindTutor'); if(ff && ff.parentNode){ ff.parentNode.style.display = 'none'; }
   if(regTutor){ regTutor.href = 'modivs-tutor-dashboard.html'; regTutor.textContent = 'Go to Dashboard'; }
  }
 

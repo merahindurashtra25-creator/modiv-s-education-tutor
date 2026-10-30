@@ -97,6 +97,17 @@ service cloud.firestore {
     }
 
     // ==========================================
+    // 2b. Tutor verification documents (Aadhaar / ID, qualification certificate)
+    // Private: only the admin and the tutor who uploaded them can read them.
+    // ==========================================
+    match /tutor_documents/{docId} {
+      allow read: if isAdmin() || isEmail(resource.data.email);
+      allow create: if isAdmin() || isEmail(request.resource.data.email);
+      allow update: if isAdmin() || (isEmail(resource.data.email) && isEmail(request.resource.data.email));
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
     // 3. Students Directory
     // ==========================================
     match /students/{studentId} {

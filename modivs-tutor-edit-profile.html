@@ -70,6 +70,7 @@ input:disabled{background:var(--mist);color:var(--muted)}
 @media(max-width:700px){.two{grid-template-columns:1fr}.top{padding:8px 14px}}
 </style>
 <script src="modivs-places.js"></script>
+<script src="modivs-docs.js"></script>
 </head>
 <body>
 <header class="top"><div class="in">
@@ -188,8 +189,8 @@ function render(){
 
   '<section class="sec"><h2>Verification documents</h2><span class="hint">Replacing a document or changing your name or photo sends your profile for admin re-verification.</span>'+
   sel('idType','Government ID type'+STAR,D.idType,['Aadhaar','PAN','Passport','Voter ID','Driving licence'])+
-  '<label for="idFile">ID document'+STAR+'</label><div class="up"><small>JPG, PNG or PDF, up to 5 MB</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="idCur">'+(D.idName?'Current: '+esc(D.idName):'')+'</small></div>'+
-  '<label for="certFile">Highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF, up to 5 MB</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="certCur">'+(D.certName?'Current: '+esc(D.certName):'')+'</small></div></section>';
+  '<label for="idFile">ID document'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (photos are compressed automatically; PDFs up to 650 KB)</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="idCur">'+(D.idName?'Current: '+esc(D.idName):'')+'</small></div>'+
+  '<label for="certFile">Highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (photos are compressed automatically; PDFs up to 650 KB)</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="certCur">'+(D.certName?'Current: '+esc(D.certName):'')+'</small></div></section>';
   document.getElementById('savebar').classList.remove('hide');
 }
 
@@ -256,13 +257,13 @@ function validate(files){
   if(!D.idType)return fail('idType','Choose an ID type.');
   if(!D.idName)return fail('idFile','Upload your ID.');
   if(!D.certName)return fail('certFile','Upload your qualification certificate.');
-  if((files.idFile&&files.idFile.size>5242880)||(files.certFile&&files.certFile.size>5242880))return fail('idFile','Each file must be 5 MB or smaller.');
   return true;
 }
 
 /* ---------- save everywhere the dashboard/admin read from ---------- */
+var DOCS_NEW={id:null,cert:null};
 function persist(){
-  var sensitive=D.photo!==ORIG.photo||D.name!==ORIG.name||D.idType!==ORIG.idType||D.idName!==ORIG.idName||D.certName!==ORIG.certName;
+  var sensitive=D.photo!==ORIG.photo||D.name!==ORIG.name||D.idType!==ORIG.idType||D.idName!==ORIG.idName||D.certName!==ORIG.certName||!!(DOCS_NEW.id||DOCS_NEW.cert);
   var status=(ORIG.status==='approved'&&!sensitive)?'approved':'pending';
   var t=Object.assign({},D);
   if(t.waSame)t.whatsapp=t.phone;
@@ -310,8 +311,24 @@ function persist(){
 function save(){
   var files=readAll();
   if(!validate(files))return;
+  var btn=document.getElementById('saveBtn');if(btn)btn.disabled=true;
+  var jobs=[];
+  DOCS_NEW={id:null,cert:null};
+  if(files.idFile)jobs.push(ModivsDocs.prepare(files.idFile).then(function(d){DOCS_NEW.id=d}));
+  if(files.certFile)jobs.push(ModivsDocs.prepare(files.certFile).then(function(d){DOCS_NEW.cert=d}));
+  Promise.all(jobs).then(finishSave).catch(function(err){
+    if(btn)btn.disabled=false;
+    var m=(err&&err.userMessage)||'Could not read one of the documents. Try another file.';
+    document.getElementById('msg').textContent=m;toast(m)});
+}
+function finishSave(){
+  var btn=document.getElementById('saveBtn');if(btn)btn.disabled=false;
   var status;
   try{status=persist()}catch(err){console.error(err);document.getElementById('msg').textContent='Could not save. Your browser storage may be full (try a smaller photo).';return}
+  var okDocs=true;
+  if(DOCS_NEW.id)okDocs=ModivsDocs.save(D.email,'id',DOCS_NEW.id)&&okDocs;
+  if(DOCS_NEW.cert)okDocs=ModivsDocs.save(D.email,'cert',DOCS_NEW.cert)&&okDocs;
+  if(!okDocs)toast('Profile saved, but your browser had no room for the new documents. Free some space and upload them again.');
   document.getElementById('savebar').classList.add('hide');
   app.innerHTML='<div class="empty"><div style="font-size:3rem">✅</div><h1 style="color:var(--accent-d)">Profile updated</h1><p class="sub">'+
     (status==='approved'?'Your changes are saved and now show on your profile.':'Your changes are saved and sent to admins for re-verification, because your photo, name or documents changed.')+

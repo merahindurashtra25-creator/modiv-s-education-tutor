@@ -107,6 +107,8 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 .lightbox img{max-width:min(90vw,520px);max-height:80vh;border-radius:14px;background:#fff}
 @media(max-width:980px){.main{grid-template-columns:1fr}.detail{position:static}.top{padding:12px 16px}.top .r span{display:none}.admin-nav{display:none}}
 </style>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-docs.js"></script>
 <script src="modivs-import-data.js"></script>
 <script src="modivs-chat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
@@ -369,10 +371,15 @@ function composeReason(list, note){
   if(note) out += (out ? ' Note: ' : '') + note;
   return out;
 }
+function escapeHtml(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
 function initialsOf(n){ return String(n || '').split(' ').filter(Boolean).map(function(w){ return w[0]; }).slice(0, 2).join('').toUpperCase() || '?'; }
 function avatar(x, big){
   var a = el('span', 'av' + (big ? ' lg' : ''));
-  if(x.photo){
+  if(!x.photo && x.avatar && window.ModivsAvatars && ModivsAvatars.has(x.avatar)){
+    var ai = document.createElement('img');
+    ai.src = ModivsAvatars.src(x.avatar); ai.alt = x.name + ' avatar';
+    a.appendChild(ai);
+  } else if(x.photo){
     var im = document.createElement('img');
     im.src = x.photo; im.alt = x.name + ' profile photo';
     a.appendChild(im);
@@ -616,7 +623,7 @@ function list(){
     var nameWithInitial = el('span', '', '');
     nameWithInitial.style.cssText = 'font-weight:700;display:inline-flex;align-items:center;gap:6px;';
     nameWithInitial.textContent = '';
-    if(currentSection !== 'students'){ nameWithInitial.appendChild(avatar(x, false)); }
+    nameWithInitial.appendChild(avatar(x, false));
     nameWithInitial.appendChild(document.createTextNode(x.name));
     t.appendChild(nameWithInitial);
 
@@ -767,7 +774,11 @@ function detail(){
 
   var h = el('div', 'top2');
   h.style.cssText = 'display:flex;justify-content:space-between;gap:10px;align-items:center';
-  h.appendChild(el('h2', '', x.name));
+  var hwrap = el('div', '');
+  hwrap.style.cssText = 'display:flex;align-items:center;gap:12px;min-width:0';
+  if(currentSection === 'students' && x.avatar){ var hav = avatar(x, false); hav.style.cssText = 'width:52px;height:52px'; hwrap.appendChild(hav); }
+  hwrap.appendChild(el('h2', '', x.name));
+  h.appendChild(hwrap);
   var bLabel = LABEL[x.status] || x.status;
   if(x.status === 'incomplete') bLabel = 'Profile Incomplete';
   h.appendChild(el('span', 'badge ' + x.status, bLabel));
@@ -958,20 +969,59 @@ function detail(){
     d.appendChild(txBox);
   }
 
-  // Verification Documents
+  // Verification Documents (ID proof + qualification certificate): admin can see and open the real files
   if(x.status !== 'incomplete'){
     d.appendChild(el('h3', '', 'Uploaded Verification Documents'));
-    [[ (x.idType || 'Government ID') + ' (ID Proof)', x.idFile || 'id_proof.pdf'],
-     ['Degree Certificate', x.cert || 'degree_certificate.pdf']].forEach(function(p){
+    var docSlot = el('div', 'docs-slot');
+    d.appendChild(docSlot);
+    var docDefs = [
+      { key: 'id',   title: (x.idType || 'Government ID') + ' (ID Proof)', fileName: x.idFile || 'id_proof' },
+      { key: 'cert', title: 'Qualification / Degree Certificate',          fileName: x.cert || 'degree_certificate' }
+    ];
+    var rows = docDefs.map(function(p){
       var r = el('div', 'doc');
-      r.appendChild(el('span', '', p[0] + ': ' + p[1]));
-      var b = el('button', '', 'Preview Document');
-      b.type = 'button';
-      b.addEventListener('click', function(){
-        alert('Document Preview: ' + p[1] + '\n\nFile verified and matches applicant name: ' + x.name);
+      r.style.cssText = 'flex-wrap:wrap';
+      var info = el('div', '');
+      info.style.cssText = 'flex:1;min-width:180px';
+      info.appendChild(el('b', '', p.title));
+      var fn = el('small', '', p.fileName ? ('File: ' + p.fileName) : 'No file name');
+      fn.style.cssText = 'display:block;color:var(--muted)';
+      info.appendChild(fn);
+      var state = el('small', '', 'Loading document…');
+      state.style.cssText = 'display:block;color:var(--muted);margin-top:2px';
+      info.appendChild(state);
+      r.appendChild(info);
+      var thumbBox = el('div', '');
+      thumbBox.style.cssText = 'display:flex;align-items:center;gap:10px';
+      r.appendChild(thumbBox);
+      docSlot.appendChild(r);
+      return { def: p, state: state, thumbBox: thumbBox };
+    });
+    var wantId = x.id;
+    window.ModivsDocs && ModivsDocs.load(x.email).then(function(docs){
+      if(selId !== wantId) return; // admin moved to another record while loading
+      rows.forEach(function(row){
+        var doc = docs && docs[row.def.key];
+        row.thumbBox.innerHTML = '';
+        if(!doc || !doc.dataUrl){
+          row.state.textContent = 'The file itself is not available here. Ask the tutor to re-upload it from Edit Profile.';
+          row.state.style.color = 'var(--bad)';
+          return;
+        }
+        row.state.textContent = (/pdf/i.test(doc.type || '') ? 'PDF document' : 'Image') + ' · ' + Math.max(1, Math.round((doc.size || 0) / 1024)) + ' KB · click to view';
+        row.state.style.color = 'var(--muted)';
+        if(!/pdf/i.test(doc.type || '')){
+          var th = document.createElement('img');
+          th.src = doc.dataUrl; th.alt = row.def.title + ' thumbnail';
+          th.style.cssText = 'width:84px;height:60px;object-fit:cover;border-radius:8px;border:1px solid var(--line);cursor:pointer;background:#fff';
+          th.addEventListener('click', function(){ ModivsDocs.view(doc, row.def.title); });
+          row.thumbBox.appendChild(th);
+        }
+        var vb = el('button', '', 'View document');
+        vb.type = 'button';
+        vb.addEventListener('click', function(){ ModivsDocs.view(doc, row.def.title); });
+        row.thumbBox.appendChild(vb);
       });
-      r.appendChild(b);
-      d.appendChild(r);
     });
   } else {
     var incBox = el('div', '');

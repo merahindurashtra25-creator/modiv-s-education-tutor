@@ -86,6 +86,7 @@ textarea{min-height:110px;resize:vertical}
 @media(max-width:820px){.shell{grid-template-columns:1fr}.side{display:none}.main{padding:24px 16px 60px}.two{grid-template-columns:1fr}}
 </style>
 <script src="modivs-places.js"></script>
+<script src="modivs-docs.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -139,6 +140,7 @@ var EDIT=/[?&]edit=1/.test(location.search)&&!!(D.name&&D.email);
 var ORIG=JSON.parse(JSON.stringify({photo:D.photo,name:D.name,idType:D.idType,idName:D.idName,certName:D.certName,status:D.status||''}));
 var step=1,submitted=false,toastT,finalStatus='pending';
 var f=document.getElementById('form');
+var PEND_DOCS={id:null,cert:null},DOC_BUSY=0;
 
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 var STAR=' <span class="req" aria-hidden="true">*</span>';
@@ -207,8 +209,8 @@ function(){var rows=DAYS.map(function(d){return '<tr><td>'+d+'</td>'+SLOTS.map(f
  sel('notice','Notice needed before a new class'+STAR,D.notice,['Same day','1 day','2–3 days','1 week'])+'<div class="msg" id="msg" role="alert"></div>'+nav()},
 function(){return '<h1>Verification</h1><p class="sub">Our team checks these documents before your profile goes live. Only admins can see them.</p>'+
  sel('idType','Government ID type'+STAR,D.idType,['Aadhaar','PAN','Passport','Voter ID','Driving licence'])+
- '<label for="idFile">Upload ID'+STAR+'</label><div class="up"><small>JPG, PNG or PDF, up to 5 MB</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf">'+(D.idName?'<small>Selected: '+esc(D.idName)+'</small>':'')+'</div>'+
- '<label for="certFile">Upload highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF, up to 5 MB</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf">'+(D.certName?'<small>Selected: '+esc(D.certName)+'</small>':'')+'</div>'+
+ '<label for="idFile">Upload ID'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (photos are compressed automatically; PDFs up to 650 KB)</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf">'+(D.idName?'<small>Selected: '+esc(D.idName)+'</small>':'')+'</div>'+
+ '<label for="certFile">Upload highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (photos are compressed automatically; PDFs up to 650 KB)</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf">'+(D.certName?'<small>Selected: '+esc(D.certName)+'</small>':'')+'</div>'+
  '<div class="msg" id="msg" role="alert"></div>'+nav()},
 function(){function tags(a){return a.map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join('')||'<span class="hint">None selected</span>'}
  var av=Object.keys(D.avail).filter(function(k){return D.avail[k]}).length;
@@ -314,11 +316,13 @@ function save(){ // read inputs into D and validate; returns true if OK
   if(!Object.keys(D.avail).length){document.getElementById('msg').textContent='Select at least one available slot.';return false}
   if(!D.notice)return flag('notice','Choose how much notice you need.')}
  if(step===6){D.idType=v('idType');var a=document.getElementById('idFile').files[0],b=document.getElementById('certFile').files[0];
+  if(DOC_BUSY){document.getElementById('msg').textContent='Please wait a moment, your document is still being processed.';return false}
+  if(a&&!PEND_DOCS.id){document.getElementById('msg').textContent='The ID file could not be used. Choose a JPG, PNG or a PDF under 650 KB.';return false}
+  if(b&&!PEND_DOCS.cert){document.getElementById('msg').textContent='The certificate file could not be used. Choose a JPG, PNG or a PDF under 650 KB.';return false}
   if(a)D.idName=a.name;if(b)D.certName=b.name;
   if(!D.idType)return flag('idType','Choose an ID type.');
-  if(!D.idName){document.getElementById('msg').textContent='Upload your ID.';return false}
-  if(!D.certName){document.getElementById('msg').textContent='Upload your qualification certificate.';return false}
-  if((a&&a.size>5242880)||(b&&b.size>5242880)){document.getElementById('msg').textContent='Each file must be 5 MB or smaller.';return false}}
+  if(!D.idName||(!PEND_DOCS.id&&!ModivsDocs.loadLocal(D.email).id&&!EDIT)){document.getElementById('msg').textContent='Upload your ID.';return false}
+  if(!D.certName||(!PEND_DOCS.cert&&!ModivsDocs.loadLocal(D.email).cert&&!EDIT)){document.getElementById('msg').textContent='Upload your qualification certificate.';return false}}
  if(step===7){D.agree=document.getElementById('agree').checked;if(!D.agree){document.getElementById('msg').textContent='Tick the confirmation to submit.';return false}}
  return true;
 }
@@ -331,13 +335,18 @@ f.addEventListener('submit',function(e){e.preventDefault();
 
    // 1. Save profile to localStorage for tutor dashboard
    var tutorData = Object.assign({}, D);
-   var sensitive=EDIT&&(tutorData.photo!==ORIG.photo||tutorData.name!==ORIG.name||tutorData.idType!==ORIG.idType||tutorData.idName!==ORIG.idName||tutorData.certName!==ORIG.certName);
+   var sensitive=EDIT&&(tutorData.photo!==ORIG.photo||tutorData.name!==ORIG.name||tutorData.idType!==ORIG.idType||tutorData.idName!==ORIG.idName||tutorData.certName!==ORIG.certName||!!PEND_DOCS.id||!!PEND_DOCS.cert);
    finalStatus=(EDIT&&ORIG.status==='approved'&&!sensitive)?'approved':'pending';
    tutorData.status = finalStatus;
    tutorData.submittedAt = new Date().toISOString();
    tutorData.rejection_reason = ''; tutorData.rejection_reasons = []; tutorData.rejection_note = '';
    if(tutorData.waSame) tutorData.whatsapp = tutorData.phone;
    try {
+     // verification documents: stored separately from the public tutor record, visible only to admin and this tutor
+     var docsSaved = true;
+     if(PEND_DOCS.id) docsSaved = ModivsDocs.save(tutorData.email, 'id', PEND_DOCS.id) && docsSaved;
+     if(PEND_DOCS.cert) docsSaved = ModivsDocs.save(tutorData.email, 'cert', PEND_DOCS.cert) && docsSaved;
+     if(!docsSaved) toast('Documents could not be stored in this browser. Free some space and re-upload them from Edit Profile.');
      localStorage.setItem('modivs_current_tutor', JSON.stringify(tutorData));
      if(!EDIT){var wm=JSON.parse(localStorage.getItem('modivs_tutor_welcome')||'{}');wm[tutorData.email]={created:tutorData.submittedAt,approved:null};localStorage.setItem('modivs_tutor_welcome',JSON.stringify(wm));try{sessionStorage.removeItem('modivs_welcome_closed')}catch(x){}}
 localStorage.setItem('modivs_auth_user', JSON.stringify({ name: tutorData.name, email: tutorData.email, role: 'Tutor' }));
@@ -466,7 +475,15 @@ function handlePhoto(file){
   img.src=fr.result};
  fr.readAsDataURL(file)}
 f.addEventListener('input',function(e){if(e.target.id==='phone')syncWa()});
+function handleDoc(t,kind){
+ var file=t.files&&t.files[0];PEND_DOCS[kind]=null;if(!file)return;
+ DOC_BUSY++;
+ ModivsDocs.prepare(file).then(function(doc){PEND_DOCS[kind]=doc;toast((kind==='id'?'ID':'Certificate')+' ready to submit')})
+  .catch(function(err){t.value='';toast((err&&err.userMessage)||'Could not use that file.');var m=document.getElementById('msg');if(m)m.textContent=(err&&err.userMessage)||'Could not use that file.'})
+  .then(function(){DOC_BUSY=Math.max(0,DOC_BUSY-1)})}
 f.addEventListener('change',function(e){var t=e.target;
+ if(t.id==='idFile')handleDoc(t,'id');
+ if(t.id==='certFile')handleDoc(t,'cert');
  if(t.id==='photoFile')handlePhoto(t.files[0]);
  if(t.id==='waSame'||t.id==='phone_cc')syncWa();});
 document.getElementById('steps').addEventListener('click',function(e){var li=e.target.closest('li[data-go]');if(!li||submitted)return;readLoose();step=+li.getAttribute('data-go');render()});

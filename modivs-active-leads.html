@@ -33,6 +33,7 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:40px 0 6px;letter-spacing:-.01em}
 .tools input{flex:1;min-width:220px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(340px,1fr));gap:16px;margin-bottom:48px}
 .card{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:18px;display:flex;flex-direction:column;gap:10px}
+.lwho{display:flex;align-items:center;gap:12px;min-width:0}.lavatar{width:46px;height:46px;border-radius:50%;flex:none;display:block;box-shadow:0 1px 4px rgba(20,33,61,.18)}
 .card .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
 .card h3{margin:0;font-size:1.08rem}
 .by{color:var(--muted);font-size:.84rem}
@@ -75,6 +76,7 @@ dialog#addDlg::backdrop{background:rgba(26,32,53,.55)}
 <script src="firebase-config.js" defer></script>
 <script src="firebase-sync.js" defer></script>
 <script src="modivs-places.js"></script>
+<script src="modivs-avatars.js"></script>
 </head>
 <body>
 <header>
@@ -184,8 +186,10 @@ function stats(){
 }
 function card(l){
  var c=el('article','card'),t=el('div','top'),n=el('div');
+ var ava=null;
+ if(l.avatar&&window.ModivsAvatars&&ModivsAvatars.has(l.avatar)){ava=document.createElement('img');ava.src=ModivsAvatars.src(l.avatar);ava.alt=(l.avatar==='male'?'Boy':'Girl')+' avatar';ava.className='lavatar'}
  n.appendChild(el('h3','',l.name));n.appendChild(el('div','by',l.by||(l.parentName&&l.parentName!==l.name?'Parent: '+l.parentName:'Student')));
- t.appendChild(n);t.appendChild(el('span','badge','Active'));c.appendChild(t);
+ var left=el('div','lwho');if(ava)left.appendChild(ava);left.appendChild(n);t.appendChild(left);t.appendChild(el('span','badge','Active'));c.appendChild(t);
  var d=el('dl','meta');
  [['Class',[l.cls,l.board].filter(Boolean).join(' · ')],['City',(l.area?l.area+', ':'')+(l.city||'')],['Mode',normModes(l.mode).join(', ')],['Budget',l.budget],['Days',l.freq],['Contact',l.phone?maskPhone(l.phone):'']].filter(function(p){return p[1]}).forEach(function(p){
   var w=el('div');w.appendChild(el('dt','',p[0]));w.appendChild(el('dd','',p[1]||'—'));d.appendChild(w)});

@@ -26,6 +26,24 @@ button,input,select,textarea{font:inherit;color:inherit}
 .topl{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.topl .links{display:flex;gap:8px;align-items:center}.topl .links a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.88rem;border:1.5px solid var(--line);padding:6px 12px;border-radius:8px;background:#fff}.topl .links a:hover{border-color:var(--ink)}
 .side{background:var(--ink);color:#fff;padding:36px 26px}
 .side h2{font-size:1rem;margin:28px 0 14px;font-weight:600;color:#aab6cc}
+.shell{overflow:hidden}
+.side{position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(160deg,#1a2035 0%,#14213d 55%,#0f3a4a 100%);background-size:200% 200%}
+.side::before,.side::after{content:"";position:absolute;border-radius:50%;z-index:-1;pointer-events:none}
+.side::before{width:260px;height:260px;top:-70px;right:-80px;background:radial-gradient(circle at 30% 30%,#fabd4e,rgba(250,189,78,0) 70%);opacity:.5}
+.side::after{width:300px;height:300px;bottom:-120px;left:-110px;background:radial-gradient(circle at 60% 40%,#2fb59a,rgba(47,181,154,0) 70%);opacity:.4}
+@media(prefers-reduced-motion:no-preference){
+ .side{animation:sideSlide 1.05s cubic-bezier(.22,1,.36,1) both,sideShift 14s ease-in-out 1.1s infinite alternate}
+ .side::before{animation:orbFloat 7s ease-in-out infinite alternate}
+ .side::after{animation:orbFloat 9s ease-in-out -3s infinite alternate-reverse}
+ .side>*{animation:sideRise .8s cubic-bezier(.22,1,.36,1) both}
+ .side>*:nth-child(1){animation-delay:.6s}.side>*:nth-child(2){animation-delay:.8s}.side>*:nth-child(3){animation-delay:1s}
+ .col{animation:cardFade .8s .1s ease-out both}
+}
+@keyframes sideSlide{0%{transform:translateX(105%);opacity:0;border-top-left-radius:120px;border-bottom-left-radius:120px}60%{opacity:1}100%{transform:none;opacity:1;border-top-left-radius:0;border-bottom-left-radius:0}}
+@keyframes sideShift{from{background-position:0 0}to{background-position:100% 100%}}
+@keyframes orbFloat{from{transform:translate(0,0) scale(1)}to{transform:translate(-28px,34px) scale(1.18)}}
+@keyframes sideRise{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes cardFade{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
 .steps{list-style:none;margin:0;padding:0}
 .steps li{display:flex;gap:12px;align-items:center;padding:9px 0;color:#aab6cc;font-size:.95rem}
 .steps i{width:26px;height:26px;border-radius:50%;border:1.5px solid #4a5a7a;display:grid;place-items:center;font-style:normal;font-size:.8rem;flex:none}
@@ -41,12 +59,23 @@ input[type=text],input[type=email],input[type=password],input[type=tel],input[ty
 textarea{min-height:100px;resize:vertical}
 :is(input,select,textarea,button):focus-visible{outline:3px solid #7fd1bd;outline-offset:2px}
 .bad{border-color:var(--err)!important}
+.avs.bad{outline:2px solid var(--err);outline-offset:4px;border-radius:14px}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
 .chips{display:flex;flex-wrap:wrap;gap:8px}
 .chip{position:relative;margin:0!important;font-weight:400!important}.chip input{position:absolute;opacity:0}
 .chip span{display:block;padding:8px 14px;border:1.5px solid var(--line);border-radius:999px;cursor:pointer;font-size:.92rem}
 .chip input:checked+span{background:var(--tint);border-color:var(--accent);font-weight:600}
 .chip input:focus-visible+span{outline:3px solid #7fd1bd;outline-offset:2px}
+.avs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+.av-opt{position:relative;margin:0!important;font-weight:400!important}
+.av-opt input{position:absolute;opacity:0}
+.av-opt .avc{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer;background:#fff;transition:border-color .15s,box-shadow .15s,transform .15s}
+.av-opt .avc img{width:92px;height:92px;border-radius:50%;display:block;box-shadow:0 2px 8px rgba(20,33,61,.15)}
+.av-opt .avc b{font-size:.95rem}
+.av-opt:hover .avc{transform:translateY(-2px);border-color:var(--accent)}
+.av-opt input:checked+.avc{border-color:var(--accent);background:var(--tint);box-shadow:0 0 0 3px rgba(14,124,102,.18)}
+.av-opt input:checked+.avc b::after{content:" ✓";color:var(--accent-d)}
+.av-opt input:focus-visible+.avc{outline:3px solid #7fd1bd;outline-offset:2px}
 .roles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .roles .chip span{border-radius:10px;padding:14px;text-align:center;font-weight:600}
 .roles .chip small{display:block;font-weight:400;color:var(--muted)}
@@ -72,6 +101,7 @@ textarea{min-height:100px;resize:vertical}
 try{var _as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');if(_as&&_as.email==='admin@gmail.com'&&!/[?&]student=1/.test(location.search)){location.replace('modivs-active-leads.html#post')}}catch(e){}
 </script>
 <script src="modivs-places.js"></script>
+<script src="modivs-avatars.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -99,7 +129,7 @@ var LANGS=['English','Hindi','Punjabi','Urdu','Other'];
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
 var TIMES=['Morning','Afternoon','Evening'];
 var D={role:'Parent',email:'',pass:'',regName:'',phone:'',city:'',
- stuName:'',stuAge:'',cls:'',board:'',school:'',
+ stuName:'',stuAge:'',cls:'',board:'',school:'',avatar:'',
  subjects:[],level:'',goals:[],weak:'',notes:'',
  modes:['Online'],formats:['1-on-1 Individual tuition'],area:'',budgetMin:'',budgetMax:'',freq:'',days:[],times:[],start:'',tGender:'',langs:[],demo:'',agree:false};
 
@@ -119,7 +149,7 @@ if(EDIT){
  if(req){
   SAVED_ID=req.id||'';SAVED_STATUS=req.status||'';
   D.regName=req.parentName||D.regName;D.phone=req.phone||D.phone;D.city=req.city||D.city;
-  D.stuName=req.name||'';D.cls=req.cls||'';D.board=req.board||'';D.school=req.school||'';
+  D.stuName=req.name||'';D.avatar=req.avatar||'';D.cls=req.cls||'';D.board=req.board||'';D.school=req.school||'';
   D.subjects=Array.isArray(req.subs)?req.subs.filter(function(x){return x!=='General'}):[];D.level=req.level||'';
   D.goals=Array.isArray(req.goals)?req.goals:[];D.notes=req.notes||'';
   D.modes=Array.isArray(req.mode)&&req.mode.length?req.mode:D.modes;
@@ -147,6 +177,9 @@ function chips(name,list,sel){return '<div class="chips" role="group">'+list.map
 function sel(id,label,val,opts){return '<label for="'+id+'">'+label+'</label><select id="'+id+'"><option value="">Select</option>'+opts.map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select>'}
 function nav(last){return '<div class="nav"><button type="button" class="btn ghost" data-act="back"'+(step===(EDIT?1:0)?' style="visibility:hidden"':'')+'>Back</button>'+(EDIT&&!last?'<button type="button" class="btn ghost" data-act="save">Save changes</button>':'')+'<button type="submit" class="btn">'+(last?(EDIT?'Update requirements':'Submit requirements'):(step===0?'Create account':'Save and continue'))+'</button></div>'}
 var MSG='<div class="msg" id="msg" role="alert"></div>';
+function avatarPicker(){var p=D.role==='Parent';
+ return '<div class="lab" id="avatarLab">Choose '+(p?'your child’s':'your')+' avatar <span class="hint">shown on your requirement</span></div><div class="avs" role="radiogroup" aria-labelledby="avatarLab" id="avatarBox">'+
+ ['male','female'].map(function(k){return '<label class="av-opt"><input type="radio" name="avatar" value="'+k+'"'+(D.avatar===k?' checked':'')+'><span class="avc"><img src="'+ModivsAvatars.src(k)+'" alt="'+(k==='male'?'Boy':'Girl')+' avatar"><b>'+(k==='male'?'Boy':'Girl')+'</b></span></label>'}).join('')+'</div>'}
 
 var views=[
 function(){return '<h1>Student / Parent sign up</h1><p class="sub">Create your account as a parent or as a student, then tell us what you need.</p>'+
@@ -155,7 +188,8 @@ function(){return '<h1>Student / Parent sign up</h1><p class="sub">Create your a
  field('email','Email',D.email,'email')+field('pass','Password',D.pass,'password','at least 8 characters')+field('pass2','Confirm password','','password')+MSG+nav()+'<p class="sub" style="margin-top:16px;font-size:0.9rem;">Already have an account? <a href="modivs-education.html#login" style="color:var(--accent-d);font-weight:600;">Log in</a> · <a href="modivs-education.html#tutor-signup" style="color:var(--accent-d);font-weight:600;">Tutor sign up</a></p>'},
 function(){var p=D.role==='Parent';return '<h1>'+(p?'Your child’s details':'About you')+'</h1><p class="sub">This helps us match the right tutor.</p>'+
  field('stuName',p?'Child’s name':'Your name',D.stuName)+'<div class="two"><div>'+field('stuAge','Age',D.stuAge,'number')+'</div><div>'+sel('cls','Class / level',D.cls,CLASSES)+'</div></div>'+
- '<div class="two"><div>'+sel('board','Board',D.board,BOARDS)+'</div><div>'+field('school','School or college',D.school,'text','optional')+'</div></div>'+MSG+nav()},
+ '<div class="two"><div>'+sel('board','Board',D.board,BOARDS)+'</div><div>'+field('school','School or college',D.school,'text','optional')+'</div></div>'+
+ avatarPicker()+MSG+nav()},
 function(){return '<h1>'+(EDIT?'Update your requirements':'What do you need help with?')+'</h1><p class="sub">Choose subjects and goals. Tutors see this when you send a request.</p>'+
  '<div class="lab">Subjects needed</div>'+chips('subjects',SUBJECTS,D.subjects)+
  sel('level','Current level in these subjects',D.level,['Struggling','Below average','Average','Good, want to excel'])+
@@ -172,7 +206,7 @@ function(){return '<h1>Tutor preferences</h1><p class="sub">Tell us how and when
  '<div class="two"><div>'+sel('tGender','Tutor gender',D.tGender,['No preference','Female','Male'])+'</div><div>'+sel('demo','Demo class',D.demo,['Yes, I want a demo first','No, not needed'])+'</div></div>'+
  '<div class="lab">Language of teaching</div>'+chips('langs',LANGS,D.langs)+MSG+nav()},
 function(){function tags(a){return a.map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join('')||'<span class="hint">None</span>'}
- return '<h1>Review your requirements</h1><p class="sub">Check everything, then '+(EDIT?'save your changes.':'submit to see matching tutors.')+'</p><div class="prev"><h3>'+esc(D.stuName)+'</h3>'+
+ return '<h1>Review your requirements</h1><p class="sub">Check everything, then '+(EDIT?'save your changes.':'submit to see matching tutors.')+'</p><div class="prev"><div style="display:flex;align-items:center;gap:14px">'+(D.avatar?'<img src="'+ModivsAvatars.src(D.avatar)+'" alt="" style="width:64px;height:64px;border-radius:50%">':'')+'<h3>'+esc(D.stuName)+'</h3></div>'+
  '<p class="hint">'+esc(D.cls)+' · '+esc(D.board)+' · '+esc(D.city)+(D.school?' · '+esc(D.school):'')+'</p>'+
  '<p><b>Subjects</b><br>'+tags(D.subjects)+'</p><p><b>Goals</b><br>'+tags(D.goals)+'</p>'+(D.weak?'<p><b>Needs help with</b><br>'+esc(D.weak)+'</p>':'')+
  '<p><b>Mode</b><br>'+tags(D.modes)+'</p><p><b>Tuition format</b><br>'+tags(D.formats)+'</p><p><b>Schedule</b><br>'+esc(D.freq)+' class(es) a week · '+esc(D.days.join(', '))+' · '+esc(D.times.join(', '))+'</p>'+
@@ -212,6 +246,7 @@ function render(){
         cls: D.cls,
         board: D.board,
         school: D.school || '',
+        avatar: D.avatar || '',
         subs: (D.subjects && D.subjects.length) ? D.subjects : ['General'],
         level: D.level || 'Average',
         goals: D.goals || ['Academic improvement'],
@@ -277,7 +312,7 @@ function say(m){document.getElementById('msg').textContent=m;return false}
 
 function read(){ // store current inputs
  if(step===0){var r=f.querySelector('input[name=role]:checked');if(r)D.role=r.value;D.regName=v('regName');D.phone=v('phone');D.city=ModivsPlaces.canon('city',v('city'));D.email=v('email');D.pass=v('pass')}
- if(step===1){D.stuName=v('stuName');D.stuAge=v('stuAge');D.cls=v('cls');D.board=v('board');D.school=v('school')}
+ if(step===1){var av=f.querySelector('input[name=avatar]:checked');D.avatar=av?av.value:D.avatar;D.stuName=v('stuName');D.stuAge=v('stuAge');D.cls=v('cls');D.board=v('board');D.school=v('school')}
  if(step===2){D.subjects=group('subjects');D.level=v('level');D.goals=group('goals');D.weak=v('weak');D.notes=v('notes')}
  if(step===3){D.modes=group('modes');D.formats=group('formats');D.area=v('area');D.budgetMin=v('budgetMin');D.budgetMax=v('budgetMax');D.freq=v('freq');D.start=v('start');D.days=group('days');D.times=group('times');D.tGender=v('tGender');D.demo=v('demo');D.langs=group('langs')}
  if(step===4){D.agree=document.getElementById('agree').checked}
@@ -295,7 +330,8 @@ function check(){
   if(!D.stuName)return flag('stuName','Enter a name.');
   if(!(+D.stuAge>=3&&+D.stuAge<=70))return flag('stuAge','Enter an age between 3 and 70.');
   if(!D.cls)return flag('cls','Choose a class or level.');
-  if(!D.board)return flag('board','Choose a board.')}
+  if(!D.board)return flag('board','Choose a board.');
+  if(!D.avatar)return flag('avatarBox','Choose an avatar (boy or girl) for the requirement.')}
  if(step===2){
   if(!D.subjects.length)return say('Choose at least one subject.');
   if(!D.level)return flag('level','Choose the current level.');
