@@ -16,7 +16,7 @@ body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakart
 a{color:inherit}
 :is(a,button):focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
 .wrap{max-width:1220px;margin:0 auto;padding:0 24px}
-.brand{font-weight:800;font-size:1.3rem;letter-spacing:-.01em;text-decoration:none;display:inline-flex;align-items:center}.brand img{height:44px;width:auto;display:block;mix-blend-mode:multiply}.brand span{background:var(--yellow);padding:0 8px;border-radius:6px;margin-left:2px}
+.brand{font-weight:800;font-size:1.3rem;letter-spacing:-.01em;text-decoration:none;display:inline-flex;align-items:center}.brand img{height:64px;width:auto;display:block;mix-blend-mode:multiply}.brand span{background:var(--yellow);padding:0 8px;border-radius:6px;margin-left:2px}
 
 /* menu bar */
 header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line);box-shadow:0 1px 4px rgba(26,32,53,0.03)}
@@ -24,7 +24,7 @@ header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1
 nav{display:flex;align-items:center}
 nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
 nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;color:var(--navy);white-space:nowrap;transition:background .2s}
-nav a:hover{background:var(--yellow)}
+nav a:hover,nav a[aria-current=page]{background:var(--yellow)}
 .acts{display:flex;gap:8px;align-items:center;flex-shrink:0}
 .acts .btn{padding:8px 15px;font-size:.88rem;border-radius:8px;white-space:nowrap}
 .btn{display:inline-block;padding:11px 20px;border-radius:10px;font-weight:600;text-decoration:none;border:2px solid var(--navy);background:var(--navy);color:var(--cream);cursor:pointer;transition:all .15s ease}
@@ -68,6 +68,10 @@ h2.t{font-size:clamp(1.6rem,3vw,2.2rem);letter-spacing:-.02em;margin:0 0 8px;fon
 .step{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:22px}
 .step::before{counter-increment:s;content:counter(s);display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--navy);color:var(--yellow);font-weight:800;margin-bottom:12px}
 .step h3{margin:0 0 4px}.step p{margin:0;color:var(--muted)}
+.steps{transition:opacity .18s}.steps.fade{opacity:0}
+#btnStuGuide,#btnTutGuide{cursor:pointer;font-family:inherit;font-size:inherit}
+#btnStuGuide[aria-pressed=true],#btnTutGuide[aria-pressed=true]{background:var(--yellow);color:var(--navy);border-color:var(--yellow)}
+#btnStuGuide[aria-pressed=false],#btnTutGuide[aria-pressed=false]{background:transparent;color:var(--navy);border-color:var(--navy)}
 
 footer{background:var(--navy);color:var(--cream);padding:48px 0 32px}
 footer .cols{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:32px}
@@ -102,7 +106,7 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
  .acts .btn{padding:7px 12px;font-size:.82rem}
 }
 @media(max-width:480px){
- .brand img{height:36px}
+ .brand img{height:50px}
  .acts{gap:6px}
  .acts .btn{padding:6px 10px;font-size:.78rem}
 }
@@ -192,18 +196,14 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
    <ul>
     <li><a href="index.html" id="navHome" aria-current="page">Home</a></li>
     <li><a href="modivs-tutors.html" id="navTutors">Tutors</a></li>
-    <li><a href="#subjects" id="navSubjects">Subjects</a></li>
-    <li><a href="#how" id="navHow">How it works</a></li>
-    <li><a href="#locations" id="navLoc">Locations</a></li>
-    <li><a href="#faq" id="navFaq">FAQs</a></li>
+    <li><a href="modivs-guide.html" id="navGuide">Guide</a></li>
     <li><a href="modivs-active-leads.html" id="navActiveLeads">Active leads</a></li>
     <li><a href="#contact" id="navContact">Contact us</a></li>
    </ul>
   </nav>
   <div class="acts" id="navActs">
    <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
-   <a class="btn y" id="navSignupStudent" href="modivs-student-registration.html">Sign up (student)</a>
-   <a class="btn y" id="navSignupTutor" href="modivs-education.html#tutor-signup">Sign up as a tutor</a>
+   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
    <button class="burger" id="burger" aria-expanded="false" aria-controls="nav">Menu</button>
   </div>
  </div>
@@ -217,8 +217,7 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
     <h1>Find the right tutor for every learner.</h1>
     <p class="lead">Browse verified tutors for online, offline and group tuitions by subject, level and fee. Send a request in minutes and start learning with a demo class.</p>
     <div class="cta">
-     <a class="btn y" id="heroFindTutor" href="modivs-student-registration.html">Find a tutor</a>
-     <a class="btn" id="heroBecomeTutor" href="modivs-education.html#tutor-signup">Become a tutor</a>
+     <a class="btn y" id="heroFindTutor" href="modivs-signup.html">Sign up</a>
     </div>
    </div>
    <form class="panel" id="find" aria-label="Quick search">
@@ -262,13 +261,14 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
 
  <section id="how">
   <div class="wrap">
-   <h2 class="t">How it works</h2><p class="s">Four steps from sign up to first class.</p>
-   <div class="steps">
+   <h2 class="t">How it works</h2><p class="s" id="howSub">Four steps from sign up to first class.</p>
+   <div class="steps" id="howSteps">
     <div class="step"><h3>Register</h3><p>Create a parent, student or tutor account.</p></div>
     <div class="step"><h3>Share needs</h3><p>Choose subjects, online/offline mode, 1-on-1 or group tuitions, and budget.</p></div>
     <div class="step"><h3>Pick a tutor</h3><p>Compare verified profiles and send a request.</p></div>
     <div class="step"><h3>Start learning</h3><p>Book a demo class and set your weekly schedule.</p></div>
    </div>
+   <p style="text-align:center;margin-top:26px;display:flex;gap:10px;justify-content:center;flex-wrap:wrap"><button type="button" class="btn y" id="btnStuGuide" aria-pressed="true">Student guide</button><button type="button" class="btn o" id="btnTutGuide" aria-pressed="false">Tutor guide</button></p>
   </div>
  </section>
 
@@ -342,13 +342,13 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
     <h3>For students and parents</h3>
     <p>Find tutors who match your learning goals and budget.</p>
     <ul><li>Search by subject, level, fee, online/offline mode and group tuitions</li><li>Choose 1-on-1 personalized attention or interactive group batches</li><li>Send direct requests and book demo classes</li></ul>
-    <a class="btn" href="modivs-student-registration.html">Register as student or parent</a>
+    <a class="btn" href="modivs-signup.html">Sign up</a>
    </div>
    <div class="role y">
     <h3>For tutors</h3>
     <p>Build a profile and reach learners near you or online.</p>
     <ul><li>Offer online, offline home tuition, or host group tuition batches</li><li>Set your own fees, batch sizes and availability</li><li>Manage student requests and schedule classes easily</li></ul>
-    <a class="btn" id="regTutorBtn" href="modivs-education.html#tutor-signup">Register as a tutor</a>
+    <a class="btn" id="regTutorBtn" href="modivs-signup.html">Sign up</a>
    </div>
   </div>
  </section>
@@ -360,7 +360,10 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
      <ul class="clist">
       <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></i><span><b>Call us</b><a href="tel:+919896930443">+91 98969 30443</a><br><a href="tel:+918054167008">+91 80541 67008</a></span></li>
       <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.5 2 2.5 4 5 5l1.5-1.2-2-1.3-.9.7c-.8-.4-1.5-1.1-1.9-1.9l.7-.9-1.3-2z"/></svg></i><span><b>WhatsApp</b><a href="https://wa.me/message/AZVJXD4HG3DOG1" target="_blank" rel="noopener">Chat with us</a></span></li>
-      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Email</b><a href="mailto:support@modivhometutors.com">support@modivhometutors.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Student &amp; Parent Enquiries</b><a href="mailto:info@modivians.com">info@modivians.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Student &amp; Parent Support</b><a href="mailto:support@modivians.com">support@modivians.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Tutor Support</b><a href="mailto:tutors@modivians.com">tutors@modivians.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Payment &amp; Refund Support</b><a href="mailto:accounts@modivians.com">accounts@modivians.com</a></span></li>
       <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></i><span><b>Visit us</b>Chandigarh, India</span></li>
      </ul>
     </div>
@@ -379,9 +382,9 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
 <footer>
  <div class="wrap">
   <div class="cols">
-   <div><a class="brand" href="#top" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;margin-bottom:12px;"><img src="logo.png" alt="Modiv’s Education" style="height:36px;display:block;mix-blend-mode:normal;"></a><p style="color:#c9cde0;max-width:320px">Connecting tutors with students and parents, one class at a time.</p></div>
+   <div><a class="brand" href="#top" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;margin-bottom:12px;"><img src="logo.png" alt="Modiv’s Education" style="height:54px;display:block;mix-blend-mode:normal;"></a><p style="color:#c9cde0;max-width:320px">Connecting tutors with students and parents, one class at a time.</p></div>
    <div><h4>Explore</h4><ul><li><a href="#find" id="footFindTutor">Find a tutor</a></li><li><a href="modivs-tutors.html">Tutors</a></li><li><a href="#subjects">Subjects</a></li><li><a href="#how">How it works</a></li><li><a href="#locations">Locations</a></li><li><a href="#faq">FAQs</a></li><li><a href="modivs-contact.html">Contact us</a></li></ul></div>
-   <div><h4>Account</h4><ul><li><a href="modivs-education.html#login">Log in</a></li><li><a href="modivs-tutor-dashboard.html">Tutor dashboard</a></li><li><a href="modivs-student-registration.html">Student / parent sign up</a></li><li><a href="modivs-education.html#tutor-signup">Tutor sign up</a></li></ul></div>
+   <div><h4>Account</h4><ul><li><a href="modivs-education.html#login">Log in</a></li><li><a href="modivs-guide.html">How to use Modiv’s</a></li><li><a href="modivs-tutor-dashboard.html">Tutor dashboard</a></li><li><a href="modivs-signup.html" id="footSignup">Sign up</a></li></ul></div>
    <div><h4>Legal</h4><ul><li><a href="modivs-privacy-policy.html">Privacy Policy</a></li><li><a href="modivs-terms.html">Terms &amp; Conditions</a></li><li><a href="modivs-refund-policy.html">Refund Policy</a></li><li><a href="modivs-contact.html">Contact us</a></li></ul></div>
   </div>
   <div class="copy">© 2026 Modiv’s Education. All rights reserved.</div>
@@ -575,12 +578,12 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
  var isAdmin=false;try{var _as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');isAdmin=!!(_as&&_as.email==='admin@gmail.com')}catch(err){}
  if(isAdmin){
   authUser=null;
-  ['navLoginBtn','navSignupStudent','navSignupTutor'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none'});
+  ['navLoginBtn','navSignup'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none'});
   var acts=document.getElementById('navActs'),bur=document.getElementById('burger');
   if(acts){
    var pill=document.createElement('span');pill.className='adm-pill';pill.innerHTML='Logged in as <b>Admin</b><span class="em"> · admin@gmail.com</span>';
    var dash=document.createElement('a');dash.className='btn y';dash.href='modivs-admin.html';dash.textContent='Admin dashboard';
-   var out=document.createElement('a');out.className='btn o';out.href='modivs-education.html#login';out.textContent='Log out';
+   var out=document.createElement('a');out.className='btn o';out.href='modivs-home.html';out.textContent='Log out';
    out.addEventListener('click',function(){try{localStorage.removeItem('modivs_admin_session')}catch(e){}try{var fb=window.EducationBFirebase;if(fb&&fb.auth)fb.auth.signOut()}catch(e){}});
    acts.insertBefore(pill,bur);acts.insertBefore(dash,bur);acts.insertBefore(out,bur);
   }
@@ -592,24 +595,18 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
  var findForm = document.getElementById('find');
 
  if(authUser && authUser.role === 'Student / Parent'){
-  if(navLogin){ navLogin.textContent = 'Dashboard'; navLogin.href = 'modivs-student-dashboard.html'; }
   if(heroFind){ heroFind.href = 'modivs-student-dashboard.html'; heroFind.textContent = 'Go to Dashboard'; }
  } else if(authUser && authUser.role === 'Tutor'){
-  if(navLogin){ navLogin.textContent = 'Dashboard'; navLogin.href = 'modivs-tutor-dashboard.html'; }
-  if(heroTutor){ heroTutor.href = 'modivs-tutor-dashboard.html'; heroTutor.textContent = 'Go to Dashboard'; }
-  // Tutors do not look for tutors: remove every "Find a tutor" option
-  if(heroFind){ heroFind.style.display = 'none'; }
+  if(heroFind){ heroFind.href = 'modivs-tutor-dashboard.html'; heroFind.textContent = 'Go to Dashboard'; }
   var ff = document.getElementById('footFindTutor'); if(ff && ff.parentNode){ ff.parentNode.style.display = 'none'; }
   if(regTutor){ regTutor.href = 'modivs-tutor-dashboard.html'; regTutor.textContent = 'Go to Dashboard'; }
  }
 
  if(authUser && (authUser.role === 'Student / Parent' || authUser.role === 'Tutor')){
-  ['navSignupStudent','navSignupTutor'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none'});
-  if(navLogin && !document.getElementById('navLogoutBtn')){
-   var lo=document.createElement('a');lo.className='btn o';lo.id='navLogoutBtn';lo.href='modivs-education.html#login';lo.textContent='Log out';
-   lo.addEventListener('click',function(){try{localStorage.removeItem('modivs_auth_user')}catch(e){}});
-   navLogin.parentNode.insertBefore(lo,navLogin.nextSibling);
-  }
+  // Signed in: no Log in / Sign up buttons. The profile picture / avatar menu (modivs-session-ui.js) has Dashboard and Log out.
+  ['navLoginBtn','navSignup'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none'});
+  var fs=document.getElementById('footSignup'); if(fs && fs.parentNode){ fs.parentNode.style.display='none'; }
+  if(regTutor && authUser.role === 'Student / Parent'){ regTutor.href = 'modivs-student-dashboard.html'; regTutor.textContent = 'Go to Dashboard'; }
  }
 
  if(findForm){
@@ -632,6 +629,41 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
    }
   });
  }
+})();
+</script>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<script>
+(function(){
+ var G={
+  s:{sub:"Four steps from sign up to first class.",steps:[
+   ["Register","Create a parent, student or tutor account."],
+   ["Share needs","Choose subjects, online/offline mode, 1-on-1 or group tuitions, and budget."],
+   ["Pick a tutor","Compare verified profiles and send a request."],
+   ["Start learning","Book a demo class and set your weekly schedule."]]},
+  t:{sub:"Four steps from sign up to your first student.",steps:[
+   ["Register","Create your tutor account with your name, email and a password."],
+   ["Build your profile","Add qualifications, subjects, fees, teaching modes and a clear photo."],
+   ["Get verified","Upload your ID and certificate. Our team reviews and approves your profile."],
+   ["Find students","Unlock leads, chat, run a demo class and start teaching."]]}
+ };
+ var bs=document.getElementById('btnStuGuide'),bt=document.getElementById('btnTutGuide'),
+     box=document.getElementById('howSteps'),sub=document.getElementById('howSub');
+ if(!bs||!bt||!box)return;
+ var cur='s';
+ function esc(x){return x.replace(/&/g,'&amp;').replace(/</g,'&lt;')}
+ function show(k){
+  if(k===cur)return;cur=k;
+  bs.setAttribute('aria-pressed',String(k==='s'));bt.setAttribute('aria-pressed',String(k==='t'));
+  box.classList.add('fade');
+  setTimeout(function(){
+   sub.textContent=G[k].sub;
+   box.innerHTML=G[k].steps.map(function(x){return '<div class="step"><h3>'+esc(x[0])+'</h3><p>'+esc(x[1])+'</p></div>'}).join('');
+   box.classList.remove('fade');
+  },180);
+ }
+ bs.addEventListener('click',function(){show('s')});
+ bt.addEventListener('click',function(){show('t')});
 })();
 </script>
 </body>

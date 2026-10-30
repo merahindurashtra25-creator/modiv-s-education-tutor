@@ -98,18 +98,26 @@ dialog h2{margin:0 0 4px}
 <script src="firebase-sync.js"></script>
 <script src="firebase-chat.js"></script>
 <script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
-<header class="topbar">
- <div style="max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-  <a class="logo" href="modivs-home.html" aria-label="Modiv’s Education home" style="margin:0;"><img src="logo.png" alt="Modiv’s Education"></a>
-  <nav class="tutor-top-nav" aria-label="Quick links">
-   <a href="modivs-home.html">Home</a>
-   <a href="#tutors" id="topFindTutors">Find Tutors</a>
-   <a href="#enquiries" id="topEnquiries">My Enquiries</a>
-   <a href="modivs-student-registration.html">Update Requirements</a>
-   <a href="modivs-education.html#login" id="studentLogoutBtn" style="border:1.5px solid var(--line);padding:4px 10px;border-radius:6px;">Log out</a>
+<header class="mv-header" data-custom>
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="#tutors" id="topFindTutors">Find Tutors</a></li>
+    <li><a href="modivs-guide.html#student" id="topGuide">How to use</a></li>
+    <li><a href="#enquiries" id="topEnquiries">My Enquiries</a></li>
+    <li><a href="modivs-student-registration.html">Update Requirements</a></li>
+   </ul>
   </nav>
+  <div class="acts" id="mvActs">
+   <a class="btn o" id="studentLogoutBtn" href="index.html">Log out</a>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+  </div>
  </div>
 </header>
 
@@ -142,6 +150,24 @@ dialog h2{margin:0 0 4px}
   <section id="sec-overview">
    <h1>Student Dashboard</h1>
    <p class="sub">Track your tuition requests, scheduled demo classes, and verified tutors.</p>
+<style>
+.gcard{background:#fff;border:1.5px solid #eadfc9;border-left:5px solid #EBB92E;border-radius:14px;padding:16px 18px;margin:0 0 18px;position:relative}
+.gcard h2{margin:0 0 4px;font-size:1.05rem}.gcard p{margin:0 0 10px;color:#555b78;font-size:.9rem}
+.gcard ol{margin:0 0 12px;padding-left:20px;font-size:.9rem;color:#1A2035}.gcard li{margin:2px 0}
+.gcard a.gb{display:inline-block;background:#0e7c66;color:#fff;text-decoration:none;font-weight:700;font-size:.85rem;padding:8px 14px;border-radius:8px}
+.gcard a.gb:hover{background:#0a5f4e}
+.gcard button.gx{position:absolute;top:8px;right:10px;border:0;background:none;font-size:1.3rem;line-height:1;color:#555b78;cursor:pointer;padding:4px 8px;border-radius:6px}
+.gcard button.gx:hover{background:#f2f5f9}
+@media(prefers-reduced-motion:no-preference){.gcard{animation:gcIn .6s cubic-bezier(.22,1,.36,1) both}}
+@keyframes gcIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+</style>
+<div class="gcard" id="guideCard" role="region" aria-label="Getting started guide" hidden>
+ <button type="button" class="gx" id="guideClose" aria-label="Dismiss guide">&times;</button>
+ <h2>Getting started</h2><p>New here? Four quick steps to get the most out of Modiv’s Education.</p>
+ <ol><li>Open <b>Find Tutors</b> and shortlist the ones you like with the heart icon.</li><li>Send a request and book a <b>free demo class</b>.</li><li>Check <b>My Requests</b> and <b>Class Schedule</b> to track progress.</li><li>Use <b>Chat</b> to agree timings, and <b>Edit Requirements</b> if your needs change.</li></ol><a class="gb" href="modivs-guide.html#student">Open the full guide</a>
+</div>
+<script>(function(){var c=document.getElementById('guideCard'),k='modivs_guide_student';if(!c)return;try{if(localStorage.getItem(k)!=='1')c.hidden=false}catch(e){c.hidden=false}
+document.getElementById('guideClose').addEventListener('click',function(){c.hidden=true;try{localStorage.setItem(k,'1')}catch(e){}})})();</script>
 
    <div class="stats">
     <div class="stat hi"><span>Upcoming Demo</span><b>None yet</b><div class="v" style="font-size:0.9rem;font-weight:600;">Book a free demo class</div></div>
@@ -366,6 +392,7 @@ dialog h2{margin:0 0 4px}
 
   document.getElementById('studentLogoutBtn').addEventListener('click', function(e){
     localStorage.removeItem('modivs_auth_user');
+    try{var fb=window.EducationBFirebase;if(fb&&fb.auth&&fb.auth.signOut)fb.auth.signOut().catch(function(){})}catch(err){}
   });
 
   function renderTutorCard(t, isFav){
@@ -545,5 +572,6 @@ dialog h2{margin:0 0 4px}
 .mv-foot a[aria-current=page]{color:#EBB92E}
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<script src="modivs-menu.js" defer></script>
 </body>
 </html>

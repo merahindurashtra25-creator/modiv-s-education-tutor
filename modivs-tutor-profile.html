@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Tutor registration</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="modivs-country.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
@@ -19,7 +20,7 @@ button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-sy
 body{margin:0;background:var(--white);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select,textarea{font:inherit;color:inherit}
 .hide{display:none!important}
-.brand{font-weight:800;font-size:1.2rem;letter-spacing:-.01em;display:inline-flex;align-items:center;text-decoration:none}.brand img{height:44px;width:auto;display:block}.brand span{color:var(--accent)}
+.brand{font-weight:800;font-size:1.2rem;letter-spacing:-.01em;display:inline-flex;align-items:center;text-decoration:none}.brand img{height:64px;width:auto;display:block}.brand span{color:var(--accent)}
 .shell{display:grid;grid-template-columns:70fr 30fr;min-height:100vh}
 .main{padding:36px 28px 60px;display:flex;justify-content:center}
 .col{width:100%;max-width:640px}
@@ -37,7 +38,7 @@ h1{font-size:1.85rem;line-height:1.15;margin:0 0 6px;letter-spacing:-.02em;font-
 .sub{color:var(--muted);margin:0 0 20px}
 label,.lab{display:block;font-weight:600;font-size:.9rem;margin:18px 0 6px}
 .req{color:var(--err);font-weight:700;margin-left:2px}
-.phone-row{display:flex;gap:8px}.phone-row select{width:auto;flex:0 0 132px;padding-left:8px;padding-right:4px}.phone-row input{flex:1;min-width:0}
+.phone-row{display:flex;gap:8px}.phone-row .cc-box{flex:0 0 150px}.phone-row input{flex:1;min-width:0}
 .hint{font-weight:400;color:var(--muted);font-size:.82rem}
 input[type=text],input[type=email],input[type=password],input[type=tel],input[type=number],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:8px;background:var(--white)}
 textarea{min-height:110px;resize:vertical}
@@ -87,11 +88,30 @@ textarea{min-height:110px;resize:vertical}
 </style>
 <script src="modivs-places.js"></script>
 <script src="modivs-docs.js"></script>
+<link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
+<header class="mv-header">
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-tutors.html">Tutors</a></li>
+    <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
+    <li><a href="modivs-contact.html">Contact us</a></li>
+   </ul>
+  </nav>
+  <div class="acts" id="mvActs">
+   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+  </div>
+ </div>
+</header>
 <div class="shell">
  <main class="main"><div class="col">
-  <div class="topl"><a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education"></a><div class="links"><a href="modivs-home.html">Home</a><a href="modivs-tutor-dashboard.html">My dashboard</a></div></div>
   <div class="bar" aria-hidden="true"><div id="fill"></div></div>
   <form id="form" novalidate></form>
  </div></main>
@@ -145,19 +165,19 @@ var PEND_DOCS={id:null,cert:null},DOC_BUSY=0;
 function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
 var STAR=' <span class="req" aria-hidden="true">*</span>';
 var PH=/^[+0-9\s-]{10,15}$/;
-var COUNTRIES=[['India','+91'],['United States / Canada','+1'],['United Kingdom','+44'],['United Arab Emirates','+971'],['Saudi Arabia','+966'],['Qatar','+974'],['Kuwait','+965'],['Oman','+968'],['Bahrain','+973'],['Singapore','+65'],['Malaysia','+60'],['Australia','+61'],['New Zealand','+64'],['Nepal','+977'],['Bhutan','+975'],['Bangladesh','+880'],['Sri Lanka','+94'],['Pakistan','+92'],['Afghanistan','+93'],['Germany','+49'],['France','+33'],['Italy','+39'],['Spain','+34'],['Netherlands','+31'],['Ireland','+353'],['Switzerland','+41'],['Sweden','+46'],['Russia','+7'],['China','+86'],['Japan','+81'],['South Korea','+82'],['Hong Kong','+852'],['Thailand','+66'],['Indonesia','+62'],['Philippines','+63'],['South Africa','+27'],['Nigeria','+234'],['Kenya','+254'],['Egypt','+20'],['Turkey','+90'],['Brazil','+55'],['Mexico','+52']];
+var COUNTRIES=ModivsCountry.list;
 function splitPhone(p){p=String(p||'').trim();var raw=p.replace(/[\s-]/g,'');
  if(raw.charAt(0)==='+'){var best='';COUNTRIES.forEach(function(c){if(raw.indexOf(c[1])===0&&c[1].length>best.length)best=c[1]});
   if(best)return {cc:best,num:raw.slice(best.length).replace(/\D/g,'')}}
  return {cc:'+91',num:raw.replace(/\D/g,'')}}
 function phoneField(id,label,val,hint,dis){var s=splitPhone(val),d=dis?' disabled':'';
- return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><div class="phone-row"><select id="'+id+'_cc" aria-label="Country code"'+d+'>'+COUNTRIES.map(function(c){return '<option value="'+c[1]+'"'+(c[1]===s.cc?' selected':'')+'>'+c[1]+' '+esc(c[0])+'</option>'}).join('')+'</select><input id="'+id+'" type="tel" inputmode="numeric" autocomplete="tel-national" value="'+esc(s.num)+'" placeholder="Phone number"'+d+'></div>'}
+ return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><div class="phone-row">'+ModivsCountry.html(id,s.cc,dis)+'<input id="'+id+'" type="tel" inputmode="numeric" autocomplete="tel-national" value="'+esc(s.num)+'" placeholder="Phone number"'+d+'></div>'}
 function getPhone(id){var e=document.getElementById(id),c=document.getElementById(id+'_cc'),n=e?e.value.replace(/\D/g,''):'';return n?(c?c.value:'+91')+' '+n:''}
 function validPhone(p){var m=/^(\+\d{1,4}) (\d+)$/.exec(p||'');if(!m)return false;if(m[1]==='+91')return /^[6-9]\d{9}$/.test(m[2]);return m[2].length>=6&&m[2].length<=14}
 function phoneMsg(p,what){var m=/^(\+\d{1,4})/.exec(p||'');return (m&&m[1]==='+91')?'Enter a valid 10-digit '+what+' (Indian numbers start with 6, 7, 8 or 9).':'Enter a valid '+what+' for the selected country (6–14 digits).'}
 function samePhone(a,b){return String(a).replace(/\D/g,'')===String(b).replace(/\D/g,'')}
 function syncWa(){var c=document.getElementById('waSame'),w=document.getElementById('whatsapp'),wc=document.getElementById('whatsapp_cc'),p=document.getElementById('phone'),pc=document.getElementById('phone_cc');
- if(!c||!w||!wc||!p||!pc)return;if(c.checked){w.value=p.value.replace(/\D/g,'');wc.value=pc.value}w.disabled=wc.disabled=c.checked}
+ if(!c||!w||!wc||!p||!pc)return;if(c.checked){w.value=p.value.replace(/\D/g,'');wc.value=pc.value;ModivsCountry.set('whatsapp',pc.value)}w.disabled=wc.disabled=c.checked;ModivsCountry.setDisabled('whatsapp',c.checked)}
 
 function digits(x){return String(x||'').replace(/\D/g,'').slice(-10)}
 function initials(n){return String(n||'').split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()||'TR'}
@@ -179,7 +199,7 @@ function(){return '<h1>Create your tutor account</h1><p class="sub">Start with y
  field('email','Email'+STAR,D.email,'email')+field('pass','Password'+STAR,D.pass,'password','at least 8 characters')+field('pass2','Confirm password'+STAR,'','password')+'<div class="msg" id="msg" role="alert"></div>'+nav()+'<p class="sub" style="margin-top:16px;font-size:0.9rem;">Already registered? <a href="modivs-education.html#login" style="color:var(--accent-d);font-weight:600;">Log in</a> · <a href="modivs-tutor-dashboard.html" style="color:var(--accent-d);font-weight:600;">Tutor Dashboard</a></p>'},
 function(){return '<h1>About you</h1><p class="sub">Students and parents see this first. Fields marked <span class="req">*</span> are required.</p>'+
  '<div class="lab">Profile photo'+STAR+' <span class="hint">shown on your public profile</span></div>'+
- '<div class="dp-row"><div class="dp" id="dpBox">'+dpInner()+'</div><div class="dp-side"><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="hide"><div class="dp-btns"><button type="button" class="btn ghost" data-act="pickPhoto">'+(D.photo?'Change photo':'Upload photo')+'</button>'+(D.photo?'<button type="button" class="btn ghost" data-act="removePhoto">Remove</button>':'')+'</div><span class="hint">Use a clear, front-facing photo of your face in good light. No group photos, sunglasses or filters. JPG, PNG or WebP, up to 5 MB.</span><div class="dp-warn" id="dpWarn" role="status">'+(D.photo&&D.photoBlur?'This photo looks a little blurry. A sharper photo is approved faster.':'')+'</div></div></div>'+
+ '<div class="dp-row"><div class="dp" id="dpBox">'+dpInner()+'</div><div class="dp-side"><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="hide"><div class="dp-btns"><button type="button" class="btn ghost" data-act="pickPhoto">'+(D.photo?'Change photo':'Upload photo')+'</button>'+(D.photo?'<button type="button" class="btn ghost" data-act="removePhoto">Remove</button>':'')+'</div><span class="hint">Use a clear, front-facing photo of your face in good light. No group photos, sunglasses or filters. JPG, PNG or WebP, up to 500 KB.</span><div class="dp-warn" id="dpWarn" role="status">'+(D.photo&&D.photoBlur?'This photo looks a little blurry. A sharper photo is approved faster.':'')+'</div></div></div>'+
  field('name','Full name'+STAR,D.name)+
  phoneField('whatsapp','WhatsApp number'+STAR,D.waSame?D.phone:D.whatsapp,'',D.waSame)+'<label class="check" style="margin-top:8px"><input type="checkbox" id="waSame"'+(D.waSame?' checked':'')+'><span>Same as my mobile number</span></label>'+
  '<div class="two"><div>'+phoneField('phone','Mobile number'+STAR,D.phone)+'</div><div>'+phoneField('altPhone','Alternate phone number'+STAR,D.altPhone)+'</div></div>'+
@@ -209,8 +229,8 @@ function(){var rows=DAYS.map(function(d){return '<tr><td>'+d+'</td>'+SLOTS.map(f
  sel('notice','Notice needed before a new class'+STAR,D.notice,['Same day','1 day','2–3 days','1 week'])+'<div class="msg" id="msg" role="alert"></div>'+nav()},
 function(){return '<h1>Verification</h1><p class="sub">Our team checks these documents before your profile goes live. Only admins can see them.</p>'+
  sel('idType','Government ID type'+STAR,D.idType,['Aadhaar','PAN','Passport','Voter ID','Driving licence'])+
- '<label for="idFile">Upload ID'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (photos are compressed automatically; PDFs up to 650 KB)</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf">'+(D.idName?'<small>Selected: '+esc(D.idName)+'</small>':'')+'</div>'+
- '<label for="certFile">Upload highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (photos are compressed automatically; PDFs up to 650 KB)</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf">'+(D.certName?'<small>Selected: '+esc(D.certName)+'</small>':'')+'</div>'+
+ '<label for="idFile">Upload ID'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (each file up to 500 KB)</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf">'+(D.idName?'<small>Selected: '+esc(D.idName)+'</small>':'')+'</div>'+
+ '<label for="certFile">Upload highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (each file up to 500 KB)</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf">'+(D.certName?'<small>Selected: '+esc(D.certName)+'</small>':'')+'</div>'+
  '<div class="msg" id="msg" role="alert"></div>'+nav()},
 function(){function tags(a){return a.map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join('')||'<span class="hint">None selected</span>'}
  var av=Object.keys(D.avail).filter(function(k){return D.avail[k]}).length;
@@ -317,8 +337,8 @@ function save(){ // read inputs into D and validate; returns true if OK
   if(!D.notice)return flag('notice','Choose how much notice you need.')}
  if(step===6){D.idType=v('idType');var a=document.getElementById('idFile').files[0],b=document.getElementById('certFile').files[0];
   if(DOC_BUSY){document.getElementById('msg').textContent='Please wait a moment, your document is still being processed.';return false}
-  if(a&&!PEND_DOCS.id){document.getElementById('msg').textContent='The ID file could not be used. Choose a JPG, PNG or a PDF under 650 KB.';return false}
-  if(b&&!PEND_DOCS.cert){document.getElementById('msg').textContent='The certificate file could not be used. Choose a JPG, PNG or a PDF under 650 KB.';return false}
+  if(a&&!PEND_DOCS.id){document.getElementById('msg').textContent='The ID file could not be used. Choose a JPG, PNG or a PDF of 500 KB or less.';return false}
+  if(b&&!PEND_DOCS.cert){document.getElementById('msg').textContent='The certificate file could not be used. Choose a JPG, PNG or a PDF of 500 KB or less.';return false}
   if(a)D.idName=a.name;if(b)D.certName=b.name;
   if(!D.idType)return flag('idType','Choose an ID type.');
   if(!D.idName||(!PEND_DOCS.id&&!ModivsDocs.loadLocal(D.email).id&&!EDIT)){document.getElementById('msg').textContent='Upload your ID.';return false}
@@ -461,7 +481,7 @@ function sharpness(cv,S){ // variance of Laplacian on a 200px greyscale copy; lo
 function handlePhoto(file){
  if(!file)return;
  if(!/^image\/(jpeg|png|webp)$/.test(file.type)){toast('Please choose a JPG, PNG or WebP image.');return}
- if(file.size>5242880){toast('Photo must be 5 MB or smaller.');return}
+ if(file.size>512000){toast('Photo must be 500 KB or smaller.');return}
  var fr=new FileReader();
  fr.onerror=function(){toast('Could not read that file. Try another photo.')};
  fr.onload=function(){var img=new Image();
@@ -506,5 +526,8 @@ render();
 .mv-foot a[aria-current=page]{color:#EBB92E}
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<script src="modivs-menu.js" defer></script>
 </body>
 </html>

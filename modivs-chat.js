@@ -3,6 +3,7 @@
 
   var STORE = 'modivs_chat_conversations';
   var TX_STORE = 'modivs_coin_transactions';
+  var MEM_HIST_STORE = 'modivs_membership_history';
   var CHANNEL = 'modivs_chat_updates';
   var UNLOCK_COST = 10;
   var listeners = [];
@@ -226,7 +227,7 @@
     };
   }
 
-  function setTutorMembership(tutorEmail, planName, durationDays, status, isExtend){
+  function setTutorMembership(tutorEmail, planName, durationDays, status, isExtend, price){
     var em = cleanStr(tutorEmail).toLowerCase();
     var now = new Date();
     var dur = (durationDays != null ? Number(durationDays) : 30);
@@ -246,6 +247,28 @@
       validUntil: expiry.toISOString(),
       durationDays: dur
     };
+
+    // Log membership purchase history
+    try {
+      var hist = read(MEM_HIST_STORE, []);
+      if(!Array.isArray(hist)) hist = [];
+      var evType = 'activated';
+      if(existing.isValid && isExtend) evType = 'extended';
+      else if(existing.isValid && existing.planName !== mem.planName) evType = 'upgraded';
+      else if(existing.planName && existing.planName !== 'None') evType = 'renewed';
+      hist.unshift({
+        id: 'mh_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        tutorEmail: em,
+        planName: mem.planName,
+        type: evType,
+        durationDays: dur,
+        price: price || '',
+        startedAt: mem.startedAt,
+        validUntil: mem.validUntil,
+        createdAt: now.toISOString()
+      });
+      write(MEM_HIST_STORE, hist.slice(0, 200));
+    } catch(e){}
 
     var allTutors = read('modivs_tutors_db', []);
     var match = allTutors.find(function(t){ return emailOf(t.email) === em; });
@@ -338,6 +361,13 @@
 
     notify();
     return { balance: next, tx: newTx };
+  }
+
+  function getMembershipHistory(tutorEmail){
+    var em = emailOf(tutorEmail);
+    var all = read(MEM_HIST_STORE, []);
+    if(!Array.isArray(all)) return [];
+    return all.filter(function(h){ return emailOf(h.tutorEmail) === em; });
   }
 
   function getCoinTransactions(tutorEmail){
@@ -1324,6 +1354,7 @@
     getTutorCoins: getTutorCoins,
     addTutorCoins: addTutorCoins,
     getCoinTransactions: getCoinTransactions,
+    getMembershipHistory: getMembershipHistory,
     unlockInquiry: unlockInquiry,
     isConversationUnlockedForTutor: isConversationUnlockedForTutor,
     maskStudentName: maskStudentName,

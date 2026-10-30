@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>How to use Modiv’s Education · Student &amp; Tutor guide</title>
+<meta name="description" content="Step-by-step guide for students, parents and tutors on how to use Modiv’s Education.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--navy:#1A2035;--yellow:#EBB92E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--accent:#0e7c66;--accent-d:#0a5f4e;--tint:#e8f5f1;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+html{scroll-behavior:smooth}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.6}
+a{color:var(--accent-d)}
+:is(a,button,summary):focus-visible{outline:3px solid #7fd1bd;outline-offset:2px}
+header.top{background:#fff;border-bottom:1.5px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:10}
+.bar{max-width:1100px;margin:0 auto;padding:10px 24px;display:flex;align-items:center;justify-content:space-between;gap:16px}
+.bar img{height:44px;width:auto;display:block}
+.links{display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.links a{text-decoration:none;color:var(--navy);font-weight:600;font-size:.9rem;border:1.5px solid var(--line);padding:6px 12px;border-radius:8px;background:#fff}
+.links a:hover{border-color:var(--navy)}
+.hero{background:linear-gradient(135deg,#1a2035 0%,#14213d 60%,#0f3a4a 100%);color:#fff;text-align:center;padding:52px 24px 70px;position:relative;overflow:hidden}
+.hero::before,.hero::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+.hero::before{width:300px;height:300px;top:-110px;right:-70px;background:radial-gradient(circle,rgba(250,189,78,.55),transparent 70%)}
+.hero::after{width:340px;height:340px;bottom:-170px;left:-90px;background:radial-gradient(circle,rgba(47,181,154,.45),transparent 70%)}
+.hero>*{position:relative;z-index:1}
+.hero h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.15;margin:0 0 10px;letter-spacing:-.02em;font-weight:800}
+.hero p{margin:0 auto;max-width:620px;color:#cfd6e8}
+.switch{display:inline-flex;background:#fff;border-radius:999px;padding:5px;gap:4px;margin:-26px auto 0;position:relative;z-index:2;box-shadow:0 8px 24px rgba(20,33,61,.15)}
+.switch-wrap{text-align:center}
+.switch button{border:0;background:none;padding:11px 26px;border-radius:999px;font:700 .95rem "Plus Jakarta Sans",system-ui,sans-serif;color:var(--muted);cursor:pointer;transition:background .2s,color .2s}
+.switch button[aria-selected=true]{background:var(--navy);color:#fff}
+main{max-width:1000px;margin:0 auto;padding:34px 24px 70px}
+.panel[hidden]{display:none}
+.intro{text-align:center;color:var(--muted);max-width:640px;margin:0 auto 30px}
+.steps{list-style:none;margin:0;padding:0;counter-reset:s;display:grid;gap:16px}
+.step{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px 22px 20px 78px;position:relative;counter-increment:s}
+.step::before{content:counter(s);position:absolute;left:20px;top:20px;width:42px;height:42px;border-radius:50%;background:var(--yellow);color:var(--navy);font-weight:800;font-size:1.1rem;display:flex;align-items:center;justify-content:center}
+.step h3{margin:0 0 4px;font-size:1.08rem}
+.step p{margin:0 0 8px;color:var(--muted);font-size:.95rem}
+.step ul{margin:0;padding-left:18px;color:var(--muted);font-size:.92rem}
+.step li{margin:2px 0}
+.step .go{display:inline-block;margin-top:10px;background:var(--accent);color:#fff;text-decoration:none;font-weight:700;font-size:.88rem;padding:8px 14px;border-radius:8px}
+.step .go:hover{background:var(--accent-d)}
+.tip{background:var(--tint);border:1.5px solid #bfe3d9;border-radius:12px;padding:12px 14px;margin-top:10px;font-size:.9rem;color:#14473b}
+.tip b{color:var(--accent-d)}
+h2.sec{font-size:1.4rem;margin:42px 0 14px;letter-spacing:-.01em}
+details{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:0;margin-bottom:10px}
+summary{cursor:pointer;font-weight:700;padding:14px 18px;list-style:none;display:flex;justify-content:space-between;gap:10px}
+summary::after{content:"+";font-size:1.3rem;line-height:1;color:var(--accent)}
+details[open] summary::after{content:"–"}
+details p{margin:0;padding:0 18px 16px;color:var(--muted);font-size:.93rem}
+.cta{margin-top:34px;text-align:center;background:var(--navy);color:#fff;border-radius:18px;padding:30px 20px}
+.cta h2{margin:0 0 6px}.cta p{margin:0 0 16px;color:#cfd6e8}
+.cta a{display:inline-block;background:var(--yellow);color:var(--navy);text-decoration:none;font-weight:800;padding:12px 24px;border-radius:10px}
+.cta a:hover{filter:brightness(.95)}
+footer{background:var(--navy);color:#d8dcec;text-align:center;padding:22px 16px;font-size:.88rem}
+footer a{color:#d8dcec;margin:0 10px}
+@media(max-width:560px){.step{padding:18px 16px 18px 16px}.step::before{position:static;margin-bottom:8px}.switch button{padding:10px 16px;font-size:.88rem}}
+@media(prefers-reduced-motion:no-preference){
+ .panel:not([hidden]) .step{animation:rise .6s cubic-bezier(.22,1,.36,1) both}
+ .panel:not([hidden]) .step:nth-child(2){animation-delay:.07s}.panel:not([hidden]) .step:nth-child(3){animation-delay:.14s}
+ .panel:not([hidden]) .step:nth-child(4){animation-delay:.21s}.panel:not([hidden]) .step:nth-child(5){animation-delay:.28s}
+ .panel:not([hidden]) .step:nth-child(n+6){animation-delay:.35s}
+ .step{transition:transform .2s,box-shadow .2s}.step:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(20,33,61,.09)}
+}
+@keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+</style>
+<link rel="stylesheet" href="modivs-menu.css">
+</head>
+<body>
+<header class="mv-header">
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-tutors.html">Tutors</a></li>
+    <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
+    <li><a href="modivs-contact.html">Contact us</a></li>
+   </ul>
+  </nav>
+  <div class="acts" id="mvActs">
+   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+  </div>
+ </div>
+</header>
+
+<section class="hero">
+ <h1>How to use Modiv’s Education</h1>
+ <p>A quick, step-by-step guide for students, parents and tutors. Pick your role to see exactly what to do.</p>
+</section>
+
+<div class="switch-wrap">
+ <div class="switch" role="tablist" aria-label="Choose your guide">
+  <button type="button" role="tab" id="tabStudent" aria-selected="true" aria-controls="panelStudent">🎓 Students &amp; parents</button>
+  <button type="button" role="tab" id="tabTutor" aria-selected="false" aria-controls="panelTutor">👩‍🏫 Tutors</button>
+ </div>
+</div>
+
+<main>
+ <!-- STUDENT -->
+ <section class="panel" id="panelStudent" role="tabpanel" aria-labelledby="tabStudent">
+  <p class="intro">From sign-up to your first demo class in five steps. Your phone number and email stay private until a verified tutor unlocks your requirement.</p>
+  <ol class="steps">
+   <li class="step"><h3>Create your account</h3>
+    <p>Tap <b>Sign up</b> on the home page and choose <b>I’m a student or parent</b>.</p>
+    <ul><li>Enter your name, mobile number, city, email and a password (at least 8 characters).</li><li>Parents can register on behalf of their child.</li></ul>
+    <a class="go" href="modivs-signup.html">Sign up now</a></li>
+   <li class="step"><h3>Tell us what you need</h3>
+    <p>The short requirement form has four parts: student details, learning needs, tutor preferences and a final review.</p>
+    <ul><li>Pick a <b>boy or girl avatar</b>. It shows on your requirement and in your top bar.</li><li>Choose class, board, subjects and goals.</li><li>Set online or offline mode, 1-on-1 or group tuition, and your budget.</li></ul>
+    <div class="tip"><b>Tip:</b> The more detail you add, the better the tutors who contact you will match your needs.</div></li>
+   <li class="step"><h3>Browse and shortlist tutors</h3>
+    <p>Open <b>Find Tutors</b> in your dashboard to see verified tutors. Compare subjects, experience, fees and teaching mode.</p>
+    <ul><li>Tap the heart to add a tutor to <b>Favourites</b> so you can compare them later.</li><li>Only tutors approved by our team appear here.</li></ul></li>
+   <li class="step"><h3>Send a request and book a free demo</h3>
+    <p>Send a request to the tutors you like. Check <b>My Requests</b> to see which ones are accepted or pending.</p>
+    <ul><li>Book a <b>demo class</b> to try the tutor before you commit.</li><li>Your demo and regular classes appear in <b>Class Schedule</b>.</li></ul></li>
+   <li class="step"><h3>Chat and start learning</h3>
+    <p>Use <b>Chat</b> to message tutors, agree on timings and share questions. Once you are happy, fix your weekly schedule and begin.</p>
+    <div class="tip"><b>Change of plans?</b> Use <b>Edit Requirements</b> in your dashboard to update subjects, budget or timings at any time.</div></li>
+  </ol>
+  <h2 class="sec">Student FAQs</h2>
+  <details><summary>Is it free for students and parents?</summary><p>Creating an account, posting a requirement and browsing tutors is free. Book a demo class first so you can decide before paying any tutor.</p></details>
+  <details><summary>Who can see my phone number?</summary><p>Nobody at first. Your contact details stay private until a tutor unlocks your requirement from their dashboard, and our team verifies every tutor before they are listed.</p></details>
+  <details><summary>I posted a requirement but nobody has replied yet.</summary><p>Give it a little time and make sure your city, subjects and budget are filled in. You can also open <b>Find Tutors</b> and send requests to tutors yourself.</p></details>
+  <details><summary>How do I log out?</summary><p>Click your picture or avatar at the top right and choose <b>Log out</b>. You will be taken back to the home page.</p></details>
+  <div class="cta"><h2>Ready to find a tutor?</h2><p>It takes about five minutes to post your requirement.</p><a href="modivs-signup.html">Sign up as a student or parent</a></div>
+ </section>
+
+ <!-- TUTOR -->
+ <section class="panel" id="panelTutor" role="tabpanel" aria-labelledby="tabTutor" hidden>
+  <p class="intro">Build a trusted profile, get verified, and connect with students who match your subjects and location.</p>
+  <ol class="steps">
+   <li class="step"><h3>Create your tutor account</h3>
+    <p>Tap <b>Sign up</b> on the home page and choose <b>I’m a tutor</b>. Enter your name, email and a password.</p>
+    <a class="go" href="modivs-signup.html">Sign up now</a></li>
+   <li class="step"><h3>Complete your profile in 7 steps</h3>
+    <p>You will be guided through <b>About you, Qualifications, Experience, Subjects, Fees &amp; availability, Verification</b> and <b>Review &amp; submit</b>.</p>
+    <ul><li>Upload a clear, front-facing <b>profile photo</b>. It appears in your top bar and on your public profile.</li><li>Pick your <b>country code</b> by typing your country name in the search box, then enter your phone and WhatsApp numbers.</li><li>List the subjects and levels you teach, your fee and your teaching modes (online, home tuition or group batches).</li></ul>
+    <div class="tip"><b>Tip:</b> A complete profile with a clear photo and a short, friendly bio gets noticed far more often.</div></li>
+   <li class="step"><h3>Upload your verification documents</h3>
+    <p>Add an ID document and your highest qualification certificate. Each file (JPG, PNG or PDF) can be up to 500 KB.</p>
+    <ul><li>Our team reviews your profile. You will see the status on your dashboard banner: pending, approved or rejected.</li><li>Changing your name, photo or documents later sends the profile for re-verification.</li></ul></li>
+   <li class="step"><h3>Get approved and go live</h3>
+    <p>Once approved, your profile becomes visible to students and parents in tutor search. Check <b>My Profile</b> to see exactly how others see you.</p></li>
+   <li class="step"><h3>Find and unlock student leads</h3>
+    <p>Open <b>New Leads</b> in your dashboard, or browse the <a href="modivs-active-leads.html">Active Leads</a> page, to see students looking for your subjects.</p>
+    <ul><li>Contact details are masked until you unlock a lead.</li><li>Unlocking uses <b>coins</b> (10 coins per inquiry) and needs an active <b>membership plan</b>. Manage both from the bar at the top of your dashboard.</li><li>After unlocking you can see full details and message the student.</li></ul></li>
+   <li class="step"><h3>Chat, run a demo and teach</h3>
+    <p>Use <b>Chat</b> to reply quickly, agree on a demo class and fix a weekly schedule. Quick replies help you win students.</p>
+    <div class="tip"><b>Need to change something?</b> Use <b>Edit your profile</b> on the dashboard any time to update your fees, subjects or availability.</div></li>
+  </ol>
+  <h2 class="sec">Tutor FAQs</h2>
+  <details><summary>How long does verification take?</summary><p>Our team reviews applications in the order they arrive. Complete every section and upload clear, readable documents to avoid delays.</p></details>
+  <details><summary>Why can’t I see a student’s phone number?</summary><p>Student contact details are protected. They are unlocked after verification, when you have an active membership and enough coins for the inquiry.</p></details>
+  <details><summary>My application was rejected. What now?</summary><p>Open your dashboard to read the reason, correct the details or documents with <b>Edit your profile</b>, and submit again.</p></details>
+  <details><summary>How do I log out?</summary><p>Click your profile photo at the top right and choose <b>Log out</b>, or use the Log out link in the dashboard. You will return to the home page.</p></details>
+  <div class="cta"><h2>Start teaching with Modiv’s</h2><p>Set up your profile once and let students come to you.</p><a href="modivs-signup.html">Sign up as a tutor</a></div>
+ </section>
+</main>
+
+<footer><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a><p style="margin:10px 0 0;color:#9aa1bd">© 2026 Modiv’s Education</p></footer>
+
+<script>
+(function(){
+ var tabs={student:document.getElementById('tabStudent'),tutor:document.getElementById('tabTutor')};
+ var panels={student:document.getElementById('panelStudent'),tutor:document.getElementById('panelTutor')};
+ function show(k,push){
+  if(!tabs[k])k='student';
+  Object.keys(tabs).forEach(function(x){tabs[x].setAttribute('aria-selected',String(x===k));panels[x].hidden=x!==k});
+  if(push)try{history.replaceState(null,'','#'+k)}catch(e){}
+ }
+ Object.keys(tabs).forEach(function(k){tabs[k].addEventListener('click',function(){show(k,true)})});
+ function fromHash(){var h=location.hash.replace('#','');if(h==='student'||h==='tutor')return h;
+  try{var u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null');if(u&&u.role==='Tutor')return'tutor'}catch(e){}return'student'}
+ show(fromHash());
+ window.addEventListener('hashchange',function(){show(fromHash())});
+})();
+</script>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<script src="modivs-menu.js" defer></script>
+</body>
+</html>

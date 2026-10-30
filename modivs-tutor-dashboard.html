@@ -15,7 +15,7 @@ body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakart
 button,input,select{font:inherit;color:inherit}
 :is(a,button,input,select,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 .app{display:grid;grid-template-columns:290px 1fr;gap:24px;max-width:1280px;margin:0 auto;padding:20px 20px 80px;align-items:start}
-.side{background:var(--navy);color:var(--cream);border-radius:22px;padding:18px;position:sticky;top:calc(88px + env(safe-area-inset-top,0px));max-height:calc(100vh - 108px);overflow:auto}
+.side{background:var(--navy);color:var(--cream);border-radius:22px;padding:18px;align-self:start}
 .brand{font-weight:800;font-size:1.15rem;margin:4px 6px 14px}.brand span{background:var(--yellow);color:var(--navy);padding:0 8px;border-radius:6px;margin-left:2px}
 .topbar{background:#fff;border-bottom:1.5px solid var(--line);padding:8px 24px;position:sticky;top:env(safe-area-inset-top,0px);z-index:10}
 .logo{display:block;max-width:1240px;margin:0 auto}
@@ -76,7 +76,26 @@ input[type=search]{padding:8px 12px;border:1.5px solid var(--line);border-radius
 .b.y{background:var(--yellow);border-color:var(--yellow);color:var(--navy)}.b.y:hover{background:#D9A41C}
 .b.o{background:transparent;color:var(--navy)}.b.o:hover{background:var(--cream)}
 .empty{color:var(--muted);text-align:center;padding:24px 0}
-.two{display:grid;grid-template-columns:1fr 1fr;gap:22px}.two .box{margin-bottom:0}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:22px;margin-bottom:22px}.two .box{margin-bottom:0}
+.mchart{display:flex;flex-direction:column;align-items:center;text-align:center;gap:10px}
+.mchart svg{width:100%;max-width:210px;height:auto;display:block}
+.mchart h2{align-self:flex-start;margin-bottom:2px}
+.ringbg{fill:none;stroke:#ecdfc6}.ringfg{fill:none;stroke-linecap:round;transition:stroke-dasharray .8s cubic-bezier(.22,1,.36,1)}
+.rnum{font-size:34px;font-weight:800;fill:#1A2035;text-anchor:middle}.rlbl{font-size:11px;font-weight:600;fill:#555b78;text-anchor:middle;letter-spacing:.04em}
+.legend{display:flex;gap:14px;flex-wrap:wrap;justify-content:center;font-size:.85rem;color:var(--muted)}
+.legend i{display:inline-block;width:10px;height:10px;border-radius:50%;margin-right:6px;vertical-align:baseline}
+.mbar{height:12px;background:#ecdfc6;border-radius:99px;overflow:hidden;width:100%}.mbar i{display:block;height:100%;border-radius:99px}
+.mhist{position:relative;margin:0;padding:0;list-style:none}
+.mhist li{position:relative;padding:0 0 18px 28px}
+.mhist li::before{content:"";position:absolute;left:5px;top:6px;bottom:-6px;width:2px;background:var(--line)}
+.mhist li:last-child::before{display:none}
+.mhist li::after{content:"";position:absolute;left:0;top:4px;width:12px;height:12px;border-radius:50%;background:var(--navy);border:2px solid var(--cream);box-shadow:0 0 0 2px var(--navy)}
+.mhist li.cur::after{background:var(--yellow);box-shadow:0 0 0 2px var(--navy)}
+.mhist b{font-size:1rem}.mhist small{display:block;color:var(--muted);margin-top:2px}
+.mhist .tp{display:inline-block;margin-left:8px;font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:99px;background:#dfe5fb;color:#27407f;vertical-align:middle}
+.mhist .tp.cur{background:#d9f0e3;color:var(--ok)}
+@media(prefers-reduced-motion:reduce){.ringfg{transition:none}}
+
 .row{display:flex;gap:12px;padding:11px 0;border-bottom:1px solid var(--line);align-items:center}.row:last-child{border:0}
 .when{background:var(--navy);color:var(--cream);border-radius:10px;text-align:center;padding:6px 10px;min-width:58px;font-size:.8rem;line-height:1.2}.when b{display:block;font-size:1.15rem;color:var(--yellow)}
 .row p{margin:0}.row small{color:var(--muted)}
@@ -108,11 +127,14 @@ dialog h2{margin:0 0 4px}
 .mvw-ln{background:transparent;color:var(--navy)}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--navy);color:var(--cream);padding:11px 18px;border-radius:8px;font-size:.9rem;max-width:90vw;z-index:20}
 .hide{display:none}
-.tutor-top-nav{display:flex;gap:14px;align-items:center;font-size:.88rem;font-weight:600}
+.tutor-top-nav{display:flex;gap:6px 14px;align-items:center;justify-content:flex-end;flex-wrap:wrap;font-size:.88rem;font-weight:600}
 .tutor-top-nav a{color:var(--navy);text-decoration:none;transition:color .15s}
 .tutor-top-nav a:hover{color:var(--ok)}
+.tutor-top-nav a[aria-current=page]{color:var(--navy);box-shadow:inset 0 -3px 0 var(--yellow)}
+.tutor-top-nav .tn{display:inline-block;margin-left:5px;background:var(--yellow);color:var(--navy);font-size:.7rem;font-weight:800;border-radius:99px;padding:0 7px;line-height:1.5}
+.tutor-top-nav .tn[hidden]{display:none}
 @media(max-width:960px){.app{grid-template-columns:1fr}.side{position:static;max-height:none}.two{grid-template-columns:1fr}.nav{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}
-@media(max-width:760px){.tutor-top-nav{display:none}}
+@media(max-width:760px){.topbar>div{flex-wrap:wrap}.tutor-top-nav{width:100%;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding:4px 0 6px;-webkit-overflow-scrolling:touch}.tutor-top-nav a{white-space:nowrap}}
 @media(max-width:560px){.lead{grid-template-columns:1fr}.acts{flex-direction:row;align-items:center;justify-content:flex-start;flex-wrap:wrap}.ask{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
 
 .nav button.out{margin-top:8px;border-top:1px solid #3d4870;border-radius:0 0 12px 12px;padding-top:14px}
@@ -138,17 +160,26 @@ dialog h2{margin:0 0 4px}
 <script src="firebase-config.js"></script>
 <script src="firebase-sync.js"></script>
 <script src="firebase-chat.js"></script>
+<link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
-<header class="topbar">
- <div style="max-width:1240px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;gap:16px;">
-  <a class="logo" href="modivs-home.html" aria-label="Modiv’s Education home" style="margin:0;"><img src="logo.png" width="350" height="100" alt="Modiv’s Education – Learn, Teach, Grow"></a>
-  <nav class="tutor-top-nav" aria-label="Quick links">
-   <a href="modivs-home.html">Home</a>
-   <a href="modivs-tutor-edit-profile.html">Tutor Profile</a>
-   <a href="modivs-active-leads.html">Find Students</a>
-   <a href="modivs-education.html#login" id="tutorLogoutBtn" style="border:1.5px solid var(--line);padding:4px 10px;border-radius:6px;">Log out</a>
+<header class="mv-header">
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-tutors.html">Tutors</a></li>
+    <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-active-leads.html">Find Students</a></li>
+    <li><a href="modivs-contact.html">Contact us</a></li>
+   </ul>
   </nav>
+  <div class="acts" id="mvActs">
+   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+  </div>
  </div>
 </header>
 <div class="app">
@@ -170,6 +201,25 @@ dialog h2{margin:0 0 4px}
 
  <main>
   <div id="statusBanner"></div>
+<style>
+.gcard{background:#fff;border:1.5px solid #eadfc9;border-left:5px solid #EBB92E;border-radius:14px;padding:16px 18px;margin:0 0 18px;position:relative}
+.gcard h2{margin:0 0 4px;font-size:1.05rem}.gcard p{margin:0 0 10px;color:#555b78;font-size:.9rem}
+.gcard ol{margin:0 0 12px;padding-left:20px;font-size:.9rem;color:#1A2035}.gcard li{margin:2px 0}
+.gcard a.gb{display:inline-block;background:#0e7c66;color:#fff;text-decoration:none;font-weight:700;font-size:.85rem;padding:8px 14px;border-radius:8px}
+.gcard a.gb:hover{background:#0a5f4e}
+.gcard button.gx{position:absolute;top:8px;right:10px;border:0;background:none;font-size:1.3rem;line-height:1;color:#555b78;cursor:pointer;padding:4px 8px;border-radius:6px}
+.gcard button.gx:hover{background:#f2f5f9}
+@media(prefers-reduced-motion:no-preference){.gcard{animation:gcIn .6s cubic-bezier(.22,1,.36,1) both}}
+@keyframes gcIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+</style>
+<div class="gcard" id="guideCard" role="region" aria-label="Getting started guide" hidden>
+ <button type="button" class="gx" id="guideClose" aria-label="Dismiss guide">&times;</button>
+ <h2>Getting started as a tutor</h2><p>New here? Four quick steps to get the most out of Modiv’s Education.</p>
+ <ol><li>Complete <b>My Profile</b> with a clear photo, subjects and fees.</li><li>Wait for admin approval. Your status shows in the banner above.</li><li>Open <b>New Leads</b> to find students and unlock their details with coins.</li><li>Reply in <b>Chat</b>, arrange a demo class and start teaching.</li></ol><a class="gb" href="modivs-guide.html#tutor">Open the full guide</a>
+</div>
+<script>(function(){var c=document.getElementById('guideCard'),k='modivs_guide_tutor';if(!c)return;try{if(localStorage.getItem(k)!=='1')c.hidden=false}catch(e){c.hidden=false}
+document.getElementById('guideClose').addEventListener('click',function(){c.hidden=true;try{localStorage.setItem(k,'1')}catch(e){}})})();</script>
+
    <div class="coinbar">
    <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
      <div><small>AVAILABLE COINS</small><b id="coins">0</b></div>
@@ -395,6 +445,7 @@ function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null
 function toast(t){var e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(state.tT);state.tT=setTimeout(function(){e.classList.add('hide')},2600)}
 function n(s){return leads.filter(function(l){return l.status===s}).length}
 function newLeads(){return leads.filter(function(l){return !l.unlocked&&l.status==='new'})}
+function pendingReq(){return leads.filter(function(l){return l.unlocked&&l.status==='new'}).length}
 function unlockedCount(){return leads.filter(function(l){return l.unlocked}).length}
 
 function openRecharge(){$('dlg').showModal()}
@@ -514,7 +565,7 @@ function recharge(c,price){
 function activateMembership(planName, days, price, bonusCoins, isUpgrade){
  var em = currentTutorEmail();
  if(window.ModivsChat && em){
-  ModivsChat.setTutorMembership(em, planName, days, 'active');
+  ModivsChat.setTutorMembership(em, planName, days, 'active', false, price);
   if(bonusCoins > 0){
    var res = ModivsChat.addTutorCoins(em, bonusCoins, 'Bonus coins for ' + planName + ' purchase (' + price + ')');
    state.coins = res.balance;
@@ -557,7 +608,7 @@ function nav(){
  var currentChatUser = null;
  try { currentChatUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
  var chatUnread = window.ModivsChat ? ModivsChat.conversations().reduce(function(total,c){ return total + ModivsChat.unread(c, currentChatUser && currentChatUser.email); }, 0) : 0;
- var N=[['dash','🏠','My Dashboard'],['profile','👤','My Profile'],['leads','🎯','New Leads',newLeads().length],['chat','💬','Chat',chatUnread],['credits','🪙','My Credits'],['settings','⚙️','Settings']];
+ var N=[['dash','🏠','My Dashboard'],['profile','👤','My Profile'],['leads','🎯','New Leads',newLeads().length],['requests','📩','Requests',pendingReq()],['chat','💬','Chat',chatUnread],['membership','👑','Membership'],['credits','🪙','My Credits'],['settings','⚙️','Settings']];
  var b=$('nav');b.innerHTML='';
  N.forEach(function(x){var btn=el('button');btn.type='button';var i=el('span',null,x[1]);i.setAttribute('aria-hidden','true');btn.appendChild(i);btn.appendChild(el('span',null,x[2]));
   if(x[3]){btn.appendChild(el('span','n',x[3]))}
@@ -565,14 +616,21 @@ function nav(){
   btn.addEventListener('click',function(){state.view=x[0];render();window.scrollTo(0,0)});b.appendChild(btn)});
  var lo=el('button','out');lo.type='button';var li=el('span',null,'🚪');li.setAttribute('aria-hidden','true');lo.appendChild(li);lo.appendChild(el('span',null,'Log out'));
  lo.addEventListener('click',doLogout);b.appendChild(lo);
+
+ var cnt={leads:newLeads().length,requests:pendingReq(),chat:chatUnread};
+ var tn=document.querySelectorAll('#topNav [data-view]');
+ for(var ti=0;ti<tn.length;ti++){var a=tn[ti],vw=a.getAttribute('data-view');
+  if(state.view===vw)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
+  var bd=a.querySelector('.tn');if(bd){var c=cnt[vw]||0;bd.textContent=c;bd.hidden=!c}}
 }
 function doLogout(e){
  if(e&&e.preventDefault)e.preventDefault();
  try{localStorage.removeItem('modivs_auth_user')}catch(err){}
  try{var fb=window.EducationBFirebase;if(fb&&fb.auth&&fb.auth.signOut){fb.auth.signOut().catch(function(){})}}catch(err){}
- window.location.href='modivs-education.html#login';
+ window.location.href='modivs-home.html';
 }
-(function(){var top=document.getElementById('tutorLogoutBtn');if(top)top.addEventListener('click',doLogout)})();
+(function(){var top=document.getElementById('tutorLogoutBtn');if(top)top.addEventListener('click',doLogout);
+var tn=document.getElementById('topNav');if(tn)tn.addEventListener('click',function(e){var a=e.target.closest&&e.target.closest('[data-view]');if(!a)return;e.preventDefault();state.view=a.getAttribute('data-view');render();window.scrollTo(0,0)})})();
 
 function stat(label,val,cls,small){var d=el('div','stat'+(cls?' '+cls:''));d.appendChild(el('span','',label));d.appendChild(el('b',small?'v':'',val));return d}
 
@@ -775,6 +833,139 @@ function vCredits(v){
  }
  v.appendChild(h);
 }
+
+function vRequests(v){
+ v.appendChild(el('h1','','Student Requests'));
+ v.appendChild(el('p','sub','Requests from students you have unlocked. Accept, offer a demo, decline or message them.'));
+ var mine=leads.filter(function(l){return l.unlocked});
+ var cnt=function(st){return mine.filter(function(l){return l.status===st}).length};
+ var s=el('div','stats');
+ s.appendChild(stat('Pending',cnt('new'),cnt('new')?'hi':''));
+ s.appendChild(stat('Demo Offered',cnt('demo')));
+ s.appendChild(stat('Accepted',cnt('accepted')));
+ s.appendChild(stat('Declined',cnt('declined')));
+ v.appendChild(s);
+ var box=el('section','box'),hd=el('div','head');hd.appendChild(el('h2','','Your requests'));
+ var tools=el('div','tools');
+ if(!state.rFilter)state.rFilter='new';
+ var list=el('div');
+ [['new','Pending ('+cnt('new')+')'],['demo','Demo ('+cnt('demo')+')'],['accepted','Accepted ('+cnt('accepted')+')'],['declined','Declined ('+cnt('declined')+')'],['all','All ('+mine.length+')']].forEach(function(x){
+  var b=el('button','tab',x[1]);b.type='button';b.setAttribute('aria-pressed',String(state.rFilter===x[0]));
+  b.addEventListener('click',function(){state.rFilter=x[0];render()});tools.appendChild(b)});
+ hd.appendChild(tools);box.appendChild(hd);
+ var r=mine.filter(function(l){return state.rFilter==='all'||l.status===state.rFilter});
+ if(!r.length){
+  var e=el('p','empty',mine.length?'No requests in this tab.':'No requests yet. Unlock a lead from New Leads to see it here.');box.appendChild(e);
+  var g=el('button','b y','Go to New Leads');g.type='button';g.style.display='block';g.style.margin='0 auto';g.addEventListener('click',function(){state.view='leads';render()});box.appendChild(g);
+ } else r.forEach(function(l){list.appendChild(leadCard(l))});
+ box.appendChild(list);v.appendChild(box);
+}
+
+function vMembership(v){
+ var em=currentTutorEmail();
+ var mem=window.ModivsChat?ModivsChat.getTutorMembership(em):{planName:'None',status:'none',isValid:false,daysLeft:0,durationDays:30};
+ var coins=window.ModivsChat?ModivsChat.getTutorCoins(em):state.coins;
+ var txs=window.ModivsChat?ModivsChat.getCoinTransactions(em):[];
+ var mh=window.ModivsChat&&ModivsChat.getMembershipHistory?ModivsChat.getMembershipHistory(em):[];
+ var fmt=function(d){return d?new Date(d).toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}):'—'};
+
+ v.appendChild(el('h1','','Membership Status'));
+ v.appendChild(el('p','sub','Your plan, days left, coin usage and membership history in one place.'));
+
+ // numbers
+ var total=Math.max(mem.durationDays||30,mem.daysLeft||0,1);
+ var left=mem.isValid?mem.daysLeft:0;
+ var pct=mem.isValid?Math.min(1,left/total):0;
+ var col=!mem.isValid?'#b3261e':(left<=7?'#e08a00':'#1d8a5b');
+ var stText=mem.isValid?(left<=7?'Expiring soon':'Active'):(mem.status==='expired'?'Expired':'No plan');
+ var used=Math.max(0,Math.round((total-left)));
+
+ var s=el('div','stats');
+ s.appendChild(stat('Current Plan',mem.planName||'None','',true));
+ s.appendChild(stat('Days Left',left,mem.isValid&&left>7?'':'hi'));
+ s.appendChild(stat('Valid Until',mem.isValid?fmt(mem.validUntil):'—','',true));
+ s.appendChild(stat('Plans Purchased',mh.length));
+ v.appendChild(s);
+
+ // two charts
+ var two=el('div','two');
+
+ var c1=el('section','box mchart');
+ c1.appendChild(el('h2','','Membership days left'));
+ var R=70,C=2*Math.PI*R;
+ var ring=document.createElement('div');
+ ring.style.width='100%';ring.style.display='flex';ring.style.justifyContent='center';
+ ring.innerHTML='<svg viewBox="0 0 180 180" role="img" aria-label="'+left+' days left of '+total+'">'+
+  '<circle class="ringbg" cx="90" cy="90" r="'+R+'" stroke-width="16"/>'+
+  '<circle class="ringfg" id="mRing" cx="90" cy="90" r="'+R+'" stroke-width="16" stroke="'+col+'" stroke-dasharray="0 '+C+'" opacity="'+(pct>0?1:0)+'" transform="rotate(-90 90 90)"/>'+
+  '<text class="rnum" x="90" y="92">'+left+'</text><text class="rlbl" x="90" y="112">'+(left===1?'DAY LEFT':'DAYS LEFT')+'</text></svg>';
+ c1.appendChild(ring);
+ var pill=el('span','badge',stText);pill.style.background=mem.isValid?(left<=7?'#fdebc8':'#d9f0e3'):'#f7dcda';pill.style.color=col;c1.appendChild(pill);
+ var bar=el('div','mbar');var bi=el('i');bi.style.width=Math.round(pct*100)+'%';bi.style.background=col;bar.appendChild(bi);c1.appendChild(bar);
+ c1.appendChild(el('small','',mem.isValid?(used+' of '+total+' days used · expires '+fmt(mem.validUntil)):'Re-purchase a plan to unlock student inquiries and chat.'));
+ var go=el('button','b y',mem.isValid?'Upgrade / Extend Plan':'Buy a Plan');go.type='button';go.addEventListener('click',openMembershipModal);c1.appendChild(go);
+ two.appendChild(c1);
+ setTimeout(function(){var r=document.getElementById('mRing');if(r)r.setAttribute('stroke-dasharray',(C*pct)+' '+C)},60);
+
+ // coin donut
+ var added=0,spent=0;
+ txs.forEach(function(x){var a=(x.amount!==undefined)?x.amount:x.a;if(a>0)added+=a;else spent+=Math.abs(a||0)});
+ var c2=el('section','box mchart');
+ c2.appendChild(el('h2','','Coin usage'));
+ var R2=70,C2=2*Math.PI*R2,tot=added+spent;
+ var sp=tot?spent/tot:0,ad=tot?added/tot:0;
+ var svg='<svg viewBox="0 0 180 180" role="img" aria-label="'+spent+' coins spent, '+added+' coins added"><circle class="ringbg" cx="90" cy="90" r="'+R2+'" stroke-width="16"/>';
+ if(tot){
+  svg+='<circle class="ringfg" cx="90" cy="90" r="'+R2+'" stroke-width="16" stroke="#EBB92E" stroke-dasharray="'+(C2*ad)+' '+C2+'" transform="rotate(-90 90 90)"/>';
+  svg+='<circle class="ringfg" cx="90" cy="90" r="'+R2+'" stroke-width="16" stroke="#1A2035" stroke-dasharray="'+(C2*sp)+' '+C2+'" stroke-dashoffset="'+(-C2*ad)+'" transform="rotate(-90 90 90)"/>';
+ }
+ svg+='<text class="rnum" x="90" y="92">'+coins+'</text><text class="rlbl" x="90" y="112">COINS LEFT</text></svg>';
+ var r2=document.createElement('div');r2.style.cssText='width:100%;display:flex;justify-content:center';r2.innerHTML=svg;c2.appendChild(r2);
+ var lg=el('div','legend');lg.innerHTML='<span><i style="background:#EBB92E"></i>Added '+added+'</span><span><i style="background:#1A2035"></i>Spent '+spent+'</span>';c2.appendChild(lg);
+ c2.appendChild(el('small','',tot?('About '+Math.floor(coins/COST)+' more inquiries can be unlocked ('+COST+' coins each).'):'No coin activity yet.'));
+ var rc=el('button','b o','Recharge Coins');rc.type='button';rc.addEventListener('click',openRecharge);c2.appendChild(rc);
+ two.appendChild(c2);
+ v.appendChild(two);
+
+ // monthly bars (last 6 months)
+ var months=[];var now=new Date();
+ for(var i=5;i>=0;i--){var d=new Date(now.getFullYear(),now.getMonth()-i,1);months.push({k:d.getFullYear()+'-'+d.getMonth(),l:d.toLocaleDateString([],{month:'short'}),a:0,s:0})}
+ txs.forEach(function(x){if(!x.createdAt)return;var d=new Date(x.createdAt);var m=months.find(function(q){return q.k===d.getFullYear()+'-'+d.getMonth()});if(!m)return;var a=(x.amount!==undefined)?x.amount:x.a;if(a>0)m.a+=a;else m.s+=Math.abs(a||0)});
+ var mx=Math.max.apply(null,months.map(function(m){return Math.max(m.a,m.s)}).concat([10]));
+ var cb=el('section','box');cb.appendChild(el('h2','','Coin activity · last 6 months'));
+ var W=560,H=190,bw=22,gx=W/6,base=150,bars='';
+ months.forEach(function(m,i){
+  var x0=i*gx+gx/2-bw-2,ha=Math.round(m.a/mx*120),hs=Math.round(m.s/mx*120);
+  bars+='<rect x="'+x0+'" y="'+(base-ha)+'" width="'+bw+'" height="'+ha+'" rx="4" fill="#EBB92E"><title>'+m.l+': '+m.a+' added</title></rect>';
+  bars+='<rect x="'+(x0+bw+4)+'" y="'+(base-hs)+'" width="'+bw+'" height="'+hs+'" rx="4" fill="#1A2035"><title>'+m.l+': '+m.s+' spent</title></rect>';
+  bars+='<text x="'+(i*gx+gx/2)+'" y="172" text-anchor="middle" font-size="12" font-weight="600" fill="#555b78">'+m.l+'</text>';
+ });
+ var cd=document.createElement('div');cd.style.cssText='width:100%;overflow-x:auto';
+ cd.innerHTML='<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;min-width:420px;height:auto" role="img" aria-label="Coins added and spent per month"><line x1="0" y1="'+base+'" x2="'+W+'" y2="'+base+'" stroke="#eadfc9"/>'+bars+'</svg>';
+ cb.appendChild(cd);
+ var lg2=el('div','legend');lg2.innerHTML='<span><i style="background:#EBB92E"></i>Coins added</span><span><i style="background:#1A2035"></i>Coins spent</span>';cb.appendChild(lg2);
+ v.appendChild(cb);
+
+ // history
+ var hb=el('section','box');hb.appendChild(el('h2','','Membership history'));
+ hb.firstChild.style.marginBottom='14px';
+ var items=mh.slice();
+ if(!items.length&&mem.planName&&mem.planName!=='None'){items=[{planName:mem.planName,type:'activated',durationDays:mem.durationDays,startedAt:mem.startedAt,validUntil:mem.validUntil,price:''}]}
+ if(!items.length){hb.appendChild(el('p','empty','No membership purchases yet.'))}
+ else{
+  var ul=el('ul','mhist');
+  items.forEach(function(h,i){
+   var li=el('li',i===0&&mem.isValid?'cur':'');
+   var t=el('b','',h.planName||'Plan');
+   var tp=el('span','tp'+(i===0&&mem.isValid?' cur':''),i===0&&mem.isValid?'Current':({upgraded:'Upgraded',extended:'Extended',renewed:'Renewed'}[h.type]||'Activated'));
+   var top=el('div');top.appendChild(t);top.appendChild(tp);li.appendChild(top);
+   li.appendChild(el('small','',fmt(h.startedAt)+' → '+fmt(h.validUntil)+' · '+(h.durationDays||30)+' days'+(h.price?' · '+h.price:'')));
+   ul.appendChild(li);
+  });
+  hb.appendChild(ul);
+ }
+ v.appendChild(hb);
+}
 function vSettings(v){
  v.appendChild(el('h1','','Settings'));v.appendChild(el('p','sub','Choose how Modiv’s contacts you.'));
  var box=el('section','box');
@@ -941,12 +1132,12 @@ function render(){
  }
  $('coins').textContent=state.coins;nav();
  var v=$('view');v.innerHTML='';
- ({dash:vDash,leads:vLeads,profile:vProfile,chat:vChat,credits:vCredits,settings:vSettings})[state.view](v)
+ ({dash:vDash,leads:vLeads,requests:vRequests,profile:vProfile,chat:vChat,credits:vCredits,membership:vMembership,settings:vSettings})[state.view](v)
 }
 
 // Setup Packs & Modal Listeners
-var pk=$('packs');PACKS.forEach(function(p){var b=el('button','pack');b.type='button';b.appendChild(el('b','',p[0]+' coins'));b.appendChild(el('small','',p[1]));b.addEventListener('click',function(){recharge(p[0],p[1])});pk.appendChild(b)});
-$('rech').addEventListener('click',openRecharge);$('close').addEventListener('click',function(){$('dlg').close()});
+var pk=$('packs');if(pk)PACKS.forEach(function(p){var b=el('button','pack');b.type='button';b.appendChild(el('b','',p[0]+' coins'));b.appendChild(el('small','',p[1]));b.addEventListener('click',function(){recharge(p[0],p[1])});pk.appendChild(b)});
+var rechBtn=$('rech');if(rechBtn)rechBtn.addEventListener('click',openRecharge);var clsBtn=$('close');if(clsBtn)clsBtn.addEventListener('click',function(){$('dlg').close()});
 
 renderMembershipPacks();
 
@@ -1005,8 +1196,8 @@ if(payConfirm){
 var memBtn = $('memBtn'); if(memBtn) memBtn.addEventListener('click', openMembershipModal);
 var closeMem = $('closeMem'); if(closeMem) closeMem.addEventListener('click', function(){ $('memDlg').close(); });
 
-$('editTop').addEventListener('click',editProfile);$('editLink').addEventListener('click',editProfile);
-$('ask').addEventListener('click',function(){toast('Support chat opens here once a WhatsApp number is connected.')});
+['editTop','editLink'].forEach(function(id){var e=$(id);if(e)e.addEventListener('click',editProfile)});
+var askBtn=$('ask');if(askBtn)askBtn.addEventListener('click',function(){toast('Support chat opens here once a WhatsApp number is connected.')});
 
 // Real-Time Incoming Student Inquiries Listener
 if(window.ModivsChat && window.MY_TUTOR && window.MY_TUTOR.email){
@@ -1030,7 +1221,7 @@ if(window.ModivsChat && window.MY_TUTOR && window.MY_TUTOR.email){
   }, 1000);
 }
 
-if(window.ModivsChat) ModivsChat.subscribe(render);
+try{if(window.ModivsChat) ModivsChat.subscribe(render);}catch(e){}
 render();
 })();
 </script>
@@ -1043,5 +1234,8 @@ render();
 .mv-foot a[aria-current=page]{color:#EBB92E}
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<script src="modivs-menu.js" defer></script>
 </body>
 </html>

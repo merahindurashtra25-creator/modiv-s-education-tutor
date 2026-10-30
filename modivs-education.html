@@ -24,10 +24,12 @@ button,input{font:inherit}
 .hide{display:none!important}
 
 /* auth: 70% white form side, 30% ink side */
-.auth{min-height:100vh;display:grid;grid-template-columns:70fr 30fr}
+.auth{min-height:100vh;display:grid;grid-template-columns:1fr}
+.auth-side{display:none!important}
+.auth-card{width:100%;margin:0 auto}
 .auth-form{background:var(--white);display:flex;align-items:center;justify-content:center;padding:40px 24px}
 .auth-card{width:100%;max-width:400px}
-.brand{font-weight:800;font-size:1.25rem;letter-spacing:-.01em;margin-bottom:32px;display:inline-flex;align-items:center;text-decoration:none}.brand img{height:44px;width:auto;display:block}
+.brand{font-weight:800;font-size:1.25rem;letter-spacing:-.01em;margin-bottom:32px;display:inline-flex;align-items:center;text-decoration:none}.brand img{height:64px;width:auto;display:block}
 .brand span{color:var(--accent)}
 h1{font-size:2rem;line-height:1.15;margin:0 0 6px;letter-spacing:-.02em;font-weight:800}
 .sub{color:var(--muted);margin:0 0 24px}
@@ -41,6 +43,13 @@ input.bad{border-color:var(--err)}
 .switch{margin-top:20px;color:var(--muted);font-size:.92rem}
 .switch a{color:var(--accent-d);font-weight:600;cursor:pointer;text-decoration:underline}
 .row{display:flex;justify-content:space-between;align-items:center;margin-top:12px;font-size:.88rem}
+.or{display:flex;align-items:center;gap:12px;margin:18px 0 0;color:var(--muted);font-size:.82rem}
+.or::before,.or::after{content:"";flex:1;height:1px;background:var(--line)}
+.gbtn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;margin-top:14px;padding:12px;border:1.5px solid var(--line);border-radius:8px;background:#fff;color:var(--ink);font-weight:600;font-size:.95rem;cursor:pointer;font-family:inherit;transition:border-color .15s,box-shadow .15s}
+.gbtn:hover{border-color:var(--ink);box-shadow:0 2px 10px rgba(20,33,61,.1)}
+.gbtn[disabled]{opacity:.6;cursor:wait}
+.gnote{margin:8px 0 0;font-size:.78rem;color:var(--muted);text-align:center}
+
 .row a{color:var(--accent-d);cursor:pointer}
 .roles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
 .roles input{position:absolute;opacity:0}
@@ -102,7 +111,53 @@ input.bad{border-color:var(--err)}
  .who span{display:none}
 }
 @media(prefers-reduced-motion:no-preference){.item{transition:border-color .15s,background .15s}}
+
+/* ---- registration box: centred logo, soft card, motion ---- */
+.auth-form{position:relative;overflow:hidden;background:linear-gradient(135deg,#f7faf9 0%,#eaf3f1 55%,#fdf6e7 100%)}
+.auth-form::before,.auth-form::after{content:"";position:absolute;border-radius:50%;pointer-events:none;filter:blur(2px)}
+.auth-form::before{width:340px;height:340px;top:-120px;left:-100px;background:radial-gradient(circle at 40% 40%,rgba(47,181,154,.28),rgba(47,181,154,0) 70%)}
+.auth-form::after{width:380px;height:380px;bottom:-150px;right:-110px;background:radial-gradient(circle at 50% 50%,rgba(250,189,78,.32),rgba(250,189,78,0) 70%)}
+.auth-card{position:relative;z-index:1;max-width:440px;background:var(--white);border:1px solid var(--line);border-radius:22px;padding:34px 32px 30px;box-shadow:0 18px 50px rgba(20,33,61,.10),0 2px 6px rgba(20,33,61,.04)}
+.auth-card>.brand{display:flex;justify-content:center;margin:0 auto 22px;width:100%}
+.auth-card>.brand img{height:84px}
+.auth-card h1{font-size:1.75rem}
+input[type=text],input[type=email],input[type=password]{transition:border-color .2s,box-shadow .2s,transform .2s}
+input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border-color:var(--accent);box-shadow:0 0 0 4px rgba(14,124,102,.14);outline:none}
+.auth-card .btn{position:relative;overflow:hidden;transition:background .2s,transform .15s,box-shadow .2s}
+.auth-card .btn:hover{transform:translateY(-2px);box-shadow:0 8px 20px rgba(14,124,102,.30)}
+.auth-card .btn:active{transform:translateY(0);box-shadow:none}
+.auth-card .btn::after{content:"";position:absolute;top:0;left:-60%;width:40%;height:100%;background:linear-gradient(100deg,transparent,rgba(255,255,255,.35),transparent);transform:skewX(-20deg)}
+.ltab{transition:background .2s,color .2s,box-shadow .2s,transform .15s}
+.ltab:hover{transform:translateY(-1px)}
+@media(prefers-reduced-motion:no-preference){
+ .auth:not(.hide) .auth-card{animation:boxIn .9s cubic-bezier(.22,1,.36,1) both}
+ .auth:not(.hide) .auth-card>.brand img{animation:logoPop .9s .2s cubic-bezier(.34,1.56,.64,1) both,logoFloat 4.5s 1.2s ease-in-out infinite}
+ .auth:not(.hide) .auth-card>*:not(.brand){animation:fieldRise .7s cubic-bezier(.22,1,.36,1) both}
+ .auth:not(.hide) .auth-card>*:nth-child(2){animation-delay:.25s}
+ .auth:not(.hide) .auth-card>*:nth-child(3){animation-delay:.33s}
+ .auth:not(.hide) .auth-card>*:nth-child(4){animation-delay:.41s}
+ .auth:not(.hide) .auth-card>*:nth-child(5){animation-delay:.49s}
+ .auth:not(.hide) .auth-card>*:nth-child(6){animation-delay:.57s}
+ .auth:not(.hide) .auth-card form>*{animation:fieldRise .6s cubic-bezier(.22,1,.36,1) both}
+ .auth:not(.hide) .auth-card form>*:nth-child(1){animation-delay:.35s}.auth:not(.hide) .auth-card form>*:nth-child(2){animation-delay:.41s}
+ .auth:not(.hide) .auth-card form>*:nth-child(3){animation-delay:.47s}.auth:not(.hide) .auth-card form>*:nth-child(4){animation-delay:.53s}
+ .auth:not(.hide) .auth-card form>*:nth-child(5){animation-delay:.59s}.auth:not(.hide) .auth-card form>*:nth-child(6){animation-delay:.65s}
+ .auth:not(.hide) .auth-card form>*:nth-child(n+7){animation-delay:.71s}
+ .auth:not(.hide) .auth-card .btn::after{animation:shine 3.8s 1.6s ease-in-out infinite}
+ .auth:not(.hide) .auth-form::before{animation:blobDrift 11s ease-in-out infinite alternate}
+ .auth:not(.hide) .auth-form::after{animation:blobDrift 13s ease-in-out -4s infinite alternate-reverse}
+ .msg:not(:empty){animation:shake .4s}
+}
+@keyframes boxIn{from{opacity:0;transform:translateY(28px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes logoPop{from{opacity:0;transform:scale(.4) rotate(-8deg)}to{opacity:1;transform:none}}
+@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes fieldRise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes shine{0%,55%{left:-60%}100%{left:130%}}
+@keyframes blobDrift{from{transform:translate(0,0) scale(1)}to{transform:translate(40px,30px) scale(1.15)}}
+@keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
+@media(max-width:520px){.auth-card{padding:26px 20px 24px;border-radius:18px}.auth-form{padding:24px 14px}}
 </style>
+<link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
 
@@ -130,7 +185,10 @@ input.bad{border-color:var(--err)}
     <button class="btn" type="submit" id="lSubmitBtn">Log in</button>
     
    </form>
-   <p class="switch" id="signupSwitch">New here? <a id="signupLink" href="modivs-student-registration.html">Sign up as a student / parent</a></p>
+   <div id="googleWrap"><div class="or"><span>or</span></div>
+    <button type="button" class="gbtn" id="googleLogin"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>Continue with Google</span></button>
+    <p class="gnote">Google verifies your email, so only genuine users get in.</p></div>
+   <p class="switch" id="signupSwitch">New here? <a id="signupLink" href="modivs-signup.html">Sign up</a></p>
   </div>
  </section>
  <aside class="auth-side"><span class="side-dots" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11"></i></span><span class="side-line" aria-hidden="true"></span><p>Find the right tutor, or the right students.</p><small>Tutors and parents, in one place.</small></aside>
@@ -155,24 +213,15 @@ input.bad{border-color:var(--err)}
     <div class="msg" id="sMsg" role="alert"></div>
     <button class="btn" type="submit">Create tutor account</button>
    </form>
-   <p class="switch">Already have an account? <a data-go="login" role="button" tabindex="0">Log in</a> · <a href="modivs-student-registration.html">Student / parent sign up</a></p>
+   <div class="or"><span>or</span></div>
+   <button type="button" class="gbtn" id="googleSignup"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>Sign up with Google</span></button>
+   <p class="switch">Already have an account? <a data-go="login" role="button" tabindex="0">Log in</a> · <a href="modivs-signup.html">Choose a different role</a></p>
   </div>
  </section>
  <aside class="auth-side"><span class="side-dots" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11"></i></span><span class="side-line" aria-hidden="true"></span><p>Set up your profile in a few minutes.</p><small>You can edit it any time.</small></aside>
 </main>
 
-<!-- MENU -->
 <div id="menu" class="hide">
- <header class="top">
-  <a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education" style="height:38px;"></a>
-  <div class="who"><span id="whoTxt"></span><button class="out" id="logout">Log out</button></div>
-    <nav class="nav-links" style="margin-left:auto;">
-     <a href="modivs-home.html" style="margin-right:12px;color:var(--ink);text-decoration:none;font-weight:600;">Home</a>
-     <a href="modivs-tutor-dashboard.html" style="margin-right:12px;color:var(--ink);text-decoration:none;">Tutor Dashboard</a>
-     
-     <a href="#login" style="margin-right:12px;color:var(--ink);text-decoration:none;">Login</a>
-   </nav>
-  </header>
  <main class="wrap">
   <h1 id="hello"></h1>
   <p class="sub" id="roleLine"></p>
@@ -234,8 +283,7 @@ input.bad{border-color:var(--err)}
   function setSignupLink(kind){
     var a = $('signupLink');
     if(!a) return;
-    if(kind === 'tutor'){ a.textContent = 'Sign up as a tutor'; a.setAttribute('href', '#tutor-signup'); }
-    else { a.textContent = 'Sign up as a student / parent'; a.setAttribute('href', 'modivs-student-registration.html'); }
+    a.textContent = 'Sign up'; a.setAttribute('href', 'modivs-signup.html');
   }
 
   function setLoginMode(mode){
@@ -268,6 +316,7 @@ input.bad{border-color:var(--err)}
       emailInput.placeholder = 'admin@gmail.com';
       submitBtn.textContent = 'Log in to Admin Portal';
       if(signupSwitch) signupSwitch.style.display = 'none';
+      if($('googleWrap')) $('googleWrap').style.display = 'none';
     } else if(mode === 'tutor'){
       if(tabTutor){
         tabTutor.style.background = 'var(--white)';
@@ -297,6 +346,7 @@ input.bad{border-color:var(--err)}
       if(signupSwitch) signupSwitch.style.display = '';
       setSignupLink('student');
     }
+    if(mode !== 'admin' && $('googleWrap')) $('googleWrap').style.display = '';
     renderDemoBtns(mode);
   }
 
@@ -406,6 +456,78 @@ input.bad{border-color:var(--err)}
     proceedLogin(window.__firebaseUid || '');
   });
 
+
+  // ===== CONTINUE WITH GOOGLE (verified email only) =====
+  function googleAuth(mode, msgEl, btn){
+    var fb = window.EducationBFirebase;
+    msgEl.textContent = '';
+    if(!fb || !fb.auth || !window.firebase || !firebase.auth){
+      msgEl.textContent = 'Google sign-in is not available right now. Check your connection and try again.';
+      return;
+    }
+    var role = mode === 'tutor' ? 'Tutor' : 'Student / Parent';
+    var provider = new firebase.auth.GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: 'select_account' });
+    if(btn) btn.disabled = true;
+    function reject(text){
+      try{ fb.auth.signOut(); }catch(e){}
+      msgEl.textContent = text;
+    }
+    fb.auth.signInWithPopup(provider).then(function(res){
+      var u = res.user || {};
+      var mail = String(u.email || '').toLowerCase();
+      // genuine-user checks
+      if(!mail || u.emailVerified !== true){ return reject('Your Google email could not be verified. Please use a verified Google account.'); }
+      if(mail === 'admin@gmail.com'){ return reject('Admin accounts must log in from the Admin Portal tab.'); }
+      var list = []; try{ list = JSON.parse(localStorage.getItem('modivs_users') || '[]'); }catch(e){}
+      var found = list.find(function(x){ return String(x.email).toLowerCase() === mail; });
+      if(found && found.role && found.role !== role){
+        return reject('This email is already registered as ' + (found.role === 'Tutor' ? 'a Tutor' : 'a Student / Parent') + '. Use the ' + (found.role === 'Tutor' ? 'Tutor' : 'Student / Parent') + ' tab to continue.');
+      }
+      var name = u.displayName || mail.split('@')[0];
+      var isNew = !found;
+      if(isNew){
+        list.push({ name: name, email: mail, uid: u.uid, role: role, provider: 'google', created_at: new Date().toISOString() });
+        try{ localStorage.setItem('modivs_users', JSON.stringify(list)); }catch(e){}
+        users = list;
+        if(fb.db){
+          fb.db.collection('users').doc(u.uid).set({ name: name, email: mail, role: role, uid: u.uid, provider: 'google', createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(){});
+        }
+      } else { name = found.name || name; }
+
+      if(role === 'Tutor'){
+        try{
+          var db = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
+          if(!db.some(function(t){ return t.email === mail; })){
+            db.push({ id: 't_user_' + mail.replace(/[^a-z0-9]/gi, '_'), name: name, email: mail, phone: '—', city: '—',
+              headline: 'Account registered. Profile setup incomplete.', qual: 'Profile setup pending', years: 0, subs: ['General'], levels: ['Secondary'],
+              fee: 0, modes: ['Online'], langs: ['English'], idType: 'Pending upload', idFile: '', cert: '', sent: 'Registration completed',
+              status: 'incomplete', submitted_at: new Date().toISOString(), is_demo: false });
+            localStorage.setItem('modivs_tutors_db', JSON.stringify(db));
+          }
+        }catch(e){}
+      }
+      localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: role }));
+      toast((isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
+      var dest = role === 'Tutor' ? (isNew ? 'modivs-tutor-profile.html' : 'modivs-tutor-dashboard.html')
+                                  : (isNew ? 'modivs-student-registration.html' : 'modivs-student-dashboard.html');
+      setTimeout(function(){ window.location.href = dest; }, 500);
+    }).catch(function(err){
+      if(btn) btn.disabled = false;
+      var c = err && err.code;
+      if(c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return;
+      msgEl.textContent =
+        c === 'auth/popup-blocked' ? 'Your browser blocked the Google pop-up. Allow pop-ups for this site and try again.' :
+        c === 'auth/operation-not-allowed' ? 'Google sign-in is not enabled for this site yet.' :
+        c === 'auth/unauthorized-domain' ? 'This website address is not authorised for Google sign-in yet.' :
+        c === 'auth/network-request-failed' ? 'Network error. Check your connection and try again.' :
+        'Google sign-in failed. Please try again.';
+      console.error('Google sign-in failed', err);
+    });
+  }
+  if($('googleLogin')) $('googleLogin').addEventListener('click', function(){ googleAuth(loginMode === 'tutor' ? 'tutor' : 'student', $('lMsg'), this); });
+  if($('googleSignup')) $('googleSignup').addEventListener('click', function(){ googleAuth('tutor', $('sMsg'), this); });
+
   // SIGNUP FORM SUBMISSION
   $('signForm').addEventListener('submit', function(e){
     e.preventDefault();
@@ -492,9 +614,8 @@ input.bad{border-color:var(--err)}
     $('logout').addEventListener('click', function(){
       localStorage.removeItem('modivs_auth_user');
       current = null;
-      $('loginForm').reset();
-      $('lMsg').textContent = '';
-      show('login');
+      try{var fb=window.EducationBFirebase;if(fb&&fb.auth&&fb.auth.signOut)fb.auth.signOut().catch(function(){})}catch(e){}
+      window.location.href = 'modivs-home.html';
     });
   }
 
@@ -512,8 +633,8 @@ input.bad{border-color:var(--err)}
     } else if(hash === '#tutor-signup'){
       show('signup');
     } else if(hash === '#signup'){
-      // the generic sign-up page was removed: students/parents sign up on their own page
-      window.location.replace('modivs-student-registration.html');
+      // one Sign up entry point: pick student/parent or tutor there
+      window.location.replace('modivs-signup.html');
     } else {
       show('login');
       setLoginMode('student');
@@ -533,5 +654,8 @@ input.bad{border-color:var(--err)}
 .mv-foot a[aria-current=page]{color:#EBB92E}
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<script src="modivs-menu.js" defer></script>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
 </body>
 </html>

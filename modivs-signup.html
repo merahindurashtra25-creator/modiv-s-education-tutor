@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Sign up · Modiv’s Education</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+:root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--gold:#FABD4E;
+box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--mist);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px}
+.card{width:100%;max-width:620px;background:var(--white);border-radius:18px;padding:36px 32px;box-shadow:0 10px 40px rgba(20,33,61,.08)}
+.brand{display:flex;justify-content:center}.brand img{height:84px;width:auto;display:block;margin-bottom:22px}
+h1{font-size:1.9rem;line-height:1.15;margin:0 0 6px;letter-spacing:-.02em;font-weight:800}
+.sub{color:var(--muted);margin:0 0 24px}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.role{display:flex;flex-direction:column;gap:6px;padding:20px 18px;border:1.5px solid var(--line);border-radius:14px;text-decoration:none;color:inherit;background:var(--white);transition:border-color .15s,box-shadow .15s}
+.role:hover,.role:focus-visible{border-color:var(--accent);box-shadow:0 4px 18px rgba(14,124,102,.15);outline:none}
+.role .ic{color:var(--accent-d);line-height:0}
+.role b{font-size:1.05rem}
+.role span{color:var(--muted);font-size:.9rem}
+.role em{margin-top:8px;font-style:normal;font-weight:700;color:var(--accent-d);font-size:.92rem}
+.switch{margin-top:24px;color:var(--muted);font-size:.92rem}
+.switch a{color:var(--accent-d);font-weight:600}
+body{background:linear-gradient(135deg,#f7faf9 0%,#eaf3f1 55%,#fdf6e7 100%);overflow-x:hidden}
+.wrap{position:relative}.wrap::before,.wrap::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+.wrap::before{width:340px;height:340px;top:-100px;left:-90px;background:radial-gradient(circle,rgba(47,181,154,.28),transparent 70%)}
+.wrap::after{width:380px;height:380px;bottom:-140px;right:-100px;background:radial-gradient(circle,rgba(250,189,78,.32),transparent 70%)}
+.card{position:relative;z-index:1;border:1px solid var(--line);border-radius:22px}
+.role{transition:border-color .2s,box-shadow .2s,transform .2s}.role:hover{transform:translateY(-4px)}.role .ic{display:inline-block;transition:transform .3s}.role:hover .ic{transform:scale(1.2) rotate(-6deg)}
+.role em{transition:letter-spacing .2s}.role:hover em{letter-spacing:.03em}
+@media(prefers-reduced-motion:no-preference){
+ .card{animation:boxIn .9s cubic-bezier(.22,1,.36,1) both}
+ .brand img{animation:logoPop .9s .2s cubic-bezier(.34,1.56,.64,1) both,logoFloat 4.5s 1.2s ease-in-out infinite}
+ h1,.sub,.switch{animation:rise .7s .3s cubic-bezier(.22,1,.36,1) both}.sub{animation-delay:.38s}
+ .role{animation:rise .7s cubic-bezier(.22,1,.36,1) both}#roleStudent{animation-delay:.48s}#roleTutor{animation-delay:.58s}.switch{animation-delay:.68s}
+ .wrap::before{animation:drift 11s ease-in-out infinite alternate}.wrap::after{animation:drift 13s ease-in-out -4s infinite alternate-reverse}
+}
+@keyframes boxIn{from{opacity:0;transform:translateY(28px) scale(.96)}to{opacity:1;transform:none}}
+@keyframes logoPop{from{opacity:0;transform:scale(.4) rotate(-8deg)}to{opacity:1;transform:none}}
+@keyframes logoFloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-5px)}}
+@keyframes rise{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:none}}
+@keyframes drift{from{transform:translate(0,0) scale(1)}to{transform:translate(40px,30px) scale(1.15)}}
+@media(max-width:560px){.roles{grid-template-columns:1fr}.card{padding:28px 20px}}
+</style>
+<link rel="stylesheet" href="modivs-menu.css">
+</head>
+<body>
+<div class="wrap">
+ <main class="card">
+  <a class="brand" href="modivs-home.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <h1>Create your account</h1>
+  <p class="sub">Tell us how you’ll use Modiv’s Education and we’ll take you to the right sign-up.</p>
+  <div class="roles">
+   <a class="role" id="roleStudent" href="modivs-student-registration.html">
+    <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.2V16c0 1.3 2.7 3 6 3s6-1.700 6-3v-4.800"/><path d="M22 9v6"/></svg></span><b>I’m a student or parent</b>
+    <span>Find a tutor, post a requirement and book demo classes.</span><em>Continue →</em>
+   </a>
+   <a class="role" id="roleTutor" href="modivs-education.html#tutor-signup">
+    <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24" width="34" height="34" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2.500" y="3" width="19" height="11" rx="1.500"/><path d="M7 8h6M7 11h9"/><circle cx="6" cy="19" r="2"/><path d="M3 22v-.5A3 3 0 0 1 6 18.500h0a3 3 0 0 1 3 3V22"/></svg></span><b>I’m a tutor</b>
+    <span>Build a profile and reach students near you or online.</span><em>Continue →</em>
+   </a>
+  </div>
+  <p class="switch">Already have an account? <a href="modivs-education.html#login">Log in</a> · <a href="modivs-guide.html">How it works</a></p>
+ </main>
+</div>
+<script>
+(function(){
+ // Already signed in? Skip the chooser and go straight to the right dashboard.
+ try{
+  var u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null');
+  if(u&&u.role==='Tutor')location.replace('modivs-tutor-dashboard.html');
+  else if(u&&u.role==='Student / Parent')location.replace('modivs-student-dashboard.html');
+ }catch(e){}
+})();
+</script>
+<script src="modivs-menu.js" defer></script>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+</body>
+</html>

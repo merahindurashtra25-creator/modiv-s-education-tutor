@@ -18,7 +18,7 @@ a{color:inherit}
 .wrap{max-width:1220px;margin:0 auto;padding:0 24px}
 header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line)}
 .bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
-.brand img{height:44px;width:auto;display:block;mix-blend-mode:multiply}
+.brand img{height:64px;width:auto;display:block;mix-blend-mode:multiply}
 nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
 nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;white-space:nowrap}
 nav a:hover,nav a[aria-current]{background:var(--yellow)}
@@ -107,18 +107,27 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js" defer></script>
 <script src="firebase-sync.js" defer></script>
+<link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
-<header>
- <div class="wrap bar">
-  <a class="brand" href="modivs-home.html"><img src="logo.png" alt="Modiv’s Education"></a>
-  <nav aria-label="Main menu"><ul>
-   <li><a href="modivs-home.html">Home</a></li>
-   <li><a href="modivs-tutors.html" aria-current="page">Tutors</a></li>
-   <li><a href="modivs-active-leads.html">Active leads</a></li>
-  </ul></nav>
-  <a class="btn y" id="navJoin" href="modivs-education.html#tutor-signup">Become a tutor</a>
-  <button type="button" class="btn y adm-add" id="addTutorBtn">+ Add tutor profile</button>
+<header class="mv-header">
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-tutors.html">Tutors</a></li>
+    <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
+    <li><a href="modivs-contact.html">Contact us</a></li>
+   </ul>
+  </nav>
+  <div class="acts" id="mvActs">
+   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" id="navJoin" href="modivs-signup.html">Sign up</a>
+   <button type="button" class="btn y adm-add" id="addTutorBtn">+ Add tutor profile</button>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+  </div>
  </div>
 </header>
 
@@ -162,7 +171,7 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
 
  <div class="cta" id="ctaBox">
   <div><h2>Are you a tutor?</h2><p>Create your profile and get found by students and parents looking for your subjects.</p></div>
-  <a class="btn y" id="ctaJoin" href="modivs-education.html#tutor-signup">Create your tutor profile</a>
+  <a class="btn y" id="ctaJoin" href="modivs-signup.html">Sign up</a>
  </div>
 </main>
 
@@ -173,7 +182,7 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
  <form id="addTForm" novalidate>
   <h2 id="addTTitle">Add tutor profile</h2><p class="h">Added by admin. The profile is approved and visible to students straight away. Phone and email stay private.</p>
   <h3>Basics</h3>
-  <div class="ph"><div class="pv" id="tPv">?</div><div><input type="file" id="tPhoto" accept="image/jpeg,image/png,image/webp" hidden><button type="button" class="btn o" id="tPhotoBtn" style="padding:7px 14px">Upload photo</button><div class="h" style="margin:4px 0 0">Optional. Clear, front-facing.</div></div></div>
+  <div class="ph"><div class="pv" id="tPv">?</div><div><input type="file" id="tPhoto" accept="image/jpeg,image/png,image/webp" hidden><button type="button" class="btn o" id="tPhotoBtn" style="padding:7px 14px">Upload photo</button><div class="h" style="margin:4px 0 0">Optional. Clear, front-facing. JPG, PNG or WebP, up to 500 KB.</div></div></div>
   <div class="two"><div><label class="l" for="tName">Full name *</label><input type="text" id="tName" maxlength="60"></div><div><label class="l" for="tCity">City *</label><input type="text" id="tCity" maxlength="40" list="tCityOpts"><datalist id="tCityOpts"></datalist></div></div>
   <div class="two"><div><label class="l" for="tArea">Area / locality *</label><input type="text" id="tArea" maxlength="40" placeholder="e.g. Model Town" list="tAreaOpts"><datalist id="tAreaOpts"></datalist></div><div><label class="l" for="tTravel">Other areas they can travel to</label><input type="text" id="tTravel" maxlength="120" placeholder="e.g. Sarabha Nagar, BRS Nagar"></div></div>
   <div class="two"><div><label class="l" for="tPhone">Mobile number *</label><input type="tel" id="tPhone" placeholder="10-digit number"></div><div><label class="l" for="tEmail">Email <small>(optional)</small></label><input type="email" id="tEmail"></div></div>
@@ -386,7 +395,7 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
  $('tPhotoBtn').addEventListener('click',function(){$('tPhoto').click()});
  $('tPhoto').addEventListener('change',function(){
   var f=this.files&&this.files[0];if(!f)return;
-  if(f.size>5*1024*1024){$('tErr').textContent='Photo must be under 5 MB.';return}
+  if(f.size>500*1024){$('tErr').textContent='Photo must be 500 KB or smaller.';return}
   var r=new FileReader();r.onload=function(){var im=new Image();im.onload=function(){
    var m=Math.min(1,400/Math.max(im.width,im.height)),c=document.createElement('canvas');c.width=Math.round(im.width*m);c.height=Math.round(im.height*m);
    c.getContext('2d').drawImage(im,0,0,c.width,c.height);photo=c.toDataURL('image/jpeg',.82);pv()};im.src=r.result};r.readAsDataURL(f);
@@ -428,5 +437,8 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
 })();
 })();
 </script>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<script src="modivs-menu.js" defer></script>
 </body>
 </html>

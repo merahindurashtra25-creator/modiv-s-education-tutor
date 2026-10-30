@@ -1,0 +1,44 @@
+/* Modiv's Education - shared menu bar + base font. Matches the home page.
+   Linked from every page; edit here and all pages update together. */
+html body{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+html button,html input,html select,html textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
+header.mv-header{--mv-navy:#1A2035;--mv-yellow:#EBB92E;--mv-cream:#FEF7EA;--mv-line:#eadfc9;position:sticky;top:0;z-index:100;margin:0;padding:0;background:var(--mv-cream);border-bottom:1px solid var(--mv-line);box-shadow:0 1px 4px rgba(26,32,53,.03);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55;color:var(--mv-navy);box-sizing:border-box}
+header.mv-header *,header.mv-header *::before,header.mv-header *::after{box-sizing:border-box}
+header.mv-header .mv-wrap{max-width:1220px;margin:0 auto;padding:0 24px}
+header.mv-header .mv-bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
+header.mv-header .mv-brand{display:inline-flex;align-items:center;text-decoration:none;color:var(--mv-navy)}
+header.mv-header .mv-brand img{height:64px;width:auto;display:block;mix-blend-mode:multiply}
+header.mv-header nav{display:flex;align-items:center;position:static;padding:0;margin:0;background:none;border:0;box-shadow:none}
+header.mv-header nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
+header.mv-header nav li{margin:0;padding:0}
+header.mv-header nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;color:var(--mv-navy);white-space:nowrap;transition:background .2s}
+header.mv-header nav a:hover,header.mv-header nav a[aria-current=page]{background:var(--mv-yellow)}
+header.mv-header .acts{display:flex;flex-direction:row;flex-wrap:nowrap;gap:8px;align-items:center;justify-content:flex-end;flex-shrink:0}
+header.mv-header .btn{padding:8px 15px;font-size:.88rem;border-radius:8px;font-weight:600;line-height:1.55;text-decoration:none;white-space:nowrap;border:2px solid var(--mv-navy);background:var(--mv-navy);color:var(--mv-cream);cursor:pointer;transition:all .15s ease;font-family:inherit}
+header.mv-header .btn:hover{background:#2a3350}
+header.mv-header .btn.y{background:var(--mv-yellow);color:var(--mv-navy);border-color:var(--mv-yellow)}
+header.mv-header .btn.y:hover{background:#D9A41C}
+header.mv-header .btn.o{background:transparent;color:var(--mv-navy)}
+header.mv-header .btn.o:hover{background:var(--mv-navy);color:var(--mv-cream)}
+header.mv-header .burger{display:none;background:var(--mv-navy);color:var(--mv-cream);border:0;border-radius:8px;padding:8px 12px;font:inherit;font-weight:600;cursor:pointer}
+header.mv-header :is(a,button):focus-visible{outline:3px solid var(--mv-yellow);outline-offset:3px}
+header.mv-header .adm-pill{background:var(--mv-navy);color:var(--mv-cream);border-radius:99px;padding:6px 14px;font-size:.82rem;font-weight:600;white-space:nowrap}
+header.mv-header .adm-pill b{color:var(--mv-yellow)}
+
+@media(max-width:1180px){header.mv-header .adm-pill .em{display:none}}
+@media(max-width:1024px){
+ header.mv-header .burger{display:block}
+ header.mv-header nav{position:absolute;left:0;right:0;top:72px;background:var(--mv-cream);border-bottom:1px solid var(--mv-line);box-shadow:0 12px 24px rgba(26,32,53,.08);display:none;padding:16px 24px 20px}
+ header.mv-header nav.open{display:block}
+ header.mv-header nav ul{flex-direction:column;gap:8px}
+}
+@media(max-width:768px){
+ header.mv-header .acts .o{display:none}
+ header.mv-header .acts .btn{padding:7px 12px;font-size:.82rem}
+}
+@media(max-width:480px){
+ header.mv-header .mv-brand img{height:50px}
+ header.mv-header .acts{gap:6px}
+ header.mv-header .acts .btn{padding:6px 10px;font-size:.78rem}
+}

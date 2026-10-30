@@ -24,7 +24,7 @@ a{color:inherit}
 /* header (same as the rest of the site) */
 header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line)}
 .bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
-.brand img{height:44px;width:auto;display:block;mix-blend-mode:multiply}
+.brand img{height:64px;width:auto;display:block;mix-blend-mode:multiply}
 nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
 nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;white-space:nowrap}
 nav a:hover,nav a[aria-current]{background:var(--yellow)}
@@ -110,19 +110,27 @@ footer .copy{margin-top:24px;padding-top:18px;border-top:1px solid #34406a;color
 }
 @media print{header,.toc,.toc-m,footer{display:none}.layout{display:block}body{background:#fff}}
 </style>
+<link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
 
-<header>
- <div class="wrap bar">
-  <a class="brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
-  <nav aria-label="Main menu"><ul>
-   <li><a href="index.html">Home</a></li>
-   <li><a href="modivs-tutors.html">Tutors</a></li>
-   <li><a href="modivs-active-leads.html">Active leads</a></li>
-   <li><a href="modivs-contact.html">Contact us</a></li>
-  </ul></nav>
-  <a class="btn y" id="navJoin" href="modivs-education.html#tutor-signup">Become a tutor</a>
+<header class="mv-header">
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-tutors.html">Tutors</a></li>
+    <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
+    <li><a href="modivs-contact.html">Contact us</a></li>
+   </ul>
+  </nav>
+  <div class="acts" id="mvActs">
+   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+  </div>
  </div>
 </header>
 
@@ -227,7 +235,7 @@ footer .copy{margin-top:24px;padding-top:18px;border-top:1px solid #34406a;color
 <footer>
  <div class="wrap">
   <div class="row">
-   <a class="brand" href="index.html" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;"><img src="logo.png" alt="Modiv’s Education" style="height:36px;display:block;mix-blend-mode:normal;"></a>
+   <a class="brand" href="index.html" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;"><img src="logo.png" alt="Modiv’s Education" style="height:54px;display:block;mix-blend-mode:normal;"></a>
    <ul>
     <li><a href="index.html">Home</a></li>
     <li><a href="modivs-tutors.html">Tutors</a></li>
@@ -255,5 +263,8 @@ footer .copy{margin-top:24px;padding-top:18px;border-top:1px solid #34406a;color
  Object.keys(map).forEach(function(id){var s=document.getElementById(id);if(s)io.observe(s)});
 })();
 </script>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<script src="modivs-menu.js" defer></script>
 </body>
 </html>

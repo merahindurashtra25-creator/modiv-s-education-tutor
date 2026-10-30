@@ -17,7 +17,7 @@ a{color:inherit}
 .wrap{max-width:1220px;margin:0 auto;padding:0 24px}
 header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line)}
 .bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
-.brand img{height:44px;width:auto;display:block;mix-blend-mode:multiply}
+.brand img{height:64px;width:auto;display:block;mix-blend-mode:multiply}
 nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
 nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;white-space:nowrap}
 nav a:hover,nav a[aria-current]{background:var(--yellow)}
@@ -77,16 +77,28 @@ dialog#addDlg::backdrop{background:rgba(26,32,53,.55)}
 <script src="firebase-sync.js" defer></script>
 <script src="modivs-places.js"></script>
 <script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
-<header>
- <div class="wrap bar">
-  <a class="brand" href="modivs-home.html"><img src="logo.png" alt="Modiv’s Education"></a>
-  <nav aria-label="Main menu"><ul>
-   <li><a href="modivs-home.html">Home</a></li>
-   <li><a href="modivs-active-leads.html" aria-current="page">Active leads</a></li>
-  </ul></nav>
-  <a class="btn" id="postBtn" href="modivs-student-registration.html">Post a requirement</a>
+<header class="mv-header">
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-tutors.html">Tutors</a></li>
+    <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
+    <li><a href="modivs-contact.html">Contact us</a></li>
+   </ul>
+  </nav>
+  <div class="acts" id="mvActs">
+   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
+   <a class="btn" id="postBtn" href="modivs-student-registration.html">Post a requirement</a>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+  </div>
  </div>
 </header>
 
@@ -293,5 +305,6 @@ stats();render();
 .mv-foot a[aria-current=page]{color:#EBB92E}
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<script src="modivs-menu.js" defer></script>
 </body>
 </html>

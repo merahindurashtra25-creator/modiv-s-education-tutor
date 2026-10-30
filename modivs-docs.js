@@ -11,9 +11,9 @@
 (function(){
   'use strict';
   var KEY = 'modivs_tutor_docs';
-  var MAX_PDF = 650 * 1024;          // bytes (Firestore documents are capped at 1 MB once base64-encoded)
+  var MAX_PDF = 500 * 1024;          // bytes (upload limit for PDFs)
   var MAX_IMG_OUT = 380 * 1024;      // bytes after compression
-  var MAX_RAW = 25 * 1024 * 1024;
+  var MAX_RAW = 500 * 1024;          // bytes: hard upload limit for every file (images and PDFs)
 
   function rd(){ try{ var v = JSON.parse(localStorage.getItem(KEY) || '{}'); return v && typeof v === 'object' ? v : {}; }catch(e){ return {}; } }
   function ek(email){ return String(email || '').toLowerCase().replace(/[^a-z0-9_-]/g, '_'); }
@@ -53,12 +53,12 @@
 
   function prepare(file){
     if(!file) return Promise.reject(fail('No file selected.'));
-    if(file.size > MAX_RAW) return Promise.reject(fail('That file is too large. Please choose a smaller one.'));
+    if(file.size > MAX_RAW) return Promise.reject(fail('File is too large. Uploads must be 500 KB or smaller.'));
     var isPdf = file.type === 'application/pdf' || /\.pdf$/i.test(file.name);
     var isImg = /^image\/(jpeg|png|webp)$/.test(file.type) || /\.(jpe?g|png|webp)$/i.test(file.name);
     if(!isPdf && !isImg) return Promise.reject(fail('Upload a JPG, PNG or PDF file.'));
     if(isPdf){
-      if(file.size > MAX_PDF) return Promise.reject(fail('This PDF is over 650 KB. Upload a photo (JPG/PNG) of the document, or a smaller PDF.'));
+      if(file.size > MAX_PDF) return Promise.reject(fail('This PDF is over 500 KB. Upload a smaller PDF, or a JPG/PNG photo of the document.'));
       return readAsDataUrl(file).then(function(d){
         if(d.indexOf('data:application/pdf') !== 0) d = 'data:application/pdf;base64,' + d.split(',')[1];
         return { name: file.name, type: 'application/pdf', size: file.size, dataUrl: d };

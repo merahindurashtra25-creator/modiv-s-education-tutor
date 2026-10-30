@@ -27,7 +27,7 @@ h1{font-size:1.8rem;margin:0 0 4px;letter-spacing:-.02em;font-weight:800}
 .sec>.hint{display:block;margin-bottom:6px}
 label,.lab{display:block;font-weight:600;font-size:.9rem;margin:16px 0 6px}
 .req{color:var(--err);font-weight:700;margin-left:2px}
-.phone-row{display:flex;gap:8px}.phone-row select{width:auto;flex:0 0 132px;padding-left:8px;padding-right:4px}.phone-row input{flex:1;min-width:0}
+.phone-row{display:flex;gap:8px}.phone-row .cc-box{flex:0 0 150px}.phone-row input{flex:1;min-width:0}
 .hint{font-weight:400;color:var(--muted);font-size:.82rem}
 input[type=text],input[type=email],input[type=tel],input[type=number],input[type=date],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:8px;background:var(--white)}
 textarea{min-height:110px;resize:vertical}
@@ -69,14 +69,32 @@ input:disabled{background:var(--mist);color:var(--muted)}
 .empty{text-align:center;padding:60px 0}
 @media(max-width:700px){.two{grid-template-columns:1fr}.top{padding:8px 14px}}
 </style>
+<script src="modivs-country.js"></script>
 <script src="modivs-places.js"></script>
 <script src="modivs-docs.js"></script>
+<link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
-<header class="top"><div class="in">
- <a href="modivs-home.html"><img src="logo.png" alt="Modiv’s Education"></a>
- <a class="back" href="modivs-tutor-dashboard.html">&larr; Back to dashboard</a>
-</div></header>
+<header class="mv-header">
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-tutors.html">Tutors</a></li>
+    <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
+    <li><a href="modivs-contact.html">Contact us</a></li>
+   </ul>
+  </nav>
+  <div class="acts" id="mvActs">
+   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+  </div>
+ </div>
+</header>
+<div class="top" style="top:72px"><div class="in"><a class="back" href="modivs-tutor-dashboard.html">&larr; Back to dashboard</a></div></div>
 
 <div class="wrap" id="app"></div>
 
@@ -97,19 +115,19 @@ var FORMATS=['1-on-1 Individual tuition','Group tuition (Small batches)'];
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],SLOTS=['Morning','Afternoon','Evening'];
 var STAR=' <span class="req" aria-hidden="true">*</span>';
 var PH=/^[+0-9\s-]{10,15}$/;
-var COUNTRIES=[['India','+91'],['United States / Canada','+1'],['United Kingdom','+44'],['United Arab Emirates','+971'],['Saudi Arabia','+966'],['Qatar','+974'],['Kuwait','+965'],['Oman','+968'],['Bahrain','+973'],['Singapore','+65'],['Malaysia','+60'],['Australia','+61'],['New Zealand','+64'],['Nepal','+977'],['Bhutan','+975'],['Bangladesh','+880'],['Sri Lanka','+94'],['Pakistan','+92'],['Afghanistan','+93'],['Germany','+49'],['France','+33'],['Italy','+39'],['Spain','+34'],['Netherlands','+31'],['Ireland','+353'],['Switzerland','+41'],['Sweden','+46'],['Russia','+7'],['China','+86'],['Japan','+81'],['South Korea','+82'],['Hong Kong','+852'],['Thailand','+66'],['Indonesia','+62'],['Philippines','+63'],['South Africa','+27'],['Nigeria','+234'],['Kenya','+254'],['Egypt','+20'],['Turkey','+90'],['Brazil','+55'],['Mexico','+52']];
+var COUNTRIES=ModivsCountry.list;
 function splitPhone(p){p=String(p||'').trim();var raw=p.replace(/[\s-]/g,'');
  if(raw.charAt(0)==='+'){var best='';COUNTRIES.forEach(function(c){if(raw.indexOf(c[1])===0&&c[1].length>best.length)best=c[1]});
   if(best)return {cc:best,num:raw.slice(best.length).replace(/\D/g,'')}}
  return {cc:'+91',num:raw.replace(/\D/g,'')}}
 function phoneField(id,label,val,hint,dis){var s=splitPhone(val),d=dis?' disabled':'';
- return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><div class="phone-row"><select id="'+id+'_cc" aria-label="Country code"'+d+'>'+COUNTRIES.map(function(c){return '<option value="'+c[1]+'"'+(c[1]===s.cc?' selected':'')+'>'+c[1]+' '+esc(c[0])+'</option>'}).join('')+'</select><input id="'+id+'" type="tel" inputmode="numeric" autocomplete="tel-national" value="'+esc(s.num)+'" placeholder="Phone number"'+d+'></div>'}
+ return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><div class="phone-row">'+ModivsCountry.html(id,s.cc,dis)+'<input id="'+id+'" type="tel" inputmode="numeric" autocomplete="tel-national" value="'+esc(s.num)+'" placeholder="Phone number"'+d+'></div>'}
 function getPhone(id){var e=document.getElementById(id),c=document.getElementById(id+'_cc'),n=e?e.value.replace(/\D/g,''):'';return n?(c?c.value:'+91')+' '+n:''}
 function validPhone(p){var m=/^(\+\d{1,4}) (\d+)$/.exec(p||'');if(!m)return false;if(m[1]==='+91')return /^[6-9]\d{9}$/.test(m[2]);return m[2].length>=6&&m[2].length<=14}
 function phoneMsg(p,what){var m=/^(\+\d{1,4})/.exec(p||'');return (m&&m[1]==='+91')?'Enter a valid 10-digit '+what+' (Indian numbers start with 6, 7, 8 or 9).':'Enter a valid '+what+' for the selected country (6–14 digits).'}
 function samePhone(a,b){return String(a).replace(/\D/g,'')===String(b).replace(/\D/g,'')}
 function syncWa(){var c=document.getElementById('waSame'),w=document.getElementById('whatsapp'),wc=document.getElementById('whatsapp_cc'),p=document.getElementById('phone'),pc=document.getElementById('phone_cc');
- if(!c||!w||!wc||!p||!pc)return;if(c.checked){w.value=p.value.replace(/\D/g,'');wc.value=pc.value}w.disabled=wc.disabled=c.checked}
+ if(!c||!w||!wc||!p||!pc)return;if(c.checked){w.value=p.value.replace(/\D/g,'');wc.value=pc.value;ModivsCountry.set('whatsapp',pc.value)}w.disabled=wc.disabled=c.checked;ModivsCountry.setDisabled('whatsapp',c.checked)}
 
 var app=document.getElementById('app'),toastT,D=null,ORIG=null;
 
@@ -161,7 +179,7 @@ function render(){
   app.innerHTML='<h1>Edit your profile</h1><p class="sub">Update your details below. Fields marked <span class="req">*</span> are required. Changes appear on your tutor profile as soon as you save.</p>'+st+
 
   '<section class="sec"><h2>Photo &amp; basics</h2>'+
-  '<div class="lab">Profile photo'+STAR+'</div><div class="dp-row"><div class="dp" id="dpBox">'+dpInner()+'</div><div class="dp-side"><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="hide"><div class="dp-btns"><button type="button" class="btn ghost sm" data-act="pickPhoto">'+(D.photo?'Change photo':'Upload photo')+'</button>'+(D.photo?'<button type="button" class="btn ghost sm" data-act="removePhoto">Remove</button>':'')+'</div><span class="hint">Clear, front-facing photo. JPG, PNG or WebP, up to 5 MB.</span><div class="dp-warn" role="status">'+(D.photo&&D.photoBlur?'This photo looks a little blurry. A sharper photo is approved faster.':'')+'</div></div></div>'+
+  '<div class="lab">Profile photo'+STAR+'</div><div class="dp-row"><div class="dp" id="dpBox">'+dpInner()+'</div><div class="dp-side"><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="hide"><div class="dp-btns"><button type="button" class="btn ghost sm" data-act="pickPhoto">'+(D.photo?'Change photo':'Upload photo')+'</button>'+(D.photo?'<button type="button" class="btn ghost sm" data-act="removePhoto">Remove</button>':'')+'</div><span class="hint">Clear, front-facing photo. JPG, PNG or WebP, up to 500 KB.</span><div class="dp-warn" role="status">'+(D.photo&&D.photoBlur?'This photo looks a little blurry. A sharper photo is approved faster.':'')+'</div></div></div>'+
   field('name','Full name'+STAR,D.name)+
   '<label for="email">Email <span class="hint">login email, cannot be changed here</span></label><input id="email" type="email" value="'+esc(D.email)+'" disabled>'+
   phoneField('whatsapp','WhatsApp number'+STAR,D.waSame?D.phone:D.whatsapp,'',D.waSame)+'<label class="check"><input type="checkbox" id="waSame"'+(D.waSame?' checked':'')+'><span>Same as my mobile number</span></label>'+
@@ -189,8 +207,8 @@ function render(){
 
   '<section class="sec"><h2>Verification documents</h2><span class="hint">Replacing a document or changing your name or photo sends your profile for admin re-verification.</span>'+
   sel('idType','Government ID type'+STAR,D.idType,['Aadhaar','PAN','Passport','Voter ID','Driving licence'])+
-  '<label for="idFile">ID document'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (photos are compressed automatically; PDFs up to 650 KB)</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="idCur">'+(D.idName?'Current: '+esc(D.idName):'')+'</small></div>'+
-  '<label for="certFile">Highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (photos are compressed automatically; PDFs up to 650 KB)</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="certCur">'+(D.certName?'Current: '+esc(D.certName):'')+'</small></div></section>';
+  '<label for="idFile">ID document'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (each file up to 500 KB)</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="idCur">'+(D.idName?'Current: '+esc(D.idName):'')+'</small></div>'+
+  '<label for="certFile">Highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (each file up to 500 KB)</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="certCur">'+(D.certName?'Current: '+esc(D.certName):'')+'</small></div></section>';
   document.getElementById('savebar').classList.remove('hide');
 }
 
@@ -346,7 +364,7 @@ function sharpness(cv,S){var T=200,c=document.createElement('canvas');c.width=c.
 function handlePhoto(file){
  if(!file)return;
  if(!/^image\/(jpeg|png|webp)$/.test(file.type)){toast('Please choose a JPG, PNG or WebP image.');return}
- if(file.size>5242880){toast('Photo must be 5 MB or smaller.');return}
+ if(file.size>512000){toast('Photo must be 500 KB or smaller.');return}
  var fr=new FileReader();
  fr.onerror=function(){toast('Could not read that file. Try another photo.')};
  fr.onload=function(){var img=new Image();
@@ -393,5 +411,8 @@ if(!D){
 .mv-foot a[aria-current=page]{color:#EBB92E}
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<script src="modivs-menu.js" defer></script>
 </body>
 </html>

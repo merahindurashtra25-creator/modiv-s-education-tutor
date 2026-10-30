@@ -44,6 +44,22 @@ h1{font-size:1.8rem;letter-spacing:-.02em;margin:0 0 2px;font-weight:800}
 .stat.btn-stat:hover{border-color:var(--navy);transform:translateY(-2px)}
 .stat.btn-stat[aria-pressed=true]{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy)}
 .stat.hi{background:var(--yellow);border-color:var(--yellow)}.stat.hi span{color:var(--navy)}
+.recent{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px}
+.recent .rhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px}
+.recent .rhead h2{margin:0;font-size:1.05rem}
+.recent .rhead a,.recent .rhead button{font-size:.82rem;font-weight:700;color:var(--navy);background:none;border:1.5px solid var(--line);border-radius:8px;padding:5px 10px;cursor:pointer;text-decoration:none}
+.recent .rhead a:hover,.recent .rhead button:hover{border-color:var(--navy)}
+.rrow{display:flex;align-items:center;gap:12px;width:100%;text-align:left;background:none;border:0;border-top:1px solid var(--line);padding:10px 4px;cursor:pointer;border-radius:8px;transition:background .15s}
+.rrow:first-of-type{border-top:0}
+.rrow:hover{background:var(--cream)}
+.rav{flex:none;width:38px;height:38px;border-radius:50%;background:var(--navy);color:var(--cream);font-weight:800;font-size:.85rem;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.rav img{width:100%;height:100%;object-fit:cover}
+.rtx{flex:1;min-width:0}.rtx b{display:block;font-size:.95rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rtx small{display:block;color:var(--muted);font-size:.8rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rwhen{flex:none;text-align:right;font-size:.78rem;color:var(--muted);display:flex;flex-direction:column;gap:3px;align-items:flex-end}
+@media(prefers-reduced-motion:no-preference){.recent .box{animation:rcIn .6s cubic-bezier(.22,1,.36,1) both}.recent .box:nth-child(2){animation-delay:.1s}}
+@keyframes rcIn{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:none}}
+@media(max-width:820px){.recent{grid-template-columns:1fr}}
 .main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:start}
 .box{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px}
 .tools{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:14px}
@@ -117,21 +133,27 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 <script src="firebase-config.js"></script>
 <script src="firebase-sync.js"></script>
 <script src="firebase-chat.js"></script>
+<link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
-<header class="top">
-  <a href="index.html" class="brand">Modiv’s<span>Admin</span></a>
-  <div class="admin-nav">
-    <a href="index.html">Home</a>
-    <a href="modivs-active-leads.html">Active Leads</a>
-    <a href="#students" id="navStudents">Student Portal</a>
-    <a href="#tutors" id="navTutors">Tutor Portal</a>
+<header class="mv-header" data-custom>
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-active-leads.html">Active Leads</a></li>
+    <li><a href="#students" id="navStudents">Student Portal</a></li>
+    <li><a href="#tutors" id="navTutors">Tutor Portal</a></li>
+   </ul>
+  </nav>
+  <div class="acts" id="mvActs">
+   <span class="adm-pill" id="adminSessionInfo">Logged in as <b>Admin</b></span>
+   <button type="button" class="btn" id="syncFb" style="background:#0e7c66;border-color:#0e7c66;color:#fff">Sync to Firebase</button>
+   <button type="button" class="btn o" id="out">Log out</button>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
   </div>
-  <div class="r">
-    <span id="adminSessionInfo">Logged in as <b>admin@gmail.com</b></span>
-    <button type="button" id="syncFb" style="background:#0e7c66;color:#fff;border:0;border-radius:8px;padding:7px 12px;font-weight:600;cursor:pointer;">Sync to Firebase</button>
-    <button type="button" id="out">Log out</button>
-  </div>
+ </div>
 </header>
 
 <div class="wrap">
@@ -139,6 +161,8 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
   <p class="sub">Review all registered tutor profiles, approve pending applications, and view registered students.</p>
 
   <div class="stats" id="stats"></div>
+
+  <div class="recent" id="recent" aria-label="Latest activity"></div>
 
   <div class="main">
     <section class="box" aria-label="Applications Queue">
@@ -1227,8 +1251,84 @@ function decide(x, s, verb, note, reasons){
   render();
 }
 
+// ---- Dashboard boxes: latest tutors joined + latest leads ----
+function whenOf(x){ return x.submitted_at || x.registered_at || x.created_at || ''; }
+function timeAgo(iso){
+  var d = new Date(iso); if(!iso || isNaN(d)) return '—';
+  var m = Math.floor((Date.now() - d.getTime()) / 60000);
+  if(m < 1) return 'Just now';
+  if(m < 60) return m + ' min ago';
+  var h = Math.floor(m / 60); if(h < 24) return h + ' hr ago';
+  var dd = Math.floor(h / 24); if(dd < 7) return dd + (dd === 1 ? ' day ago' : ' days ago');
+  return d.toLocaleDateString();
+}
+function initials2(n){ return String(n || '?').trim().split(/\s+/).map(function(w){ return w.charAt(0); }).slice(0, 2).join('').toUpperCase() || '?'; }
+function readLs(k){ try { var v = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v : []; } catch(e){ return []; } }
+function recentRow(avatar, name, line, when, status, onClick){
+  var b = el('button', 'rrow'); b.type = 'button';
+  var av = el('span', 'rav');
+  if(avatar){ var im = document.createElement('img'); im.src = avatar; im.alt = ''; av.appendChild(im); } else av.textContent = initials2(name);
+  var tx = el('span', 'rtx'); tx.appendChild(el('b', '', name || 'Unnamed')); tx.appendChild(el('small', '', line));
+  var w = el('span', 'rwhen'); w.appendChild(el('span', '', when));
+  if(status){ w.appendChild(el('span', 'badge ' + status, status.charAt(0).toUpperCase() + status.slice(1))); }
+  b.appendChild(av); b.appendChild(tx); b.appendChild(w);
+  b.addEventListener('click', onClick);
+  return b;
+}
+function recent(){
+  var box = $('recent'); if(!box) return;
+  box.innerHTML = '';
+
+  // Latest tutors joined
+  var real = tutors.filter(function(t){ return !t.is_demo; });
+  var tsrc = (real.length ? real : tutors).slice().sort(function(a, b){ return new Date(whenOf(b) || 0) - new Date(whenOf(a) || 0); }).slice(0, 5);
+  var tb = el('section', 'box'); tb.setAttribute('aria-label', 'Latest tutors joined');
+  var th = el('div', 'rhead'); th.appendChild(el('h2', '', 'Latest tutors joined'));
+  var tAll = el('button', '', 'View all'); tAll.type = 'button';
+  tAll.addEventListener('click', function(){ currentSection = 'all'; selId = null; currentPage = 1; render(); });
+  th.appendChild(tAll); tb.appendChild(th);
+  if(!tsrc.length) tb.appendChild(el('p', 'empty', 'No tutors have joined yet.'));
+  tsrc.forEach(function(t){
+    var subs = (t.subs || []).slice(0, 2).join(', ');
+    var line = [t.city, subs].filter(Boolean).join(' · ') || t.email || '';
+    tb.appendChild(recentRow(t.photo, t.name, line, timeAgo(whenOf(t)), t.status, function(){
+      currentSection = 'all'; selId = t.id; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = '';
+      render();
+      var d = document.querySelector('.detail'); if(d && d.scrollIntoView) d.scrollIntoView({behavior: 'smooth', block: 'start'});
+    }));
+  });
+  box.appendChild(tb);
+
+  // Latest leads (student / parent requirements)
+  var seen = {}, leadList = [];
+  readLs('modivs_active_leads').concat(readLs('modivs_students_db')).concat(students).forEach(function(l){
+    if(!l || !l.name) return;
+    var key = String(l.email || l.id || l.name).toLowerCase();
+    if(seen[key]) return; seen[key] = 1;
+    leadList.push(l);
+  });
+  leadList.sort(function(a, b){ return new Date(whenOf(b) || 0) - new Date(whenOf(a) || 0); });
+  var lb = el('section', 'box'); lb.setAttribute('aria-label', 'Latest leads');
+  var lh = el('div', 'rhead'); lh.appendChild(el('h2', '', 'Latest leads'));
+  var lAll = el('a', '', 'View all'); lAll.href = 'modivs-active-leads.html';
+  lh.appendChild(lAll); lb.appendChild(lh);
+  if(!leadList.length) lb.appendChild(el('p', 'empty', 'No leads yet.'));
+  leadList.slice(0, 5).forEach(function(l){
+    var subs = (l.subs || []).slice(0, 2).join(', ');
+    var line = [l.cls, subs, l.city].filter(Boolean).join(' · ') || '—';
+    var av = (l.avatar && window.ModivsAvatars && ModivsAvatars.has(l.avatar)) ? ModivsAvatars.src(l.avatar) : '';
+    lb.appendChild(recentRow(av, l.name, line, timeAgo(whenOf(l)), '', function(){
+      var inStudents = students.some(function(s){ return s.id && s.id === l.id; });
+      if(inStudents){ currentSection = 'students'; selId = l.id; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = ''; render(); }
+      else { window.location.href = 'modivs-active-leads.html'; }
+    }));
+  });
+  box.appendChild(lb);
+}
+
 function render(){
   stats();
+  recent();
   tabs();
   list();
   detail();
@@ -1260,7 +1360,7 @@ $('syncFb').addEventListener('click', function(){
 $('out').addEventListener('click', function(){
   localStorage.removeItem('modivs_admin_session');
   toast('Logged out from Admin portal.');
-  setTimeout(function(){ window.location.href = 'modivs-education.html#login'; }, 500);
+  setTimeout(function(){ window.location.href = 'modivs-home.html'; }, 500);
 });
 
 // Header "Tutor Portal" / "Student Portal" links open the matching admin view in place
@@ -1286,5 +1386,7 @@ render();
 .mv-foot a[aria-current=page]{color:#EBB92E}
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<script src="modivs-menu.js" defer></script>
+<script src="modivs-session-ui.js" defer></script>
 </body>
 </html>
