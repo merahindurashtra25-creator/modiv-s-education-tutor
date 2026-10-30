@@ -1,19 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Tutor registration</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js" defer></script>
 <script src="firebase-sync.js" defer></script>
 <style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
 :root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--tint:#e8f5f1;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--white);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+body{margin:0;background:var(--white);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select,textarea{font:inherit;color:inherit}
 .hide{display:none!important}
 .brand{font-weight:800;font-size:1.2rem;letter-spacing:-.01em;display:inline-flex;align-items:center;text-decoration:none}.brand img{height:44px;width:auto;display:block}.brand span{color:var(--accent)}
@@ -82,6 +85,7 @@ textarea{min-height:110px;resize:vertical}
 .toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;font-size:.9rem}
 @media(max-width:820px){.shell{grid-template-columns:1fr}.side{display:none}.main{padding:24px 16px 60px}.two{grid-template-columns:1fr}}
 </style>
+<script src="modivs-places.js"></script>
 </head>
 <body>
 <div class="shell">
@@ -106,7 +110,7 @@ var LEVELS=['Primary (1–5)','Middle (6–8)','Secondary (9–10)','Senior seco
 var BOARDS=['CBSE','ICSE','PSEB','IB','IGCSE','State board'];
 var LANGS=['English','Hindi','Punjabi','Urdu','Other'];
 var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'],SLOTS=['Morning','Afternoon','Evening'];
-var D={email:'',pass:'',role:'Tutor',name:'',phone:'',altPhone:'',whatsapp:'',waSame:false,photo:'',photoBlur:false,city:'',gender:'',dob:'',headline:'',bio:'',langs:[],
+var D={email:'',pass:'',role:'Tutor',name:'',phone:'',altPhone:'',whatsapp:'',waSame:false,photo:'',photoBlur:false,city:'',area:'',gender:'',dob:'',headline:'',bio:'',langs:[],
  quals:[{degree:'',inst:'',field:'',year:''}],exp:[{title:'',org:'',from:'',to:'',desc:''}],totalYears:'',
  subjects:[],levels:[],boards:[],modes:['Online'],formats:['1-on-1 Individual tuition'],groupFee:'',maxBatch:'6 students',travel:'',fee:'',trial:'',avail:{},notice:'',
  idType:'',idName:'',certName:'',agree:false};
@@ -157,6 +161,12 @@ function digits(x){return String(x||'').replace(/\D/g,'').slice(-10)}
 function initials(n){return String(n||'').split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()||'TR'}
 function dpInner(){return D.photo?'<img src="'+esc(D.photo)+'" alt="Your profile photo">':esc(initials(D.name))}
 function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(toastT);toastT=setTimeout(function(){e.classList.add('hide')},2400)}
+function cityList(){var o={};['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){try{(JSON.parse(localStorage.getItem(k)||'[]')||[]).forEach(function(t){if(t&&t.status==='approved'&&t.city&&!t.is_demo)o[String(t.city).trim()]=1})}catch(e){}});return Object.keys(o).sort()}
+function normCity(c){return String(c||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()})}
+function areaList(city){var o={},c=String(city||'').trim().toLowerCase();['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){try{(JSON.parse(localStorage.getItem(k)||'[]')||[]).forEach(function(t){if(t&&t.status==='approved'&&!t.is_demo&&String(t.city||'').trim().toLowerCase()===c){[t.area].concat(String(t.travel||'').split(/[,;\n\/]+/)).forEach(function(a){a=normCity(a);if(a)o[a]=1})}})}catch(e){}});return Object.keys(o).sort()}
+function areaField(val,city){return '<label for="area">Area / locality'+STAR+' <span class="hint">where you live or mainly teach; pick your city first</span></label>'+ModivsPlaces.fieldHTML({id:'area',kind:'area',val:val,city:city})}
+/* city change refills the area dropdown (handled by modivs-places.js) */
+function cityField(val){return '<label for="city">City'+STAR+' <span class="hint">shown on the site after admin approval</span></label>'+ModivsPlaces.fieldHTML({id:'city',kind:'city',val:val,areaId:'area'})}
 function field(id,label,val,type,hint,ph){return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'}
 function chips(name,list,sel){return '<div class="chips" role="group">'+list.map(function(x,i){return '<label class="chip" style="margin:0;font-weight:400"><input type="checkbox" data-group="'+name+'" value="'+esc(x)+'"'+(sel.indexOf(x)>-1?' checked':'')+'><span>'+esc(x)+'</span></label>'}).join('')+'</div>'}
 function sel(id,label,val,opts){return '<label for="'+id+'">'+label+'</label><select id="'+id+'"><option value="">Select</option>'+opts.map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select>'}
@@ -171,7 +181,7 @@ function(){return '<h1>About you</h1><p class="sub">Students and parents see thi
  field('name','Full name'+STAR,D.name)+
  phoneField('whatsapp','WhatsApp number'+STAR,D.waSame?D.phone:D.whatsapp,'',D.waSame)+'<label class="check" style="margin-top:8px"><input type="checkbox" id="waSame"'+(D.waSame?' checked':'')+'><span>Same as my mobile number</span></label>'+
  '<div class="two"><div>'+phoneField('phone','Mobile number'+STAR,D.phone)+'</div><div>'+phoneField('altPhone','Alternate phone number'+STAR,D.altPhone)+'</div></div>'+
- field('city','City'+STAR,D.city)+
+ cityField(D.city)+areaField(D.area,D.city)+
  '<div class="two"><div>'+sel('gender','Gender'+STAR,D.gender,['Female','Male','Other','Prefer not to say'])+'</div><div>'+field('dob','Date of birth'+STAR,D.dob,'date')+'</div></div>'+
  field('headline','Profile headline'+STAR,D.headline,'text','one line','e.g. Maths tutor for classes 9–12 with 8 years’ experience')+
  '<label for="bio">About you'+STAR+' <span class="hint">at least 80 characters</span></label><textarea id="bio">'+esc(D.bio)+'</textarea>'+
@@ -272,7 +282,8 @@ function save(){ // read inputs into D and validate; returns true if OK
   if(!D.altPhone)return flag('altPhone','Enter your alternate phone number.');
   if(!validPhone(D.altPhone))return flag('altPhone',phoneMsg(D.altPhone,'alternate phone number'));
   if(samePhone(D.altPhone,D.phone))return flag('altPhone','Alternate number must be different from your mobile number.');
-  if(!D.city)return flag('city','Enter your city.');
+  if(!D.city)return flag('city','Select your city.');
+  if(!D.area)return flag('area','Select your area or locality.');
   if(!D.gender)return flag('gender','Select your gender.');
   if(!D.dob)return flag('dob','Enter your date of birth.');
   if(!D.headline)return flag('headline','Add a one-line headline.');
@@ -337,16 +348,13 @@ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: tutorData.name, 
        ? (tutorData.quals[0].degree + ', ' + (tutorData.quals[0].inst || '') + ' (' + (tutorData.quals[0].year || '') + ')') 
        : 'Certificate on file';
 
-     var fbUser = window.EducationBFirebase && window.EducationBFirebase.auth && window.EducationBFirebase.auth.currentUser;
-     var curAuthUser = null; try { curAuthUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
-     var currentUid = (fbUser && fbUser.uid) || (curAuthUser && curAuthUser.uid) || tutorData.uid || '';
-
      var newAdminEntry = {
-       id: (tutorData.id && tutorData.id.indexOf('t_user_') === 0) ? tutorData.id : ('t_user_' + (currentUid || Date.now())),
-       uid: currentUid,
+       id: 't_user_' + Date.now(),
        name: tutorData.name,
        headline: tutorData.headline,
        city: tutorData.city,
+       area: tutorData.area || '',
+       travel: tutorData.travel || '',
        phone: tutorData.phone,
        altPhone: tutorData.altPhone || '',
        whatsapp: tutorData.whatsapp || '',
@@ -396,21 +404,10 @@ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: tutorData.name, 
 
       // Sync to Firebase if connected
       if(window.EducationBFirebase && window.EducationBFirebase.db){
-        var tId = String(newAdminEntry.id).replace(/[/]/g, '_');
-        window.EducationBFirebase.db.collection('tutors').doc(tId).set(
-          Object.assign({}, newAdminEntry, { status: finalStatus, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }),
+        window.EducationBFirebase.db.collection('tutors').doc(String(newAdminEntry.id).replace(/[/]/g, '_')).set(
+          Object.assign({}, newAdminEntry, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }),
           { merge: true }
         ).catch(function(){});
-
-        var uId = (newAdminEntry.uid) || String(newAdminEntry.email).replace(/[^a-z0-9]/gi, '_');
-        window.EducationBFirebase.db.collection('users').doc(uId).set({
-          uid: uId,
-          name: newAdminEntry.name,
-          email: newAdminEntry.email,
-          role: 'Tutor',
-          verificationStatus: finalStatus,
-          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).catch(function(){});
       }
 
       // 4. Log audit entry
@@ -444,7 +441,7 @@ function addCustomSubject(){var c=v('customSubject');if(!c){toast('Type a subjec
 f.addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.id==='customSubject'){e.preventDefault();addCustomSubject()}});
 function readAbout(){var w=document.getElementById('waSame');
  D.name=v('name');D.phone=getPhone('phone');D.altPhone=getPhone('altPhone');D.waSame=!!(w&&w.checked);D.whatsapp=D.waSame?D.phone:getPhone('whatsapp');
- D.city=v('city');D.gender=v('gender');D.dob=v('dob');D.headline=v('headline');D.bio=v('bio');D.langs=group('langs')}
+ D.city=ModivsPlaces.canon('city',v('city'));D.area=ModivsPlaces.canon('area',v('area'),D.city);D.gender=v('gender');D.dob=v('dob');D.headline=v('headline');D.bio=v('bio');D.langs=group('langs')}
 function sharpness(cv,S){ // variance of Laplacian on a 200px greyscale copy; low = blurry
  var T=200,c=document.createElement('canvas');c.width=c.height=T;var x=c.getContext('2d');x.drawImage(cv,0,0,S,S,0,0,T,T);
  var d=x.getImageData(0,0,T,T).data,g=new Float32Array(T*T),i,j;
@@ -485,7 +482,7 @@ render();
 </script>
 <!-- mv-footer -->
 <footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
 .mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
 .mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}

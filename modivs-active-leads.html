@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Active Leads</title>
-<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
 :root{--navy:#1A2035;--yellow:#EBB92E;--cream:#FEF7EA;--muted:#555b78;--line:#eadfc9;--card:#fff;--ok:#1d7a4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--cream);color:var(--navy);font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
 a{color:inherit}
 :is(a,button,input,select):focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
 .wrap{max-width:1220px;margin:0 auto;padding:0 24px}
@@ -40,14 +43,38 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:40px 0 6px;letter-spacing:-.01em}
 .note{font-size:.86rem;color:var(--muted);margin:0}
 .foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted)}
 .empty{grid-column:1/-1;text-align:center;padding:48px 16px;background:var(--card);border:1.5px dashed var(--line);border-radius:14px;color:var(--muted)}
+
+.stat.btn-stat{cursor:pointer;text-align:left;width:100%;font:inherit;color:inherit;transition:transform .15s ease,border-color .15s ease}
+.stat.btn-stat:hover{border-color:var(--navy);transform:translateY(-2px)}
+.stat.btn-stat[aria-pressed=true]{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy);background:#fff6d6}
+.adminbar{display:none;align-items:center;gap:10px;flex-wrap:wrap;background:var(--navy);color:var(--cream);border-radius:12px;padding:12px 16px;margin-bottom:18px}
+.adminbar.on{display:flex}.adminbar b{color:var(--yellow)}.adminbar span{flex:1;min-width:200px;font-size:.9rem}
+.adminbar button{background:var(--yellow);color:var(--navy);border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer}
+.xbtn{background:#fff;color:#b3261e;border:1.5px solid #b3261e;border-radius:8px;padding:5px 12px;font-weight:600;font-size:.8rem;cursor:pointer}
+.xbtn:hover{background:#b3261e;color:#fff}
+dialog#addDlg{border:0;border-radius:16px;padding:0;width:min(640px,94vw);max-height:92vh;color:var(--navy)}
+dialog#addDlg::backdrop{background:rgba(26,32,53,.55)}
+#addForm{padding:24px;overflow:auto;max-height:92vh}
+#addForm h2{margin:0 0 4px}#addForm p.h{margin:0 0 14px;color:var(--muted);font-size:.9rem}
+#addForm label{display:block;font-weight:600;font-size:.85rem;margin:12px 0 5px}
+#addForm input[type=text],#addForm input[type=tel],#addForm input[type=number],#addForm select,#addForm textarea{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy)}
+#addForm textarea{min-height:64px}
+#addForm .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+#addForm .chips{display:flex;flex-wrap:wrap;gap:8px}
+#addForm .chips label{margin:0;font-weight:500;border:1.5px solid var(--line);border-radius:99px;padding:5px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
+#addForm .chips label:has(input:checked){background:var(--yellow);border-color:var(--yellow)}
+#addForm .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
+#addForm .err{color:#b3261e;font-size:.85rem;min-height:1.2em;margin-top:10px}
+@media(max-width:560px){#addForm .two{grid-template-columns:1fr}}
 @media(max-width:760px){nav{display:none}.grid{grid-template-columns:1fr}}
 </style>
-<script src="modivs-import-data.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
-<script src="firebase-sync.js"></script>
+<script src="modivs-import-data.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+<script src="firebase-config.js" defer></script>
+<script src="firebase-sync.js" defer></script>
+<script src="modivs-places.js"></script>
 </head>
 <body>
 <header>
@@ -57,24 +84,43 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);margin:40px 0 6px;letter-spacing:-.01em}
    <li><a href="modivs-home.html">Home</a></li>
    <li><a href="modivs-active-leads.html" aria-current="page">Active leads</a></li>
   </ul></nav>
-  <a class="btn" href="modivs-student-registration.html">Post a requirement</a>
+  <a class="btn" id="postBtn" href="modivs-student-registration.html">Post a requirement</a>
  </div>
 </header>
 
 <main class="wrap">
  <h1>Active Leads</h1>
  <p class="sub">Every requirement submitted by a student or parent appears here. Contact details stay private until a tutor unlocks the lead from the Tutor dashboard.</p>
+ <div class="adminbar" id="adminBar"><span><b>Admin mode.</b> You can post a requirement on behalf of a student or parent, and delete any lead. No sign-up needed.</span><button type="button" id="addLeadBtn">+ Add student inquiry</button></div>
  <div class="stats" id="stats"></div>
  <div class="tools">
   <input type="search" id="q" placeholder="Search by name, subject, city or class…" aria-label="Search leads">
   <select id="fCity" aria-label="Filter by city"><option value="">All cities</option></select>
   <select id="fMode" aria-label="Filter by teaching mode"><option value="">All modes</option></select>
-  <select id="fAge" aria-label="Filter by how recently posted"><option value="">Any time</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
+  <select id="fSub" aria-label="Filter by subject"><option value="">All subjects</option></select>
+  <select id="fAge" aria-label="Filter by how recently posted"><option value="">Any time</option><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select>
  </div>
  <div class="grid" id="grid" aria-live="polite"></div>
 </main>
 
+<dialog id="addDlg" aria-labelledby="addTitle">
+ <form id="addForm" novalidate>
+  <h2 id="addTitle">Add student inquiry</h2><p class="h">Posted as admin. It appears in Active leads and in the admin Student Inquiries list right away.</p>
+  <div class="two"><div><label for="aName">Student name *</label><input type="text" id="aName" maxlength="60"></div><div><label for="aParent">Parent name <small>(optional)</small></label><input type="text" id="aParent" maxlength="60"></div></div>
+  <div class="two"><div><label for="aPhone">Mobile number *</label><input type="tel" id="aPhone" placeholder="10-digit number"></div><div><label for="aCity">City *</label><input type="text" id="aCity" maxlength="40"></div></div>
+  <div class="two"><div><label for="aArea">Area / locality</label><input type="text" id="aArea" maxlength="40"></div><div><label for="aFreq">Classes per week</label><select id="aFreq"><option value="">Select</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6 or more</option></select></div></div>
+  <div class="two"><div><label for="aCls">Class / level *</label><select id="aCls"></select></div><div><label for="aBoard">Board</label><select id="aBoard"></select></div></div>
+  <label>Subjects needed *</label><div class="chips" id="aSubs"></div>
+  <label>Teaching mode *</label><div class="chips" id="aModes"></div>
+  <div class="two"><div><label for="aMin">Budget from (₹/hour)</label><input type="number" id="aMin" min="0"></div><div><label for="aMax">Budget up to (₹/hour)</label><input type="number" id="aMax" min="0"></div></div>
+  <label for="aNotes">Notes for tutors</label><textarea id="aNotes" maxlength="300"></textarea>
+  <div class="err" id="aErr" role="alert"></div>
+  <div class="acts"><button type="button" class="btn o" id="aCancel">Cancel</button><button type="submit" class="btn y">Post requirement</button></div>
+ </form>
+</dialog>
+
 <script>
+ModivsPlaces.upgrade('aCity','aArea');
 (function(){
 var SEED=[];
 function read(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
@@ -90,18 +136,23 @@ function load(){
  var all=read('modivs_active_leads').concat(read('modivs_students_db'));
  var seen={},out=[];
  all.forEach(function(l){
-  if(!l||!l.name||l.is_demo||/example\.com/.test(l.email||''))return;
+  if(!l||!l.name)return;
   var key=(l.email||l.id||l.name).toLowerCase();
   if(seen[key])return;seen[key]=1;
   if(l.status==='closed'||l.status==='rejected')return;
+  var tb=tomb();if((l.id&&tb.indexOf(l.id)>-1)||(l.email&&tb.indexOf(String(l.email).toLowerCase())>-1))return;
   out.push(l);
  });
+ if(!out.length)SEED.forEach(function(l){out.push(l)}); // demo leads only while there are no real ones
  out.sort(function(a,b){return (new Date(b.registered_at||0))-(new Date(a.registered_at||0))});
  return out;
 }
 var leads=load(),$=function(i){return document.getElementById(i)};
+var ADMIN=false;try{var as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');ADMIN=!!(as&&as.email==='admin@gmail.com')}catch(e){}
+function tomb(){return read('modivs_deleted_leads')}
 function fillSelect(id,vals){var s=$(id);Array.from(new Set(vals.filter(Boolean))).sort().forEach(function(v){var o=el('option','',v);o.value=v;s.appendChild(o)})}
 fillSelect('fCity',leads.map(function(l){return l.city}));
+fillSelect('fSub',[].concat.apply([],leads.map(function(l){return l.subs||[]})));
 var MODE_OPTS=['Online','At student’s place','At tutor’s place'];
 function normMode(m){
  var s=String(m||'').toLowerCase();
@@ -119,8 +170,17 @@ function stats(){
  var s=$('stats');s.innerHTML='';
  var today=leads.filter(function(l){return l.registered_at&&Date.now()-new Date(l.registered_at).getTime()<864e5}).length;
  var subs={};leads.forEach(function(l){(l.subs||[]).forEach(function(x){subs[x]=1})});
- [['Active leads',leads.length],['New in last 24 hrs',today],['Subjects requested',Object.keys(subs).length]].forEach(function(x){
-  var d=el('div','stat');d.appendChild(el('b','',x[1]));d.appendChild(el('span','',x[0]));s.appendChild(d)});
+ var age=$('fAge').value,sub=$('fSub').value;
+ [['Active leads',leads.length,'all',!age&&!sub],['New in last 24 hrs',today,'24',age==='1'],['Subjects requested',Object.keys(subs).length,'subjects',!!sub]].forEach(function(x){
+  var d=el('button','stat btn-stat');d.type='button';d.setAttribute('aria-pressed',x[3]);
+  d.appendChild(el('b','',x[1]));d.appendChild(el('span','',x[0]));
+  d.addEventListener('click',function(){
+   if(x[2]==='all'){['q','fCity','fMode','fSub','fAge'].forEach(function(i){$(i).value=''})}
+   else if(x[2]==='24'){$('fAge').value=($('fAge').value==='1')?'':'1'}
+   else{$('fSub').focus()}
+   render();
+  });
+  s.appendChild(d)});
 }
 function card(l){
  var c=el('article','card'),t=el('div','top'),n=el('div');
@@ -134,48 +194,95 @@ function card(l){
  if(l.notes)c.appendChild(el('p','note','“'+l.notes+'”'));
  var f=el('div','foot');f.appendChild(el('span','',ago(l)));
  var a=el('a','',"Unlock in Tutor dashboard →");a.href='modivs-tutor-dashboard.html';a.style.fontWeight='600';f.appendChild(a);
+ if(ADMIN){var x=el('button','xbtn','Delete');x.type='button';x.setAttribute('aria-label','Delete lead for '+l.name);x.addEventListener('click',function(){removeLead(l)});f.appendChild(x)}
  c.appendChild(f);return c;
 }
 function render(){
- var q=$('q').value.toLowerCase(),city=$('fCity').value,mode=$('fMode').value,age=+$('fAge').value,g=$('grid');g.innerHTML='';
+ var q=$('q').value.toLowerCase(),city=$('fCity').value,mode=$('fMode').value,sub=$('fSub').value,age=+$('fAge').value,g=$('grid');g.innerHTML='';stats();
  var rows=leads.filter(function(l){
   if(city&&l.city!==city)return false;
   if(mode&&normModes(l.mode).indexOf(mode)<0)return false;
-  if(age&&l.registered_at&&(Date.now()-new Date(l.registered_at).getTime())>age*864e5)return false;
+  if(sub&&(l.subs||[]).indexOf(sub)<0)return false;
+  if(age&&(!l.registered_at||(Date.now()-new Date(l.registered_at).getTime())>age*864e5))return false;
   var hay=[l.name,l.city,l.cls,l.board,(l.subs||[]).join(' '),(l.goals||[]).join(' ')].join(' ').toLowerCase();
   return !q||hay.indexOf(q)>-1;
  });
- if(!rows.length){g.appendChild(el('p','empty',leads.length?'No active leads match your search filters.':'No tuition requirements posted yet. Real inquiries from students and parents will appear here.'));return}
+ if(!rows.length){g.appendChild(el('p','empty','No active leads match your search.'));return}
  rows.forEach(function(l){g.appendChild(card(l))});
 }
-['q','fCity','fMode','fAge'].forEach(function(i){$(i).addEventListener('input',render)});
-stats();render();
+['q','fCity','fMode','fSub','fAge'].forEach(function(i){$(i).addEventListener('input',render)});
 
-function subscribeLeads(){
-  if(!window.EducationBFirebase || !window.EducationBFirebase.db) return;
-  window.EducationBFirebase.db.collection('leads').onSnapshot(function(snap){
-    var list = [];
-    snap.docs.forEach(function(doc){
-      var l = doc.data();
-      if(l && l.name && !l.is_demo && !/example\.com/.test(l.email || '')){
-        list.push(Object.assign({ id: doc.id }, l));
-      }
-    });
-    if(list.length){
-      leads = list;
-      stats();
-      render();
-    }
-  }, function(err){ console.warn('Leads firestore error:', err.message); });
+/* ---------- admin: add / delete ---------- */
+function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
+function fsDo(fn){try{var fb=window.EducationBFirebase;if(fb&&fb.db)fn(fb.db)}catch(e){}}
+function reloadAll(){
+ leads=load();
+ [['fCity',function(l){return l.city?[l.city]:[]}],['fSub',function(l){return l.subs||[]}]].forEach(function(p){
+  var sel=$(p[0]),cur=sel.value;while(sel.options.length>1)sel.remove(1);
+  fillSelect(p[0],[].concat.apply([],leads.map(p[1])));sel.value=cur;
+ });
+ render();
 }
-
-subscribeLeads();
-if(!window.EducationBFirebase) setTimeout(subscribeLeads, 1000);
+function removeLead(l){
+ if(!confirm('Delete the inquiry from '+l.name+'? This removes it from Active leads and the admin Student Inquiries list.'))return;
+ var id=l.id,em=(l.email||'').toLowerCase();
+ function same(x){return (id&&x.id===id)||(em&&(x.email||'').toLowerCase()===em)}
+ save('modivs_active_leads',read('modivs_active_leads').filter(function(x){return !same(x)}));
+ save('modivs_students_db',read('modivs_students_db').filter(function(x){return !same(x)}));
+ var t=tomb();if(id&&t.indexOf(id)<0)t.push(id);if(em&&t.indexOf(em)<0)t.push(em);save('modivs_deleted_leads',t);
+ fsDo(function(db){if(id){db.collection('leads').doc(String(id)).delete().catch(function(){});db.collection('students').doc(String(id)).delete().catch(function(){})}});
+ reloadAll();
+}
+var SUBJECTS=['Mathematics','Physics','Chemistry','Biology','English','Hindi','Punjabi','Computer Science','Accountancy','Economics','Social Science','Music','Art'];
+var CLASSES=['Nursery–KG','Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12','College / University','Adult learner'];
+var BOARDS=['CBSE','ICSE','PSEB','IB','IGCSE','State board','Other'];
+var MODES=['Online','Offline (Tutor comes to my home)','Offline (At tutor’s place)'];
+function opts(id,list,ph){var s=$(id);s.innerHTML='';var o=document.createElement('option');o.value='';o.textContent=ph;s.appendChild(o);list.forEach(function(x){var e=document.createElement('option');e.textContent=x;s.appendChild(e)})}
+function chips(id,list,name){var b=$(id);b.innerHTML='';list.forEach(function(x){var l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.value=x;i.name=name;l.appendChild(i);l.appendChild(document.createTextNode(x));b.appendChild(l)})}
+function normCity(c){return String(c||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()})}
+function checked(name){return Array.prototype.map.call(document.querySelectorAll('#addForm input[name='+name+']:checked'),function(i){return i.value})}
+function openAdd(){
+ $('addForm').reset();$('aErr').textContent='';
+ opts('aCls',CLASSES,'Select');opts('aBoard',BOARDS,'Select');chips('aSubs',SUBJECTS,'subs');chips('aModes',MODES,'modes');
+ $('addDlg').showModal();$('aName').focus();
+}
+function submitAdd(e){
+ e.preventDefault();
+ var name=$('aName').value.trim(),phone=$('aPhone').value.trim(),city=ModivsPlaces.canon('city',$('aCity').value),cls=$('aCls').value,subs=checked('subs'),modes=checked('modes'),err=$('aErr');
+ if(!name)return err.textContent='Enter the student’s name.';
+ if(!/^[+0-9\s-]{10,15}$/.test(phone))return err.textContent='Enter a valid mobile number.';
+ if(!city)return err.textContent='Enter the city.';
+ if(!cls)return err.textContent='Choose a class or level.';
+ if(!subs.length)return err.textContent='Choose at least one subject.';
+ if(!modes.length)return err.textContent='Choose at least one teaching mode.';
+ var mn=$('aMin').value,mx=$('aMax').value,parent=$('aParent').value.trim();
+ var id='adm_'+Date.now();
+ var lead={id:id,name:name,parentName:parent||name,email:'',phone:phone,city:city,area:ModivsPlaces.canon('area',$('aArea').value,city),cls:cls,board:$('aBoard').value||'',
+  subs:subs,goals:[],level:'Average',notes:$('aNotes').value.trim(),mode:modes,
+  budget:(mn||mx)?'₹'+(mn||'—')+'–'+(mx||'—')+' / hour':'',freq:$('aFreq').value||'',
+  status:'active',sent:'Just now',by:parent?'Parent: '+parent+' (posted by admin)':'Posted by admin',registered_at:new Date().toISOString(),posted_by_admin:true};
+ var a=read('modivs_active_leads');a.unshift(lead);save('modivs_active_leads',a);
+ var st=read('modivs_students_db');st.unshift(lead);save('modivs_students_db',st);
+ fsDo(function(db){db.collection('leads').doc(id).set(lead,{merge:true}).catch(function(){});db.collection('students').doc(id).set(lead,{merge:true}).catch(function(){})});
+ $('addDlg').close();
+ ['q','fCity','fMode','fSub','fAge'].forEach(function(i){$(i).value=''});
+ reloadAll();
+}
+if(ADMIN){
+ $('adminBar').classList.add('on');
+ var pb=$('postBtn');pb.href='#post';pb.addEventListener('click',function(e){e.preventDefault();openAdd()});
+ $('addLeadBtn').addEventListener('click',openAdd);
+ $('addForm').addEventListener('submit',submitAdd);
+ $('aCancel').addEventListener('click',function(){$('addDlg').close()});
+ $('addDlg').addEventListener('click',function(e){if(e.target===$('addDlg'))$('addDlg').close()});
+ if(location.hash==='#post')setTimeout(openAdd,0);
+}
+stats();render();
 })();
 </script>
 <!-- mv-footer -->
 <footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
 .mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
 .mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}

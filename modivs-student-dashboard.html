@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Student Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script>
 (function(){
   try {
@@ -19,9 +20,11 @@
 })();
 </script>
 <style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
 :root{--navy:#1A2035;--navy2:#2a3350;--yellow:#EBB92E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--cream);color:var(--navy);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select,textarea{font:inherit;color:inherit}
 :is(a,button,input,select,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 .app{display:grid;grid-template-columns:290px 1fr;gap:24px;max-width:1280px;margin:0 auto;padding:20px 20px 80px;align-items:start}
@@ -126,8 +129,8 @@ dialog h2{margin:0 0 4px}
   <nav class="nav" aria-label="Student dashboard sections">
    <button type="button" data-sec="overview" aria-current="page">Dashboard Overview</button>
    <button type="button" data-sec="tutors">Find Tutors <span class="n" id="tutorCount">6</span></button>
-   <button type="button" data-sec="enquiries">My Requests <span class="n" id="reqCount">3</span></button>
-   <button type="button" data-sec="favourites">Favourites <span class="n" id="favCount">2</span></button>
+   <button type="button" data-sec="enquiries">My Requests <span class="n" id="reqCount">0</span></button>
+   <button type="button" data-sec="favourites">Favourites <span class="n" id="favCount">0</span></button>
    <button type="button" data-sec="schedule">Class Schedule</button>
    <button type="button" data-sec="chat">Chat <span class="n" id="chatCount">0</span></button>
   </nav>
@@ -140,34 +143,20 @@ dialog h2{margin:0 0 4px}
    <p class="sub">Track your tuition requests, scheduled demo classes, and verified tutors.</p>
 
    <div class="stats">
-    <div class="stat hi"><span>Upcoming Demo</span><b>Tomorrow</b><div class="v" style="font-size:0.9rem;font-weight:600;">5:00 PM · Mathematics</div></div>
-    <div class="stat"><span>Active Requests</span><b id="statRequests">2</b><div class="v">1 Accepted</div></div>
-    <div class="stat"><span>Shortlisted Tutors</span><b id="statFavs">2</b><div class="v">Ready to contact</div></div>
-    <div class="stat"><span>Learning Hours</span><b>14 hrs</b><div class="v">This month</div></div>
+    <div class="stat hi"><span>Upcoming Demo</span><b>None yet</b><div class="v" style="font-size:0.9rem;font-weight:600;">Book a free demo class</div></div>
+    <div class="stat"><span>Active Requests</span><b id="statRequests">0</b><div class="v">No requests yet</div></div>
+    <div class="stat"><span>Shortlisted Tutors</span><b id="statFavs">0</b><div class="v">Ready to contact</div></div>
+    <div class="stat"><span>Learning Hours</span><b>0 hrs</b><div class="v">This month</div></div>
    </div>
 
    <div class="two">
     <div class="box">
-     <div class="head"><h2>Next Scheduled Class</h2><span class="badge demo">Free Demo Class</span></div>
-     <div class="row">
-      <div class="when"><b>29</b>OCT</div>
-      <div>
-       <p><strong>Priya Sharma</strong> · Mathematics</p>
-       <small>Class 10 · Trigonometry Fundamentals (Online)</small>
-      </div>
-      <button class="b y" type="button" style="margin-left:auto;padding:6px 12px;" onclick="alert('Demo class link will open 10 minutes prior to session.')">Class Link</button>
-     </div>
+     <div class="head"><h2>Next Scheduled Class</h2></div>
+     <p style="margin:0;color:var(--muted);font-size:.9rem;">No class scheduled yet. Book a free demo with a tutor to get started.</p>
     </div>
     <div class="box">
      <div class="head"><h2>Recent Requests Status</h2><a href="#enquiries" class="b o" style="padding:4px 8px;font-size:0.8rem;" onclick="setSection('enquiries')">View all</a></div>
-     <div class="row">
-      <p><strong>Rahul Verma</strong> (Physics)</p>
-      <span class="badge accepted" style="margin-left:auto;">Accepted</span>
-     </div>
-     <div class="row">
-      <p><strong>Amit Joshi</strong> (Computer Science)</p>
-      <span class="badge pending" style="margin-left:auto;">Under Review</span>
-     </div>
+     <p style="margin:0;color:var(--muted);font-size:.9rem;">No requests sent yet.</p>
     </div>
    </div>
 
@@ -227,22 +216,7 @@ dialog h2{margin:0 0 4px}
    <h1>Tuition Schedule</h1>
    <p class="sub">Your scheduled classes and free demo sessions.</p>
    <div class="box">
-    <div class="row">
-     <div class="when"><b>29</b>OCT</div>
-     <div>
-      <p><strong>Demo Class with Priya Sharma</strong> (Class 10 Maths)</p>
-      <small>5:00 PM – 5:45 PM · Online via Google Meet / Zoom</small>
-     </div>
-     <span class="badge demo" style="margin-left:auto;">Demo Confirmed</span>
-    </div>
-    <div class="row">
-     <div class="when"><b>31</b>OCT</div>
-     <div>
-      <p><strong>First Class with Rahul Verma</strong> (Class 10 Physics)</p>
-      <small>6:00 PM – 7:00 PM · At Student's Home (Model Town)</small>
-     </div>
-     <span class="badge accepted" style="margin-left:auto;">Confirmed</span>
-    </div>
+    <p style="margin:0;color:var(--muted);font-size:.9rem;">No classes scheduled yet.</p>
    </div>
   </section>
 
@@ -312,7 +286,8 @@ dialog h2{margin:0 0 4px}
     rawDbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || 'null');
   } catch(e){}
 
-  if(!rawDbTutors || !Array.isArray(rawDbTutors)){
+  if(!rawDbTutors || !Array.isArray(rawDbTutors) || !rawDbTutors.length){
+    // Standard initial seed matching admin default
     rawDbTutors = [];
   }
 
@@ -334,9 +309,6 @@ dialog h2{margin:0 0 4px}
 
   var favourites = [];
   var enquiries = [];
-  try {
-    enquiries = JSON.parse(localStorage.getItem('modivs_student_enquiries') || '[]');
-  } catch(e){ enquiries = []; }
 
   function toast(t){
     var el = document.getElementById('toast');
@@ -375,11 +347,11 @@ dialog h2{margin:0 0 4px}
       return total + ModivsChat.unread(c, user && user.email);
     }, 0);
     document.getElementById('chatCount').textContent = count;
-    if(ModivsChat.checkStudentDashboardNotifications) ModivsChat.checkStudentDashboardNotifications(box);
   }
   window.openStudentChat = function(tutorId, tutorName){
     if(!user || !window.ModivsChat) return;
-    ModivsChat.open({student:user, tutor:tutorId || tutorName});
+    var targetTutor = tutors.find(function(t){ return t.id === tutorId || t.name === tutorName; }) || { id: tutorId, name: tutorName };
+    ModivsChat.open({student:user, tutor:targetTutor});
     renderStudentChats();
   };
   if(window.ModivsChat){
@@ -514,6 +486,13 @@ dialog h2{margin:0 0 4px}
       };
       enquiries.unshift(newReq);
 
+      // Create conversation bridge and trigger notification for teacher
+      if(window.ModivsChat && user){
+        var conv = ModivsChat.ensure(user, currentBookingTutor);
+        var initText = 'Demo Class Booking Request: I would like to book a free demo class on topic: "' + topic + '" on ' + date + '. Please confirm availability.';
+        ModivsChat.sendMessage(conv.id, user, initText).catch(function(err){ console.warn('Booking message sync error:', err); });
+      }
+
       try {
         var allEnquiries = JSON.parse(localStorage.getItem('modivs_student_enquiries') || '[]');
         allEnquiries.unshift(newReq);
@@ -554,7 +533,7 @@ dialog h2{margin:0 0 4px}
 </script>
 <!-- mv-footer -->
 <footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
 .mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
 .mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}

@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Tutor dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
 :root{--navy:#1A2035;--navy2:#2a3350;--yellow:#EBB92E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--cream);color:var(--navy);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select{font:inherit;color:inherit}
 :is(a,button,input,select,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 .app{display:grid;grid-template-columns:290px 1fr;gap:24px;max-width:1280px;margin:0 auto;padding:20px 20px 80px;align-items:start}
@@ -111,6 +114,9 @@ dialog h2{margin:0 0 4px}
 @media(max-width:960px){.app{grid-template-columns:1fr}.side{position:static;max-height:none}.two{grid-template-columns:1fr}.nav{grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}}
 @media(max-width:760px){.tutor-top-nav{display:none}}
 @media(max-width:560px){.lead{grid-template-columns:1fr}.acts{flex-direction:row;align-items:center;justify-content:flex-start;flex-wrap:wrap}.ask{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
+
+.nav button.out{margin-top:8px;border-top:1px solid #3d4870;border-radius:0 0 12px 12px;padding-top:14px}
+.nav button.out:hover{background:#4a2a33;color:#ffd7d7}
 </style>
 <script>
 (function(){
@@ -165,8 +171,20 @@ dialog h2{margin:0 0 4px}
  <main>
   <div id="statusBanner"></div>
    <div class="coinbar">
-   <div><small>AVAILABLE COINS</small><b id="coins">0</b></div>
-   <div class="r"><button class="link" type="button" id="editLink">Edit profile</button><button class="b y" type="button" id="rech">Recharge</button></div>
+   <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+     <div><small>AVAILABLE COINS</small><b id="coins">0</b></div>
+     <div style="border-left:1.5px solid var(--line);padding-left:18px;">
+       <small>MEMBERSHIP PLAN</small>
+       <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
+         <b id="memPlanBadge" style="font-size:1.15rem;">Standard Plan</b>
+         <span id="memStatusPill" class="ver" style="background:#d9f0e3;color:var(--ok);">Active</span>
+       </div>
+     </div>
+   </div>
+   <div class="r">
+     <button class="b o" type="button" id="memBtn">Membership Plans</button>
+     <button class="b y" type="button" id="rech">Recharge Coins</button>
+   </div>
   </div>
   <div id="view"></div>
  </main>
@@ -175,31 +193,168 @@ dialog h2{margin:0 0 4px}
 <button class="ask" type="button" id="ask">Ask Me!</button>
 <dialog id="dlg" aria-labelledby="dt">
  <h2 id="dt">Recharge coins</h2>
- <p class="sub" style="margin-bottom:10px">Coins unlock student contact details. Packs below are samples.</p>
+ <p class="sub" style="margin-bottom:10px">Coins unlock student contact details and private messages (10 coins per inquiry).</p>
  <div class="packs" id="packs"></div>
  <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="close">Close</button></div>
+</dialog>
+
+<dialog id="memDlg" aria-labelledby="mdt">
+ <h2 id="mdt">Teacher Membership Plans</h2>
+ <p class="sub" style="margin-bottom:12px">An active membership plan is required to unlock student inquiries and chat in real time.</p>
+
+ <div style="background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px;margin-bottom:16px;">
+  <label for="memCustomMsg" style="display:block;font-weight:700;font-size:0.88rem;margin-bottom:6px;color:var(--navy);">
+    💬 Official Demo Class Contact Message:
+  </label>
+  <textarea id="memCustomMsg" rows="3" readonly style="width:100%;padding:10px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;background:#f9f9fb;font-weight:600;color:var(--navy);line-height:1.4;">we&#39;ll provide u a demo class shortly. for further queries, contact:+919896930443
++918054167008</textarea>
+  <small style="color:var(--muted);display:block;margin-top:4px;">When you activate your membership or unlock an inquiry, this official message with contact details is automatically sent to the student.</small>
+ </div>
+
+ <div class="packs" id="memPacks"></div>
+ <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="closeMem">Close</button></div>
+</dialog>
+
+<!-- Online Payment Gateway Section Dialog -->
+<dialog id="payDlg" aria-labelledby="payTitle" style="max-width:520px;width:92%;padding:24px;border:none;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
+    <div>
+      <h2 id="payTitle" style="font-size:1.35rem;font-weight:800;color:var(--navy);margin:0;">Online Payment Section</h2>
+      <p style="font-size:0.82rem;color:var(--muted);margin:2px 0 0 0;">🔒 256-bit Encrypted Platform Checkout</p>
+    </div>
+    <span class="badge" style="background:#e6f4ea;color:#137333;font-weight:700;font-size:0.75rem;">Instant Activation</span>
+  </div>
+
+  <!-- Plan & Order Summary -->
+  <div id="payOrderSummary" style="background:#f6f8fc;border:1.5px solid #dbe2ef;border-radius:12px;padding:16px;margin-bottom:18px;">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;">
+      <div>
+        <b id="payPlanName" style="font-size:1.15rem;color:var(--navy);display:block;">Standard Plan</b>
+        <span id="payPlanValidity" style="font-size:0.85rem;color:#4b5563;">30 Days validity · Starts today upon payment</span>
+      </div>
+      <div style="text-align:right;">
+        <span id="payPlanPrice" style="font-size:1.45rem;font-weight:900;color:var(--navy);">₹499</span>
+        <small id="payBonusCoins" style="display:block;color:#16a34a;font-weight:700;">+50 Bonus Coins</small>
+      </div>
+    </div>
+    <div style="margin-top:10px;padding-top:10px;border-top:1px dashed #cbd5e1;font-size:0.8rem;color:#64748b;display:flex;justify-content:space-between;flex-wrap:wrap;gap:4px;">
+      <span>📅 Plan Validity Period:</span>
+      <b id="payDateRange" style="color:var(--navy);">Today → +30 Days</b>
+    </div>
+  </div>
+
+  <!-- Payment Method Selector -->
+  <div style="margin-bottom:16px;">
+    <label style="display:block;font-size:0.88rem;font-weight:700;margin-bottom:8px;color:var(--navy);">Select Payment Method</label>
+    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;" id="payMethodTabs">
+      <button type="button" class="pay-method-btn" id="pmUpi" data-method="upi" style="padding:10px 4px;border:2px solid var(--navy);background:#eef4ff;border-radius:10px;font-weight:700;font-size:0.84rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--navy);">
+        <span>📱 UPI / QR</span>
+        <small style="font-size:0.7rem;color:#4b5563;">GPay / PhonePe</small>
+      </button>
+      <button type="button" class="pay-method-btn" id="pmCard" data-method="card" style="padding:10px 4px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:0.84rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--navy);">
+        <span>💳 Card</span>
+        <small style="font-size:0.7rem;color:#4b5563;">Debit / Credit</small>
+      </button>
+      <button type="button" class="pay-method-btn" id="pmNet" data-method="netbanking" style="padding:10px 4px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:0.84rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--navy);">
+        <span>🏦 Net Banking</span>
+        <small style="font-size:0.7rem;color:#4b5563;">All Banks</small>
+      </button>
+    </div>
+  </div>
+
+  <!-- View 1: UPI / QR -->
+  <div id="payViewUpi" style="margin-bottom:18px;text-align:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+    <div style="display:inline-block;padding:8px;background:#f8fafc;border:2px dashed #94a3b8;border-radius:12px;margin-bottom:8px;">
+      <svg width="110" height="110" viewBox="0 0 100 100" style="display:block;margin:0 auto;">
+        <rect width="100" height="100" fill="#ffffff"/>
+        <rect x="8" y="8" width="26" height="26" fill="#1A2035"/>
+        <rect x="12" y="12" width="18" height="18" fill="#ffffff"/>
+        <rect x="15" y="15" width="12" height="12" fill="#1A2035"/>
+        <rect x="66" y="8" width="26" height="26" fill="#1A2035"/>
+        <rect x="70" y="12" width="18" height="18" fill="#ffffff"/>
+        <rect x="73" y="15" width="12" height="12" fill="#1A2035"/>
+        <rect x="8" y="66" width="26" height="26" fill="#1A2035"/>
+        <rect x="12" y="70" width="18" height="18" fill="#ffffff"/>
+        <rect x="15" y="73" width="12" height="12" fill="#1A2035"/>
+        <rect x="42" y="15" width="7" height="7" fill="#1A2035"/>
+        <rect x="52" y="25" width="7" height="7" fill="#1A2035"/>
+        <rect x="42" y="38" width="7" height="7" fill="#1A2035"/>
+        <rect x="15" y="45" width="7" height="7" fill="#1A2035"/>
+        <rect x="25" y="52" width="7" height="7" fill="#1A2035"/>
+        <rect x="44" y="47" width="12" height="12" fill="#F5A623"/>
+        <rect x="65" y="45" width="7" height="7" fill="#1A2035"/>
+        <rect x="78" y="52" width="7" height="7" fill="#1A2035"/>
+        <rect x="45" y="68" width="7" height="7" fill="#1A2035"/>
+        <rect x="58" y="72" width="7" height="7" fill="#1A2035"/>
+        <rect x="72" y="72" width="14" height="14" fill="#1A2035"/>
+      </svg>
+      <small style="color:#64748b;font-weight:600;display:block;margin-top:2px;">Scan with GPay / PhonePe / Paytm</small>
+    </div>
+    <div style="font-size:0.85rem;color:var(--navy);font-weight:700;">UPI ID: <span style="background:#f1f5f9;padding:3px 8px;border-radius:4px;user-select:all;">modivs.education@okaxis</span></div>
+  </div>
+
+  <!-- View 2: Card -->
+  <div id="payViewCard" style="display:none;margin-bottom:18px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+    <div style="margin-bottom:10px;">
+      <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:#334155;">Card Number</label>
+      <input type="text" id="payCardNum" placeholder="4532 •••• •••• 8892" maxlength="19" value="4532 9012 8765 4321" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;box-sizing:border-box;">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
+      <div>
+        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:#334155;">Expiry (MM/YY)</label>
+        <input type="text" id="payCardExp" placeholder="12/28" maxlength="5" value="11/28" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;box-sizing:border-box;">
+      </div>
+      <div>
+        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:#334155;">CVV</label>
+        <input type="password" id="payCardCvv" placeholder="•••" maxlength="4" value="882" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;box-sizing:border-box;">
+      </div>
+    </div>
+  </div>
+
+  <!-- View 3: Net Banking -->
+  <div id="payViewNet" style="display:none;margin-bottom:18px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
+    <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:#334155;">Select Bank</label>
+    <select id="payBankSelect" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;background:#fff;">
+      <option value="HDFC">HDFC Bank</option>
+      <option value="SBI">State Bank of India</option>
+      <option value="ICICI">ICICI Bank</option>
+      <option value="Axis">Axis Bank</option>
+      <option value="Kotak">Kotak Mahindra Bank</option>
+    </select>
+  </div>
+
+  <!-- Status / Loading Area -->
+  <div id="payStatusArea" style="display:none;margin-bottom:14px;padding:10px;border-radius:8px;text-align:center;font-weight:700;font-size:0.88rem;"></div>
+
+  <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
+    <button class="b o" type="button" id="payCancelBtn" style="padding:10px 16px;">Cancel</button>
+    <button class="b y" type="button" id="payConfirmBtn" style="flex:1;padding:12px 18px;font-size:0.95rem;font-weight:800;">
+      Complete Online Payment
+    </button>
+  </div>
 </dialog>
 <div class="toast hide" id="toast" role="status"></div>
 
 <script>
 (function(){
 var $=function(id){return document.getElementById(id)};
-var savedC = localStorage.getItem('modivs_tutor_coins');
-var state={view:'dash',coins:savedC != null ? +savedC : 20,filter:'new',q:'',tT:null};
+var state={view:'dash',coins:30,filter:'new',q:'',tT:null};
 var COST=10;
-function loadTutorLeads(){
-  try {
-    var raw = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]');
-    return Array.isArray(raw) ? raw.filter(function(l){
-      return l && !l.is_demo && !/example\.com/.test(l.email || '');
-    }) : [];
-  } catch(e){ return []; }
-}
-var leads = loadTutorLeads();
-var hist = [];
-var classes = [];
+var leads=[];
+var hist=[{t:'Joined bonus',d:'Oct 20',a:30}];
+var classes=[];
 var PACKS=[[50,'₹500'],[120,'₹1,000'],[300,'₹2,000']];
+var MEM_PLANS=[
+ ['Standard Plan', 30, '₹499', 50, '30 Days validity · 50 Bonus Coins included'],
+ ['Professional Plan', 90, '₹999', 120, '90 Days validity · 120 Bonus Coins included · Priority in searches'],
+ ['Premium Plan', 180, '₹1,999', 300, '180 Days validity · 300 Bonus Coins included · Top search ranking']
+];
 var LABEL={new:'New',demo:'Demo scheduled',accepted:'Accepted',declined:'Declined'};
+
+function currentTutorEmail(){
+ return (window.MY_TUTOR && window.MY_TUTOR.email) || '';
+}
+
 function profileCompletion(t){
  function has(a){return Array.isArray(a)&&a.filter(Boolean).length>0}
  function txt(x){return typeof x==='string'&&x.trim()!==''&&x!=='—'&&x!=='Pending upload'}
@@ -236,7 +391,6 @@ function profileCompletion(t){
  return {pct:Math.round(done/checks.length*100),missing:checks.filter(function(c){return !c[1]}).map(function(c){return c[0]})};
 }
 function verifyLabel(t){var s=t.status;return s==='approved'?'Verified ✓':(s==='pending'?'Pending review':(s==='rejected'?'Changes needed':'Create Profile'))}
-
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function toast(t){var e=$('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(state.tT);state.tT=setTimeout(function(){e.classList.add('hide')},2600)}
 function n(s){return leads.filter(function(l){return l.status===s}).length}
@@ -244,49 +398,159 @@ function newLeads(){return leads.filter(function(l){return !l.unlocked&&l.status
 function unlockedCount(){return leads.filter(function(l){return l.unlocked}).length}
 
 function openRecharge(){$('dlg').showModal()}
-window.openRecharge = openRecharge;
+
+var currentPendingPayment = null;
+
+function openMembershipModal(){
+  renderMembershipPacks();
+  $('memDlg').showModal();
+}
+window.openMembershipModal = openMembershipModal;
+
+function openOnlinePayment(planName, days, price, bonusCoins, isUpgrade){
+  currentPendingPayment = {
+    planName: planName,
+    days: days,
+    price: price,
+    bonusCoins: bonusCoins,
+    isUpgrade: isUpgrade
+  };
+  try { $('memDlg').close(); } catch(e){}
+
+  $('payPlanName').textContent = planName;
+  $('payPlanPrice').textContent = price;
+  $('payPlanValidity').textContent = days + ' Days validity · Starts today upon payment';
+  $('payBonusCoins').textContent = '+' + bonusCoins + ' Bonus Coins included';
+
+  var now = new Date();
+  var exp = new Date(now.getTime() + days * 86400000);
+  var expStr = exp.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  var todayStr = now.toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' });
+  $('payDateRange').textContent = todayStr + ' → ' + expStr + ' (' + days + ' Days)';
+
+  var btn = $('payConfirmBtn');
+  btn.disabled = false;
+  btn.textContent = 'Pay ' + price + (isUpgrade ? ' & Upgrade Plan' : ' & Activate Plan');
+  $('payStatusArea').style.display = 'none';
+
+  $('payDlg').showModal();
+}
+window.openOnlinePayment = openOnlinePayment;
+
+function renderMembershipPacks(){
+  var em = currentTutorEmail();
+  var mem = window.ModivsChat ? ModivsChat.getTutorMembership(em) : { isValid: false, planName: 'None' };
+  var mpk = $('memPacks');
+  if(!mpk) return;
+  mpk.innerHTML = '';
+
+  var statusBox = el('div');
+  statusBox.style.cssText = 'grid-column:1/-1;background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:8px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;';
+  if(mem.isValid){
+    var daysLeft = mem.daysLeft !== undefined ? mem.daysLeft : 30;
+    var expStr = mem.validUntil ? new Date(mem.validUntil).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : '—';
+    statusBox.innerHTML = '<div><b style="color:var(--navy);font-size:0.95rem;">Current Plan: ' + escapeHtml(mem.planName) + '</b>' +
+      '<span style="color:#16a34a;font-weight:700;margin-left:8px;font-size:0.85rem;">● Active (' + daysLeft + ' days left)</span>' +
+      '<small style="display:block;color:#64748b;margin-top:2px;">Expires on: ' + expStr + '</small></div>' +
+      '<span class="badge" style="background:#dcfce7;color:#15803d;font-weight:700;">Valid for Inquiries</span>';
+  } else {
+    statusBox.innerHTML = '<div><b style="color:#b91c1c;font-size:0.95rem;">Status: ' + (mem.status === 'expired' ? 'Membership Expired' : 'No Active Membership') + '</b>' +
+      '<small style="display:block;color:#64748b;margin-top:2px;">Re-purchase a membership plan to unlock student inquiries and chat with students.</small></div>' +
+      '<span class="badge" style="background:#fee2e2;color:#b91c1c;font-weight:700;">Action Required</span>';
+  }
+  mpk.appendChild(statusBox);
+
+  MEM_PLANS.forEach(function(p){
+    var b = el('button','pack');
+    b.type = 'button';
+    b.style.textAlign = 'left';
+    b.style.position = 'relative';
+
+    var isCurrent = mem.isValid && mem.planName === p[0];
+    var isHigher = mem.isValid && !isCurrent && (
+      (mem.planName === 'Standard Plan' && (p[0] === 'Professional Plan' || p[0] === 'Premium Plan')) ||
+      (mem.planName === 'Professional Plan' && p[0] === 'Premium Plan')
+    );
+
+    var badgeHtml = '';
+    var btnLabel = 'Select & Pay Online';
+    if(isCurrent){
+      badgeHtml = '<span class="badge" style="background:#dcfce7;color:#15803d;margin-bottom:6px;">Current Plan</span>';
+      btnLabel = 'Extend for +' + p[1] + ' Days';
+    } else if(isHigher){
+      badgeHtml = '<span class="badge" style="background:#fef3c7;color:#b45309;margin-bottom:6px;">Upgrade Plan ⭐</span>';
+      btnLabel = 'Upgrade & Pay Online';
+    } else if(!mem.isValid){
+      btnLabel = (mem.status === 'expired' ? 'Re-Purchase & Pay' : 'Select & Pay Online');
+    }
+
+    b.innerHTML = (badgeHtml ? '<div>' + badgeHtml + '</div>' : '') +
+      '<b style="font-size:1.15rem;">' + p[0] + '</b>' +
+      '<span style="font-size:1.35rem;font-weight:800;color:var(--navy);display:block;margin:4px 0;">' + p[2] + '</span>' +
+      '<small>' + p[4] + '</small>' +
+      '<div style="margin-top:12px;"><span class="badge" style="background:var(--navy);color:var(--cream);padding:6px 12px;font-size:0.8rem;">' + btnLabel + '</span></div>';
+
+    b.addEventListener('click', function(){
+      openOnlinePayment(p[0], p[1], p[2], p[3], isHigher);
+    });
+    mpk.appendChild(b);
+  });
+}
 
 function recharge(c,price){
- state.coins+=c;
- localStorage.setItem('modivs_tutor_coins', String(state.coins));
- var authU = null; try { authU = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
- var exp = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString();
- var subObj = { active: true, planId: String(price), expiresAt: exp, coins: state.coins };
- if(authU){
-   authU.subscription = subObj;
-   localStorage.setItem('modivs_auth_user', JSON.stringify(authU));
- }
- if(window.MY_TUTOR){
-   window.MY_TUTOR.subscription = subObj;
-   try {
-     var tdb = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
-     tdb.forEach(function(t){ if(t.email === window.MY_TUTOR.email) t.subscription = subObj; });
-     localStorage.setItem('modivs_tutors_db', JSON.stringify(tdb));
-   } catch(e){}
+ var em = currentTutorEmail();
+ if(window.ModivsChat && em){
+  var res = ModivsChat.addTutorCoins(em, c, 'Recharged ' + c + ' coins (' + price + ')');
+  state.coins = res.balance;
+ } else {
+  state.coins += c;
  }
  hist.unshift({t:'Recharged '+c+' coins ('+price+')',d:'Today',a:c});
- if(window.EducationBFirebase && window.EducationBFirebase.db){
-  var uidKey = (window.EducationBFirebase.auth && window.EducationBFirebase.auth.currentUser && window.EducationBFirebase.auth.currentUser.uid) ||
-               (authU && authU.uid) || (authU && authU.email && authU.email.replace(/[^a-z0-9]/gi, '_'));
-  if(uidKey){
-   window.EducationBFirebase.db.collection('users').doc(uidKey).set({
-    subscription: subObj,
-    coins: state.coins,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-   }, { merge: true }).catch(function(){});
-   window.EducationBFirebase.db.collection('tutors').doc(uidKey).set({
-    subscription: subObj,
-    updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-   }, { merge: true }).catch(function(){});
-  }
- }
  $('dlg').close();
- toast(c+' coins added. Paid plan is now ACTIVE!');
+ toast(c+' coins added.');
  render();
 }
+
+function activateMembership(planName, days, price, bonusCoins, isUpgrade){
+ var em = currentTutorEmail();
+ if(window.ModivsChat && em){
+  ModivsChat.setTutorMembership(em, planName, days, 'active');
+  if(bonusCoins > 0){
+   var res = ModivsChat.addTutorCoins(em, bonusCoins, 'Bonus coins for ' + planName + ' purchase (' + price + ')');
+   state.coins = res.balance;
+  }
+  ModivsChat.onTutorMembershipPurchased(em);
+ }
+ hist.unshift({t:(isUpgrade ? 'Upgraded to ' : 'Activated ') + planName + ' (' + price + ')', d:'Today', a:bonusCoins});
+ toast(planName + ' activated for ' + days + ' days! Sent demo class contact message to student(s).');
+ render();
+}
+
 function unlock(l){
- if(state.coins<COST){toast('Not enough coins. Recharge to unlock this lead.');openRecharge();return}
- state.coins-=COST;l.unlocked=true;hist.unshift({t:'Unlocked '+l.name,d:'Today',a:-COST});toast('Unlocked '+l.name+'. Contact details are now visible.');render()
+ var em = currentTutorEmail();
+ if(window.ModivsChat && em){
+  var mem = ModivsChat.getTutorMembership(em);
+  if(!mem.isValid){
+   toast('Active membership plan required to unlock leads.');
+   openMembershipModal();
+   return;
+  }
+  var curCoins = ModivsChat.getTutorCoins(em);
+  if(curCoins < COST){
+   toast('Not enough coins. Recharge to unlock this lead.');
+   openRecharge();
+   return;
+  }
+  var res = ModivsChat.addTutorCoins(em, -COST, 'Unlocked lead ' + l.name);
+  state.coins = res.balance;
+ } else {
+  if(state.coins < COST){toast('Not enough coins. Recharge to unlock this lead.');openRecharge();return}
+  state.coins -= COST;
+ }
+ l.unlocked=true;
+ hist.unshift({t:'Unlocked '+l.name,d:'Today',a:-COST});
+ toast('Unlocked '+l.name+'. Contact details are now visible.');
+ render();
 }
 
 function nav(){
@@ -298,8 +562,17 @@ function nav(){
  N.forEach(function(x){var btn=el('button');btn.type='button';var i=el('span',null,x[1]);i.setAttribute('aria-hidden','true');btn.appendChild(i);btn.appendChild(el('span',null,x[2]));
   if(x[3]){btn.appendChild(el('span','n',x[3]))}
   if(state.view===x[0])btn.setAttribute('aria-current','page');
-  btn.addEventListener('click',function(){state.view=x[0];render();window.scrollTo(0,0)});b.appendChild(btn)})
+  btn.addEventListener('click',function(){state.view=x[0];render();window.scrollTo(0,0)});b.appendChild(btn)});
+ var lo=el('button','out');lo.type='button';var li=el('span',null,'🚪');li.setAttribute('aria-hidden','true');lo.appendChild(li);lo.appendChild(el('span',null,'Log out'));
+ lo.addEventListener('click',doLogout);b.appendChild(lo);
 }
+function doLogout(e){
+ if(e&&e.preventDefault)e.preventDefault();
+ try{localStorage.removeItem('modivs_auth_user')}catch(err){}
+ try{var fb=window.EducationBFirebase;if(fb&&fb.auth&&fb.auth.signOut){fb.auth.signOut().catch(function(){})}}catch(err){}
+ window.location.href='modivs-education.html#login';
+}
+(function(){var top=document.getElementById('tutorLogoutBtn');if(top)top.addEventListener('click',doLogout)})();
 
 function stat(label,val,cls,small){var d=el('div','stat'+(cls?' '+cls:''));d.appendChild(el('span','',label));d.appendChild(el('b',small?'v':'',val));return d}
 
@@ -339,9 +612,9 @@ function vDash(v){
  var box=el('section','box');var hd=el('div','head');hd.appendChild(el('h2','','Latest new leads'));var all=el('button','link','See all leads');all.type='button';all.addEventListener('click',function(){state.view='leads';render()});hd.appendChild(all);box.appendChild(hd);
  var nl=newLeads().slice(0,2);if(!nl.length)box.appendChild(el('p','empty','No new leads right now.'));nl.forEach(function(l){box.appendChild(leadCard(l))});v.appendChild(box);
  var two=el('div','two'),a=el('section','box');a.appendChild(el('h2','','Upcoming classes'));
- classes.forEach(function(x){var r=el('div','row'),w=el('div','when');w.appendChild(el('b','',x[0]));w.appendChild(document.createTextNode(x[1]));var q=el('div');q.appendChild(el('p','',x[2]));q.appendChild(el('small','',x[3]));r.appendChild(w);r.appendChild(q);a.appendChild(r)});
+ if(!classes.length)a.appendChild(el('p','empty','No upcoming classes yet.'));classes.forEach(function(x){var r=el('div','row'),w=el('div','when');w.appendChild(el('b','',x[0]));w.appendChild(document.createTextNode(x[1]));var q=el('div');q.appendChild(el('p','',x[2]));q.appendChild(el('small','',x[3]));r.appendChild(w);r.appendChild(q);a.appendChild(r)});
  var b=el('section','box');b.appendChild(el('h2','','Recent activity'));
- ['Aarav Mehta sent you a tutoring request','New 5-star review from Ananya’s parent','Your profile was viewed 14 times this week','Verification approved by Modiv’s team'].forEach(function(x){var r=el('div','row');r.appendChild(el('p','',x));b.appendChild(r)});
+ b.appendChild(el('p','empty','No recent activity yet.'));
  two.appendChild(a);two.appendChild(b);v.appendChild(two)
 }
 function vLeads(v){
@@ -358,17 +631,14 @@ function vLeads(v){
  q.addEventListener('input',function(e){state.q=e.target.value.trim();fill()});fill()
 }
 function vChat(v){
- v.appendChild(el('h1','','Messages'));
- var myTutor = window.MY_TUTOR || {};
- var hasPlan = window.ModivsChat ? ModivsChat.hasTutorPlan(myTutor) : false;
- if(!hasPlan){
-   var notice = el('div','box');
-   notice.style.cssText = 'background:#ebf5ff;border:1.5px solid #2196f3;color:#0d47a1;border-radius:14px;padding:16px 20px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;';
-   notice.innerHTML = '<div><b style="font-size:1.05rem;">🔒 Tutor Plan Required</b><p style="margin:4px 0 0;font-size:0.88rem;color:#1565c0;">Direct student inquiries appear in blue below. Upgrade or recharge coins to read message history, view student profile info, and reply in real time.</p></div><button type="button" class="b y" onclick="openRecharge()" style="background:#0d47a1;color:#fff;border:0;padding:8px 18px;font-weight:700;">Select Plan</button>';
-   v.appendChild(notice);
- } else {
-   v.appendChild(el('p','sub','Chat directly with students. Messages are retained for 4 days (96 hours).'));
- }
+ v.appendChild(el('h1','','Messages & Inquiries'));
+ v.appendChild(el('p','sub','Direct 1-on-1 private chat with students. Inquiries require an active membership plan and 10 coins to unlock.'));
+
+ var info = el('div','');
+ info.style.cssText = 'background:#fff8db;border:1.5px solid #eedda6;border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:0.88rem;color:#7a6207;display:flex;align-items:center;gap:12px;';
+ info.innerHTML = '<span style="font-size:1.4rem;" aria-hidden="true">🔒</span><div><b>Privacy & Protection:</b> Student inquiries remain masked until authorized. After verification, all personal details and direct messaging are permanently unlocked.</div>';
+ v.appendChild(info);
+
  var box=el('section','box');var list=el('div');box.appendChild(list);v.appendChild(box);
  if(window.ModivsChat) ModivsChat.inbox(list,function(c){ModivsChat.open({student:c.student,tutor:c.tutor});});
 }
@@ -378,18 +648,132 @@ function vProfile(v){
  var t=window.MY_TUTOR||{};
  var ph=el('div','');ph.style.cssText='display:flex;align-items:center;gap:14px;text-align:left;margin-bottom:12px';
  var av=el('div','ava');av.style.margin='0';
- if(t.photo){var im=document.createElement('img');im.src=t.photo;im.alt='Your profile photo';av.appendChild(im)}else{av.textContent=((t.name||'Priya Sharma').split(' ').map(function(w){return w[0]}).slice(0,2).join('')).toUpperCase()}
- ph.appendChild(av);var pn=el('div');pn.appendChild(el('b','',t.name||'Priya Sharma'));if(!t.photo){var np=el('small','','No profile photo yet. Add one from Edit profile.');np.style.display='block';pn.appendChild(np)}ph.appendChild(pn);box.appendChild(ph);
+ if(t.photo){var im=document.createElement('img');im.src=t.photo;im.alt='Your profile photo';av.appendChild(im)}else{av.textContent=((t.name||'Tutor').split(' ').map(function(w){return w[0]}).slice(0,2).join('')).toUpperCase()}
+ ph.appendChild(av);var pn=el('div');pn.appendChild(el('b','',t.name||'Tutor'));if(!t.photo){var np=el('small','','No profile photo yet. Add one from Edit profile.');np.style.display='block';pn.appendChild(np)}ph.appendChild(pn);box.appendChild(ph);
  function list(a,d){return a&&a.length?a.join(', '):d}
- var u=el('ul','kv');[['Name',t.name||'Priya Sharma'],['About',t.bio||'Not added'],['Headline',t.headline||'Maths tutor for classes 9–12 with 8 years’ experience'],['City',t.city||'Ludhiana'],['Mobile number',t.phone||'—'],['Alternate number',t.altPhone||'Not added'],['WhatsApp number',t.whatsapp||'Not added'],['Qualification',t.qual||(t.quals&&t.quals[0]&&t.quals[0].degree?t.quals[0].degree+', '+(t.quals[0].inst||''):'M.Sc. Mathematics, Panjab University')],['Experience',(t.years!=null?t.years:(t.totalYears!=null&&t.totalYears!==''?t.totalYears:8))+' years'],['Subjects',list(t.subs||t.subjects,'Mathematics, Physics')],['Levels',list(t.levels,'Secondary, Senior secondary')],['Fee','₹'+(t.fee||600)+' / hour'],['Group fee',t.groupFee?'₹'+t.groupFee+' / student / hour':'Not offered'],['Boards',list(t.boards,'Not added')],['Teaching format',list(t.formats,'1-on-1 Individual tuition')],['Mode',list(t.modes,'Online, at student’s home')],['Languages',list(t.langs,'English, Hindi, Punjabi')],['Verification',t.status?(t.status==='approved'?'Verified':(t.status==='rejected'?'Changes needed':'Pending')):'Pending']].forEach(function(p){var li=el('li');li.appendChild(el('span','',p[0]));li.appendChild(el('span','',p[1]));u.appendChild(li)});
+ var u=el('ul','kv');[['Name',t.name||'Tutor'],['About',t.bio||'Not added'],['Headline',t.headline||'Not added'],['City',t.city||'Not added'],['Mobile number',t.phone||'—'],['Alternate number',t.altPhone||'Not added'],['WhatsApp number',t.whatsapp||'Not added'],['Qualification',t.qual||(t.quals&&t.quals[0]&&t.quals[0].degree?t.quals[0].degree+', '+(t.quals[0].inst||''):'Not added')],['Experience',(t.years!=null?t.years+' years':(t.totalYears!=null&&t.totalYears!==''?t.totalYears+' years':'Not added'))],['Subjects',list(t.subs||t.subjects,'Not added')],['Levels',list(t.levels,'Not added')],['Fee',t.fee?'₹'+t.fee+' / hour':'Not added'],['Group fee',t.groupFee?'₹'+t.groupFee+' / student / hour':'Not offered'],['Boards',list(t.boards,'Not added')],['Teaching format',list(t.formats,'Not added')],['Mode',list(t.modes,'Not added')],['Languages',list(t.langs,'Not added')],['Verification',t.status?(t.status==='approved'?'Verified':(t.status==='rejected'?'Changes needed':'Pending')):'Pending']].forEach(function(p){var li=el('li');li.appendChild(el('span','',p[0]));li.appendChild(el('span','',p[1]));u.appendChild(li)});
  box.appendChild(u);var b=el('button','b y','Edit profile');b.type='button';b.style.marginTop='16px';b.addEventListener('click',editProfile);box.appendChild(b);v.appendChild(box)
 }
 function vCredits(v){
- v.appendChild(el('h1','','My Credits'));v.appendChild(el('p','sub','Each lead you unlock costs '+COST+' coins.'));
- var s=el('div','stats');s.appendChild(stat('Available Coins',state.coins,'hi'));s.appendChild(stat('Leads you can unlock',Math.floor(state.coins/COST)));v.appendChild(s);
- var pk=el('section','box');pk.appendChild(el('h2','','Recharge'));var g=el('div','packs');
- PACKS.forEach(function(p){var b=el('button','pack');b.type='button';b.appendChild(el('b','',p[0]+' coins'));b.appendChild(el('small','',p[1]));b.addEventListener('click',function(){recharge(p[0],p[1])});g.appendChild(b)});pk.appendChild(g);v.appendChild(pk);
- var h=el('section','box');h.appendChild(el('h2','','History'));hist.forEach(function(x){var r=el('div','row'),d=el('div');d.appendChild(el('p','',x.t));d.appendChild(el('small','',x.d));r.appendChild(d);r.appendChild(el('span','amt '+(x.a>0?'pos':'neg'),(x.a>0?'+':'')+x.a));h.appendChild(r)});v.appendChild(h)
+ v.appendChild(el('h1','','My Credits & Membership'));
+ v.appendChild(el('p','sub','Manage your coin balance, active membership plan, and transaction history.'));
+
+ var em = currentTutorEmail();
+ var mem = window.ModivsChat ? ModivsChat.getTutorMembership(em) : { planName: 'Standard Plan', status: 'active', isValid: true };
+ state.coins = window.ModivsChat ? ModivsChat.getTutorCoins(em) : state.coins;
+
+ var s=el('div','stats');
+ s.appendChild(stat('Available Coins',state.coins,'hi'));
+ s.appendChild(stat('Inquiries You Can Unlock',Math.floor(state.coins/COST)));
+ s.appendChild(stat('Membership Status', mem.isValid ? 'Active ✓' : 'Expired / None', mem.isValid ? '' : 'hi'));
+ v.appendChild(s);
+
+ // 1. Membership Plan Overview Card
+ var memBox = el('section','box');
+ var memHd = el('div','head');
+ memHd.appendChild(el('h2','','Current Membership Plan'));
+ var chgBtn = el('button','b y', mem.isValid ? 'Upgrade / Extend Plan' : 'Re-Purchase Plan');
+ chgBtn.type = 'button';
+ chgBtn.addEventListener('click', openMembershipModal);
+ memHd.appendChild(chgBtn);
+ memBox.appendChild(memHd);
+
+ var memUl = el('ul','kv');
+ var expDateStr = mem.validUntil ? new Date(mem.validUntil).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'No active plan';
+ var startDateStr = mem.startedAt ? new Date(mem.startedAt).toLocaleDateString([], { month: 'short', day: 'numeric', year: 'numeric' }) : 'Today';
+ var statusText = mem.isValid ? ('Active (' + (mem.daysLeft !== undefined ? mem.daysLeft : 30) + ' days remaining)') : (mem.status === 'expired' ? 'Expired (After 30 days - Re-purchase required)' : 'No Active Plan');
+
+ [
+   ['Plan Tier', mem.planName || 'None'],
+   ['Status', statusText],
+   ['Plan Started (Day 1)', startDateStr],
+   ['Plan Expiry Date', expDateStr],
+   ['Cost per Inquiry', COST + ' coins']
+ ].forEach(function(pair){
+   var li = el('li');
+   li.appendChild(el('span','',pair[0]));
+   li.appendChild(el('span','',pair[1]));
+   memUl.appendChild(li);
+ });
+ memBox.appendChild(memUl);
+
+ if(!mem.isValid){
+   var warnBox = el('div');
+   warnBox.style.cssText = 'background:#fef2f2;border:1.5px solid #fecaca;border-radius:10px;padding:12px 14px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px;';
+   warnBox.innerHTML = '<div><b style="color:#b91c1c;">Membership Expired!</b><p style="margin:2px 0 0 0;font-size:0.85rem;color:#7f1d1d;">Your plan validity has ended. Re-purchase a plan to unlock student inquiries and chat.</p></div>';
+   var reBtn = el('button','b y','Re-Purchase Plan & Pay Online');
+   reBtn.type = 'button';
+   reBtn.addEventListener('click', openMembershipModal);
+   warnBox.appendChild(reBtn);
+   memBox.appendChild(warnBox);
+ }
+ v.appendChild(memBox);
+
+ // 2. Membership Plans Tiers with Online Payment Gateway integration
+ var plansBox = el('section','box');
+ plansBox.appendChild(el('h2','','Available Membership Plans'));
+ var plansGrid = el('div','packs');
+ MEM_PLANS.forEach(function(p){
+   var b = el('button','pack');
+   b.type = 'button';
+   b.style.textAlign = 'left';
+
+   var isCurrent = mem.isValid && mem.planName === p[0];
+   var isHigher = mem.isValid && !isCurrent && (
+     (mem.planName === 'Standard Plan' && (p[0] === 'Professional Plan' || p[0] === 'Premium Plan')) ||
+     (mem.planName === 'Professional Plan' && p[0] === 'Premium Plan')
+   );
+
+   var badgeText = isCurrent ? ('Extend (+' + p[1] + 'd)') : (isHigher ? 'Upgrade Plan ⭐' : (mem.status === 'expired' ? 'Re-Purchase Plan' : 'Select & Pay Online'));
+
+   b.innerHTML = '<b style="font-size:1.15rem;">' + p[0] + '</b>' +
+     '<span style="font-size:1.25rem;font-weight:800;color:var(--navy);display:block;margin:4px 0;">' + p[2] + '</span>' +
+     '<small>' + p[4] + '</small>' +
+     '<div style="margin-top:12px;"><span class="badge" style="background:var(--navy);color:var(--cream);padding:6px 10px;">' + badgeText + '</span></div>';
+
+   b.addEventListener('click', function(){
+     openOnlinePayment(p[0], p[1], p[2], p[3], isHigher);
+   });
+   plansGrid.appendChild(b);
+ });
+ plansBox.appendChild(plansGrid);
+ v.appendChild(plansBox);
+
+ // 3. Recharge Coins Card
+ var pk=el('section','box');
+ pk.appendChild(el('h2','','Recharge Coins'));
+ var g=el('div','packs');
+ PACKS.forEach(function(p){
+   var b=el('button','pack');
+   b.type='button';
+   b.appendChild(el('b','',p[0]+' coins'));
+   b.appendChild(el('small','',p[1]));
+   b.addEventListener('click',function(){recharge(p[0],p[1])});
+   g.appendChild(b);
+ });
+ pk.appendChild(g);
+ v.appendChild(pk);
+
+ // 4. Transaction & Access History
+ var h=el('section','box');
+ h.appendChild(el('h2','','Coin Transactions & Inquiry Access Log'));
+ var txList = window.ModivsChat ? ModivsChat.getCoinTransactions(em) : hist;
+ if(!txList || !txList.length){
+   h.appendChild(el('p','empty','No transaction history yet.'));
+ } else {
+   txList.slice(0, 30).forEach(function(x){
+     var r=el('div','row'), d=el('div');
+     var title = x.description || x.t || 'Coin update';
+     var timeStr = x.createdAt ? new Date(x.createdAt).toLocaleDateString([], {month:'short', day:'numeric'}) + ' ' + new Date(x.createdAt).toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) : (x.d || 'Recent');
+     var amt = (x.amount !== undefined) ? x.amount : x.a;
+     d.appendChild(el('p','',title));
+     d.appendChild(el('small','',timeStr));
+     r.appendChild(d);
+     r.appendChild(el('span','amt '+(amt>0?'pos':'neg'),(amt>0?'+':'')+amt + ' coins'));
+     h.appendChild(r);
+   });
+ }
+ v.appendChild(h);
 }
 function vSettings(v){
  v.appendChild(el('h1','','Settings'));v.appendChild(el('p','sub','Choose how Modiv’s contacts you.'));
@@ -426,10 +810,10 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
   if(!tutor){
     tutor = {
       name: (authUser && authUser.name) || 'Tutor',
-      headline: 'Account Registered',
-      city: '—',
+      headline: '',
+      city: '',
       fee: 0,
-      status: 'pending'
+      status: 'incomplete'
     };
   }
 
@@ -439,9 +823,9 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
   // Update sidebar card
   var wEl = $('tutorWelcome'), hEl = $('tutorHeadline'), cEl = $('tutorCity'), fEl = $('tutorFee'), aEl = $('tutorAva'), pEl = $('verPill');
   if(wEl) wEl.textContent = 'Welcome, ' + tutor.name.split(' ')[0];
-  if(hEl) hEl.textContent = tutor.headline || 'Verified Tutor';
-  if(cEl) cEl.textContent = tutor.city || 'Ludhiana';
-  if(fEl) fEl.textContent = '₹' + (tutor.fee || 600) + ' / hour';
+  if(hEl) hEl.textContent = tutor.headline || (tutor.status === 'approved' ? 'Verified Tutor' : 'Tutor');
+  if(cEl) cEl.textContent = tutor.city || '—';
+  if(fEl) fEl.textContent = tutor.fee ? '₹' + tutor.fee + ' / hour' : 'Fee not set';
   if(aEl && tutor.photo){
     aEl.textContent = '';
     var pim = document.createElement('img');
@@ -456,7 +840,15 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
   // Render status banner and pill
   var b = $('statusBanner');
   if(b){
-    if(tutor.status === 'pending'){
+    if(tutor.status === 'incomplete'){
+      if(pEl){ pEl.textContent = 'Profile Incomplete'; pEl.style.background = '#ecdfc6'; pEl.style.color = 'var(--navy)'; }
+      b.innerHTML = '<div style="background:#fff9e6;border:1.5px solid var(--yellow);border-radius:14px;padding:16px 20px;margin-bottom:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">' +
+        '<span style="font-size:1.8rem;" aria-hidden="true">📝</span>' +
+        '<div style="flex:1;min-width:240px;"><h3 style="margin:0;font-size:1.05rem;color:var(--navy);">Create your tutor profile to get started.</h3>' +
+        '<p style="margin:4px 0 0;font-size:0.88rem;color:var(--muted);">Complete all steps and submit your documents. Our team will verify your profile before it goes live.</p></div>' +
+        '<a href="modivs-tutor-profile.html" class="b y" style="text-decoration:none;font-size:0.9rem;">Create profile &rarr;</a>' +
+      '</div>';
+    } else if(tutor.status === 'pending'){
       if(pEl){ pEl.textContent = 'Pending Approval'; pEl.style.background = '#ecdfc6'; pEl.style.color = 'var(--navy)'; }
       b.innerHTML = '<div style="background:#fff9e6;border:1.5px solid var(--yellow);border-radius:14px;padding:16px 20px;margin-bottom:22px;display:flex;align-items:center;gap:14px;">' +
         '<span style="font-size:1.8rem;" aria-hidden="true">⏳</span>' +
@@ -485,6 +877,11 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
     } else {
       // Approved
       if(pEl){ pEl.textContent = 'Approved & Published'; pEl.style.background = '#d9f0e3'; pEl.style.color = 'var(--ok)'; }
+      var apKey='modivs_approved_banner_seen', apMap={};
+      try{apMap=JSON.parse(localStorage.getItem(apKey)||'{}')}catch(x){}
+      var apId=(tutor.email||'tutor');
+      if(apMap[apId]){ b.innerHTML=''; b.style.display='none'; }
+      else {
       b.innerHTML = '<div style="background:#eef8f2;border:1.5px solid var(--ok);border-radius:14px;padding:16px 20px;margin-bottom:22px;display:flex;align-items:center;gap:14px;">' +
         '<span style="font-size:1.8rem;" aria-hidden="true">✅</span>' +
         '<div>' +
@@ -492,6 +889,8 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
           '<p style="margin:4px 0 0;font-size:0.88rem;color:var(--muted);">Your profile is active and publicly visible! Students and parents can discover you in tutor search results and send tuition requests.</p>' +
         '</div>' +
       '</div>';
+      try{apMap[apId]=new Date().toISOString();localStorage.setItem(apKey,JSON.stringify(apMap))}catch(x){}
+      }
     }
   }
 
@@ -527,22 +926,117 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
 })();
 
 function render(){
+ var em = currentTutorEmail();
+ if(window.ModivsChat && em){
+   state.coins = ModivsChat.getTutorCoins(em);
+   var mem = ModivsChat.getTutorMembership(em);
+   var badge = $('memPlanBadge');
+   var pill = $('memStatusPill');
+   if(badge) badge.textContent = mem.planName || 'Standard Plan';
+   if(pill){
+     pill.textContent = mem.isValid ? 'Active' : 'Expired';
+     pill.style.background = mem.isValid ? '#d9f0e3' : '#f7dcda';
+     pill.style.color = mem.isValid ? 'var(--ok)' : 'var(--bad)';
+   }
+ }
  $('coins').textContent=state.coins;nav();
  var v=$('view');v.innerHTML='';
- ({dash:vDash,leads:vLeads,profile:vProfile,chat:vChat,credits:vCredits,settings:vSettings})[state.view](v);
- if(window.ModivsChat && ModivsChat.checkTutorDashboardNotifications) ModivsChat.checkTutorDashboardNotifications();
+ ({dash:vDash,leads:vLeads,profile:vProfile,chat:vChat,credits:vCredits,settings:vSettings})[state.view](v)
 }
+
+// Setup Packs & Modal Listeners
 var pk=$('packs');PACKS.forEach(function(p){var b=el('button','pack');b.type='button';b.appendChild(el('b','',p[0]+' coins'));b.appendChild(el('small','',p[1]));b.addEventListener('click',function(){recharge(p[0],p[1])});pk.appendChild(b)});
 $('rech').addEventListener('click',openRecharge);$('close').addEventListener('click',function(){$('dlg').close()});
+
+renderMembershipPacks();
+
+// Payment Method Switching & Gateway Confirmation Listeners
+function setPayMethod(method){
+  ['upi','card','net'].forEach(function(m){
+    var btn = $('pm' + (m === 'upi' ? 'Upi' : (m === 'card' ? 'Card' : 'Net')));
+    var view = $('payView' + (m === 'upi' ? 'Upi' : (m === 'card' ? 'Card' : 'Net')));
+    if(btn){
+      if(m === method){
+        btn.style.borderColor = 'var(--navy)';
+        btn.style.borderWidth = '2px';
+        btn.style.background = '#eef4ff';
+      } else {
+        btn.style.borderColor = 'var(--line)';
+        btn.style.borderWidth = '1.5px';
+        btn.style.background = '#fff';
+      }
+    }
+    if(view) view.style.display = (m === method ? 'block' : 'none');
+  });
+}
+var pmUpi = $('pmUpi'); if(pmUpi) pmUpi.addEventListener('click', function(){ setPayMethod('upi'); });
+var pmCard = $('pmCard'); if(pmCard) pmCard.addEventListener('click', function(){ setPayMethod('card'); });
+var pmNet = $('pmNet'); if(pmNet) pmNet.addEventListener('click', function(){ setPayMethod('net'); });
+var payCancel = $('payCancelBtn'); if(payCancel) payCancel.addEventListener('click', function(){ $('payDlg').close(); });
+var payConfirm = $('payConfirmBtn');
+if(payConfirm){
+  payConfirm.addEventListener('click', function(){
+    if(!currentPendingPayment) return;
+    var btn = this;
+    btn.disabled = true;
+    btn.textContent = 'Processing Online Payment...';
+    var st = $('payStatusArea');
+    st.style.display = 'block';
+    st.style.background = '#eef4ff';
+    st.style.color = '#1d4ed8';
+    st.textContent = 'Connecting to Payment Gateway & Authorizing...';
+
+    setTimeout(function(){
+      var p = currentPendingPayment;
+      activateMembership(p.planName, p.days, p.price, p.bonusCoins, p.isUpgrade);
+
+      st.style.background = '#dcfce7';
+      st.style.color = '#15803d';
+      st.textContent = '✓ Payment Successful! Order ID: MOD_' + Date.now().toString(36).toUpperCase();
+
+      setTimeout(function(){
+        $('payDlg').close();
+        toast('Payment of ' + p.price + ' received! ' + p.planName + ' is now active for ' + p.days + ' days.');
+        render();
+      }, 500);
+    }, 800);
+  });
+}
+var memBtn = $('memBtn'); if(memBtn) memBtn.addEventListener('click', openMembershipModal);
+var closeMem = $('closeMem'); if(closeMem) closeMem.addEventListener('click', function(){ $('memDlg').close(); });
+
 $('editTop').addEventListener('click',editProfile);$('editLink').addEventListener('click',editProfile);
 $('ask').addEventListener('click',function(){toast('Support chat opens here once a WhatsApp number is connected.')});
+
+// Real-Time Incoming Student Inquiries Listener
+if(window.ModivsChat && window.MY_TUTOR && window.MY_TUTOR.email){
+  var myEmail = window.MY_TUTOR.email;
+  ModivsChat.listenForTeacherInquiries(myEmail, function(newInquiry){
+    ModivsChat.showTeacherInquiryPopup(newInquiry, function(){
+      render();
+    });
+  });
+
+  // Check if there is an unhandled locked inquiry on dashboard load
+  setTimeout(function(){
+    var pendingLocked = ModivsChat.conversations().find(function(c){
+      return (c.tutorEmail === myEmail || (c.tutor && c.tutor.email === myEmail)) && !c.unlocked;
+    });
+    if(pendingLocked){
+      ModivsChat.showTeacherInquiryPopup(pendingLocked, function(){
+        render();
+      });
+    }
+  }, 1000);
+}
+
 if(window.ModivsChat) ModivsChat.subscribe(render);
 render();
 })();
 </script>
 <!-- mv-footer -->
 <footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
 .mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
 .mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}

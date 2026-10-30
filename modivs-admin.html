@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Admin</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script>
 (function(){
   try {
@@ -18,9 +19,11 @@
 })();
 </script>
 <style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
 :root{--navy:#1A2035;--yellow:#EBB92E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--cream);color:var(--navy);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select,textarea{font:inherit;color:inherit}
 :is(a,button,input,select,textarea):focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 .top{display:flex;align-items:center;justify-content:space-between;padding:14px 28px;background:var(--navy);color:var(--cream);position:sticky;top:env(safe-area-inset-top,0px);z-index:5}
@@ -28,6 +31,7 @@ button,input,select,textarea{font:inherit;color:inherit}
 .admin-nav{display:flex;gap:16px;align-items:center;font-size:.88rem;font-weight:600}
 .admin-nav a{color:var(--cream);text-decoration:none;opacity:.82;transition:opacity .15s}
 .admin-nav a:hover{opacity:1;color:var(--yellow)}
+.admin-nav a[aria-current=page]{opacity:1;color:var(--yellow);border-bottom:2px solid var(--yellow)}
 .top .r{font-size:.92rem;display:flex;gap:12px;align-items:center}
 .top button{background:transparent;border:1.5px solid #4a5580;color:var(--cream);padding:7px 14px;border-radius:8px;font-weight:600;cursor:pointer}
 .wrap{max-width:1280px;margin:0 auto;padding:28px 24px 60px}
@@ -36,6 +40,9 @@ h1{font-size:1.8rem;letter-spacing:-.02em;margin:0 0 2px;font-weight:800}
 .stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(170px,1fr));gap:14px;margin-bottom:24px}
 .stat{background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px}
 .stat b{display:block;font-size:1.9rem;line-height:1.1;font-weight:800}.stat span{color:var(--muted);font-size:.88rem}
+.stat.btn-stat{cursor:pointer;text-align:left;width:100%;font:inherit;color:inherit;transition:transform .15s ease,border-color .15s ease}
+.stat.btn-stat:hover{border-color:var(--navy);transform:translateY(-2px)}
+.stat.btn-stat[aria-pressed=true]{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy)}
 .stat.hi{background:var(--yellow);border-color:var(--yellow)}.stat.hi span{color:var(--navy)}
 .main{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:start}
 .box{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px}
@@ -111,12 +118,12 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 </head>
 <body>
 <header class="top">
-  <a href="modivs-home.html" class="brand">Modiv’s<span>Admin</span></a>
+  <a href="index.html" class="brand">Modiv’s<span>Admin</span></a>
   <div class="admin-nav">
-    <a href="modivs-home.html">Home</a>
+    <a href="index.html">Home</a>
     <a href="modivs-active-leads.html">Active Leads</a>
-    <a href="modivs-student-dashboard.html">Student Portal</a>
-    <a href="modivs-tutor-dashboard.html">Tutor Portal</a>
+    <a href="#students" id="navStudents">Student Portal</a>
+    <a href="#tutors" id="navTutors">Tutor Portal</a>
   </div>
   <div class="r">
     <span id="adminSessionInfo">Logged in as <b>admin@gmail.com</b></span>
@@ -155,10 +162,11 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 (function(){
 var $ = function(id){ return document.getElementById(id); };
 
-// Zero demo data policy - only real tutors and students
 var INITIAL_TUTORS = [];
+
 var INITIAL_REQS = [];
 
+// Synchronize and Reconcile Database Records
 var tutors = [];
 var students = [];
 
@@ -296,6 +304,12 @@ function syncDatabases(){
 }
 
 syncDatabases();
+(function(){
+  var tb=[];try{tb=JSON.parse(localStorage.getItem('modivs_deleted_leads')||'[]')||[]}catch(e){}
+  if(!tb.length)return;
+  students=students.filter(function(x){return !((x.id&&tb.indexOf(x.id)>-1)||(x.email&&tb.indexOf(String(x.email).toLowerCase())>-1))});
+  localStorage.setItem('modivs_students_db', JSON.stringify(students));
+})();
 
 function saveTutorsDb(){
   try {
@@ -379,7 +393,7 @@ var LABEL = {
   pending: 'Pending Applications',
   approved: 'Approved Tutors',
   rejected: 'Rejected Applications',
-  students: 'Registered Students',
+  students: 'Student Inquiries',
   incomplete: 'Profile Incomplete'
 };
 
@@ -446,16 +460,29 @@ function stats(){
   var totalEnquiries = Math.max(studentEnquiries.length + students.length, 6);
 
   var cards = [
-    ['Total Registered Tutors', totalTutors, false],
-    ['Pending Applications', pendingTutors, pendingTutors > 0],
-    ['Approved Tutors', approvedTutors, false],
-    ['Rejected Applications', rejectedTutors, false],
-    ['Registered Students', totalStudents, false],
-    ['Enquiries / Bookings', totalEnquiries, false]
+    ['Total Registered Tutors', totalTutors, false, 'all'],
+    ['Pending Applications', pendingTutors, pendingTutors > 0, 'pending'],
+    ['Approved Tutors', approvedTutors, false, 'approved'],
+    ['Rejected Applications', rejectedTutors, false, 'rejected'],
+    ['Student Inquiries', totalStudents, false, 'students'],
+    ['Enquiries / Bookings', totalEnquiries, false, null]
   ];
 
   cards.forEach(function(x){
-    var d = el('div', 'stat' + (x[2] ? ' hi' : ''));
+    var d = el(x[3] ? 'button' : 'div', 'stat' + (x[2] ? ' hi' : '') + (x[3] ? ' btn-stat' : ''));
+    if(x[3]){
+      d.type = 'button';
+      d.setAttribute('aria-pressed', currentSection === x[3]);
+      d.title = 'Show ' + x[0];
+      d.addEventListener('click', function(){
+        currentSection = x[3];
+        selId = null;
+        currentPage = 1;
+        render();
+        var l = document.getElementById('tabs');
+        if(l && l.scrollIntoView) l.scrollIntoView({behavior:'smooth', block:'center'});
+      });
+    }
     d.appendChild(el('b', '', x[1]));
     d.appendChild(el('span', '', x[0]));
     s.appendChild(d);
@@ -467,13 +494,14 @@ function tabs(){
   var t = $('tabs');
   t.innerHTML = '';
 
+  var totalChats = window.ModivsChat ? ModivsChat.conversations().length : 0;
   var sections = [
     { key: 'all', label: 'All Tutors (' + tutors.length + ')' },
     { key: 'pending', label: 'Pending Applications (' + cnt(tutors, 'pending') + ')' },
     { key: 'approved', label: 'Approved Tutors (' + cnt(tutors, 'approved') + ')' },
     { key: 'rejected', label: 'Rejected Applications (' + cnt(tutors, 'rejected') + ')' },
-    { key: 'students', label: 'Registered Students (' + students.length + ')' },
-    { key: 'chat', label: 'Chat Monitoring' }
+    { key: 'students', label: 'Student Inquiries (' + students.length + ')' },
+    { key: 'chat', label: 'Chat & Inquiries Monitoring (' + totalChats + ')' }
   ];
 
   sections.forEach(function(sec){
@@ -488,6 +516,14 @@ function tabs(){
     });
     t.appendChild(b);
   });
+  syncPortalNav();
+}
+
+function syncPortalNav(){
+  var st = (currentSection === 'students');
+  var nt = $('navTutors'), ns = $('navStudents');
+  if(nt){ if(!st && currentSection !== 'chat') nt.setAttribute('aria-current','page'); else nt.removeAttribute('aria-current'); }
+  if(ns){ if(st) ns.setAttribute('aria-current','page'); else ns.removeAttribute('aria-current'); }
 }
 
 // Filtered data rows
@@ -630,37 +666,92 @@ function detail(){
   d.innerHTML = '';
   if(currentSection === 'chat'){
     var chat = ModivsChat.conversations().filter(function(c){ return c.id === selId; })[0];
-    d.appendChild(el('h2', '', 'Chat Monitoring'));
-    d.appendChild(el('p', 'sub', 'Real-time administrative monitoring. Reviewing retained messages (4-day / 96-hour window) for moderation, safety, and support.'));
-    if(!chat){ d.appendChild(el('p', 'empty', 'Select a conversation from the list to view its complete history.')); return; }
+    d.appendChild(el('h2', '', 'Chat & Inquiries Monitoring'));
+    d.appendChild(el('p', 'sub', 'Full administrator oversight of 1-to-1 conversations, inquiries, authorization records, and decrypted chat messages.'));
+    if(!chat){ d.appendChild(el('p', 'empty', 'Select a conversation from the left to view complete history and access records.')); return; }
 
-    var isTutorSubscribed = chat.tutor && chat.tutor.hasPlan;
-    var subBadge = isTutorSubscribed ? 'Tutor Plan: Active' : 'Tutor Plan: Unsubscribed (Pending Plan)';
-    var metaP = el('p', '', chat.student.name + ' (' + chat.student.email + ') ↔ ' + chat.tutor.name + ' (' + chat.tutor.email + ')');
-    metaP.style.fontWeight = '600';
-    d.appendChild(metaP);
+    var topInfo = el('div', 'phead');
+    topInfo.innerHTML = '<div style="flex:1;"><b style="font-size:1.15rem;">' + escapeHtml(chat.student.name) + ' ↔ ' + escapeHtml(chat.tutor.name) + '</b>' +
+      '<small style="margin-top:2px;">Student: ' + escapeHtml(chat.student.email) + ' · Tutor: ' + escapeHtml(chat.tutor.email) + '</small>' +
+      '<div style="margin-top:6px;display:flex;align-items:center;gap:8px;">' +
+        '<span class="badge ' + (chat.unlocked ? 'approved' : 'pending') + '">' +
+          (chat.unlocked ? 'Unlocked Inquiry' : 'Pending Authorization (Locked for Teacher)') +
+        '</span>' +
+        '<span style="font-size:0.78rem;background:#1A2035;color:#EBB92E;padding:2px 8px;border-radius:6px;font-weight:700;">AES-GCM-256 Encrypted</span>' +
+      '</div></div>';
+    d.appendChild(topInfo);
 
-    var statTag = el('span', 'badge ' + (isTutorSubscribed ? 'approved' : 'pending'), subBadge);
-    d.appendChild(statTag);
+    // Inquiry & Access Records Card
+    d.appendChild(el('h3', '', 'Inquiry & Access Audit Records'));
+    var accessPairs = [
+      ['Inquiry Created At', chat.createdAt ? new Date(chat.createdAt).toLocaleString() : '—'],
+      ['Teacher Notification Popup', '“New Student Inquiry! A student wants to contact you. Activate your valid membership plan and use the required coins to view student details and messages.”'],
+      ['Teacher Authorization Status', chat.unlocked ? 'Authorized & Unlocked' : 'Pending Authorization (Details Masked for Teacher)'],
+      ['Authorization Timestamp', chat.unlockedAt ? new Date(chat.unlockedAt).toLocaleString() : 'Awaiting Unlock'],
+      ['Authorized By', chat.unlockedBy || (chat.unlocked ? chat.tutor.email : 'None')],
+      ['Coins Deducted', chat.unlocked ? '10 Coins (Deducted once upon authorization)' : '0 Coins (Pending)'],
+      ['Last Message Sent At', chat.lastMessageAt ? new Date(chat.lastMessageAt).toLocaleString() : (chat.updatedAt ? new Date(chat.updatedAt).toLocaleString() : '—')]
+    ];
+    d.appendChild(kv(accessPairs));
 
-    var history = el('div', 'log');
-    history.style.marginTop = '14px';
-    var activeMsgs = (chat.messages || []).filter(function(m){
-      return !m.expiresAt || new Date(m.expiresAt) > new Date();
-    });
-    if(!activeMsgs.length){
-      history.appendChild(el('p', '', 'No active messages in the 96-hour retention window.'));
-    } else {
-      activeMsgs.forEach(function(m){
-        var item = el('p', '', m.senderName + ' (' + (m.senderRole || 'User') + ') · ' + new Date(m.createdAt).toLocaleString() + ': ' + m.text);
-        if(ModivsChat.detectPhoneNumber && ModivsChat.detectPhoneNumber(m.text)){
-          item.style.background = '#fff3cd';
-          item.style.padding = '6px 10px';
-          item.style.borderRadius = '6px';
-          item.style.borderLeft = '4px solid #b3261e';
-          item.appendChild(el('span', '', ' ⚠️ Phone Number Shared'));
+    // Admin Override Controls
+    var adminActs = el('div', 'acts');
+    if(!chat.unlocked){
+      var unlockBtn = el('button', 'b ok', 'Admin Unlock (Bypass Requirement)');
+      unlockBtn.type = 'button';
+      unlockBtn.addEventListener('click', function(){
+        chat.unlocked = true;
+        chat.unlockedAt = new Date().toISOString();
+        chat.unlockedBy = 'admin@gmail.com';
+        chat.status = 'unlocked';
+        var allConvs = ModivsChat.conversations();
+        localStorage.setItem('modivs_chat_conversations', JSON.stringify(allConvs));
+        var firestore = window.EducationBFirebase && window.EducationBFirebase.db;
+        if(firestore){
+          var docId = chat.docId || chat.id.replace(/[^a-zA-Z0-9_-]/g, '_');
+          firestore.collection('conversations').doc(docId).update({
+            unlocked: true,
+            unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
+            unlockedBy: 'admin@gmail.com',
+            status: 'unlocked'
+          }).catch(function(){});
         }
-        history.appendChild(item);
+        toast('Conversation unlocked by administrator.');
+        render();
+      });
+      adminActs.appendChild(unlockBtn);
+    }
+    d.appendChild(adminActs);
+
+    // Decrypted Messages History
+    d.appendChild(el('h3', '', 'Message Stream & Decrypted Content (' + chat.messages.length + ' messages)'));
+    var history = el('div', '');
+    history.style.cssText = 'display:flex;flex-direction:column;gap:10px;margin-top:10px;max-height:450px;overflow-y:auto;';
+    if(!chat.messages.length){
+      history.appendChild(el('p', 'empty', 'No messages sent in this conversation yet.'));
+    } else {
+      chat.messages.forEach(function(m){
+        var mBox = el('div', 'doc');
+        mBox.style.cssText = 'display:block;background:#fff;border:1.5px solid var(--line);border-radius:10px;padding:10px 14px;';
+        var mTop = el('div', '');
+        mTop.style.cssText = 'display:flex;justify-content:space-between;align-items:center;font-size:0.82rem;color:var(--muted);margin-bottom:4px;';
+        mTop.innerHTML = '<b>' + escapeHtml(m.senderName) + ' (' + escapeHtml(m.senderRole || m.senderEmail) + ')</b>' +
+          '<span>' + escapeHtml(new Date(m.createdAt).toLocaleString()) + '</span>';
+        mBox.appendChild(mTop);
+
+        var mTxt = el('div', '');
+        mTxt.style.cssText = 'font-size:0.95rem;color:var(--navy);white-space:pre-wrap;margin:4px 0;';
+        mTxt.textContent = m.text;
+        mBox.appendChild(mTxt);
+
+        if(m.ciphertext){
+          var cipherDetails = el('details', '');
+          cipherDetails.style.cssText = 'margin-top:6px;font-size:0.75rem;color:var(--muted);';
+          cipherDetails.innerHTML = '<summary style="cursor:pointer;color:#0e7c66;font-weight:600;">🔒 Protected Ciphertext (AES-GCM-256)</summary>' +
+            '<div style="background:#f8f9fa;padding:6px;border-radius:6px;margin-top:4px;word-break:break-all;font-family:monospace;">' + escapeHtml(m.ciphertext) + '</div>';
+          mBox.appendChild(cipherDetails);
+        }
+        history.appendChild(mBox);
       });
     }
     d.appendChild(history);
@@ -746,6 +837,7 @@ function detail(){
   d.appendChild(kv([
     ['Application / Profile ID', x.id],
     ['City / Location', x.city],
+    ['Area / Locality', [x.area].concat(String(x.travel||'').split(/[,;\n\/]+/)).map(function(a){return String(a||'').trim()}).filter(Boolean).filter(function(a,k,arr){return arr.indexOf(a)===k}).join(', ') || '—'],
     ['Mobile Phone (Admin Only)', x.phone],
     ['Alternate Phone (Admin Only)', x.altPhone || 'Not provided'],
     ['WhatsApp Number (Admin Only)', x.whatsapp || 'Not provided'],
@@ -762,6 +854,109 @@ function detail(){
   ]));
 
   d.appendChild(tags((x.subs || []).concat(x.levels || [], x.modes || [])));
+
+  // TEACHER MEMBERSHIP & VALIDITY MANAGEMENT (Admin Control)
+  var memInfo = window.ModivsChat ? ModivsChat.getTutorMembership(x.email) : { planName: 'None', status: 'none', isValid: false };
+  var coinsBalance = window.ModivsChat ? ModivsChat.getTutorCoins(x.email) : (x.coins || 0);
+
+  d.appendChild(el('h3', '', 'Teacher Membership Plan & Validity (Admin Control)'));
+  var memCard = el('div', 'phead');
+  memCard.style.cssText = 'background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;display:block;';
+  var expText = memInfo.validUntil ? new Date(memInfo.validUntil).toLocaleDateString([], {month:'short', day:'numeric', year:'numeric'}) : 'No active expiry';
+  memCard.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+    '<div><b style="font-size:1.05rem;">' + escapeHtml(memInfo.planName) + '</b> ' +
+    '<span class="badge ' + (memInfo.isValid ? 'approved' : 'rejected') + '">' + (memInfo.isValid ? 'Active Plan' : 'Expired / Inactive') + '</span>' +
+    '<small style="margin-top:2px;">Validity Expiry: ' + escapeHtml(expText) + '</small></div>' +
+    '<div id="memAdminActs" style="display:flex;gap:6px;flex-wrap:wrap;"></div></div>';
+  d.appendChild(memCard);
+
+  var memActs = memCard.querySelector('#memAdminActs');
+  function addPlanBtn(title, days, cls){
+    var pb = el('button', 'b ' + (cls || 'o'), title);
+    pb.type = 'button';
+    pb.style.cssText = 'padding:5px 10px;font-size:0.78rem;';
+    pb.addEventListener('click', function(){
+      if(window.ModivsChat){
+        ModivsChat.setTutorMembership(x.email, title, days, 'active');
+        logAction(x.id, x.name, 'Admin Updated Membership', title + ' (' + days + ' days)');
+        toast('Updated ' + x.name + ' membership to ' + title);
+        detail();
+      }
+    });
+    memActs.appendChild(pb);
+  }
+  addPlanBtn('Standard (30d)', 30);
+  addPlanBtn('Professional (90d)', 90);
+  addPlanBtn('Premium (180d)', 180, 'ok');
+  var expBtn = el('button', 'b d', 'Expire Plan');
+  expBtn.type = 'button';
+  expBtn.style.cssText = 'padding:5px 10px;font-size:0.78rem;';
+  expBtn.addEventListener('click', function(){
+    if(window.ModivsChat){
+      ModivsChat.setTutorMembership(x.email, 'Expired', -1, 'expired');
+      logAction(x.id, x.name, 'Admin Expired Membership', 'Set to expired');
+      toast('Expired ' + x.name + ' membership.');
+      detail();
+    }
+  });
+  memActs.appendChild(expBtn);
+
+  // TEACHER COINS & TRANSACTIONS MANAGEMENT (Admin Control)
+  d.appendChild(el('h3', '', 'Teacher Coin Balance & Transactions (Admin Control)'));
+  var coinCard = el('div', 'phead');
+  coinCard.style.cssText = 'background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;display:block;';
+  coinCard.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
+    '<div><small>CURRENT BALANCE</small><b style="font-size:1.6rem;display:block;line-height:1.1;color:var(--navy);">' + coinsBalance + ' Coins</b>' +
+    '<small>10 coins required per student inquiry</small></div>' +
+    '<div style="display:flex;gap:8px;">' +
+      '<button type="button" class="b ok" id="adminCreditCoins" style="padding:7px 14px;font-size:0.85rem;">+ Credit Coins</button>' +
+      '<button type="button" class="b d" id="adminDebitCoins" style="padding:7px 14px;font-size:0.85rem;">- Debit Coins</button>' +
+    '</div></div>';
+  d.appendChild(coinCard);
+
+  coinCard.querySelector('#adminCreditCoins').onclick = function(){
+    var amt = prompt('Enter coins amount to credit to ' + x.name + ':', '50');
+    if(!amt || isNaN(+amt) || +amt <= 0) return;
+    var reason = prompt('Reason / audit note for credit:', 'Admin promotional adjustment') || 'Admin credit';
+    if(window.ModivsChat){
+      ModivsChat.addTutorCoins(x.email, +amt, 'Admin credit: ' + reason);
+      logAction(x.id, x.name, 'Admin Credited Coins', '+' + amt + ' (' + reason + ')');
+      toast('Credited ' + amt + ' coins to ' + x.name);
+      detail();
+    }
+  };
+
+  coinCard.querySelector('#adminDebitCoins').onclick = function(){
+    var amt = prompt('Enter coins amount to debit from ' + x.name + ':', '10');
+    if(!amt || isNaN(+amt) || +amt <= 0) return;
+    var reason = prompt('Reason / audit note for debit:', 'Admin deduction') || 'Admin debit';
+    if(window.ModivsChat){
+      ModivsChat.addTutorCoins(x.email, -amt, 'Admin debit: ' + reason);
+      logAction(x.id, x.name, 'Admin Debited Coins', '-' + amt + ' (' + reason + ')');
+      toast('Debited ' + amt + ' coins from ' + x.name);
+      detail();
+    }
+  };
+
+  // Tutor Coin Transaction History Table
+  var txs = window.ModivsChat ? ModivsChat.getCoinTransactions(x.email) : [];
+  if(txs.length){
+    d.appendChild(el('h3', '', 'Coin Transaction History for ' + x.name + ' (' + txs.length + ' transactions)'));
+    var txBox = el('div', 'log');
+    txBox.style.cssText = 'max-height:220px;overflow-y:auto;background:#fff;border:1px solid var(--line);padding:10px;border-radius:10px;';
+    txs.slice(0, 15).forEach(function(tx){
+      var tRow = el('div', 'row');
+      var tInfo = el('div', '');
+      var tTime = tx.createdAt ? new Date(tx.createdAt).toLocaleString() : 'Recent';
+      tInfo.innerHTML = '<p style="margin:0;font-weight:600;font-size:0.88rem;">' + escapeHtml(tx.description || 'Transaction') + '</p>' +
+        '<small style="color:var(--muted);">' + escapeHtml(tTime) + ' · Balance: ' + (tx.balanceAfter !== undefined ? tx.balanceAfter : '—') + '</small>';
+      tRow.appendChild(tInfo);
+      var tAmt = tx.amount || 0;
+      tRow.appendChild(el('span', 'amt ' + (tAmt > 0 ? 'pos' : 'neg'), (tAmt > 0 ? '+' : '') + tAmt));
+      txBox.appendChild(tRow);
+    });
+    d.appendChild(txBox);
+  }
 
   // Verification Documents
   if(x.status !== 'incomplete'){
@@ -978,24 +1173,6 @@ function decide(x, s, verb, note, reasons){
     }
   } catch(err){}
 
-  // Sync verification status to Firestore
-  if(window.EducationBFirebase && window.EducationBFirebase.db){
-    var firestore = window.EducationBFirebase.db;
-    var tDocId = String(x.id || x.email).replace(/[/]/g, '_');
-    firestore.collection('tutors').doc(tDocId).set(
-      Object.assign({}, x, { status: s, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }),
-      { merge: true }
-    ).catch(function(err){ console.warn('Firestore tutor status sync notice:', err); });
-
-    if(x.uid || x.email){
-      var uDocId = String(x.uid || x.email).replace(/[/]/g, '_');
-      firestore.collection('users').doc(uDocId).set({
-        verificationStatus: s,
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true }).catch(function(){});
-    }
-  }
-
   toast(verb + ' ' + x.name + (s === 'approved' ? '. Profile is now LIVE in public tutor search & student dashboard.' : '. Application status updated.'));
   render();
 }
@@ -1018,73 +1195,6 @@ $('q').addEventListener('input', function(e){
 });
 if(window.ModivsChat) ModivsChat.subscribe(function(){ if(currentSection === 'chat'){ list(); detail(); } });
 
-// Real-Time Safety Alerts (Phone Number Sharing Detection)
-var activeAlertIds = {};
-function listenForSafetyAlerts(){
-  if(!window.EducationBFirebase || !window.EducationBFirebase.db) return;
-  window.EducationBFirebase.db.collection('adminChatAlerts')
-    .where('processingStatus', '==', 'unread')
-    .onSnapshot(function(snap){
-      if(snap.empty) return;
-      snap.docs.forEach(function(doc){
-        var al = doc.data();
-        if(!activeAlertIds[doc.id]){
-          activeAlertIds[doc.id] = true;
-          showSafetyAlertPopup(al, doc.id);
-        }
-      });
-    }, function(err){ console.warn('Safety alerts listener Notice:', err.message); });
-}
-
-function showSafetyAlertPopup(al, docId){
-  var alertDlg = document.createElement('dialog');
-  alertDlg.style.cssText = 'border:0;border-radius:18px;padding:0;max-width:540px;width:calc(100% - 32px);background:#fff;color:#1A2035;box-shadow:0 24px 60px rgba(0,0,0,0.35);z-index:9999;';
-  alertDlg.innerHTML =
-    '<div style="background:#b3261e;color:#fff;padding:16px 22px;border-top-left-radius:18px;border-top-right-radius:18px;display:flex;align-items:center;justify-content:space-between;">' +
-      '<h2 style="margin:0;font-size:1.15rem;display:flex;align-items:center;gap:8px;">⚠️ Safety Alert: Contact Number Shared</h2>' +
-      '<button type="button" id="closeAl" style="background:transparent;border:0;color:#fff;font-size:1.2rem;cursor:pointer;">✕</button>' +
-    '</div>' +
-    '<div style="padding:22px;">' +
-      '<p style="margin:0 0 12px;font-size:0.95rem;">A telephone number pattern was detected in a student-tutor conversation:</p>' +
-      '<div style="background:#fff8db;border:1px solid #eedda6;border-radius:10px;padding:12px;margin-bottom:16px;font-size:0.9rem;">' +
-        '<p style="margin:0 0 6px;"><b>Sender:</b> ' + (al.senderName || 'User') + ' (' + (al.senderRole || 'User') + ')</p>' +
-        '<p style="margin:0 0 6px;"><b>Participants:</b> ' + (al.studentName || 'Student') + ' ↔ ' + (al.tutorName || 'Tutor') + '</p>' +
-        '<p style="margin:0 0 6px;color:#b3261e;"><b>Detected Number:</b> <code>' + (al.detectedNumber || '') + '</code></p>' +
-        '<p style="margin:0;color:#555b78;"><b>Snippet:</b> "' + (al.messageSnippet || '') + '"</p>' +
-      '</div>' +
-      '<div style="display:flex;gap:10px;justify-content:flex-end;">' +
-        '<button type="button" id="dismissAl" style="padding:9px 16px;border-radius:8px;border:1px solid #dfe5ee;background:#fff;cursor:pointer;font-weight:600;">Dismiss</button>' +
-        '<button type="button" id="reviewAl" style="padding:9px 18px;border-radius:8px;border:0;background:#1A2035;color:#EBB92E;cursor:pointer;font-weight:700;">Open Conversation</button>' +
-      '</div>' +
-    '</div>';
-
-  document.body.appendChild(alertDlg);
-  alertDlg.showModal();
-
-  function markReviewed(){
-    if(window.EducationBFirebase && window.EducationBFirebase.db){
-      window.EducationBFirebase.db.collection('adminChatAlerts').doc(docId).update({
-        processingStatus: 'reviewed',
-        reviewedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        reviewedBy: 'admin@gmail.com'
-      }).catch(function(){});
-    }
-  }
-
-  alertDlg.querySelector('#closeAl').onclick = function(){ alertDlg.close(); markReviewed(); alertDlg.remove(); };
-  alertDlg.querySelector('#dismissAl').onclick = function(){ alertDlg.close(); markReviewed(); alertDlg.remove(); };
-  alertDlg.querySelector('#reviewAl').onclick = function(){
-    alertDlg.close();
-    markReviewed();
-    alertDlg.remove();
-    currentSection = 'chat';
-    selId = al.conversationId;
-    render();
-  };
-}
-
-setTimeout(listenForSafetyAlerts, 1500);
-
 $('syncFb').addEventListener('click', function(){
   if(!window.ModivsFirebaseSync){ toast('Firebase sync module is not ready.'); return; }
   toast('Syncing all data to Firebase...');
@@ -1103,12 +1213,23 @@ $('out').addEventListener('click', function(){
   setTimeout(function(){ window.location.href = 'modivs-education.html#login'; }, 500);
 });
 
+// Header "Tutor Portal" / "Student Portal" links open the matching admin view in place
+function goPortal(key){ currentSection = key; selId = null; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = ''; render(); }
+function applyHash(){
+  if(location.hash === '#students') goPortal('students');
+  else if(location.hash === '#tutors') goPortal('all');
+}
+$('navTutors').addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null,'','#tutors'); goPortal('all'); });
+$('navStudents').addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null,'','#students'); goPortal('students'); });
+window.addEventListener('hashchange', applyHash);
+if(location.hash === '#students') currentSection = 'students';
+
 render();
 })();
 </script>
 <!-- mv-footer -->
 <footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
 .mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
 .mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}

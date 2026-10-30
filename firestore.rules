@@ -1,134 +1,207 @@
 rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
-    function signedIn() { return request.auth != null; }
-    function admin() {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
       return signedIn() && (
         request.auth.token.admin == true ||
-        request.auth.token.email == 'admin@gmail.com'
+        (request.auth.token.email != null && request.auth.token.email.lower() == 'admin@gmail.com')
       );
     }
-    function isOwner(uid) { return signedIn() && request.auth.uid == uid; }
 
-    function tutorHasActivePlan(tutorUid) {
-      let inUsers = exists(/databases/$(database)/documents/users/$(tutorUid)) &&
-        get(/databases/$(database)/documents/users/$(tutorUid)).data.subscription.active == true &&
-        (get(/databases/$(database)/documents/users/$(tutorUid)).data.subscription.expiresAt == null ||
-         request.time < get(/databases/$(database)/documents/users/$(tutorUid)).data.subscription.expiresAt);
-      let inTutors = exists(/databases/$(database)/documents/tutors/$(tutorUid)) &&
-        get(/databases/$(database)/documents/tutors/$(tutorUid)).data.subscription.active == true &&
-        (get(/databases/$(database)/documents/tutors/$(tutorUid)).data.subscription.expiresAt == null ||
-         request.time < get(/databases/$(database)/documents/tutors/$(tutorUid)).data.subscription.expiresAt);
-      return inUsers || inTutors;
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
     }
 
-    // Users Collection
+    function isEmail(email) {
+      return signedIn() && request.auth.token.email != null && email != null &&
+        request.auth.token.email.lower() == email.lower();
+    }
+
+    function isConversationParticipant(conv) {
+      return signedIn() && (
+        request.auth.uid == conv.studentId ||
+        request.auth.uid == conv.tutorId ||
+        isEmail(conv.studentEmail) ||
+        isEmail(conv.tutorEmail) ||
+        (conv.participantIds != null && (
+          request.auth.uid in conv.participantIds ||
+          (request.auth.token.email != null && request.auth.token.email.lower() in conv.participantIds)
+        ))
+      );
+    }
+
+    function isStudent(conv) {
+      return signedIn() && (
+        request.auth.uid == conv.studentId ||
+        isEmail(conv.studentEmail) ||
+        isEmail(conv.student.email)
+      );
+    }
+
+    function isTutor(conv) {
+      return signedIn() && (
+        request.auth.uid == conv.tutorId ||
+        isEmail(conv.tutorEmail) ||
+        isEmail(conv.tutor.email)
+      );
+    }
+
+    function isUnlockedConversation(conversationId) {
+      return get(/databases/$(database)/documents/conversations/$(conversationId)).data.unlocked == true;
+    }
+
+    // ==========================================
+    // 1. Users Collection
+    // ==========================================
     match /users/{uid} {
-      allow read: if signedIn();
-      allow create: if signedIn() && request.auth.uid == uid;
-      allow update: if isOwner(uid) || admin();
-      allow delete: if admin();
-    }
+      // Users can only view their own profile; Admin can view all
+      allow read: if isOwner(uid) || isAdmin();
 
-    // Tutors Directory
-    // Public read ONLY for approved tutors; pending/rejected tutors only visible to owner or admin
-    match /tutors/{tutorId} {
-      allow read: if resource.data.status == 'approved' ||
-        (signedIn() && (request.auth.uid == resource.data.uid || request.auth.token.email == resource.data.email)) ||
-        admin();
-      allow create: if signedIn();
-      allow update: if (signedIn() && (request.auth.uid == resource.data.uid || request.auth.token.email == resource.data.email)) || admin();
-      allow delete: if admin();
-    }
+      // Creation: cannot grant self admin privileges
+      allow create: if (isOwner(uid) && (!('role' in request.resource.data) || request.resource.data.role != 'Admin') && (!('admin' in request.resource.data) || request.resource.data.admin != true)) || isAdmin();
 
-    // Students Directory
-    // Student can read own profile; subscribed tutors and admin can read
-    match /students/{studentId} {
-      allow read: if signedIn() && (
-        request.auth.uid == resource.data.uid ||
-        request.auth.token.email == resource.data.email ||
-        admin() ||
-        tutorHasActivePlan(request.auth.uid)
+      // Update: users cannot tamper with role, admin status, inflated coins, or fake active membership
+      allow update: if isAdmin() || (
+        isOwner(uid) &&
+        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
+        (!('admin' in request.resource.data) || request.resource.data.admin == resource.data.admin) &&
+        (!('coins' in request.resource.data) || request.resource.data.coins <= resource.data.coins) &&
+        (!('membership' in request.resource.data) || request.resource.data.membership.status == resource.data.membership.status)
       );
-      allow create: if signedIn();
-      allow update: if (signedIn() && (request.auth.uid == resource.data.uid || request.auth.token.email == resource.data.email)) || admin();
-      allow delete: if admin();
+
+      allow delete: if isAdmin();
     }
 
-    // Leads & Enquiries
-    match /leads/{leadId} {
-      allow read: if true;
-      allow write: if signedIn() || admin();
+    // ==========================================
+    // 2. Tutors Directory
+    // ==========================================
+    match /tutors/{tutorId} {
+      // Approved profiles are public; unapproved profiles are only visible to the owner or admin
+      allow read: if isAdmin() || isOwner(tutorId) || isEmail(resource.data.email) || resource.data.status == 'approved';
+
+      allow create: if isOwner(tutorId) || isEmail(request.resource.data.email) || isAdmin();
+
+      allow update: if isAdmin() || (
+        (isOwner(tutorId) || isEmail(resource.data.email)) &&
+        (!('status' in request.resource.data) || request.resource.data.status == resource.data.status) &&
+        (!('coins' in request.resource.data) || request.resource.data.coins <= resource.data.coins) &&
+        (!('membership' in request.resource.data) || request.resource.data.membership.status == resource.data.membership.status)
+      );
+
+      allow delete: if isAdmin();
     }
+
+    // ==========================================
+    // 3. Students Directory
+    // ==========================================
+    match /students/{studentId} {
+      allow read: if isAdmin() || isOwner(studentId) || isEmail(resource.data.email);
+      allow create, update: if isOwner(studentId) || isEmail(request.resource.data.email) || isAdmin();
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 4. Inquiries & Requests
+    // ==========================================
+    match /inquiries/{inquiryId} {
+      allow read: if isAdmin() || isConversationParticipant(resource.data);
+      allow create: if isAdmin() || (signedIn() && (request.auth.uid == request.resource.data.studentId || isEmail(request.resource.data.studentEmail)));
+      allow update: if isAdmin() || isConversationParticipant(resource.data);
+      allow delete: if isAdmin();
+    }
+
     match /enquiries/{enquiryId} {
-      allow read: if signedIn();
-      allow write: if signedIn() || admin();
+      allow read: if isAdmin() || isConversationParticipant(resource.data);
+      allow create: if isAdmin() || signedIn();
+      allow update: if isAdmin() || isConversationParticipant(resource.data);
+      allow delete: if isAdmin();
     }
 
-    // 1-to-1 Conversations
+    // ==========================================
+    // 5. 1-to-1 Conversations & Messages
+    // ==========================================
     match /conversations/{conversationId} {
-      allow read: if admin() || (signedIn() && (
-        request.auth.uid == resource.data.studentId ||
-        request.auth.uid == resource.data.tutorId ||
-        request.auth.token.email in resource.data.participantIds ||
-        request.auth.uid in resource.data.participantIds
-      ));
-      allow create: if signedIn() && (
-        request.auth.uid == request.resource.data.studentId ||
-        request.auth.uid == request.resource.data.tutorId ||
-        request.auth.uid in request.resource.data.participantIds
-      ) && request.resource.data.participantIds.size() >= 2;
-      allow update: if admin() || (signedIn() && (
-        request.auth.uid == resource.data.studentId ||
-        request.auth.uid == resource.data.tutorId ||
-        request.auth.token.email in resource.data.participantIds ||
-        request.auth.uid in resource.data.participantIds
-      ));
-      allow delete: if admin();
+      // Both participants and admin can read conversation metadata
+      allow read: if isAdmin() || isConversationParticipant(resource.data);
 
-      // Messages Subcollection
+      // Student or Admin can initiate conversation
+      allow create: if isAdmin() || (signedIn() && (
+        request.auth.uid == request.resource.data.studentId ||
+        isEmail(request.resource.data.studentEmail) ||
+        isEmail(request.resource.data.student.email)
+      ));
+
+      // Student can update timestamps/lastMessage. Tutor can update only if unlocked or unlocking.
+      allow update: if isAdmin() ||
+        isStudent(resource.data) ||
+        (isTutor(resource.data) && (resource.data.unlocked == true || request.resource.data.unlocked == true));
+
+      allow delete: if isAdmin();
+
+      // Messages subcollection
       match /messages/{messageId} {
-        // Enforce 96-hour (4-day) auto-expiry cutoff on reads
-        // Enforce Tutor subscription requirement: Unsubscribed tutors cannot read message content
-        allow read: if (resource.data.expiresAt == null || resource.data.expiresAt > request.time) && (
-          admin() ||
-          (signedIn() && (
-            request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.studentId ||
-            request.auth.token.email == get(/databases/$(database)/documents/conversations/$(conversationId)).data.student.email
-          )) ||
-          (signedIn() && (
-            request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.tutorId ||
-            request.auth.token.email == get(/databases/$(database)/documents/conversations/$(conversationId)).data.tutor.email
-          ) && tutorHasActivePlan(request.auth.uid))
+        // Teacher can ONLY read messages if conversation has been unlocked!
+        allow read: if isAdmin() || (
+          signedIn() && (
+            isStudent(get(/databases/$(database)/documents/conversations/$(conversationId)).data) ||
+            (isTutor(get(/databases/$(database)/documents/conversations/$(conversationId)).data) && isUnlockedConversation(conversationId))
+          )
         );
 
-        allow create: if signedIn() && (
-          admin() ||
-          request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.studentId ||
-          request.auth.token.email == get(/databases/$(database)/documents/conversations/$(conversationId)).data.student.email ||
-          ((request.auth.uid == get(/databases/$(database)/documents/conversations/$(conversationId)).data.tutorId ||
-            request.auth.token.email == get(/databases/$(database)/documents/conversations/$(conversationId)).data.tutor.email) &&
-           tutorHasActivePlan(request.auth.uid))
-        ) && request.resource.data.senderId == request.auth.uid
-          && request.resource.data.text is string
-          && request.resource.data.text.size() > 0
-          && request.resource.data.text.size() <= 2000
-          && request.resource.data.messageType == 'text';
+        // Teacher can ONLY send message if conversation has been unlocked!
+        allow create: if isAdmin() || (
+          signedIn() && (
+            isStudent(get(/databases/$(database)/documents/conversations/$(conversationId)).data) ||
+            (isTutor(get(/databases/$(database)/documents/conversations/$(conversationId)).data) && isUnlockedConversation(conversationId))
+          )
+        );
 
-        allow update: if signedIn() && (
-          admin() ||
-          request.auth.uid in get(/databases/$(database)/documents/conversations/$(conversationId)).data.participantIds
-        ) && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readBy', 'processingStatus']);
-
-        allow delete: if admin() || (resource.data.expiresAt != null && resource.data.expiresAt <= request.time);
+        allow update, delete: if isAdmin();
       }
     }
 
-    // Admin Chat Safety Alerts
-    match /adminChatAlerts/{alertId} {
-      allow read: if admin();
-      allow create: if signedIn();
-      allow update, delete: if admin();
+    // ==========================================
+    // 6. Coin Transactions & Audit Log
+    // ==========================================
+    match /coin_transactions/{txId} {
+      allow read: if isAdmin() || (signedIn() && (
+        request.auth.uid == resource.data.tutorId ||
+        isEmail(resource.data.tutorEmail)
+      ));
+
+      allow create: if isAdmin() || (signedIn() && (
+        request.auth.uid == request.resource.data.tutorId ||
+        isEmail(request.resource.data.tutorEmail)
+      ));
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 7. Active Leads & Relationships
+    // ==========================================
+    match /leads/{leadId} {
+      allow read: if signedIn();
+      allow create, update: if isAdmin() || (signedIn() && (
+        request.auth.uid == request.resource.data.studentId ||
+        isEmail(request.resource.data.email)
+      ));
+      allow delete: if isAdmin();
+    }
+
+    match /relationships/{relId} {
+      allow read: if isAdmin() || (signedIn() && (
+        request.auth.uid == resource.data.studentId ||
+        request.auth.uid == resource.data.tutorId ||
+        isEmail(resource.data.studentEmail) ||
+        isEmail(resource.data.tutorEmail)
+      ));
+      allow write: if isAdmin() || signedIn();
     }
   }
 }

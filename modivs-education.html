@@ -1,22 +1,25 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="firebase-sync.js"></script>
 <style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
 :root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--err:#b3261e;
 box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
 html{scroll-padding-top:env(safe-area-inset-top,0px)}
-body{margin:0;background:var(--white);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+body{margin:0;background:var(--white);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input{font:inherit}
 .hide{display:none!important}
 
@@ -101,12 +104,6 @@ input.bad{border-color:var(--err)}
     <div class="msg" id="lMsg" role="alert"></div>
     <button class="btn" type="submit" id="lSubmitBtn">Log in</button>
     
-    <div id="demoPills" style="margin-top:16px;padding:12px;background:var(--mist);border-radius:10px;font-size:0.82rem;color:var(--muted);line-height:1.4;">
-      <div style="font-weight:600;color:var(--ink);margin-bottom:6px;">Demo quick access:</div>
-      <div id="demoBtns" style="display:flex;gap:8px;flex-wrap:wrap;">
-        <!-- Filled dynamically based on active tab -->
-      </div>
-    </div>
    </form>
    <p class="switch" id="signupSwitch">New here? <a id="signupLink" href="modivs-student-registration.html">Sign up as a student / parent</a></p>
   </div>
@@ -205,11 +202,7 @@ input.bad{border-color:var(--err)}
     if(mode === 'admin'){
       addBtn('Fill Admin (admin@gmail.com / Admin@12345)', '#14213d', 'admin@gmail.com', 'Admin@12345');
     } else if(mode === 'tutor'){
-      addBtn('Approved Tutor (Priya)', '#1d7a4d', 'priya@example.com', 'password123');
-      addBtn('Pending Tutor (Rahul)', '#b28900', 'rahul@example.com', 'password123');
-      addBtn('Rejected Tutor (Neha)', '#b3261e', 'neha@example.com', 'password123');
     } else {
-      addBtn('Quick Fill Student (aarav@example.com)', '#0e7c66', 'aarav@example.com', 'student123');
     }
   }
 
@@ -343,11 +336,11 @@ input.bad{border-color:var(--err)}
       }
 
       // 2. TUTOR LOGIN
-      if(loginMode === 'tutor' || emailVal === 'priya@example.com' || emailVal === 'rahul@example.com' || emailVal === 'neha@example.com' || emailVal === 'gurleen@example.com' || emailVal === 'amit@example.com'){
+      if(loginMode === 'tutor'){
         var allTutors = [];
         try { allTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]'); } catch(err){}
         var matchTutor = allTutors.find(function(t){ return t.email === emailVal; });
-        var tName = matchTutor ? matchTutor.name : (emailVal === 'priya@example.com' ? 'Priya Sharma' : emailVal.split('@')[0]);
+        var tName = matchTutor ? matchTutor.name : emailVal.split('@')[0];
         var tutorUser = { name: tName, email: emailVal, uid: firebaseUid, role: 'Tutor' };
         localStorage.setItem('modivs_auth_user', JSON.stringify(tutorUser));
         toast('Welcome back, ' + tName.split(' ')[0] + '! Opening Tutor Dashboard...');
@@ -357,7 +350,7 @@ input.bad{border-color:var(--err)}
 
       // 3. STUDENT / PARENT LOGIN
       var foundUser = users.find(function(x){ return x.email === emailVal; });
-      var studentName = foundUser ? foundUser.name : (emailVal === 'aarav@example.com' ? 'Aarav Sharma' : emailVal.split('@')[0]);
+      var studentName = foundUser ? foundUser.name : emailVal.split('@')[0];
       var studentUser = { name: studentName, email: emailVal, uid: firebaseUid, role: 'Student / Parent' };
       localStorage.setItem('modivs_auth_user', JSON.stringify(studentUser));
       toast('Welcome back, ' + studentName.split(' ')[0] + '! Opening Student Dashboard...');
@@ -374,10 +367,6 @@ input.bad{border-color:var(--err)}
         window.__firebaseLoginInProgress = false;
         if(emailVal === 'admin@gmail.com' && pw.value === 'Admin@12345'){
           proceedLogin('admin_local');
-          return;
-        }
-        if((emailVal === 'priya@example.com' || emailVal === 'amit@example.com' || emailVal === 'aarav@example.com') && pw.value.length >= 6){
-          proceedLogin('demo_user');
           return;
         }
         var found = users.find(function(x){ return x.email === emailVal; });
@@ -425,31 +414,6 @@ input.bad{border-color:var(--err)}
       localStorage.setItem('modivs_users', JSON.stringify(users));
     } catch(err){}
 
-    var tutorDocId = 't_user_' + (firebaseSignupUid || mail.replace(/[^a-z0-9]/gi, '_'));
-    var initialTutorData = {
-      id: tutorDocId,
-      uid: firebaseSignupUid,
-      name: newUser.name,
-      email: mail,
-      phone: '—',
-      city: '—',
-      headline: 'Account registered. Verification pending.',
-      qual: 'Profile setup pending',
-      years: 0,
-      subs: ['General'],
-      levels: ['Secondary'],
-      fee: 0,
-      modes: ['Online'],
-      langs: ['English'],
-      idType: 'Pending upload',
-      idFile: '',
-      cert: '',
-      sent: 'Just now',
-      status: 'pending',
-      submitted_at: new Date().toISOString(),
-      is_demo: false
-    };
-
     if(window.EducationBFirebase && window.EducationBFirebase.db){
       var uidKey = firebaseSignupUid || mail.replace(/[^a-z0-9]/gi, '_');
       window.EducationBFirebase.db.collection('users').doc(uidKey).set({
@@ -457,30 +421,40 @@ input.bad{border-color:var(--err)}
         email: mail,
         role: role,
         uid: firebaseSignupUid,
-        status: 'pending',
         createdAt: firebase.firestore.FieldValue.serverTimestamp()
       }, { merge: true }).catch(function(){});
-
-      window.EducationBFirebase.db.collection('tutors').doc(tutorDocId).set(Object.assign({}, initialTutorData, {
-        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-      }), { merge: true }).catch(function(){});
     }
 
-    localStorage.setItem('modivs_auth_user', JSON.stringify({ name: newUser.name, email: newUser.email, role: newUser.role, uid: firebaseSignupUid }));
+    localStorage.setItem('modivs_auth_user', JSON.stringify({ name: newUser.name, email: newUser.email, role: newUser.role }));
 
-    // Immediately track tutor in database so admin dashboard sees them
+    // Immediately track incomplete tutor in database so admin dashboard sees them
     try {
       var dbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
-      var tIdx = dbTutors.findIndex(function(t){ return t.email === mail; });
-      if(tIdx >= 0) dbTutors[tIdx] = Object.assign({}, dbTutors[tIdx], initialTutorData);
-      else dbTutors.unshift(initialTutorData);
-      localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
-
-      var q = JSON.parse(localStorage.getItem('modivs_submitted_tutors') || '[]');
-      var qIdx = q.findIndex(function(t){ return t.email === mail; });
-      if(qIdx >= 0) q[qIdx] = Object.assign({}, q[qIdx], initialTutorData);
-      else q.unshift(initialTutorData);
-      localStorage.setItem('modivs_submitted_tutors', JSON.stringify(q));
+      if(!dbTutors.some(function(t){ return t.email === mail; })){
+        dbTutors.push({
+          id: 't_user_' + (mail.replace(/[^a-z0-9]/gi, '_')),
+          name: newUser.name,
+          email: mail,
+          phone: '—',
+          city: '—',
+          headline: 'Account registered. Profile setup incomplete.',
+          qual: 'Profile setup pending',
+          years: 0,
+          subs: ['General'],
+          levels: ['Secondary'],
+          fee: 0,
+          modes: ['Online'],
+          langs: ['English'],
+          idType: 'Pending upload',
+          idFile: '',
+          cert: '',
+          sent: 'Registration completed',
+          status: 'incomplete',
+          submitted_at: new Date().toISOString(),
+          is_demo: false
+        });
+        localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
+      }
     } catch(err){}
 
     toast('Tutor account created! Redirecting to tutor profile setup...');
@@ -527,7 +501,7 @@ input.bad{border-color:var(--err)}
 </script>
 <!-- mv-footer -->
 <footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
 .mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
 .mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}

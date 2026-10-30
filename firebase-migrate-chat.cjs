@@ -64,8 +64,9 @@ async function migrateConversation(oldConversation) {
   return conversationId;
 }
 
-(async function(){
+(async function () {
   const migrated = [];
   for (const conversation of legacy) migrated.push(await migrateConversation(conversation));
   console.log('Migrated without deleting source data:', migrated);
+
 })().catch(error => { console.error(error); process.exitCode = 1; });

@@ -1,14 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
+<link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Edit tutor profile</title>
-<link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:wght@400;600;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
 :root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--tint:#e8f5f1;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--mist);color:var(--ink);font-family:"Bricolage Grotesque",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+body{margin:0;background:var(--mist);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select,textarea{font:inherit;color:inherit}
 .hide{display:none!important}
 .top{background:var(--white);border-bottom:1.5px solid var(--line);padding:8px 24px;position:sticky;top:0;z-index:10}
@@ -66,10 +69,7 @@ input:disabled{background:var(--mist);color:var(--muted)}
 .empty{text-align:center;padding:60px 0}
 @media(max-width:700px){.two{grid-template-columns:1fr}.top{padding:8px 14px}}
 </style>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="firebase-config.js"></script>
+<script src="modivs-places.js"></script>
 </head>
 <body>
 <header class="top"><div class="in">
@@ -132,7 +132,7 @@ function load(){
   var rec=db.find(function(t){return t.email===email})||null;
   if(!cur&&!rec)return null;
   // current_tutor holds the full form data; db entry may only hold admin-summary fields
-  var base={email:email,name:'',phone:'',altPhone:'',whatsapp:'',waSame:false,photo:'',photoBlur:false,city:'',gender:'',dob:'',headline:'',bio:'',langs:[],
+  var base={email:email,name:'',phone:'',altPhone:'',whatsapp:'',waSame:false,photo:'',photoBlur:false,city:'',area:'',gender:'',dob:'',headline:'',bio:'',langs:[],
     quals:[{degree:'',inst:'',field:'',year:''}],exp:[],totalYears:'',subjects:[],levels:[],boards:[],modes:['Online'],formats:['1-on-1 Individual tuition'],
     groupFee:'',maxBatch:'6 students',travel:'',fee:'',trial:'',avail:{},notice:'',idType:'',idName:'',certName:'',status:'pending'};
   var d=Object.assign({},base,rec||{},cur||{});
@@ -146,6 +146,12 @@ function load(){
   return d;
 }
 
+function cityList(){var o={};['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){try{(JSON.parse(localStorage.getItem(k)||'[]')||[]).forEach(function(t){if(t&&t.status==='approved'&&t.city&&!t.is_demo)o[String(t.city).trim()]=1})}catch(e){}});return Object.keys(o).sort()}
+function normCity(c){return String(c||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()})}
+function areaList(city){var o={},c=String(city||'').trim().toLowerCase();['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){try{(JSON.parse(localStorage.getItem(k)||'[]')||[]).forEach(function(t){if(t&&t.status==='approved'&&!t.is_demo&&String(t.city||'').trim().toLowerCase()===c){[t.area].concat(String(t.travel||'').split(/[,;\n\/]+/)).forEach(function(a){a=normCity(a);if(a)o[a]=1})}})}catch(e){}});return Object.keys(o).sort()}
+function areaField(val,city){return '<label for="area">Area / locality'+STAR+' <span class="hint">where you live or mainly teach; pick your city first</span></label>'+ModivsPlaces.fieldHTML({id:'area',kind:'area',val:val,city:city})}
+/* city change refills the area dropdown (handled by modivs-places.js) */
+function cityField(val){return '<label for="city">City'+STAR+' <span class="hint">shown on the site after admin approval</span></label>'+ModivsPlaces.fieldHTML({id:'city',kind:'city',val:val,areaId:'area'})}
 /* ---------- render ---------- */
 function dpInner(){return D.photo?'<img src="'+esc(D.photo)+'" alt="Your profile photo">':esc(initials(D.name))}
 function render(){
@@ -159,7 +165,7 @@ function render(){
   '<label for="email">Email <span class="hint">login email, cannot be changed here</span></label><input id="email" type="email" value="'+esc(D.email)+'" disabled>'+
   phoneField('whatsapp','WhatsApp number'+STAR,D.waSame?D.phone:D.whatsapp,'',D.waSame)+'<label class="check"><input type="checkbox" id="waSame"'+(D.waSame?' checked':'')+'><span>Same as my mobile number</span></label>'+
   '<div class="two"><div>'+phoneField('phone','Mobile number'+STAR,D.phone)+'</div><div>'+phoneField('altPhone','Alternate phone number'+STAR,D.altPhone)+'</div></div>'+
-  field('city','City'+STAR,D.city)+
+  cityField(D.city)+areaField(D.area,D.city)+
   '<div class="two"><div>'+sel('gender','Gender'+STAR,D.gender,['Female','Male','Other','Prefer not to say'])+'</div><div>'+field('dob','Date of birth'+STAR,D.dob,'date')+'</div></div>'+
   field('headline','Profile headline'+STAR,D.headline,'text','one line','e.g. Maths tutor for classes 9–12 with 8 years’ experience')+
   '<label for="bio">About you'+STAR+' <span class="hint">at least 80 characters</span></label><textarea id="bio">'+esc(D.bio)+'</textarea>'+
@@ -191,7 +197,7 @@ function render(){
 function readAll(){
   var w=document.getElementById('waSame');
   D.name=v('name');D.phone=getPhone('phone');D.altPhone=getPhone('altPhone');D.waSame=!!(w&&w.checked);D.whatsapp=D.waSame?D.phone:getPhone('whatsapp');
-  D.city=v('city');D.gender=v('gender');D.dob=v('dob');D.headline=v('headline');D.bio=v('bio');D.langs=group('langs');
+  D.city=ModivsPlaces.canon('city',v('city'));D.area=ModivsPlaces.canon('area',v('area'),D.city);D.gender=v('gender');D.dob=v('dob');D.headline=v('headline');D.bio=v('bio');D.langs=group('langs');
   D.quals.forEach(function(q,i){q.degree=v('q_degree'+i);q.inst=v('q_inst'+i);q.field=v('q_field'+i);q.year=v('q_year'+i)});
   D.totalYears=v('totalYears');
   D.exp.forEach(function(x,i){x.title=v('e_title'+i);x.org=v('e_org'+i);x.from=v('e_from'+i);x.to=v('e_to'+i);x.desc=v('e_desc'+i)});
@@ -222,7 +228,8 @@ function validate(files){
   if(!D.altPhone)return fail('altPhone','Enter your alternate phone number.');
   if(!validPhone(D.altPhone))return fail('altPhone',phoneMsg(D.altPhone,'alternate phone number'));
   if(samePhone(D.altPhone,D.phone))return fail('altPhone','Alternate number must be different from your mobile number.');
-  if(!D.city)return fail('city','Enter your city.');
+  if(!D.city)return fail('city','Select your city.');
+  if(!D.area)return fail('area','Enter your area or locality, for example Model Town.');
   if(!D.gender)return fail('gender','Select your gender.');
   if(!D.dob)return fail('dob','Enter your date of birth.');
   if(!D.headline)return fail('headline','Add a one-line headline.');
@@ -265,7 +272,7 @@ function persist(){
   localStorage.setItem('modivs_auth_user',JSON.stringify({name:t.name,email:t.email,role:'Tutor'}));
 
   var qualDesc=(t.quals[0]&&t.quals[0].degree)?(t.quals[0].degree+', '+(t.quals[0].inst||'')+' ('+(t.quals[0].year||'')+')'):'Certificate on file';
-  var summary={name:t.name,headline:t.headline,city:t.city,phone:t.phone,altPhone:t.altPhone||'',whatsapp:t.whatsapp||'',photo:t.photo||'',email:t.email,
+  var summary={name:t.name,headline:t.headline,city:t.city,area:t.area||'',travel:t.travel||'',phone:t.phone,altPhone:t.altPhone||'',whatsapp:t.whatsapp||'',photo:t.photo||'',email:t.email,
     qual:qualDesc,years:t.totalYears||0,subs:t.subjects,levels:t.levels,fee:+t.fee||0,modes:t.modes,langs:t.langs,
     idType:t.idType,idFile:t.idName,cert:t.certName,sent:'Just now',status:status};
   if(status==='pending'){summary.rejection_reason='';summary.rejection_reasons=[];summary.rejection_note=''}
@@ -297,27 +304,6 @@ function persist(){
     timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),
     note:'Tutor updated their profile. Status: '+status+'.'});
   localStorage.setItem('modivs_audit_logs',JSON.stringify(logs.slice(0,50)));
-
-  if(window.EducationBFirebase && window.EducationBFirebase.db){
-    var firestore = window.EducationBFirebase.db;
-    var tId = String(full.id).replace(/[/]/g, '_');
-    firestore.collection('tutors').doc(tId).set(Object.assign({}, full, {
-      status: status,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }), { merge: true }).catch(function(){});
-
-    var fbUser = window.EducationBFirebase.auth && window.EducationBFirebase.auth.currentUser;
-    var uId = (fbUser && fbUser.uid) || (full.uid) || String(full.email).replace(/[^a-z0-9]/gi, '_');
-    firestore.collection('users').doc(uId).set({
-      name: full.name,
-      email: full.email,
-      role: 'Tutor',
-      verificationStatus: status,
-      status: status,
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge: true }).catch(function(){});
-  }
-
   return status;
 }
 
@@ -383,7 +369,7 @@ if(!D){
 </script>
 <!-- mv-footer -->
 <footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
 .mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
 .mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
