@@ -36,6 +36,7 @@ h1{font-size:clamp(1.9rem,4.4vw,2.9rem);line-height:1.1;letter-spacing:-.02em;ma
 .tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
 .tools input,.tools select{font:inherit;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy)}
 .tools input{flex:1;min-width:220px}
+.applied{background:#fff;border:1.5px solid var(--navy);border-radius:10px;padding:9px 14px;margin:0 0 12px;font-size:.9rem}.applied b{font-weight:700}.applied button{margin-left:10px;border:0;background:none;color:var(--navy);font:inherit;font-weight:700;text-decoration:underline;cursor:pointer}
 .count{color:var(--muted);font-size:.9rem;margin:0 0 14px}
 .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(330px,1fr));gap:18px;margin-bottom:56px}
 .tcard{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:20px;display:flex;flex-direction:column;gap:12px;transition:border-color .15s,transform .15s}
@@ -97,9 +98,11 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
 @media(max-width:560px){#addTForm .two{grid-template-columns:1fr}}
 .nearbox{grid-column:1/-1;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-top:10px}
 .tcard .areas{font-size:.84rem;color:var(--muted);margin:0}
+#tSubs{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px 12px;max-height:260px;overflow:auto;padding:6px;border:1.5px solid var(--line);border-radius:10px}#tSubs label{border:0!important;border-radius:0!important;padding:4px 2px!important;background:none!important;font-size:.9rem;display:flex!important;gap:8px;align-items:flex-start}#tSubs label input{width:17px;height:17px;flex:none;margin-top:2px}
 </style>
 <script src="modivs-import-data.js" defer></script>
 <script src="modivs-places.js"></script>
+<script src="modivs-subjects.js"></script>
 <script src="modivs-map.js"></script>
 <script src="modivs-chat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
@@ -108,6 +111,7 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
 <script src="firebase-config.js" defer></script>
 <script src="firebase-sync.js" defer></script>
 <link rel="stylesheet" href="modivs-menu.css">
+<link rel="stylesheet" href="modivs-mobile.css">
 </head>
 <body>
 <header class="mv-header">
@@ -116,11 +120,11 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
   <nav id="mvNav" aria-label="Main menu">
    <ul>
     <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-tutors.html">Tutors</a></li>
     <li><a href="modivs-guide.html">Guide</a></li>
     <li><a href="modivs-blogs.html">Blogs</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-contact.html">Contact us</a></li>
    </ul>
   </nav>
@@ -147,6 +151,8 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
   <select id="fCity" aria-label="City"><option value="">All cities</option></select>
   <select id="fArea" aria-label="Area or locality"><option value="">All areas</option></select>
   <select id="fMode" aria-label="Teaching mode"><option value="">Any mode</option></select>
+  <select id="fLevel" aria-label="Class or level"><option value="">Any level</option></select>
+  <select id="fFormat" aria-label="Tuition format"><option value="">Any class type</option><option value="1-on-1">1-on-1</option><option value="Group">Group</option></select>
   <select id="fSort" aria-label="Sort by">
    <option value="exp">Most experienced</option>
    <option value="low">Fee: low to high</option>
@@ -154,6 +160,7 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
    <option value="new">Recently joined</option>
   </select>
  </div>
+ <p class="applied" id="applied" hidden></p>
  <p class="count" id="count" aria-live="polite"></p>
  <div class="grid" id="grid"></div>
 
@@ -335,12 +342,14 @@ function openProfile(t){
  $('dlg').showModal();
 }
 function render(){
- var q=$('q').value.toLowerCase(),sub=$('fSub').value,city=$('fCity').value,area=MM()?MM().normArea($('fArea').value):$('fArea').value.trim(),mode=$('fMode').value,sort=$('fSort').value,g=$('grid');g.textContent='';
+ var q=$('q').value.toLowerCase(),sub=$('fSub').value,city=$('fCity').value,area=MM()?MM().normArea($('fArea').value):$('fArea').value.trim(),mode=$('fMode').value,level=$('fLevel').value,fmt=$('fFormat').value,sort=$('fSort').value,g=$('grid');g.textContent='';showApplied();
  var rows=tutors.filter(function(t){
   if(sub&&arr(t.subs).indexOf(sub)<0)return false;
   if(city&&t.city!==city)return false;
   if(area&&areasOf(t).map(function(a){return a.toLowerCase()}).indexOf(area.toLowerCase())<0)return false;
   if(mode&&normModes(t.modes).indexOf(mode)<0)return false;
+  if(level&&arr(t.levels).indexOf(level)<0)return false;
+  if(fmt){var fm=arr(t.formats).join(' ').toLowerCase(),hasG=fm.indexOf('group')>-1,hasI=fm.indexOf('1-on-1')>-1||fm.indexOf('individual')>-1||!fm;if(fmt==='Group'?!hasG:!hasI)return false}
   var hay=[t.name,t.city,areasOf(t).join(' '),t.headline,arr(t.subs).join(' '),arr(t.boards).join(' '),arr(t.levels).join(' ')].join(' ').toLowerCase();
   return !q||hay.indexOf(q)>-1;
  });
@@ -358,10 +367,25 @@ function render(){
  }
  rows.forEach(function(t){g.appendChild(card(t))});
 }
-['q','fSub','fMode','fSort','fArea'].forEach(function(i){$(i).addEventListener('input',render)});
+['q','fSub','fMode','fLevel','fFormat','fSort','fArea'].forEach(function(i){$(i).addEventListener('input',render)});
 $('fCity').addEventListener('input',function(){fillAreas();render()});
 $('dlg').addEventListener('click',function(e){if(e.target===$('dlg'))$('dlg').close()});
 (function(){var qs=new URLSearchParams(location.search),c=qs.get('city'),a=qs.get('area');if(c){c=normCity(c);var f=$('fCity');if(Array.prototype.some.call(f.options,function(o){return o.value===c}))f.value=c}fillAreas(a&&MM()?MM().normArea(a):'')})();
+function showApplied(){
+ var box=$('applied'),parts=[['fSub',''],['fLevel',''],['fMode',''],['fFormat',' tuition']].map(function(p){var v=$(p[0]).value;return v?esc2(v)+p[1]:''}).filter(Boolean);
+ if(!parts.length){box.hidden=true;return}
+ box.hidden=false;box.innerHTML='Showing tutors for <b>'+parts.join('</b> · <b>')+'</b>';
+ var b=document.createElement('button');b.type='button';b.textContent='Clear search';b.addEventListener('click',function(){['fSub','fLevel','fMode','fFormat'].forEach(function(i){$(i).value=''});history.replaceState(null,'',location.pathname);render()});box.appendChild(b);
+}
+function esc2(x){return String(x).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+(function(){ // search coming from the home page: ?subject=&level=&mode=&format=
+ var qs=new URLSearchParams(location.search);
+ var LV=['Primary (1–5)','Middle (6–8)','Secondary (9–10)','Senior secondary (11–12)','College / University','Competitive exams'];
+ LV.forEach(function(l){var o=el('option','',l);o.value=l;$('fLevel').appendChild(o)});
+ function setSel(id,val){if(!val)return;var s=$(id),hit=null;Array.prototype.forEach.call(s.options,function(o){if(o.value.toLowerCase()===val.toLowerCase())hit=o});
+  if(!hit){hit=el('option','',val);hit.value=val;s.appendChild(hit)}s.value=hit.value}
+ setSel('fSub',qs.get('subject'));setSel('fLevel',qs.get('level'));setSel('fMode',qs.get('mode'));setSel('fFormat',qs.get('format'));
+})();
 stats();render();
 
 if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
@@ -376,7 +400,7 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
  if(box){box.querySelector('h2').textContent='Add a tutor';box.querySelector('p').textContent='Create a verified tutor profile on behalf of a tutor. It goes live immediately.';
   var j=$('ctaJoin');j.textContent='+ Add tutor profile';j.href='#add';j.addEventListener('click',function(e){e.preventDefault();openAdd()})}
  $('addTutorBtn').addEventListener('click',openAdd);
- var SUBJ=['Mathematics','Science','Physics','Chemistry','Biology','English','Hindi','Punjabi','Sanskrit','Urdu','Social Science','History','Geography','Economics','Accountancy','Business Studies','Computer Science','Coding / Programming','Spoken English','French','German','Spanish','Music','Art','Dance','Yoga','Abacus / Vedic Maths'];
+ var SUBJ=(window.ModivsSubjects?ModivsSubjects.all():['Mathematics','Physics','Chemistry','Biology','English']);
  var LEV=['Primary (1–5)','Middle (6–8)','Secondary (9–10)','Senior secondary (11–12)','College / University','Competitive exams'];
  var BRD=['CBSE','ICSE','PSEB','IB','IGCSE','State board'];
  var LNG=['English','Hindi','Punjabi','Urdu','Other'];

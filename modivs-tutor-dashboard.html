@@ -176,6 +176,7 @@ dialog h2{margin:0 0 4px}
 <script src="firebase-chat.js"></script>
 <script src="modivs-blogs.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
+<link rel="stylesheet" href="modivs-mobile.css">
 </head>
 <body>
 <header class="mv-header">
@@ -626,7 +627,7 @@ function nav(){
  var currentChatUser = null;
  try { currentChatUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
  var chatUnread = window.ModivsChat ? ModivsChat.conversations().reduce(function(total,c){ return total + ModivsChat.unread(c, currentChatUser && currentChatUser.email); }, 0) : 0;
- var N=[['dash','🏠','My Dashboard'],['profile','👤','My Profile'],['leads','🎯','New Leads',newLeads().length],['requests','📩','Requests',pendingReq()],['chat','💬','Chat',chatUnread],['membership','👑','Membership'],['blogs','✍️','My Blogs'],['credits','🪙','My Credits'],['settings','⚙️','Settings']];
+ var N=[['dash','🏠','My Dashboard'],['profile','👤','My Profile'],['leads','🎯','New Leads',newLeads().length],['requests','📩','Requests',pendingReq()],['history','📜','History'],['chat','💬','Chat',chatUnread],['membership','👑','Membership'],['blogs','✍️','My Blogs'],['credits','🪙','My Credits'],['settings','⚙️','Settings']];
  var b=$('nav');b.innerHTML='';
  N.forEach(function(x){var btn=el('button');btn.type='button';var i=el('span',null,x[1]);i.setAttribute('aria-hidden','true');btn.appendChild(i);btn.appendChild(el('span',null,x[2]));
   if(x[3]){btn.appendChild(el('span','n',x[3]))}
@@ -729,6 +730,51 @@ function vProfile(v){
  function list(a,d){return a&&a.length?a.join(', '):d}
  var u=el('ul','kv');[['Name',t.name||'Tutor'],['About',t.bio||'Not added'],['Headline',t.headline||'Not added'],['City',t.city||'Not added'],['Mobile number',t.phone||'—'],['Alternate number',t.altPhone||'Not added'],['WhatsApp number',t.whatsapp||'Not added'],['Qualification',t.qual||(t.quals&&t.quals[0]&&t.quals[0].degree?t.quals[0].degree+', '+(t.quals[0].inst||''):'Not added')],['Experience',(t.years!=null?t.years+' years':(t.totalYears!=null&&t.totalYears!==''?t.totalYears+' years':'Not added'))],['Subjects',list(t.subs||t.subjects,'Not added')],['Levels',list(t.levels,'Not added')],['Fee',t.fee?'₹'+t.fee+' / hour':'Not added'],['Group fee',t.groupFee?'₹'+t.groupFee+' / student / hour':'Not offered'],['Boards',list(t.boards,'Not added')],['Teaching format',list(t.formats,'Not added')],['Mode',list(t.modes,'Not added')],['Languages',list(t.langs,'Not added')],['Verification',t.status?(t.status==='approved'?'Verified':(t.status==='rejected'?'Changes needed':'Pending')):'Pending']].forEach(function(p){var li=el('li');li.appendChild(el('span','',p[0]));li.appendChild(el('span','',p[1]));u.appendChild(li)});
  box.appendChild(u);var b=el('button','b y','Edit profile');b.type='button';b.style.marginTop='16px';b.addEventListener('click',editProfile);box.appendChild(b);v.appendChild(box)
+}
+function histEvents(){
+ var em=currentTutorEmail().toLowerCase(),ev=[],C=window.ModivsChat;
+ function ts(x){var d=new Date(x);return isNaN(d.getTime())?0:d.getTime()}
+ function mail(x){return String(x||'').toLowerCase()}
+ if(C){
+  C.conversations().forEach(function(c){
+   if(mail(c.tutorEmail||(c.tutor&&c.tutor.email))!==em)return;
+   var nm=c.unlocked?((c.student&&c.student.name)||'Student'):'A student',se=mail(c.studentEmail||(c.student&&c.student.email));
+   if(c.createdAt)ev.push({k:'inquiry',t:ts(c.createdAt),title:'New inquiry from '+nm,sub:'Student inquiry received'});
+   if(c.unlockedAt)ev.push({k:'unlocked',t:ts(c.unlockedAt),title:'Unlocked inquiry: '+nm,sub:'Contact details and chat opened'});
+   (c.messages||[]).forEach(function(m){
+    if(!/demo/i.test(String(m.text||'')))return;
+    var fs=mail(m.senderEmail)===se;
+    ev.push({k:'demo',t:ts(m.createdAt),title:(fs?'Demo class requested by ':'Demo class details sent to ')+nm,sub:fs?'Student asked to book a demo class':'Demo class message sent'});
+   });
+  });
+  C.getCoinTransactions(em).forEach(function(x){ev.push({k:'coins',t:ts(x.createdAt),title:x.description||'Coin update',sub:'Balance after: '+x.balanceAfter+' coins',amt:x.amount})});
+  if(C.getMembershipHistory)C.getMembershipHistory(em).forEach(function(x){ev.push({k:'coins',t:ts(x.createdAt),title:String(x.type||'activated').replace(/^./,function(c){return c.toUpperCase()})+' '+(x.planName||'plan'),sub:(x.durationDays?x.durationDays+' days':'')+(x.price?' · '+x.price:'')})});
+ }
+ classes.forEach(function(x){ev.push({k:'class',t:0,title:String(x[0]),sub:String(x[1]||'')})});
+ return ev.sort(function(a,b){return b.t-a.t});
+}
+function vHistory(v){
+ v.appendChild(el('h1','','History'));
+ v.appendChild(el('p','sub','Everything in one place: inquiries, unlocked students, demo classes, classes and coin or plan activity.'));
+ var ev=histEvents(),K={inquiry:'Inquiry',unlocked:'Unlocked',demo:'Demo',class:'Class',coins:'Coins & plans'};
+ var cnt=function(k){return ev.filter(function(e){return e.k===k}).length};
+ var s=el('div','stats');
+ s.appendChild(stat('Inquiries received',cnt('inquiry')));s.appendChild(stat('Unlocked',cnt('unlocked'),cnt('unlocked')?'hi':''));
+ s.appendChild(stat('Demo activity',cnt('demo')));s.appendChild(stat('Classes',cnt('class')));v.appendChild(s);
+ var box=el('section','box'),hd=el('div','head');hd.appendChild(el('h2','','Activity timeline'));
+ var tools=el('div','tools');if(!state.hFilter)state.hFilter='all';
+ [['all','All ('+ev.length+')'],['inquiry','Inquiries ('+cnt('inquiry')+')'],['unlocked','Unlocked ('+cnt('unlocked')+')'],['demo','Demos ('+cnt('demo')+')'],['class','Classes ('+cnt('class')+')'],['coins','Coins & plans ('+cnt('coins')+')']].forEach(function(x){
+  var b=el('button','tab',x[1]);b.type='button';b.setAttribute('aria-pressed',String(state.hFilter===x[0]));
+  b.addEventListener('click',function(){state.hFilter=x[0];render()});tools.appendChild(b)});
+ hd.appendChild(tools);box.appendChild(hd);
+ var r=ev.filter(function(e){return state.hFilter==='all'||e.k===state.hFilter});
+ if(!r.length)box.appendChild(el('p','empty','Nothing here yet. Activity shows up as students contact you and you unlock inquiries.'));
+ else{var ul=el('ul','mhist');r.forEach(function(e){
+  var li=el('li');var b=el('b','',e.title);li.appendChild(b);
+  li.appendChild(el('span','tp'+(e.amt>0?' cur':''),e.amt?((e.amt>0?'+':'')+e.amt+' coins'):K[e.k]));
+  var when=e.t?new Date(e.t).toLocaleString([],{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit'}):'';
+  li.appendChild(el('small','',[when,e.sub].filter(Boolean).join(' · ')));ul.appendChild(li)});box.appendChild(ul)}
+ v.appendChild(box);
 }
 function vCredits(v){
  v.appendChild(el('h1','','My Credits & Membership'));
@@ -1259,7 +1305,7 @@ function render(){
  }
  $('coins').textContent=state.coins;nav();
  var v=$('view');v.innerHTML='';
- ({dash:vDash,leads:vLeads,requests:vRequests,profile:vProfile,chat:vChat,blogs:vBlogs,credits:vCredits,membership:vMembership,settings:vSettings})[state.view](v)
+ ({dash:vDash,leads:vLeads,requests:vRequests,history:vHistory,profile:vProfile,chat:vChat,blogs:vBlogs,credits:vCredits,membership:vMembership,settings:vSettings})[state.view](v)
 }
 
 // Setup Packs & Modal Listeners

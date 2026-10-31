@@ -203,12 +203,14 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
 <script src="modivs-blogs.js"></script>
 <script src="modivs-import-data.js" defer></script>
 <script src="modivs-places.js"></script>
+<script src="modivs-subjects.js"></script>
 <script src="modivs-map.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js" defer></script>
 <script src="firebase-sync.js" defer></script>
+<link rel="stylesheet" href="modivs-mobile.css">
 </head>
 <body>
 <header>
@@ -217,11 +219,11 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
   <nav id="nav" aria-label="Main menu">
    <ul>
     <li><a href="index.html" id="navHome" aria-current="page">Home</a></li>
+    <li><a href="modivs-active-leads.html" id="navActiveLeads">Active leads</a></li>
     <li><a href="modivs-tutors.html" id="navTutors">Tutors</a></li>
     <li><a href="modivs-guide.html" id="navGuide">Guide</a></li>
     <li><a href="modivs-blogs.html" id="navBlogs">Blogs</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-active-leads.html" id="navActiveLeads">Active leads</a></li>
     <li><a href="#contact" id="navContact">Contact us</a></li>
    </ul>
   </nav>
@@ -241,19 +243,21 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
     <h1>Find the right tutor for every learner.</h1>
     <p class="lead">Browse verified tutors for online, offline and group tuitions by subject, level and fee. Send a request in minutes and start learning with a demo class.</p>
     <div class="cta">
-     <a class="btn y" id="heroFindTutor" href="modivs-signup.html">Sign up</a>
+     <a class="btn y" id="heroPostReq" href="modivs-post-requirement.html">Post a requirement</a>
+     <a class="btn" id="heroBecomeTutor" href="modivs-tutor-profile.html">Become a tutor</a>
+     <a class="btn o" id="heroFindTutor" href="modivs-signup.html">Sign up</a>
     </div>
    </div>
    <form class="panel" id="find" aria-label="Quick search">
     <h2>Quick search</h2><p>Tell us what you need to get started.</p>
     <label for="qs">Subject</label>
-    <select id="qs"><option>Mathematics</option><option>Physics</option><option>Chemistry</option><option>Biology</option><option>English</option><option>Computer Science</option></select>
+    <select id="qs"><option value="">Any subject</option></select>
     <label for="ql">Level</label>
-    <select id="ql"><option>Primary (1–5)</option><option>Middle (6–8)</option><option>Secondary (9–10)</option><option>Senior secondary (11–12)</option><option>College / University</option></select>
+    <select id="ql"><option value="">Any level</option><option>Primary (1–5)</option><option>Middle (6–8)</option><option>Secondary (9–10)</option><option>Senior secondary (11–12)</option><option>College / University</option><option>Competitive exams</option></select>
     <label for="qm">Teaching mode</label>
-    <select id="qm"><option>Online</option><option>Offline (At my home)</option><option>Offline (At tutor’s place)</option><option>Both Online &amp; Offline</option></select>
+    <select id="qm"><option value="Online">Online</option><option value="At student’s place">Offline (At my home)</option><option value="At tutor’s place">Offline (At tutor’s place)</option><option value="" selected>Both Online &amp; Offline</option></select>
     <label for="qt">Tuition format</label>
-    <select id="qt"><option>1-on-1 Individual tuition</option><option>Group tuition (Small batches)</option><option>Flexible (1-on-1 or Group)</option></select>
+    <select id="qt"><option value="1-on-1">1-on-1 Individual tuition</option><option value="Group">Group tuition (Small batches)</option><option value="" selected>Flexible (1-on-1 or Group)</option></select>
     <button type="submit" class="btn y" id="btnSearchTutors" style="width:100%;text-align:center;border:0;cursor:pointer;">Search tutors</button>
    </form>
   </div>
@@ -653,23 +657,20 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
  }
 
  if(findForm){
+  // fill subjects from the shared list, grouped by category
+  var qsSel=document.getElementById('qs');
+  if(window.ModivsSubjects&&qsSel){ModivsSubjects.categories().forEach(function(c){var g=document.createElement('optgroup');g.label=c;ModivsSubjects.subjectsFor(c).forEach(function(s){var o=document.createElement('option');o.textContent=s;o.value=s;g.appendChild(o)});qsSel.appendChild(g)})}
+  function pick(n){return document.getElementById(n).value}
   findForm.addEventListener('submit', function(e){
    e.preventDefault();
-   var searchIntent = {
-    subject: document.getElementById('qs').value,
-    level: document.getElementById('ql').value,
-    mode: document.getElementById('qm').value,
-    format: document.getElementById('qt').value
-   };
-   try {
-    localStorage.setItem('modivs_search_intent', JSON.stringify(searchIntent));
-   } catch(err){}
-
-   if(authUser && authUser.role === 'Student / Parent'){
-    window.location.href = 'modivs-student-dashboard.html';
-   } else {
-    window.location.href = 'modivs-student-registration.html';
-   }
+   var subject=document.getElementById('qs').value,level=document.getElementById('ql').value,mode=pick('qm'),format=pick('qt');
+   // kept for the requirement forms, which can pre-fill from it
+   try{localStorage.setItem('modivs_search_intent',JSON.stringify({subject:subject,level:level,
+    mode:mode==='Online'?'Online':(mode==='At student’s place'?'Offline (At my home)':(mode?'Offline (At tutor’s place)':'')),
+    format:format==='Group'?'Group tuition (Small batches)':(format?'1-on-1 Individual tuition':'')}))}catch(err){}
+   var p=new URLSearchParams();
+   if(subject)p.set('subject',subject);if(level)p.set('level',level);if(mode)p.set('mode',mode);if(format)p.set('format',format);
+   window.location.href='modivs-tutors.html'+(p.toString()?'?'+p.toString():'');
   });
  }
 })();

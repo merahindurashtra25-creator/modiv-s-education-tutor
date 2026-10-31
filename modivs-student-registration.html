@@ -101,9 +101,11 @@ textarea{min-height:100px;resize:vertical}
 try{var _as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');var adminEmails=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','admin@gmail.com'];if(_as&&_as.email&&adminEmails.indexOf(_as.email.toLowerCase())!==-1&&!/[?&]student=1/.test(location.search)){location.replace('modivs-active-leads.html#post')}}catch(e){}
 </script>
 <script src="modivs-places.js"></script>
+<script src="modivs-subjects.js"></script>
 <script src="modivs-avatars.js"></script>
 <script src="modivs-session-ui.js" defer></script>
 <link rel="stylesheet" href="modivs-menu.css">
+<link rel="stylesheet" href="modivs-mobile.css">
 </head>
 <body>
 <header class="mv-header">
@@ -112,11 +114,11 @@ try{var _as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');var
   <nav id="mvNav" aria-label="Main menu">
    <ul>
     <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-tutors.html">Tutors</a></li>
     <li><a href="modivs-guide.html">Guide</a></li>
     <li><a href="modivs-blogs.html">Blogs</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-contact.html">Contact us</a></li>
    </ul>
   </nav>
@@ -213,7 +215,7 @@ function(){var p=D.role==='Parent';return '<h1>'+(p?'Your child’s details':'Ab
  '<div class="two"><div>'+sel('board','Board',D.board,BOARDS)+'</div><div>'+field('school','School or college',D.school,'text','optional')+'</div></div>'+
  avatarPicker()+MSG+nav()},
 function(){return '<h1>'+(EDIT?'Update your requirements':'What do you need help with?')+'</h1><p class="sub">Choose subjects and goals. Tutors see this when you send a request.</p>'+
- '<div class="lab">Subjects needed</div>'+chips('subjects',SUBJECTS,D.subjects)+
+ '<div class="lab">Subjects needed</div>'+ModivsSubjects.picker('subjects',D.subjects)+
  sel('level','Current level in these subjects',D.level,['Struggling','Below average','Average','Good, want to excel'])+
  '<div class="lab">Goals</div>'+chips('goals',GOALS,D.goals)+
  '<label for="weak">Topics or areas that need most help <span class="hint">optional</span></label><textarea id="weak" placeholder="e.g. Algebra, trigonometry, English grammar">'+esc(D.weak)+'</textarea>'+

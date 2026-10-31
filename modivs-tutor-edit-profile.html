@@ -71,8 +71,10 @@ input:disabled{background:var(--mist);color:var(--muted)}
 </style>
 <script src="modivs-country.js"></script>
 <script src="modivs-places.js"></script>
+<script src="modivs-subjects.js"></script>
 <script src="modivs-docs.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
+<link rel="stylesheet" href="modivs-mobile.css">
 </head>
 <body>
 <header class="mv-header">
@@ -81,11 +83,11 @@ input:disabled{background:var(--mist);color:var(--muted)}
   <nav id="mvNav" aria-label="Main menu">
    <ul>
     <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-tutors.html">Tutors</a></li>
     <li><a href="modivs-guide.html">Guide</a></li>
     <li><a href="modivs-blogs.html">Blogs</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-contact.html">Contact us</a></li>
    </ul>
   </nav>
@@ -198,7 +200,7 @@ function render(){
   '<section class="sec"><h2>Teaching experience</h2>'+field('totalYears','Total years of teaching'+STAR,D.totalYears,'number')+'<div id="exp">'+D.exp.map(function(x,i){return '<div class="card"><button type="button" class="rm" data-rm="exp" data-i="'+i+'">Remove</button>'+
    field('e_title'+i,'Role',x.title,'text','','e.g. Mathematics teacher')+field('e_org'+i,'School, institute or “Private tutoring”',x.org)+'<div class="two"><div>'+field('e_from'+i,'From (year)',x.from,'number')+'</div><div>'+field('e_to'+i,'To (year or “Present”)',x.to)+'</div></div><label for="e_desc'+i+'">What you did</label><textarea id="e_desc'+i+'" style="min-height:70px">'+esc(x.desc)+'</textarea></div>'}).join('')+'</div><button type="button" class="add" data-add="exp">+ Add experience</button></section>'+
 
-  '<section class="sec"><h2>Subjects you teach</h2><div class="lab">Subjects'+STAR+'</div>'+chips('subjects',allSubjects(),D.subjects)+'<div class="lab">Add your own subject <span class="hint">not in the list above? Type it and press Add</span></div>'+'<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="customSubject" type="text" maxlength="40" placeholder="e.g. Robotics, IELTS, Kathak" style="flex:1;min-width:200px"><button type="button" class="btn ghost" data-act="addSubject" style="padding:10px 18px">Add</button></div>'+'<div class="lab">Levels'+STAR+'</div>'+chips('levels',LEVELS,D.levels)+'<div class="lab">Boards'+STAR+'</div>'+chips('boards',BOARDS,D.boards)+'</section>'+
+  '<section class="sec"><h2>Subjects you teach</h2><div class="lab">Subjects'+STAR+'</div>'+ModivsSubjects.picker('subjects',D.subjects)+'<div class="lab">Add your own subject <span class="hint">not in the list above? Type it and press Add</span></div>'+'<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="customSubject" type="text" maxlength="40" placeholder="e.g. Robotics, IELTS, Kathak" style="flex:1;min-width:200px"><button type="button" class="btn ghost" data-act="addSubject" style="padding:10px 18px">Add</button></div>'+'<div class="lab">Levels'+STAR+'</div>'+chips('levels',LEVELS,D.levels)+'<div class="lab">Boards'+STAR+'</div>'+chips('boards',BOARDS,D.boards)+'</section>'+
 
   '<section class="sec"><h2>Fees &amp; availability</h2><div class="lab">Teaching mode'+STAR+'</div>'+chips('modes',MODES,D.modes)+'<div class="lab">Tuition format offered'+STAR+'</div>'+chips('formats',FORMATS,D.formats)+
   '<div class="two"><div>'+field('fee','1-on-1 fee per hour (₹)'+STAR,D.fee,'number')+'</div><div>'+field('groupFee','Group fee per student/hr (₹)'+STAR,D.groupFee,'number','required if you offer group tuition')+'</div></div>'+

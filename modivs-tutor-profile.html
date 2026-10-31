@@ -87,8 +87,10 @@ textarea{min-height:110px;resize:vertical}
 @media(max-width:820px){.shell{grid-template-columns:1fr}.side{display:none}.main{padding:24px 16px 60px}.two{grid-template-columns:1fr}}
 </style>
 <script src="modivs-places.js"></script>
+<script src="modivs-subjects.js"></script>
 <script src="modivs-docs.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
+<link rel="stylesheet" href="modivs-mobile.css">
 </head>
 <body>
 <header class="mv-header">
@@ -97,11 +99,11 @@ textarea{min-height:110px;resize:vertical}
   <nav id="mvNav" aria-label="Main menu">
    <ul>
     <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-tutors.html">Tutors</a></li>
     <li><a href="modivs-guide.html">Guide</a></li>
     <li><a href="modivs-blogs.html">Blogs</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-contact.html">Contact us</a></li>
    </ul>
   </nav>
@@ -217,7 +219,7 @@ function(){return '<h1>Teaching experience</h1><p class="sub">Skip the entries i
  field('e_title'+i,'Role',x.title,'text','','e.g. Mathematics teacher')+field('e_org'+i,'School, institute or “Private tutoring”',x.org)+'<div class="two"><div>'+field('e_from'+i,'From (year)',x.from,'number')+'</div><div>'+field('e_to'+i,'To (year or “Present”)',x.to)+'</div></div>'+
  '<label for="e_desc'+i+'">What you did</label><textarea id="e_desc'+i+'" style="min-height:70px">'+esc(x.desc)+'</textarea></div>'}).join('')+'</div>'+
  '<button type="button" class="add" data-add="exp">+ Add experience</button><div class="msg" id="msg" role="alert"></div>'+nav()},
-function(){return '<h1>Subjects you teach</h1><p class="sub">Choose everything you are confident teaching.</p><div class="lab">Subjects'+STAR+'</div>'+chips('subjects',allSubjects(),D.subjects)+
+function(){return '<h1>Subjects you teach</h1><p class="sub">Choose everything you are confident teaching.</p><div class="lab">Subjects'+STAR+'</div>'+ModivsSubjects.picker('subjects',D.subjects,{chipStyle:'margin:0;font-weight:400'})+
  '<div class="lab">Add your own subject <span class="hint">not in the list above? Type it and press Add</span></div>'+'<div style="display:flex;gap:8px;flex-wrap:wrap"><input id="customSubject" type="text" maxlength="40" placeholder="e.g. Robotics, IELTS, Kathak" style="flex:1;min-width:200px"><button type="button" class="btn ghost" data-act="addSubject" style="padding:10px 18px">Add</button></div>'+
  '<div class="lab">Levels'+STAR+'</div>'+chips('levels',LEVELS,D.levels)+'<div class="lab">Boards'+STAR+'</div>'+chips('boards',BOARDS,D.boards)+'<div class="msg" id="msg" role="alert"></div>'+nav()},
 function(){var rows=DAYS.map(function(d){return '<tr><td>'+d+'</td>'+SLOTS.map(function(s){var k=d+'-'+s;return '<td><input type="checkbox" data-avail="'+k+'" aria-label="'+d+' '+s+'"'+(D.avail[k]?' checked':'')+'></td>'}).join('')+'</tr>'}).join('');

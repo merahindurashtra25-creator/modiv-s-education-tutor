@@ -68,6 +68,7 @@ dialog#addDlg::backdrop{background:rgba(26,32,53,.55)}
 #addForm .err{color:#b3261e;font-size:.85rem;min-height:1.2em;margin-top:10px}
 @media(max-width:560px){#addForm .two{grid-template-columns:1fr}}
 @media(max-width:760px){nav{display:none}.grid{grid-template-columns:1fr}}
+#aSubs{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px 12px;max-height:260px;overflow:auto;padding:6px;border:1.5px solid var(--line);border-radius:10px}#aSubs label{border:0!important;border-radius:0!important;padding:4px 2px!important;background:none!important;font-size:.9rem;display:flex!important;gap:8px;align-items:flex-start}#aSubs label input{width:17px;height:17px;flex:none;margin-top:2px}
 </style>
 <script src="modivs-import-data.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
@@ -76,9 +77,11 @@ dialog#addDlg::backdrop{background:rgba(26,32,53,.55)}
 <script src="firebase-config.js" defer></script>
 <script src="firebase-sync.js" defer></script>
 <script src="modivs-places.js"></script>
+<script src="modivs-subjects.js"></script>
 <script src="modivs-avatars.js"></script>
 <script src="modivs-session-ui.js" defer></script>
 <link rel="stylesheet" href="modivs-menu.css">
+<link rel="stylesheet" href="modivs-mobile.css">
 </head>
 <body>
 <header class="mv-header">
@@ -87,18 +90,18 @@ dialog#addDlg::backdrop{background:rgba(26,32,53,.55)}
   <nav id="mvNav" aria-label="Main menu">
    <ul>
     <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-tutors.html">Tutors</a></li>
     <li><a href="modivs-guide.html">Guide</a></li>
     <li><a href="modivs-blogs.html">Blogs</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-contact.html">Contact us</a></li>
    </ul>
   </nav>
   <div class="acts" id="mvActs">
    <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
    <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
-   <a class="btn" id="postBtn" href="modivs-student-registration.html">Post a requirement</a>
+   <a class="btn" id="postBtn" href="modivs-post-requirement.html">Post a requirement</a>
    <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
   </div>
  </div>
@@ -206,7 +209,7 @@ function card(l){
  n.appendChild(el('h3','',l.name));n.appendChild(el('div','by',l.by||(l.parentName&&l.parentName!==l.name?'Parent: '+l.parentName:'Student')));
  var left=el('div','lwho');if(ava)left.appendChild(ava);left.appendChild(n);t.appendChild(left);t.appendChild(el('span','badge','Active'));c.appendChild(t);
  var d=el('dl','meta');
- [['Class',[l.cls,l.board].filter(Boolean).join(' · ')],['City',(l.area?l.area+', ':'')+(l.city||'')],['Mode',normModes(l.mode).join(', ')],['Budget',l.budget],['Days',l.freq],['Contact',l.phone?maskPhone(l.phone):'']].filter(function(p){return p[1]}).forEach(function(p){
+ [['Class',[l.cls,l.board].filter(Boolean).join(' · ')],['City',(l.area?l.area+', ':'')+(l.city||'')],['Mode',normModes(l.mode).join(', ')],['Budget',l.budget],['Days',l.freq],['Format',(l.formats||[]).join(', ')]].filter(function(p){return p[1]}).forEach(function(p){
   var w=el('div');w.appendChild(el('dt','',p[0]));w.appendChild(el('dd','',p[1]||'—'));d.appendChild(w)});
  c.appendChild(d);
  var tg=el('div','tags');(l.subs||[]).concat(l.goals||[]).forEach(function(x){tg.appendChild(el('span','',x))});c.appendChild(tg);
@@ -252,7 +255,7 @@ function removeLead(l){
  fsDo(function(db){if(id){db.collection('leads').doc(String(id)).delete().catch(function(){});db.collection('students').doc(String(id)).delete().catch(function(){})}});
  reloadAll();
 }
-var SUBJECTS=['Mathematics','Physics','Chemistry','Biology','English','Hindi','Punjabi','Computer Science','Accountancy','Economics','Social Science','Music','Art'];
+var SUBJECTS=(window.ModivsSubjects?ModivsSubjects.all():['Mathematics','Physics','Chemistry','Biology','English']);
 var CLASSES=['Nursery–KG','Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12','College / University','Adult learner'];
 var BOARDS=['CBSE','ICSE','PSEB','IB','IGCSE','State board','Other'];
 var MODES=['Online','Offline (Tutor comes to my home)','Offline (At tutor’s place)'];
