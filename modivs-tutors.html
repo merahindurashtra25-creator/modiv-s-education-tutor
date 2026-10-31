@@ -78,6 +78,14 @@ footer{background:var(--navy);color:#d8dcec;padding:28px 0;font-size:.88rem}
 @media(max-width:820px){nav{display:none}.grid{grid-template-columns:1fr}}
 
 .adm-add{display:none}.is-admin .adm-add{display:inline-block}
+.adm-del{display:none}.is-admin .adm-del{display:inline-block}
+.btn.adm-del{background:#fff;color:#b3261e;border-color:#e3b4b0}.btn.adm-del:hover{background:#b3261e;color:#fff;border-color:#b3261e}
+.tcard .adm-del{margin-top:10px;width:100%;text-align:center}
+dialog#delT{border:0;border-radius:16px;padding:0;width:min(440px,92vw);color:var(--navy)}
+dialog#delT::backdrop{background:rgba(26,32,53,.6)}
+#delBox{padding:24px}#delBox h2{margin:0 0 8px;font-size:1.25rem}#delBox p{margin:0 0 6px;color:var(--muted);font-size:.92rem}
+#delBox .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:18px;flex-wrap:wrap}
+#delBox .btn.danger{background:#b3261e;border-color:#b3261e;color:#fff}#delBox .btn.danger:hover{background:#8f1d17}
 dialog#addT{border:0;border-radius:16px;padding:0;width:min(720px,95vw);max-height:92vh;color:var(--navy)}
 dialog#addT::backdrop{background:rgba(26,32,53,.6)}
 #addTForm{padding:24px;overflow:auto;max-height:92vh}
@@ -95,12 +103,14 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
 #addTForm .ph .pv img{width:100%;height:100%;object-fit:cover}
 #addTForm .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
 #addTForm .err{color:#b3261e;font-size:.85rem;min-height:1.2em;margin-top:10px}
+#addTForm .up{border:1.5px dashed var(--line);border-radius:10px;padding:10px;background:#fff}#addTForm .up input{max-width:100%;font-size:.85rem}
 @media(max-width:560px){#addTForm .two{grid-template-columns:1fr}}
 .nearbox{grid-column:1/-1;text-align:left;background:var(--card);border:1.5px solid var(--line);border-radius:14px;padding:16px;margin-top:10px}
 .tcard .areas{font-size:.84rem;color:var(--muted);margin:0}
 #tSubs{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px 12px;max-height:260px;overflow:auto;padding:6px;border:1.5px solid var(--line);border-radius:10px}#tSubs label{border:0!important;border-radius:0!important;padding:4px 2px!important;background:none!important;font-size:.9rem;display:flex!important;gap:8px;align-items:flex-start}#tSubs label input{width:17px;height:17px;flex:none;margin-top:2px}
 </style>
 <script src="modivs-import-data.js" defer></script>
+<script src="modivs-docs.js"></script>
 <script src="modivs-places.js"></script>
 <script src="modivs-subjects.js"></script>
 <script src="modivs-map.js"></script>
@@ -187,6 +197,15 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
 <footer><div class="wrap"><nav aria-label="Legal and contact links" style="display:flex;flex-wrap:wrap;gap:6px 22px;margin-bottom:10px"><style>footer nav a{color:#d8dcec;text-decoration:none}footer nav a:hover{color:#EBB92E;text-decoration:underline}</style><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav>© 2026 Modiv’s Education. Contact details stay private until a student sends a request.</div></footer>
 
 
+<dialog id="delT" aria-labelledby="delTTitle">
+ <div id="delBox">
+  <h2 id="delTTitle">Delete tutor profile?</h2>
+  <p id="delTMsg"></p>
+  <p>This removes the profile from the website and deletes the uploaded ID and certificate. It cannot be undone.</p>
+  <div class="acts"><button type="button" class="btn o" id="delCancel">Cancel</button><button type="button" class="btn danger" id="delOk">Delete tutor</button></div>
+ </div>
+</dialog>
+
 <dialog id="addT" aria-labelledby="addTTitle">
  <form id="addTForm" novalidate>
   <h2 id="addTTitle">Add tutor profile</h2><p class="h">Added by admin. The profile is approved and visible to students straight away. Phone and email stay private.</p>
@@ -200,6 +219,10 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
   <label class="l" for="tBio">About the tutor *</label><textarea id="tBio" maxlength="600" placeholder="At least 60 characters"></textarea>
   <h3>Qualification</h3>
   <div class="two"><div><label class="l" for="tDeg">Degree or certificate *</label><input type="text" id="tDeg" placeholder="e.g. M.Sc. Mathematics"></div><div><label class="l" for="tInst">Institution</label><input type="text" id="tInst"></div></div>
+  <h3>Verification documents</h3>
+  <p class="h" style="margin:6px 0 0">Optional. Kept private and visible only to admins. JPG, PNG or PDF, up to 500 KB each.</p>
+  <div class="two"><div><label class="l" for="tIdType">Government ID type</label><select id="tIdType"><option>Aadhaar</option><option>PAN</option><option>Passport</option><option>Voter ID</option><option>Driving licence</option></select></div><div><label class="l" for="tIdFile">ID proof (e.g. Aadhaar card)</label><div class="up"><input type="file" id="tIdFile" accept=".jpg,.jpeg,.png,.pdf"></div></div></div>
+  <label class="l" for="tCertFile">Highest qualification certificate</label><div class="up"><input type="file" id="tCertFile" accept=".jpg,.jpeg,.png,.pdf"></div>
   <h3>Teaching</h3>
   <label class="l">Subjects *</label><div class="chips" id="tSubs"></div>
   <label class="l" for="tCustom">Other subject <small>(optional, comma separated)</small></label><input type="text" id="tCustom" placeholder="e.g. Robotics, IELTS">
@@ -229,7 +252,8 @@ function load(){
  read('modivs_tutors_db').concat(read('modivs_submitted_tutors')).forEach(function(t){
   if(t&&t.email){by[t.email]=Object.assign({},by[t.email]||{},t)}
  });
- var all=Object.keys(by).map(function(k){return by[k]}).filter(function(t){return t.status==='approved'&&t.name});
+ var gone=read('modivs_deleted_tutors');
+ var all=Object.keys(by).map(function(k){return by[k]}).filter(function(t){return t.status==='approved'&&t.name&&gone.indexOf(String(t.id||''))<0&&gone.indexOf(String(t.email||'').toLowerCase())<0});
  // demo profiles only appear while there are no real ones
  var real=all.filter(function(t){return !t.is_demo});
  return real.length?real:all;
@@ -295,6 +319,46 @@ function stats(){
  [[tutors.length,'verified tutors'],[Object.keys(subs).length,'subjects'],[Object.keys(cities).length,'cities']].forEach(function(x){
   var d=el('div','stat');d.appendChild(el('b','',x[0]));d.appendChild(el('span','',x[1]));s.appendChild(d)});
 }
+/* ---------- admin: delete tutor profile ---------- */
+var delTarget=null;
+function ekey(e){return String(e||'').toLowerCase().replace(/[^a-z0-9_-]/g,'_')}
+function askDelete(t){
+ if(!document.body.classList.contains('is-admin'))return;
+ delTarget=t;$('delTMsg').textContent='You are about to delete '+t.name+(t.city?' ('+t.city+')':'')+'.';
+ if($('dlg').open)$('dlg').close();
+ $('delT').showModal();
+}
+function doDelete(t){
+ var id=String(t.id||''),em=String(t.email||'').toLowerCase();
+ function hit(x){return x&&((id&&String(x.id)===id)||(em&&String(x.email||'').toLowerCase()===em))}
+ ['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){
+  var a=read(k),b=a.filter(function(x){return !hit(x)});
+  if(b.length!==a.length)try{localStorage.setItem(k,JSON.stringify(b))}catch(e){}
+ });
+ try{var tb=read('modivs_deleted_tutors');var mark=id||em;if(mark&&tb.indexOf(mark)<0)tb.push(mark);localStorage.setItem('modivs_deleted_tutors',JSON.stringify(tb))}catch(e){}
+ try{var dd=JSON.parse(localStorage.getItem('modivs_tutor_docs')||'{}');if(dd&&dd[em]){delete dd[em];localStorage.setItem('modivs_tutor_docs',JSON.stringify(dd))}}catch(e){}
+ try{
+  var am='';try{am=(JSON.parse(localStorage.getItem('modivs_admin_session')||'null')||{}).email||''}catch(e){}
+  var lg=read('modivs_audit_logs');lg.unshift({id:id||em,name:t.name,action:'Tutor Deleted',admin:am,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:'Profile deleted by admin.'});
+  localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,500)));
+ }catch(e){}
+ try{
+  var fb=window.EducationBFirebase;
+  if(fb&&fb.db){
+   if(id)fb.db.collection('tutors').doc(id.replace(/[\/]/g,'_')).delete().catch(function(){});
+   if(em)fb.db.collection('tutors').where('email','==',em).get().then(function(sn){sn.forEach(function(d){d.ref.delete().catch(function(){})})}).catch(function(){});
+   if(em){fb.db.collection('tutor_documents').doc(ekey(em)+'_id').delete().catch(function(){});fb.db.collection('tutor_documents').doc(ekey(em)+'_cert').delete().catch(function(){})}
+  }
+ }catch(e){}
+}
+$('delCancel').addEventListener('click',function(){delTarget=null;$('delT').close()});
+$('delT').addEventListener('click',function(e){if(e.target===$('delT')){delTarget=null;$('delT').close()}});
+$('delOk').addEventListener('click',function(){
+ if(!delTarget)return;var t=delTarget;delTarget=null;doDelete(t);$('delT').close();
+ tutors=tutors.filter(function(x){return !((t.id&&x.id===t.id)||(t.email&&x.email===t.email))});
+ stats();render();
+ setTimeout(function(){try{location.reload()}catch(e){}},400);
+});
 function card(t){
  var c=el('article','tcard'),h=el('div','head'),av=el('div','av');avatar(t,av);h.appendChild(av);
  var n=el('div');n.appendChild(el('h3','',t.name));n.appendChild(el('span','ver','✓ Verified'));h.appendChild(n);c.appendChild(h);
@@ -305,6 +369,7 @@ function card(t){
  c.appendChild(el('p','about',about(t)));
  var ft=el('div','foot'),fee=el('div','fee');fee.appendChild(el('b','','₹'+(t.fee||'—')));fee.appendChild(el('small','',' / hour'));ft.appendChild(fee);
  var b=el('button','btn y','View profile');b.type='button';b.addEventListener('click',function(){openProfile(t)});ft.appendChild(b);c.appendChild(ft);
+ var db=el('button','btn adm-del','Delete profile');db.type='button';db.addEventListener('click',function(){askDelete(t)});c.appendChild(db);
  return c;
 }
 function section(body,title,list){
@@ -337,7 +402,8 @@ function openProfile(t){
   msgBtn.href = 'modivs-education.html#student-login';
   cta.appendChild(msgBtn);
  }
- var c=el('button','btn o','Close');c.type='button';c.addEventListener('click',function(){$('dlg').close()});cta.appendChild(c);b.appendChild(cta);
+ var c=el('button','btn o','Close');c.type='button';c.addEventListener('click',function(){$('dlg').close()});cta.appendChild(c);
+ var dx=el('button','btn adm-del','Delete profile');dx.type='button';dx.addEventListener('click',function(){askDelete(t)});cta.appendChild(dx);b.appendChild(cta);
  b.appendChild(el('p','dnote','Phone and email stay private. Once you send a request, the tutor is notified and Modiv’s helps you arrange a demo class.'));
  $('dlg').showModal();
 }
@@ -455,10 +521,21 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
    qual:deg+(inst?', '+inst:''),quals:[{degree:deg,inst:inst,field:'',year:''}],years:+years,totalYears:+years,subs:subs,subjects:subs,levels:levels,boards:got('boards'),langs:langs,
    modes:modes,formats:gf?['1-on-1 Individual tuition','Group tuition (Small batches)']:['1-on-1 Individual tuition'],fee:fee,groupFee:gf||'',trial:$('tTrial').value,photo:photo,
    status:'approved',added_by_admin:true,reviewed_by:adminMail,reviewed_at:new Date().toISOString(),submitted_at:new Date().toISOString(),sent:'Added by admin'};
+  var idF=$('tIdFile').files[0],cF=$('tCertFile').files[0];
+  if(idF){t.idType=$('tIdType').value;t.idFile=idF.name}
+  if(cF){t.cert=cF.name}
+  var sb=$('addTForm').querySelector('button[type=submit]');sb.disabled=true;err.textContent='';
+  function finish(){
   all.unshift(t);localStorage.setItem('modivs_tutors_db',JSON.stringify(all));
   try{var fb=window.EducationBFirebase;if(fb&&fb.db)fb.db.collection('tutors').doc(id).set(t,{merge:true}).catch(function(){})}catch(x){}
   try{var lg=read('modivs_audit_logs');lg.unshift({id:id,name:name,action:'Tutor Added',admin:adminMail,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:'Profile added directly by admin and approved.'});localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,50)))}catch(x){}
   $('addT').close();location.reload();
+  }
+  Promise.all([idF?ModivsDocs.prepare(idF):null,cF?ModivsDocs.prepare(cF):null]).then(function(d){
+   if(d[0]&&!ModivsDocs.save(t.email,'id',d[0]))throw {userMessage:'Not enough browser storage to keep the ID document. Try a smaller file.'};
+   if(d[1]&&!ModivsDocs.save(t.email,'cert',d[1]))throw {userMessage:'Not enough browser storage to keep the certificate. Try a smaller file.'};
+   finish();
+  }).catch(function(e){err.textContent=(e&&e.userMessage)||'Could not read the document. Try another file.';sb.disabled=false});
  });
  if(location.hash==='#add')setTimeout(openAdd,0);
 })();
