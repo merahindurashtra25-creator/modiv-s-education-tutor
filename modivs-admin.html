@@ -151,6 +151,7 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
   </nav>
   <div class="acts" id="mvActs">
    <span class="adm-pill" id="adminSessionInfo">Logged in as <b>Admin</b></span>
+   <a href="modivs-tutors.html#add" class="btn y" id="adminAddTutorBtn" style="background:#EBB92E;border-color:#EBB92E;color:#1A2035;font-weight:700;text-decoration:none;">+ Add Tutor Profile</a>
    <button type="button" class="btn" id="syncFb" style="background:#0e7c66;border-color:#0e7c66;color:#fff">Sync to Firebase</button>
    <button type="button" class="btn o" id="out">Log out</button>
    <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
@@ -223,9 +224,11 @@ function syncDatabases(){
   try {
     var submittedList = JSON.parse(localStorage.getItem('modivs_submitted_tutors') || '[]');
     submittedList.forEach(function(st){
-      var match = tutors.find(function(t){ return t.email === st.email; });
+      var match = tutors.find(function(t){ return (st.email && t.email === st.email) || (st.id && t.id === st.id); });
       if(match){
+        var prevStatus = match.status;
         Object.assign(match, st);
+        if(prevStatus === 'approved' || st.status === 'approved') match.status = 'approved';
       } else {
         tutors.unshift(st);
       }
@@ -343,6 +346,9 @@ function saveTutorsDb(){
   try {
     localStorage.setItem('modivs_tutors_db', JSON.stringify(tutors));
     localStorage.setItem('modivs_submitted_tutors', JSON.stringify(tutors));
+    if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.syncTutors){
+      window.ModivsFirebaseSync.syncTutors();
+    }
   } catch(e){ console.error(e); }
 }
 
@@ -1250,6 +1256,9 @@ function decide(x, s, verb, note, reasons){
 
   logAction(x.id, x.name, verb, s === 'rejected' ? x.rejection_reason : note);
   saveTutorsDb();
+  if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.saveTutor){
+    window.ModivsFirebaseSync.saveTutor(x);
+  }
 
   // If the currently logged in tutor is this tutor, update their session
   try {
@@ -1391,6 +1400,27 @@ $('navTutors').addEventListener('click', function(e){ e.preventDefault(); histor
 $('navStudents').addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null,'','#students'); goPortal('students'); });
 window.addEventListener('hashchange', applyHash);
 if(location.hash === '#students') currentSection = 'students';
+
+// Live sync with Firebase database
+var adminFbPoll = 0;
+(function pollAdminFb(){
+  if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.pullTutors){
+    window.ModivsFirebaseSync.pullTutors().then(function(fbTutors){
+      if(fbTutors && fbTutors.length){
+        syncDatabases();
+        render();
+      }
+    });
+    if(window.ModivsFirebaseSync.listenTutors){
+      window.ModivsFirebaseSync.listenTutors(function(){
+        syncDatabases();
+        render();
+      });
+    }
+  } else if(++adminFbPoll < 25){
+    setTimeout(pollAdminFb, 500);
+  }
+})();
 
 render();
 })();

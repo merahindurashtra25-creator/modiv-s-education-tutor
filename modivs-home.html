@@ -449,28 +449,41 @@ footer .copy{margin-top:32px;padding-top:18px;border-top:1px solid #34406a;color
 
  // Featured tutors (approved profiles only)
  (function(){
-  var box=document.getElementById('featTutors');if(!box)return;
-  var seed=[];
-  function rd(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
-  var by={};seed.forEach(function(t){by[t.email]=t});
-  rd('modivs_tutors_db').concat(rd('modivs_submitted_tutors')).forEach(function(t){if(t&&t.email)by[t.email]=Object.assign({},by[t.email]||{},t)});
-  var all=Object.keys(by).map(function(k){return by[k]}).filter(function(t){return t.status==='approved'&&t.name});
-  var real=all.filter(function(t){return !t.is_demo});
-  var list=(real.length?real:all).sort(function(a,b){return (+b.years||0)-(+a.years||0)}).slice(0,3);
-  function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
-  list.forEach(function(t){
-   var c=el('article','tc'),h=el('div','h'),av=el('div','av');
-   var ini=String(t.name).split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
-   if(typeof t.photo==='string'&&(t.photo.indexOf('data:image/')===0||t.photo.indexOf('https://www.modivhometutors.com/')===0)){var i=document.createElement('img');i.alt='Photo of '+t.name;i.loading='lazy';i.referrerPolicy='no-referrer';i.onerror=function(){av.textContent=ini};i.src=t.photo;av.appendChild(i)}
-   else av.textContent=ini;
-   h.appendChild(av);h.appendChild(el('h3','',t.name));c.appendChild(h);
-   c.appendChild(el('p','hl',t.headline||''));
-   var tg=el('div','tg');(t.subs||[]).slice(0,3).forEach(function(x){tg.appendChild(el('span','',x))});c.appendChild(tg);
-   var ft=el('div','ft');ft.appendChild(el('span','',(t.city||'Online')+' · '+(+t.years>0?t.years+' yrs':'Fresher')));
-   var f=el('span');f.appendChild(el('b','','₹'+(t.fee||'—')));f.appendChild(document.createTextNode('/hr'));ft.appendChild(f);c.appendChild(ft);
-   c.addEventListener('click', function(){ window.location.href = 'modivs-tutors.html'; });
-   box.appendChild(c);
-  });
+  function renderFeat(){
+   var box=document.getElementById('featTutors');if(!box)return;
+   box.innerHTML='';
+   var seed=[];
+   function rd(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
+   var by={};seed.forEach(function(t){if(t.email)by[t.email.toLowerCase()]=t;else if(t.id)by[t.id]=t;});
+   rd('modivs_submitted_tutors').concat(rd('modivs_tutors_db')).forEach(function(t){
+    if(!t)return;
+    var k=(t.email&&String(t.email).toLowerCase())||t.id;
+    if(!k)return;
+    var prev=by[k]||{};
+    var merged=Object.assign({},prev,t);
+    if(prev.status==='approved'||t.status==='approved')merged.status='approved';
+    by[k]=merged;
+   });
+   var all=Object.keys(by).map(function(k){return by[k]}).filter(function(t){return t&&t.status==='approved'&&t.name});
+   var real=all.filter(function(t){return !t.is_demo});
+   var list=(real.length?real:all).sort(function(a,b){return (+b.years||0)-(+a.years||0)}).slice(0,3);
+   function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+   list.forEach(function(t){
+    var c=el('article','tc'),h=el('div','h'),av=el('div','av');
+    var ini=String(t.name).split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
+    if(typeof t.photo==='string'&&(t.photo.indexOf('data:image/')===0||t.photo.indexOf('https://www.modivhometutors.com/')===0)){var i=document.createElement('img');i.alt='Photo of '+t.name;i.loading='lazy';i.referrerPolicy='no-referrer';i.onerror=function(){av.textContent=ini};i.src=t.photo;av.appendChild(i)}
+    else av.textContent=ini;
+    h.appendChild(av);h.appendChild(el('h3','',t.name));c.appendChild(h);
+    c.appendChild(el('p','hl',t.headline||''));
+    var tg=el('div','tg');(t.subs||[]).slice(0,3).forEach(function(x){tg.appendChild(el('span','',x))});c.appendChild(tg);
+    var ft=el('div','ft');ft.appendChild(el('span','',(t.city||'Online')+' · '+(+t.years>0?t.years+' yrs':'Fresher')));
+    var f=el('span');f.appendChild(el('b','','₹'+(t.fee||'—')));f.appendChild(document.createTextNode('/hr'));ft.appendChild(f);c.appendChild(ft);
+    c.addEventListener('click', function(){ window.location.href = 'modivs-tutors.html'; });
+    box.appendChild(c);
+   });
+  }
+  renderFeat();
+  window.addEventListener('modivs:tutors-updated', renderFeat);
  })();
 
 

@@ -246,20 +246,53 @@ var SEED=[];
 function read(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
 function arr(x){return Array.isArray(x)?x.filter(Boolean):[]}
+// Database-backed loader: reads local cache and reconciles approved tutors
 function load(){
  var by={};
- SEED.forEach(function(t){by[t.email]=t});
- read('modivs_tutors_db').concat(read('modivs_submitted_tutors')).forEach(function(t){
-  if(t&&t.email){by[t.email]=Object.assign({},by[t.email]||{},t)}
+ SEED.forEach(function(t){ if(t.email) by[t.email.toLowerCase()]=t; else if(t.id) by[t.id]=t; });
+ read('modivs_submitted_tutors').concat(read('modivs_tutors_db')).forEach(function(t){
+  if(!t) return;
+  var key = (t.email && String(t.email).toLowerCase()) || t.id;
+  if(!key) return;
+  var prev = by[key] || {};
+  var merged = Object.assign({}, prev, t);
+  if(prev.status === 'approved' || t.status === 'approved') merged.status = 'approved';
+  by[key] = merged;
  });
  var gone=read('modivs_deleted_tutors');
- var all=Object.keys(by).map(function(k){return by[k]}).filter(function(t){return t.status==='approved'&&t.name&&gone.indexOf(String(t.id||''))<0&&gone.indexOf(String(t.email||'').toLowerCase())<0});
+ var all=Object.keys(by).map(function(k){return by[k]}).filter(function(t){
+  return t && t.status==='approved' && t.name && gone.indexOf(String(t.id||''))<0 && gone.indexOf(String(t.email||'').toLowerCase())<0;
+ });
  // demo profiles only appear while there are no real ones
  var real=all.filter(function(t){return !t.is_demo});
  return real.length?real:all;
 }
 function normCity(c){return String(c||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()})}
 var tutors=load().map(function(t){return Object.assign({},t,{city:normCity(t.city)})}),$=function(i){return document.getElementById(i)};
+
+// Live refresh when tutor profiles are added, updated, or synced from Firestore database
+function refreshFromDb(){
+ tutors = load().map(function(t){return Object.assign({},t,{city:normCity(t.city)})});
+ stats();
+ fillSelect('fSub',[].concat.apply([],tutors.map(function(t){return arr(t.subs)})));
+ fillSelect('fCity',(window.ModivsPlaces?ModivsPlaces.cities():[]).concat(tutors.map(function(t){return t.city})).map(function(c){return window.ModivsPlaces?ModivsPlaces.canon('city',c):c}));
+ fillAreas();
+ render();
+}
+window.addEventListener('modivs:tutors-updated', refreshFromDb);
+
+// Realtime sync from Firestore Database on page initialization
+var fbPoll = 0;
+(function pollFb(){
+ if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.pullTutors){
+  window.ModivsFirebaseSync.pullTutors().then(function(){ refreshFromDb(); });
+  if(window.ModivsFirebaseSync.listenTutors){
+   window.ModivsFirebaseSync.listenTutors(function(){ refreshFromDb(); });
+  }
+ } else if(++fbPoll < 25){
+  setTimeout(pollFb, 400);
+ }
+})();
 function initials(n){return String(n).split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()}
 function avatar(t,box){
  box.textContent='';
@@ -515,8 +548,8 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
   if(!modes.length)return err.textContent='Choose at least one teaching mode.';
   if(!(fee>0))return err.textContent='Enter the 1-on-1 fee.';
   var all=read('modivs_tutors_db');
-  if(email&&all.some(function(t){return (t.email||'').toLowerCase()===email}))return err.textContent='A tutor with this email already exists.';
-  var ts=Date.now(),id='t_adm_'+ts,inst=$('tInst').value.trim(),gf=+$('tGroup').value||0;
+  var existingIdx = (email && email.indexOf('@') > 0) ? all.findIndex(function(x){return (x.email||'').toLowerCase()===email}) : -1;
+  var ts=Date.now(),id=(existingIdx >= 0 && all[existingIdx].id) ? all[existingIdx].id : 't_adm_'+ts,inst=$('tInst').value.trim(),gf=+$('tGroup').value||0;
   var t={id:id,email:email||('admin-added-'+ts+'@modivs.local'),no_login:!email,name:name,headline:head,bio:bio,city:city,area:area,travel:travel,phone:phone,gender:$('tGender').value,
    qual:deg+(inst?', '+inst:''),quals:[{degree:deg,inst:inst,field:'',year:''}],years:+years,totalYears:+years,subs:subs,subjects:subs,levels:levels,boards:got('boards'),langs:langs,
    modes:modes,formats:gf?['1-on-1 Individual tuition','Group tuition (Small batches)']:['1-on-1 Individual tuition'],fee:fee,groupFee:gf||'',trial:$('tTrial').value,photo:photo,
@@ -526,10 +559,20 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
   if(cF){t.cert=cF.name}
   var sb=$('addTForm').querySelector('button[type=submit]');sb.disabled=true;err.textContent='';
   function finish(){
-  all.unshift(t);localStorage.setItem('modivs_tutors_db',JSON.stringify(all));
-  try{var fb=window.EducationBFirebase;if(fb&&fb.db)fb.db.collection('tutors').doc(id).set(t,{merge:true}).catch(function(){})}catch(x){}
-  try{var lg=read('modivs_audit_logs');lg.unshift({id:id,name:name,action:'Tutor Added',admin:adminMail,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:'Profile added directly by admin and approved.'});localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,50)))}catch(x){}
-  $('addT').close();location.reload();
+   if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.saveTutor){
+    window.ModivsFirebaseSync.saveTutor(t).then(function(){
+     try{var lg=read('modivs_audit_logs');lg.unshift({id:id,name:name,action:'Tutor Added',admin:adminMail,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:'Profile added directly by admin and approved.'});localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,50)))}catch(x){}
+     $('addT').close();
+     refreshFromDb();
+     setTimeout(function(){ location.reload(); }, 300);
+    });
+   } else {
+    all.unshift(t);localStorage.setItem('modivs_tutors_db',JSON.stringify(all));
+    var subm=read('modivs_submitted_tutors');subm.unshift(t);localStorage.setItem('modivs_submitted_tutors',JSON.stringify(subm));
+    try{var lg=read('modivs_audit_logs');lg.unshift({id:id,name:name,action:'Tutor Added',admin:adminMail,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:'Profile added directly by admin and approved.'});localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,50)))}catch(x){}
+    $('addT').close();
+    location.reload();
+   }
   }
   Promise.all([idF?ModivsDocs.prepare(idF):null,cF?ModivsDocs.prepare(cF):null]).then(function(d){
    if(d[0]&&!ModivsDocs.save(t.email,'id',d[0]))throw {userMessage:'Not enough browser storage to keep the ID document. Try a smaller file.'};
