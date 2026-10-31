@@ -137,6 +137,19 @@ dialog h2{margin:0 0 4px}
 @media(max-width:760px){.topbar>div{flex-wrap:wrap}.tutor-top-nav{width:100%;flex-wrap:nowrap;overflow-x:auto;justify-content:flex-start;padding:4px 0 6px;-webkit-overflow-scrolling:touch}.tutor-top-nav a{white-space:nowrap}}
 @media(max-width:560px){.lead{grid-template-columns:1fr}.acts{flex-direction:row;align-items:center;justify-content:flex-start;flex-wrap:wrap}.ask{bottom:calc(76px + env(safe-area-inset-bottom,0px))}}
 
+.bf label{display:block;font-weight:600;font-size:.88rem;margin:14px 0 5px}
+.bf input,.bf select,.bf textarea{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:9px;background:var(--cream);font:inherit;color:var(--navy)}
+.bf textarea{min-height:260px;resize:vertical;line-height:1.5}
+.bf .hint{font-size:.84rem;color:var(--muted);margin:6px 0 0}
+.bf .foot{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;margin-top:16px}
+.bf .cnt{font-size:.84rem;color:var(--muted)}
+.bf .msg{margin:10px 0 0;font-weight:600;font-size:.9rem;color:var(--bad);min-height:1.2em}
+.bnote{background:#fff7e0;border:1.5px solid var(--yellow);border-radius:12px;padding:12px 16px;margin-bottom:18px;font-size:.92rem}
+.mypost{display:flex;gap:12px;align-items:center;justify-content:space-between;flex-wrap:wrap;padding:14px 0;border-top:1px solid var(--line)}
+.mypost:first-of-type{border-top:0}
+.mypost b{display:block}.mypost small{color:var(--muted)}
+.mypost .ac{display:flex;gap:8px}
+.b.danger{border-color:#e3b4b0;color:var(--bad);background:#fff}.b.danger:hover{background:var(--bad);color:#fff;border-color:var(--bad)}
 .nav button.out{margin-top:8px;border-top:1px solid #3d4870;border-radius:0 0 12px 12px;padding-top:14px}
 .nav button.out:hover{background:#4a2a33;color:#ffd7d7}
 </style>
@@ -146,7 +159,8 @@ dialog h2{margin:0 0 4px}
     var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
     var admin = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
     var isTutor = (u && u.role === 'Tutor');
-    var isAdmin = (admin && admin.email === 'admin@gmail.com');
+    var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
+    var isAdmin = (admin && admin.email && adminEmails.indexOf(admin.email.toLowerCase()) !== -1);
     if(!isTutor && !isAdmin){
       window.location.replace('modivs-education.html#tutor-login');
     }
@@ -160,6 +174,7 @@ dialog h2{margin:0 0 4px}
 <script src="firebase-config.js"></script>
 <script src="firebase-sync.js"></script>
 <script src="firebase-chat.js"></script>
+<script src="modivs-blogs.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
 </head>
 <body>
@@ -171,6 +186,8 @@ dialog h2{margin:0 0 4px}
     <li><a href="index.html">Home</a></li>
     <li><a href="modivs-tutors.html">Tutors</a></li>
     <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-blogs.html">Blogs</a></li>
+    <li><a href="modivs-shop.html">Shop</a></li>
     <li><a href="modivs-active-leads.html">Find Students</a></li>
     <li><a href="modivs-contact.html">Contact us</a></li>
    </ul>
@@ -388,6 +405,7 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
 <script>
 (function(){
 var $=function(id){return document.getElementById(id)};
+function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 var state={view:'dash',coins:30,filter:'new',q:'',tT:null};
 var COST=10;
 var leads=[];
@@ -608,7 +626,7 @@ function nav(){
  var currentChatUser = null;
  try { currentChatUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
  var chatUnread = window.ModivsChat ? ModivsChat.conversations().reduce(function(total,c){ return total + ModivsChat.unread(c, currentChatUser && currentChatUser.email); }, 0) : 0;
- var N=[['dash','🏠','My Dashboard'],['profile','👤','My Profile'],['leads','🎯','New Leads',newLeads().length],['requests','📩','Requests',pendingReq()],['chat','💬','Chat',chatUnread],['membership','👑','Membership'],['credits','🪙','My Credits'],['settings','⚙️','Settings']];
+ var N=[['dash','🏠','My Dashboard'],['profile','👤','My Profile'],['leads','🎯','New Leads',newLeads().length],['requests','📩','Requests',pendingReq()],['chat','💬','Chat',chatUnread],['membership','👑','Membership'],['blogs','✍️','My Blogs'],['credits','🪙','My Credits'],['settings','⚙️','Settings']];
  var b=$('nav');b.innerHTML='';
  N.forEach(function(x){var btn=el('button');btn.type='button';var i=el('span',null,x[1]);i.setAttribute('aria-hidden','true');btn.appendChild(i);btn.appendChild(el('span',null,x[2]));
   if(x[3]){btn.appendChild(el('span','n',x[3]))}
@@ -972,6 +990,115 @@ function vSettings(v){
  [['New lead alerts by email',true],['New lead alerts on WhatsApp',true],['Class reminders',true],['Show my profile to students',true]].forEach(function(x,i){var r=el('div','set');var l=el('label','',x[0]);l.setAttribute('for','s'+i);var c=document.createElement('input');c.type='checkbox';c.id='s'+i;c.checked=x[1];c.addEventListener('change',function(){toast('Setting saved.')});r.appendChild(l);r.appendChild(c);box.appendChild(r)});
  v.appendChild(box)
 }
+var blogDraft={title:'',category:'',body:''};
+function vBlogs(v){
+ v.appendChild(el('h1','','My Blogs'));
+ var B=window.ModivsBlogs,t=window.MY_TUTOR||{};
+ v.appendChild(el('p','sub','Share study tips and advice with students and parents. You can publish up to '+(B?B.MAX_PER_MONTH:2)+' blogs each month.'));
+ var wrap=el('div');v.appendChild(wrap);
+ function note(msg,cls){var n=el('div',cls||'bnote',msg);wrap.innerHTML='';wrap.appendChild(n)}
+ if(!B){note('Blogs could not be loaded. Please refresh the page.');return}
+ if(t.status!=='approved'){note('You can publish blogs once your tutor profile is approved by our team.');return}
+ note('Loading…');
+ function load(u){
+  note('Loading…');
+  return Promise.all([B.quota(u.uid),B.byAuthor(u.uid)]).then(function(r){draw(u,r[0],r[1])}).catch(function(e){
+   var c=e&&e.code;
+   note(c==='permission-denied'?'Could not load your blogs (permission-denied). The site owner needs to publish the latest Firestore rules.':'Could not load your blogs'+(c?' ('+c+')':'')+'. Check your connection and try again.');
+  });
+ }
+ // No live Firebase session (e.g. offline-style login): ask for the password once and sign in properly
+ function reauth(){
+  var au=null;try{au=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(x){}
+  var em=((au&&au.email)||t.email||'').toLowerCase();
+  wrap.innerHTML='';
+  var box=el('section','box bf');box.appendChild(el('h2','','Confirm your password to publish'));
+  box.appendChild(el('p','sub','Publishing needs a secure sign-in. Enter your password for '+(em||'your account')+' to continue.'));
+  var f=el('form');f.noValidate=true;
+  var l=el('label','','Password');l.setAttribute('for','bgP');
+  var pw=el('input');pw.type='password';pw.id='bgP';pw.autocomplete='current-password';pw.placeholder='Your password';
+  var ft=el('div','foot');var btn=el('button','b y','Continue');btn.type='submit';ft.appendChild(btn);
+  var msg=el('p','msg');msg.setAttribute('aria-live','polite');
+  f.appendChild(l);f.appendChild(pw);f.appendChild(ft);f.appendChild(msg);box.appendChild(f);wrap.appendChild(box);
+  f.addEventListener('submit',function(e){
+   e.preventDefault();msg.textContent='';
+   var fa=window.EducationBFirebase&&window.EducationBFirebase.auth;
+   if(!fa){msg.textContent='Sign-in is not available. Please refresh the page.';return}
+   if(!em){msg.textContent='Please log out and log in again.';return}
+   if(!pw.value){msg.textContent='Enter your password.';return}
+   btn.disabled=true;btn.textContent='Checking…';
+   fa.signInWithEmailAndPassword(em,pw.value).catch(function(err){
+    var c=err&&err.code;
+    if(c==='auth/user-not-found'||c==='auth/invalid-credential'||c==='auth/invalid-login-credentials'){
+     return fa.createUserWithEmailAndPassword(em,pw.value).catch(function(e2){
+      if(e2&&e2.code==='auth/email-already-in-use'){var x=new Error('wrong');x.code='x/wrong-password';throw x}
+      throw e2;
+     });
+    }
+    throw err;
+   }).then(function(res){load(res.user)}).catch(function(err){
+    var c=err&&err.code;
+    msg.textContent=c==='x/wrong-password'?'That password is not correct.':'Could not sign in'+(c?' ('+c+')':'')+'. Please try again.';
+    btn.disabled=false;btn.textContent='Continue';
+   });
+  });
+ }
+ B.authReady().then(function(u){
+  if(!u){reauth();return}
+  return load(u);
+ });
+
+ function draw(u,q,mine){
+  wrap.innerHTML='';
+  var st=el('div','stats');
+  st.appendChild(stat('Published this month',q.used+' of '+q.max));
+  st.appendChild(stat('Left this month',String(q.left),q.left?'hi':''));
+  st.appendChild(stat('Limit resets on',q.resets.toLocaleDateString('en-IN',{day:'numeric',month:'short',timeZone:'UTC'}),'',1));
+  wrap.appendChild(st);
+
+  var box=el('section','box bf');box.appendChild(el('h2','','Write a new blog'));
+  if(!q.left){
+   box.appendChild(el('div','bnote','You have published '+q.max+' blogs this month. You can write your next blog from '+q.resets.toLocaleDateString('en-IN',{day:'numeric',month:'long',timeZone:'UTC'})+'.'));
+  } else {
+   var f=el('form');f.noValidate=true;
+   function lab(txt,id){var l=el('label','',txt);l.setAttribute('for',id);return l}
+   f.appendChild(lab('Title','bgT'));var ti=el('input');ti.id='bgT';ti.maxLength=150;ti.placeholder='For example: 5 ways to prepare for Maths exams';ti.value=blogDraft.title;f.appendChild(ti);
+   f.appendChild(lab('Category','bgC'));var ca=el('select');ca.id='bgC';
+   var o0=el('option','','Choose a category');o0.value='';ca.appendChild(o0);
+   B.CATEGORIES.forEach(function(c){var o=el('option','',c);o.value=c;ca.appendChild(o)});ca.value=blogDraft.category;f.appendChild(ca);
+   f.appendChild(lab('Blog','bgB'));var ta=el('textarea');ta.id='bgB';ta.maxLength=20000;ta.placeholder='Write your blog here…';ta.value=blogDraft.body;f.appendChild(ta);
+   f.appendChild(el('p','hint','Leave a blank line between paragraphs. Start a line with "## " for a heading, or "- " for a bullet point. Please write in your own words and keep it helpful for students and parents.'));
+   var ft=el('div','foot');var cnt=el('span','cnt');var btn=el('button','b y','Publish blog');btn.type='submit';ft.appendChild(cnt);ft.appendChild(btn);f.appendChild(ft);
+   var msg=el('p','msg');msg.setAttribute('aria-live','polite');f.appendChild(msg);
+   function upd(){blogDraft={title:ti.value,category:ca.value,body:ta.value};cnt.textContent=ta.value.trim().length+' characters (minimum 100)'}
+   [ti,ca,ta].forEach(function(x){x.addEventListener('input',upd);x.addEventListener('change',upd)});upd();
+   f.addEventListener('submit',function(e){
+    e.preventDefault();msg.textContent='';
+    if(!confirm('Publish this blog now? It will count towards your '+q.max+' blogs this month.'))return;
+    btn.disabled=true;btn.textContent='Publishing…';
+    B.publish({title:ti.value,category:ca.value,body:ta.value,authorName:t.name||u.displayName||'Tutor'}).then(function(){
+     blogDraft={title:'',category:'',body:''};toast('Your blog is now published.');render();
+    }).catch(function(err){msg.textContent=err.message||'Could not publish.';btn.disabled=false;btn.textContent='Publish blog'});
+   });
+   box.appendChild(f);
+  }
+  wrap.appendChild(box);
+
+  var lb=el('section','box');lb.appendChild(el('h2','','Your published blogs'));
+  if(!mine.length){lb.appendChild(el('p','sub','You have not published any blogs yet.'))}
+  mine.forEach(function(p){
+   var r=el('div','mypost'),d=el('div');d.appendChild(el('b','',p.title));d.appendChild(el('small','',p.category+' · '+B.fmtDate(p.date)));
+   var ac=el('div','ac');var vw=el('a','b o','View');vw.href='modivs-blogs.html#'+encodeURIComponent(p.id);vw.style.textDecoration='none';
+   var dl=el('button','b danger','Delete');dl.type='button';
+   dl.addEventListener('click',function(){
+    if(!confirm('Delete "'+p.title+'"? This cannot be undone, and it will still count towards this month\'s limit.'))return;
+    dl.disabled=true;B.remove(p.id).then(function(){toast('Blog deleted.');render()},function(){dl.disabled=false;toast('Could not delete. Please try again.')});
+   });
+   ac.appendChild(vw);ac.appendChild(dl);r.appendChild(d);r.appendChild(ac);lb.appendChild(r);
+  });
+  wrap.appendChild(lb);
+ }
+}
 function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
 
 // Application status and tutor profile resolution
@@ -1132,7 +1259,7 @@ function render(){
  }
  $('coins').textContent=state.coins;nav();
  var v=$('view');v.innerHTML='';
- ({dash:vDash,leads:vLeads,requests:vRequests,profile:vProfile,chat:vChat,credits:vCredits,membership:vMembership,settings:vSettings})[state.view](v)
+ ({dash:vDash,leads:vLeads,requests:vRequests,profile:vProfile,chat:vChat,blogs:vBlogs,credits:vCredits,membership:vMembership,settings:vSettings})[state.view](v)
 }
 
 // Setup Packs & Modal Listeners

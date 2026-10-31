@@ -5,8 +5,9 @@
 (function(){
   'use strict';
   function rd(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+  var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
   function me(){
-    try{var a=rd('modivs_admin_session',null);if(a&&a.email==='admin@gmail.com')return null}catch(e){}
+    try{var a=rd('modivs_admin_session',null);if(a&&a.email&&adminEmails.indexOf(a.email.toLowerCase())!==-1)return null}catch(e){}
     var u=rd('modivs_auth_user',null);
     return u&&(u.role==='Tutor'||u.role==='Student / Parent')?u:null}
   function initials(n){return String(n||'?').trim().split(/\s+/).map(function(w){return w.charAt(0)}).slice(0,2).join('').toUpperCase()||'?'}

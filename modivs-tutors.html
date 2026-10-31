@@ -118,6 +118,8 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
     <li><a href="index.html">Home</a></li>
     <li><a href="modivs-tutors.html">Tutors</a></li>
     <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-blogs.html">Blogs</a></li>
+    <li><a href="modivs-shop.html">Shop</a></li>
     <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-contact.html">Contact us</a></li>
    </ul>
@@ -365,7 +367,8 @@ stats();render();
 if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
 /* ---------- admin: add tutor profile directly ---------- */
 (function(){
- var ADMIN=false;try{var as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');ADMIN=!!(as&&as.email==='admin@gmail.com')}catch(e){}
+ var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','admin@gmail.com'];
+ var ADMIN=false,adminMail='happinessaggarwal@gmail.com';try{var as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');if(as&&as.email&&ADMIN_EMAILS.indexOf(as.email.toLowerCase())!==-1){ADMIN=true;adminMail=as.email;}}catch(e){}
  if(!ADMIN)return;
  document.body.classList.add('is-admin');
  ['navJoin'].forEach(function(i){var a=$(i);if(a)a.style.display='none'});
@@ -427,10 +430,10 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
   var t={id:id,email:email||('admin-added-'+ts+'@modivs.local'),no_login:!email,name:name,headline:head,bio:bio,city:city,area:area,travel:travel,phone:phone,gender:$('tGender').value,
    qual:deg+(inst?', '+inst:''),quals:[{degree:deg,inst:inst,field:'',year:''}],years:+years,totalYears:+years,subs:subs,subjects:subs,levels:levels,boards:got('boards'),langs:langs,
    modes:modes,formats:gf?['1-on-1 Individual tuition','Group tuition (Small batches)']:['1-on-1 Individual tuition'],fee:fee,groupFee:gf||'',trial:$('tTrial').value,photo:photo,
-   status:'approved',added_by_admin:true,reviewed_by:'admin@gmail.com',reviewed_at:new Date().toISOString(),submitted_at:new Date().toISOString(),sent:'Added by admin'};
+   status:'approved',added_by_admin:true,reviewed_by:adminMail,reviewed_at:new Date().toISOString(),submitted_at:new Date().toISOString(),sent:'Added by admin'};
   all.unshift(t);localStorage.setItem('modivs_tutors_db',JSON.stringify(all));
   try{var fb=window.EducationBFirebase;if(fb&&fb.db)fb.db.collection('tutors').doc(id).set(t,{merge:true}).catch(function(){})}catch(x){}
-  try{var lg=read('modivs_audit_logs');lg.unshift({id:id,name:name,action:'Tutor Added',admin:'admin@gmail.com',timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:'Profile added directly by admin and approved.'});localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,50)))}catch(x){}
+  try{var lg=read('modivs_audit_logs');lg.unshift({id:id,name:name,action:'Tutor Added',admin:adminMail,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:'Profile added directly by admin and approved.'});localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,50)))}catch(x){}
   $('addT').close();location.reload();
  });
  if(location.hash==='#add')setTimeout(openAdd,0);

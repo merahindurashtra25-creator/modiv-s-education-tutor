@@ -42,14 +42,18 @@
     return u;
   }
 
+  var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
   function isAdmin(){
     var session = read('modivs_admin_session', null);
     var u = user();
     var fbU = fbAuth() && fbAuth().currentUser;
+    var sMail = session && emailOf(session.email);
+    var uMail = u && emailOf(u.email);
+    var fbMail = fbU && emailOf(fbU.email);
     return !!(
-      (session && session.email === 'admin@gmail.com') ||
-      (u && emailOf(u.email) === 'admin@gmail.com') ||
-      (fbU && emailOf(fbU.email) === 'admin@gmail.com')
+      (sMail && ADMIN_EMAILS.indexOf(sMail) !== -1) ||
+      (uMail && ADMIN_EMAILS.indexOf(uMail) !== -1) ||
+      (fbMail && ADMIN_EMAILS.indexOf(fbMail) !== -1)
     );
   }
 

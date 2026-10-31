@@ -12,6 +12,8 @@
     { "src": "/student-registration", "dest": "/modivs-student-registration.html" },
     { "src": "/tutors", "dest": "/modivs-tutors.html" },
     { "src": "/active-leads", "dest": "/modivs-active-leads.html" },
+    { "src": "/shop", "dest": "/modivs-shop.html" },
+    { "src": "/blogs", "dest": "/modivs-blogs.html" },
     { "src": "/contact", "dest": "/modivs-contact.html" },
     { "src": "/privacy-policy", "dest": "/modivs-privacy-policy.html" },
     { "src": "/terms", "dest": "/modivs-terms.html" },

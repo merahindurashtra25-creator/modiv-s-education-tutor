@@ -170,7 +170,6 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
    <div class="login-tabs" role="tablist" style="display:flex;background:var(--mist);padding:4px;border-radius:10px;margin-bottom:20px;gap:4px;">
     <button type="button" id="tabStudent" class="ltab on" style="flex:1;padding:9px 12px;border:0;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;background:var(--white);color:var(--ink);box-shadow:0 1px 3px rgba(0,0,0,0.08);transition:all .15s ease;">Student / Parent</button>
      <button type="button" id="tabTutor" class="ltab" style="flex:1;padding:9px 12px;border:0;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s ease;">Tutor</button>
-     <button type="button" id="tabAdmin" class="ltab" style="flex:1;padding:9px 12px;border:0;border-radius:8px;font-weight:600;font-size:0.88rem;cursor:pointer;background:transparent;color:var(--muted);transition:all .15s ease;">Admin Portal</button>
    </div>
 
    <h1 id="loginTitle">Log in</h1>
@@ -239,7 +238,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   } catch(e){}
 
   var current = null, toastTimer;
-  var loginMode = 'student'; // 'student', 'tutor', 'admin'
+  var loginMode = 'student'; // 'student' or 'tutor'
   var $ = function(id){ return document.getElementById(id); };
   var views = ['login','signup','menu'];
 
@@ -273,9 +272,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       c.appendChild(b);
     }
 
-    if(mode === 'admin'){
-      addBtn('Fill Admin (admin@gmail.com / Admin@12345)', '#14213d', 'admin@gmail.com', 'Admin@12345');
-    } else if(mode === 'tutor'){
+    if(mode === 'tutor'){
     } else {
     }
   }
@@ -288,12 +285,12 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 
   function setLoginMode(mode){
     loginMode = mode;
-    var tabStudent = $('tabStudent'), tabTutor = $('tabTutor'), tabAdmin = $('tabAdmin');
+    var tabStudent = $('tabStudent'), tabTutor = $('tabTutor');
     var title = $('loginTitle'), sub = $('loginSub');
     var emailLabel = $('lEmailLabel'), emailInput = $('lEmail');
     var submitBtn = $('lSubmitBtn'), signupSwitch = $('signupSwitch');
 
-    [tabStudent, tabTutor, tabAdmin].forEach(function(tb){
+    [tabStudent, tabTutor].forEach(function(tb){
       if(tb){
         tb.style.background = 'transparent';
         tb.style.color = 'var(--muted)';
@@ -302,22 +299,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       }
     });
 
-    if(mode === 'admin'){
-      if(tabAdmin){
-        tabAdmin.style.display = 'block';
-        tabAdmin.style.background = 'var(--white)';
-        tabAdmin.style.color = 'var(--ink)';
-        tabAdmin.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
-        tabAdmin.setAttribute('aria-selected', 'true');
-      }
-      title.textContent = 'Admin Log in';
-      sub.textContent = 'Enter administrator credentials to access the Admin Portal.';
-      emailLabel.textContent = 'Admin Email';
-      emailInput.placeholder = 'admin@gmail.com';
-      submitBtn.textContent = 'Log in to Admin Portal';
-      if(signupSwitch) signupSwitch.style.display = 'none';
-      if($('googleWrap')) $('googleWrap').style.display = 'none';
-    } else if(mode === 'tutor'){
+    if(mode === 'tutor'){
       if(tabTutor){
         tabTutor.style.background = 'var(--white)';
         tabTutor.style.color = 'var(--ink)';
@@ -346,21 +328,15 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       if(signupSwitch) signupSwitch.style.display = '';
       setSignupLink('student');
     }
-    if(mode !== 'admin' && $('googleWrap')) $('googleWrap').style.display = '';
+    if($('googleWrap')) $('googleWrap').style.display = '';
     renderDemoBtns(mode);
   }
 
   if($('tabStudent')) $('tabStudent').addEventListener('click', function(){ setLoginMode('student'); });
   if($('tabTutor')) $('tabTutor').addEventListener('click', function(){ setLoginMode('tutor'); });
-  if($('tabAdmin')) $('tabAdmin').addEventListener('click', function(){ setLoginMode('admin'); });
 
   function show(name){
     views.forEach(function(v){ if($(v)) $(v).classList.toggle('hide', v!==name); });
-    if(name === 'admin'){
-      show('login');
-      setLoginMode('admin');
-      return;
-    }
     if(location.hash!=='#'+name) history.replaceState(null,'','#'+name);
     window.scrollTo(0,0);
   }
@@ -384,6 +360,43 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     });
   }
 
+  // Helper for admin email check
+  var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
+  var ADMIN_PASS = 'Arcmaster@879582$';
+  function isAdminEmail(em){
+    if(!em) return false;
+    return ADMIN_EMAILS.indexOf(String(em).trim().toLowerCase()) !== -1;
+  }
+  function handleAdminLoginSuccess(email, displayName, uid){
+    var adminData = {
+      email: email,
+      name: displayName || 'Admin',
+      role: 'Admin',
+      uid: uid || '',
+      logged_in_at: new Date().toISOString()
+    };
+    try { localStorage.setItem('modivs_admin_session', JSON.stringify(adminData)); } catch(e){}
+    try { localStorage.setItem('modivs_auth_user', JSON.stringify({ name: displayName || 'Admin', email: email, role: 'Admin', uid: uid || '' })); } catch(e){}
+
+    // Save in Firestore Database ('users' collection)
+    try {
+      var fb = window.EducationBFirebase;
+      if(fb && fb.db && window.firebase){
+        var docId = uid || email.replace(/[^a-zA-Z0-9_-]/g, '_');
+        fb.db.collection('users').doc(docId).set({
+          name: displayName || 'Admin',
+          email: email,
+          role: 'Admin',
+          uid: uid || '',
+          lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(function(){});
+      }
+    } catch(e){}
+
+    toast('Welcome, Admin! Opening Admin Dashboard...');
+    setTimeout(function(){ window.location.href = 'modivs-admin.html'; }, 500);
+  }
+
   // LOGIN FORM SUBMISSION
   $('loginForm').addEventListener('submit', function(e){
     e.preventDefault();
@@ -393,43 +406,55 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 
     if(!emailOk(emailVal)){ bad(em, true); msg.textContent = 'Enter a valid email address.'; return; }
     if(!pw.value){ bad(pw, true); msg.textContent = 'Enter your password.'; return; }
+
+    // Admin direct password login
+    if(isAdminEmail(emailVal)){
+      if(pw.value === ADMIN_PASS){
+        if(window.EducationBFirebase && window.EducationBFirebase.auth){
+          window.EducationBFirebase.auth.signInWithEmailAndPassword(emailVal, pw.value).then(function(result){
+            handleAdminLoginSuccess(emailVal, (result.user && result.user.displayName) || 'Admin', result.user && result.user.uid);
+          }).catch(function(){
+            handleAdminLoginSuccess(emailVal, 'Admin', 'admin_' + Date.now());
+          });
+          return;
+        }
+        handleAdminLoginSuccess(emailVal, 'Admin', 'admin_' + Date.now());
+        return;
+      } else {
+        bad(pw, true);
+        msg.textContent = 'Invalid email or password.';
+        return;
+      }
+    }
     function proceedLogin(uid){
       var firebaseUid = uid || (window.EducationBFirebase && window.EducationBFirebase.auth.currentUser && window.EducationBFirebase.auth.currentUser.uid) || '';
 
-      // 1. ADMIN AUTHENTICATION
-      if(emailVal === 'admin@gmail.com'){
-        if(pw.value === 'Admin@12345' || firebaseUid){
-          localStorage.setItem('modivs_admin_session', JSON.stringify({ email: 'admin@gmail.com', uid: firebaseUid, loggedInAt: new Date().toISOString() }));
-          toast('Admin authenticated! Opening Admin portal...');
-          setTimeout(function(){ window.location.href = 'modivs-admin.html'; }, 500);
-          return;
-        } else {
-          bad(pw, true);
-          msg.textContent = 'Invalid admin credentials.';
-          return;
-        }
+      // Auto-detect registered account across all databases
+      var allTutors = []; try { allTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]'); } catch(err){}
+      var allStudents = []; try { allStudents = JSON.parse(localStorage.getItem('modivs_students_db') || '[]'); } catch(err){}
+      var foundUser = users.find(function(x){ return String(x.email).toLowerCase() === emailVal; });
+      var matchTutor = allTutors.find(function(t){ return String(t.email).toLowerCase() === emailVal; });
+      var matchStudent = allStudents.find(function(s){ return String(s.email).toLowerCase() === emailVal; });
+
+      var resolvedRole = '';
+      var displayName = '';
+      if(matchTutor || (foundUser && foundUser.role === 'Tutor')){
+        resolvedRole = 'Tutor';
+        displayName = (matchTutor && matchTutor.name) || (foundUser && foundUser.name) || emailVal.split('@')[0];
+      } else if(matchStudent || (foundUser && foundUser.role === 'Student / Parent')){
+        resolvedRole = 'Student / Parent';
+        displayName = (matchStudent && (matchStudent.name || matchStudent.parentName)) || (foundUser && foundUser.name) || emailVal.split('@')[0];
+      } else {
+        resolvedRole = (loginMode === 'tutor' ? 'Tutor' : 'Student / Parent');
+        displayName = (foundUser && foundUser.name) || emailVal.split('@')[0];
       }
 
-      // 2. TUTOR LOGIN
-      if(loginMode === 'tutor'){
-        var allTutors = [];
-        try { allTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]'); } catch(err){}
-        var matchTutor = allTutors.find(function(t){ return t.email === emailVal; });
-        var tName = matchTutor ? matchTutor.name : emailVal.split('@')[0];
-        var tutorUser = { name: tName, email: emailVal, uid: firebaseUid, role: 'Tutor' };
-        localStorage.setItem('modivs_auth_user', JSON.stringify(tutorUser));
-        toast('Welcome back, ' + tName.split(' ')[0] + '! Opening Tutor Dashboard...');
-        setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 500);
-        return;
-      }
-
-      // 3. STUDENT / PARENT LOGIN
-      var foundUser = users.find(function(x){ return x.email === emailVal; });
-      var studentName = foundUser ? foundUser.name : emailVal.split('@')[0];
-      var studentUser = { name: studentName, email: emailVal, uid: firebaseUid, role: 'Student / Parent' };
-      localStorage.setItem('modivs_auth_user', JSON.stringify(studentUser));
-      toast('Welcome back, ' + studentName.split(' ')[0] + '! Opening Student Dashboard...');
-      setTimeout(function(){ window.location.href = 'modivs-student-dashboard.html'; }, 500);
+      var authObj = { name: displayName, email: emailVal, uid: firebaseUid, role: resolvedRole };
+      localStorage.setItem('modivs_auth_user', JSON.stringify(authObj));
+      toast('Welcome back, ' + displayName.split(' ')[0] + '! Opening ' + (resolvedRole === 'Tutor' ? 'Tutor' : 'Student') + ' Dashboard...');
+      setTimeout(function(){
+        window.location.href = resolvedRole === 'Tutor' ? 'modivs-tutor-dashboard.html' : 'modivs-student-dashboard.html';
+      }, 500);
     }
 
     if(window.EducationBFirebase && !window.EducationBFirebase.auth.currentUser && !window.__firebaseLoginInProgress){
@@ -440,10 +465,6 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         proceedLogin(result.user.uid);
       }).catch(function(err){
         window.__firebaseLoginInProgress = false;
-        if(emailVal === 'admin@gmail.com' && pw.value === 'Admin@12345'){
-          proceedLogin('admin_local');
-          return;
-        }
         var found = users.find(function(x){ return x.email === emailVal; });
         if(found){
           proceedLogin('local_' + Date.now());
@@ -478,27 +499,66 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       var mail = String(u.email || '').toLowerCase();
       // genuine-user checks
       if(!mail || u.emailVerified !== true){ return reject('Your Google email could not be verified. Please use a verified Google account.'); }
-      if(mail === 'admin@gmail.com'){ return reject('Admin accounts must log in from the Admin Portal tab.'); }
-      var list = []; try{ list = JSON.parse(localStorage.getItem('modivs_users') || '[]'); }catch(e){}
-      var found = list.find(function(x){ return String(x.email).toLowerCase() === mail; });
-      if(found && found.role && found.role !== role){
-        return reject('This email is already registered as ' + (found.role === 'Tutor' ? 'a Tutor' : 'a Student / Parent') + '. Use the ' + (found.role === 'Tutor' ? 'Tutor' : 'Student / Parent') + ' tab to continue.');
+
+      // Direct Admin access via Google Sign-in
+      if(isAdminEmail(mail)){
+        handleAdminLoginSuccess(mail, u.displayName || 'Admin', u.uid);
+        if(fb.db){
+          fb.db.collection('users').doc(u.uid).set({
+            name: u.displayName || 'Admin',
+            email: mail,
+            role: 'Admin',
+            uid: u.uid,
+            provider: 'google',
+            lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+          }, { merge: true }).catch(function(){});
+        }
+        return;
       }
+      var list = []; try{ list = JSON.parse(localStorage.getItem('modivs_users') || '[]'); }catch(e){}
+      var allTutors = []; try{ allTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]'); }catch(e){}
+      var allStudents = []; try{ allStudents = JSON.parse(localStorage.getItem('modivs_students_db') || '[]'); }catch(e){}
+
+      var matchUser = list.find(function(x){ return String(x.email).toLowerCase() === mail; });
+      var matchTutor = allTutors.find(function(t){ return String(t.email).toLowerCase() === mail; });
+      var matchStudent = allStudents.find(function(s){ return String(s.email).toLowerCase() === mail; });
+
+      var found = matchUser || matchTutor || matchStudent;
+      var actualRole = role; // default to current tab role if new
       var name = u.displayName || mail.split('@')[0];
+
+      if(matchTutor || (matchUser && matchUser.role === 'Tutor')){
+        actualRole = 'Tutor';
+        name = (matchTutor && matchTutor.name) || (matchUser && matchUser.name) || name;
+      } else if(matchStudent || (matchUser && matchUser.role === 'Student / Parent')){
+        actualRole = 'Student / Parent';
+        name = (matchStudent && (matchStudent.name || matchStudent.parentName)) || (matchUser && matchUser.name) || name;
+      }
+
       var isNew = !found;
       if(isNew){
-        list.push({ name: name, email: mail, uid: u.uid, role: role, provider: 'google', created_at: new Date().toISOString() });
+        list.push({ name: name, email: mail, uid: u.uid, role: actualRole, provider: 'google', created_at: new Date().toISOString() });
         try{ localStorage.setItem('modivs_users', JSON.stringify(list)); }catch(e){}
         users = list;
         if(fb.db){
-          fb.db.collection('users').doc(u.uid).set({ name: name, email: mail, role: role, uid: u.uid, provider: 'google', createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(){});
+          fb.db.collection('users').doc(u.uid).set({ name: name, email: mail, role: actualRole, uid: u.uid, provider: 'google', createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(){});
         }
-      } else { name = found.name || name; }
+      } else {
+        if(matchUser){
+          matchUser.uid = u.uid;
+          matchUser.provider = 'google';
+          matchUser.last_login = new Date().toISOString();
+          try{ localStorage.setItem('modivs_users', JSON.stringify(list)); }catch(e){}
+        }
+        if(fb.db){
+          fb.db.collection('users').doc(u.uid).set({ name: name, email: mail, role: actualRole, uid: u.uid, provider: 'google', lastLogin: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(){});
+        }
+      }
 
-      if(role === 'Tutor'){
+      if(actualRole === 'Tutor'){
         try{
           var db = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
-          if(!db.some(function(t){ return t.email === mail; })){
+          if(!db.some(function(t){ return String(t.email).toLowerCase() === mail; })){
             db.push({ id: 't_user_' + mail.replace(/[^a-z0-9]/gi, '_'), name: name, email: mail, phone: '—', city: '—',
               headline: 'Account registered. Profile setup incomplete.', qual: 'Profile setup pending', years: 0, subs: ['General'], levels: ['Secondary'],
               fee: 0, modes: ['Online'], langs: ['English'], idType: 'Pending upload', idFile: '', cert: '', sent: 'Registration completed',
@@ -507,21 +567,31 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           }
         }catch(e){}
       }
-      localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: role }));
+      localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: actualRole }));
       toast((isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
-      var dest = role === 'Tutor' ? (isNew ? 'modivs-tutor-profile.html' : 'modivs-tutor-dashboard.html')
-                                  : (isNew ? 'modivs-student-registration.html' : 'modivs-student-dashboard.html');
+      var dest = actualRole === 'Tutor' ? (isNew ? 'modivs-tutor-profile.html' : 'modivs-tutor-dashboard.html')
+                                        : (isNew ? 'modivs-student-registration.html' : 'modivs-student-dashboard.html');
       setTimeout(function(){ window.location.href = dest; }, 500);
     }).catch(function(err){
       if(btn) btn.disabled = false;
       var c = err && err.code;
       if(c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return;
-      msgEl.textContent =
-        c === 'auth/popup-blocked' ? 'Your browser blocked the Google pop-up. Allow pop-ups for this site and try again.' :
-        c === 'auth/operation-not-allowed' ? 'Google sign-in is not enabled for this site yet.' :
-        c === 'auth/unauthorized-domain' ? 'This website address is not authorised for Google sign-in yet.' :
-        c === 'auth/network-request-failed' ? 'Network error. Check your connection and try again.' :
-        'Google sign-in failed. Please try again.';
+      if(c === 'auth/popup-blocked'){
+        msgEl.textContent = 'Your browser blocked the Google pop-up. Allow pop-ups for this site and try again.';
+      } else if(c === 'auth/operation-not-allowed'){
+        msgEl.textContent = 'Google sign-in is not enabled for this site in Firebase yet.';
+      } else if(c === 'auth/unauthorized-domain'){
+        var host = location.hostname || 'this address';
+        if(location.protocol === 'file:'){
+          msgEl.innerHTML = 'Google Sign-In cannot run from a local file (file://). Please run via a local server (<code>http://localhost:5500</code>) or log in with Email &amp; Password above.';
+        } else {
+          msgEl.innerHTML = 'Domain <strong>' + host + '</strong> is not authorized in Firebase Console yet. Add <code>' + host + '</code> to Firebase Console &rarr; Authentication &rarr; Settings &rarr; Authorized domains. Alternatively, log in with Email &amp; Password above.';
+        }
+      } else if(c === 'auth/network-request-failed'){
+        msgEl.textContent = 'Network error. Check your connection and try again.';
+      } else {
+        msgEl.textContent = 'Google sign-in failed. Please try again.';
+      }
       console.error('Google sign-in failed', err);
     });
   }
@@ -621,15 +691,18 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 
   function handleRoute(){
     var hash = location.hash;
-    if(hash === '#admin'){
-      show('login');
-      setLoginMode('admin');
-    } else if(hash === '#tutor-login'){
+    if(hash === '#tutor-login'){
       show('login');
       setLoginMode('tutor');
     } else if(hash === '#student-login'){
       show('login');
       setLoginMode('student');
+    } else if(hash === '#admin-login'){
+      show('login');
+      setLoginMode('student');
+      var t = $('loginTitle'), s = $('loginSub');
+      if(t) t.textContent = 'Admin Log in';
+      if(s) s.textContent = 'Log in with your administrator email or Google account.';
     } else if(hash === '#tutor-signup'){
       show('signup');
     } else if(hash === '#signup'){

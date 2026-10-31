@@ -10,7 +10,8 @@
     if(!db || !auth || !auth.currentUser) return;
     var u = auth.currentUser;
     var userEmail = String(u.email || '').toLowerCase();
-    var isAdmin = (userEmail === 'admin@gmail.com');
+    var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
+    var isAdmin = adminEmails.indexOf(userEmail) !== -1;
 
     var query = db.collection('conversations');
     if(!isAdmin){

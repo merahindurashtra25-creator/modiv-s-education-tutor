@@ -18,18 +18,28 @@
       if(h==='modivs-home.html')h='index.html';
       if(h&&h===file)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
     });
+    var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com'];
+    var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','admin@gmail.com'];
     var isAdmin=false;
-    try{var s=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');isAdmin=!!(s&&s.email==='admin@gmail.com')}catch(e){}
+    var adminEmail='';
+    try{
+      var s=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');
+      if(s&&s.email&&ADMIN_EMAILS.indexOf(s.email.toLowerCase())!==-1){
+        isAdmin=true;
+        adminEmail=s.email;
+      }
+    }catch(e){}
     if(isAdmin){
       ['navLoginBtn','navSignup','navJoin'].forEach(function(id){var x=document.getElementById(id);if(x)x.style.display='none'});
       var acts=hd.querySelector('.acts');
       if(acts&&!acts.querySelector('.adm-pill')){
         var pill=document.createElement('span');pill.className='adm-pill';
-        pill.innerHTML='Logged in as <b>Admin</b><span class="em"> \u00b7 admin@gmail.com</span>';
+        pill.innerHTML='Logged in as <b>Admin</b><span class="em"> \u00b7 '+adminEmail+'</span>';
         var dash=document.createElement('a');dash.className='btn y';dash.href='modivs-admin.html';dash.textContent='Admin dashboard';
         var out=document.createElement('a');out.className='btn o';out.href='index.html';out.textContent='Log out';
         out.addEventListener('click',function(){
           try{localStorage.removeItem('modivs_admin_session')}catch(e){}
+          try{localStorage.removeItem('modivs_auth_user')}catch(e){}
           try{var fb=window.EducationBFirebase;if(fb&&fb.auth)fb.auth.signOut()}catch(e){}
         });
         acts.insertBefore(pill,b);acts.insertBefore(dash,b);acts.insertBefore(out,b);

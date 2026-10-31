@@ -73,7 +73,11 @@ body{background:linear-gradient(135deg,#f7faf9 0%,#eaf3f1 55%,#fdf6e7 100%);over
  // Already signed in? Skip the chooser and go straight to the right dashboard.
  try{
   var u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null');
-  if(u&&u.role==='Tutor')location.replace('modivs-tutor-dashboard.html');
+  var a=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');
+  var adminEmails=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','admin@gmail.com'];
+  if(a&&a.email&&adminEmails.indexOf(a.email.toLowerCase())!==-1)location.replace('modivs-admin.html');
+  else if(u&&u.role==='Admin')location.replace('modivs-admin.html');
+  else if(u&&u.role==='Tutor')location.replace('modivs-tutor-dashboard.html');
   else if(u&&u.role==='Student / Parent')location.replace('modivs-student-dashboard.html');
  }catch(e){}
 })();

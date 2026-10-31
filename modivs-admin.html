@@ -8,9 +8,10 @@
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script>
 (function(){
+  var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
   try {
     var s = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
-    if(!s || s.email !== 'admin@gmail.com'){
+    if(!s || !s.email || ADMIN_EMAILS.indexOf(String(s.email).toLowerCase()) === -1){
       window.location.replace('modivs-education.html#login');
     }
   } catch(e){
@@ -435,6 +436,20 @@ var currentPage = 1;
 var pageSize = 8;
 var toastT;
 
+// Current Admin Session
+var currentAdmin = (function(){
+  try { return JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); } catch(e){ return null; }
+})();
+var currentAdminEmail = (currentAdmin && currentAdmin.email) || 'happinessaggarwal@gmail.com';
+
+// Update admin header info pill
+try {
+  var sessInfo = document.getElementById('adminSessionInfo');
+  if(sessInfo){
+    sessInfo.innerHTML = 'Logged in as <b>Admin</b><span class="em" style="font-size:0.85em;opacity:0.85"> · ' + currentAdminEmail + '</span>';
+  }
+} catch(e){}
+
 // Audit logs
 var auditLogs = [];
 try {
@@ -446,7 +461,7 @@ function logAction(id, name, action, note){
     id: id,
     name: name,
     action: action,
-    admin: 'admin@gmail.com',
+    admin: currentAdminEmail,
     timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ', ' + new Date().toLocaleDateString(),
     note: note || ''
   };
@@ -733,7 +748,7 @@ function detail(){
       unlockBtn.addEventListener('click', function(){
         chat.unlocked = true;
         chat.unlockedAt = new Date().toISOString();
-        chat.unlockedBy = 'admin@gmail.com';
+        chat.unlockedBy = currentAdminEmail;
         chat.status = 'unlocked';
         var allConvs = ModivsChat.conversations();
         localStorage.setItem('modivs_chat_conversations', JSON.stringify(allConvs));
@@ -743,7 +758,7 @@ function detail(){
           firestore.collection('conversations').doc(docId).update({
             unlocked: true,
             unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
-            unlockedBy: 'admin@gmail.com',
+            unlockedBy: currentAdminEmail,
             status: 'unlocked'
           }).catch(function(){});
         }
@@ -885,7 +900,7 @@ function detail(){
     ['Registration / Sent Date', x.sent || 'Recently registered'],
     ['Submission Date', x.submitted_at ? new Date(x.submitted_at).toLocaleDateString() : '—'],
     ['Review Date', x.reviewed_at ? new Date(x.reviewed_at).toLocaleDateString() : 'Awaiting review'],
-    ['Reviewed By', x.reviewed_by || (x.status === 'approved' ? 'admin@gmail.com' : 'Pending')]
+    ['Reviewed By', x.reviewed_by || (x.status === 'approved' ? currentAdminEmail : 'Pending')]
   ]));
 
   d.appendChild(tags((x.subs || []).concat(x.levels || [], x.modes || [])));
@@ -1210,9 +1225,9 @@ function detail(){
   } else {
     lg.appendChild(el('p', '', '• Application record created (' + (x.sent || 'Initial submission') + ')'));
     if(x.status === 'approved'){
-      lg.appendChild(el('p', '', '• Approved by admin@gmail.com (' + (x.reviewed_at ? new Date(x.reviewed_at).toLocaleDateString() : 'Verified') + ')'));
+      lg.appendChild(el('p', '', '• Approved by ' + (x.reviewed_by || currentAdminEmail) + ' (' + (x.reviewed_at ? new Date(x.reviewed_at).toLocaleDateString() : 'Verified') + ')'));
     } else if(x.status === 'rejected'){
-      lg.appendChild(el('p', '', '• Rejected by admin@gmail.com — Reason: ' + (x.rejection_reason || 'Needs corrections')));
+      lg.appendChild(el('p', '', '• Rejected by ' + (x.reviewed_by || currentAdminEmail) + ' — Reason: ' + (x.rejection_reason || 'Needs corrections')));
     }
   }
   d.appendChild(lg);
@@ -1221,7 +1236,7 @@ function detail(){
 function decide(x, s, verb, note, reasons){
   x.status = s;
   x.reviewed_at = new Date().toISOString();
-  x.reviewed_by = 'admin@gmail.com';
+  x.reviewed_by = currentAdminEmail;
   if(s === 'rejected'){
     x.rejection_reasons = reasons || [];
     x.rejection_note = note || '';
@@ -1359,6 +1374,8 @@ $('syncFb').addEventListener('click', function(){
 
 $('out').addEventListener('click', function(){
   localStorage.removeItem('modivs_admin_session');
+  localStorage.removeItem('modivs_auth_user');
+  try{var fb=window.EducationBFirebase;if(fb&&fb.auth)fb.auth.signOut()}catch(e){}
   toast('Logged out from Admin portal.');
   setTimeout(function(){ window.location.href = 'modivs-home.html'; }, 500);
 });

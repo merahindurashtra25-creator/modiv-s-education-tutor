@@ -9,7 +9,11 @@ service cloud.firestore {
     function isAdmin() {
       return signedIn() && (
         request.auth.token.admin == true ||
-        (request.auth.token.email != null && request.auth.token.email.lower() == 'admin@gmail.com')
+        (request.auth.token.email != null && (
+          request.auth.token.email.lower() == 'happinessaggarwal@gmail.com' ||
+          request.auth.token.email.lower() == 'divyanshdhimanteam@gmail.com' ||
+          request.auth.token.email.lower() == 'admin@gmail.com'
+        ))
       );
     }
 
@@ -213,6 +217,75 @@ service cloud.firestore {
         isEmail(resource.data.tutorEmail)
       ));
       allow write: if isAdmin() || signedIn();
+    }
+
+    // ==========================================
+    // 8. Blogs (tutors publish, anyone reads, signed-in users comment)
+    // Limit: each tutor can publish at most 2 blogs per calendar month (UTC).
+    // The quota counter and the blog are written together in one batch. The blog id must be
+    // <uid>_<year>_<month>_<count>, so a second post can never reuse the same count.
+    // ==========================================
+    function monthTag() {
+      return string(request.time.year()) + '_' + string(request.time.month());
+    }
+    function quotaPath() {
+      return /databases/$(database)/documents/blog_quota/$(request.auth.uid + '_' + monthTag());
+    }
+
+    match /blog_quota/{qid} {
+      allow read: if isAdmin() || (signedIn() && qid.matches(request.auth.uid + '_.*'));
+      allow create: if signedIn()
+        && qid == request.auth.uid + '_' + monthTag()
+        && request.resource.data.keys().hasOnly(['uid', 'count'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.count == 1;
+      allow update: if signedIn()
+        && qid == request.auth.uid + '_' + monthTag()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.count == resource.data.count + 1
+        && request.resource.data.count <= 2;
+      allow delete: if isAdmin();
+    }
+
+    match /blogs/{blogId} {
+      allow read: if true;
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['authorUid', 'authorName', 'title', 'category', 'excerpt', 'body', 'read', 'createdAt'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 5 && request.resource.data.title.size() <= 150
+        && request.resource.data.body is string
+        && request.resource.data.body.size() >= 100 && request.resource.data.body.size() <= 20000
+        && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 80
+        && request.resource.data.excerpt is string && request.resource.data.excerpt.size() <= 200
+        && getAfter(quotaPath()).data.count <= 2
+        && getAfter(quotaPath()).data.count == (exists(quotaPath()) ? get(quotaPath()).data.count : 0) + 1
+        && blogId == request.auth.uid + '_' + monthTag() + '_' + string(getAfter(quotaPath()).data.count);
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (signedIn() && resource.data.authorUid == request.auth.uid);
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'role', 'text', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+          && request.resource.data.name is string && request.resource.data.name.size() <= 80
+          && request.resource.data.role is string && request.resource.data.role.size() <= 30
+          && exists(/databases/$(database)/documents/blogs/$(blogId));
+        allow update: if false;
+        // The commenter, the blog's author and the admin can remove a comment
+        allow delete: if isAdmin() || (signedIn() && (
+          resource.data.uid == request.auth.uid ||
+          get(/databases/$(database)/documents/blogs/$(blogId)).data.authorUid == request.auth.uid
+        ));
+      }
     }
   }
 }

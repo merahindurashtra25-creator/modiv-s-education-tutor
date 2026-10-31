@@ -89,6 +89,8 @@ dialog#addDlg::backdrop{background:rgba(26,32,53,.55)}
     <li><a href="index.html">Home</a></li>
     <li><a href="modivs-tutors.html">Tutors</a></li>
     <li><a href="modivs-guide.html">Guide</a></li>
+    <li><a href="modivs-blogs.html">Blogs</a></li>
+    <li><a href="modivs-shop.html">Shop</a></li>
     <li><a href="modivs-active-leads.html">Active leads</a></li>
     <li><a href="modivs-contact.html">Contact us</a></li>
    </ul>
@@ -162,7 +164,8 @@ function load(){
  return out;
 }
 var leads=load(),$=function(i){return document.getElementById(i)};
-var ADMIN=false;try{var as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');ADMIN=!!(as&&as.email==='admin@gmail.com')}catch(e){}
+var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','admin@gmail.com'];
+var ADMIN=false;try{var as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');ADMIN=!!(as&&as.email&&ADMIN_EMAILS.indexOf(as.email.toLowerCase())!==-1)}catch(e){}
 function tomb(){return read('modivs_deleted_leads')}
 function fillSelect(id,vals){var s=$(id);Array.from(new Set(vals.filter(Boolean))).sort().forEach(function(v){var o=el('option','',v);o.value=v;s.appendChild(o)})}
 fillSelect('fCity',leads.map(function(l){return l.city}));
