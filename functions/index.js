@@ -103,3 +103,4 @@ exports.checkEmailUniqueness = functions.https.onCall(async (data) => {
 
   return { exists: false, email };
 });
+

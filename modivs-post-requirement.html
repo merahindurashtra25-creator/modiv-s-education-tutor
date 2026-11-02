@@ -6,6 +6,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Post a Requirement · Modiv’s Education</title>
 <meta name="description" content="Post your tuition requirement for free and get responses from verified home and online tutors near you on Modiv’s Education.">
+<meta name="keywords" content="post tuition requirement, post a requirement, find home tutor, need a tutor, home tutor near me, online tutor, free tuition requirement, hire private tutor, tuition enquiry, free demo class, CBSE tutor, ICSE tutor, Maths tutor, Science tutor, home tuition in Chandigarh, home tuition in Mohali, home tuition in Panchkula, Modiv’s Education, Modivs Education, Modivian tutor">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -120,6 +121,52 @@ textarea{min-height:100px;resize:vertical}
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
 <link rel="stylesheet" href="modivs-faq.css">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="modivs-auth.css">
+<style id="pr-theme">
+/* Post a Requirement: home-page theme (cream / navy / yellow) in the student sign up card layout */
+.pr-page{--ink:#1A2035;--line:#eadfc9;--accent:#1A2035;--accent-d:#1A2035;--tint:#FEF7EA;--y:#EBB92E;position:relative;overflow:hidden;padding:34px 18px 56px;background:#FEF7EA;color:#1A2035}
+.pr-page::before,.pr-page::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+.pr-page::before{width:360px;height:360px;top:-120px;left:-100px;background:radial-gradient(circle,rgba(235,185,46,.24),transparent 70%)}
+.pr-page::after{width:380px;height:380px;bottom:-140px;right:-100px;background:radial-gradient(circle,rgba(26,32,53,.08),transparent 70%)}
+.pr-page .ac-box{max-width:1040px;border-color:#eadfc9;box-shadow:0 18px 50px rgba(26,32,53,.12)}
+.pr-page .ac-main{padding:30px 34px 32px}
+.pr-page .ac-side{background:linear-gradient(160deg,#fff4d6 0%,#FEF7EA 55%,#f6e3b4 100%)}
+.pr-page .ac-photo img{object-position:40% 20%}
+.pr-page .ac-band{background:#1A2035}
+.pr-page .ac-script{color:#EBB92E}
+.pr-page .ac-checks li::before{background-color:#EBB92E}
+.pr-page .bd-hero h1{font-size:1.6rem}
+.pr-page .bd-hero .hey{color:#1A2035;display:inline-block;background:#fff4d6;border:1.5px solid #eadfc9;border-radius:99px;padding:3px 14px;font-size:.85rem;margin-bottom:8px}
+.pr-page .qs{border-top-color:#eadfc9}
+.pr-page input[type=text],.pr-page input[type=email],.pr-page input[type=tel],.pr-page select,.pr-page textarea{border-color:#eadfc9;border-radius:10px}
+.pr-page input:focus,.pr-page select:focus,.pr-page textarea:focus{border-color:#EBB92E;box-shadow:0 0 0 4px rgba(235,185,46,.22);outline:none}
+/* options as boxes */
+.pr-page .rg{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+.pr-page .rg label{position:relative;display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #eadfc9;border-radius:12px;background:#fff;font-weight:500;font-size:.92rem;line-height:1.3;cursor:pointer;transition:border-color .15s,background .15s,box-shadow .15s,transform .15s}
+.pr-page .rg label:hover{border-color:#EBB92E;transform:translateY(-1px)}
+.pr-page .rg input{accent-color:#1A2035;flex:none}
+.pr-page .rg label:has(input:checked){border-color:#EBB92E;background:#FEF7EA;font-weight:700;box-shadow:0 0 0 3px rgba(235,185,46,.22)}
+.pr-page .rg label:focus-within{outline:3px solid rgba(235,185,46,.55);outline-offset:2px}
+.pr-page .msub-grid{gap:10px}
+.pr-page .msub-cats .msub-cb,.pr-page .msub-panel .msub-cb{padding:11px 12px;border:1.5px solid #eadfc9;border-radius:12px;background:#fff;align-items:center;transition:border-color .15s,background .15s,box-shadow .15s}
+.pr-page .msub-cb input{accent-color:#1A2035}
+.pr-page .msub-cb:hover{border-color:#EBB92E}
+.pr-page .msub-cb:has(input:checked){border-color:#EBB92E;background:#FEF7EA;box-shadow:0 0 0 3px rgba(235,185,46,.22)}
+.pr-page .msub-panel{border-color:#eadfc9;background:#fffcf5}
+.pr-page .av-opt .avc{border-color:#eadfc9}
+.pr-page .av-opt:hover .avc{border-color:#EBB92E}
+.pr-page .av-opt input:checked+.avc{border-color:#EBB92E;background:#FEF7EA;box-shadow:0 0 0 3px rgba(235,185,46,.22)}
+.pr-page .av-opt input:checked+.avc b::after{color:#1A2035}
+.pr-page .tutorbox{background:#FEF7EA;border-color:#EBB92E}
+.pr-page .ac-main .btn{width:100%;margin-top:26px;padding:14px;font-size:1rem;background:#EBB92E;color:#1A2035;font-weight:700;border-radius:10px}
+.pr-page .ac-main .btn:hover{background:#dcaa20;box-shadow:0 8px 20px rgba(235,185,46,.4)!important}
+.pr-page .ac-main .btn.ghost{background:#fff;color:#1A2035;border:1.5px solid #eadfc9}
+.pr-page .ok .btn{width:auto}
+.pr-page .ac-main a{color:#1A2035!important;text-decoration:underline;text-decoration-color:#EBB92E;text-underline-offset:3px}
+@media(max-width:820px){.pr-page{padding:18px 12px 40px}.pr-page .ac-main{padding:22px 16px 26px}.pr-page .rg{grid-template-columns:1fr 1fr}}
+@media(max-width:420px){.pr-page .rg{grid-template-columns:1fr}}
+</style>
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I post a tuition requirement?", "acceptedAnswer": {"@type": "Answer", "text": "Answer a few quick questions: class or level, board, subjects, city and area, teaching mode, classes per week and your budget. Verified tutors who teach your subjects can then respond."}}, {"@type": "Question", "name": "Is posting a tuition requirement free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Creating an account, posting a requirement and browsing tutors is free for students and parents."}}, {"@type": "Question", "name": "Who can see my requirement and phone number?", "acceptedAnswer": {"@type": "Answer", "text": "Your requirement appears to verified tutors in Active Leads. Your contact details stay private until a tutor unlocks your requirement."}}, {"@type": "Question", "name": "Can I ask for a home tutor or an online tutor?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose the teaching mode you want, home tuition, online classes or both, when you post your requirement."}}, {"@type": "Question", "name": "Can I set my budget for tuition?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Enter a budget range per hour so tutors know what you are looking for before they reply."}}, {"@type": "Question", "name": "Nobody has replied to my requirement yet. What should I do?", "acceptedAnswer": {"@type": "Answer", "text": "Give it a little time and make sure your city, subjects and budget are filled in. You can also open Find Tutors in your dashboard and send requests to tutors yourself."}}, {"@type": "Question", "name": "Can I change my requirement later?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Use Edit Requirements in your student dashboard to update subjects, budget or timings at any time."}}]}</script>
 </head>
 <body>
@@ -144,10 +191,14 @@ textarea{min-height:100px;resize:vertical}
   </div>
  </div>
 </header>
-<main class="bd-wrap">
- <div class="bd-hero"><p class="hey">Hey ! Student/Parent</p><h1>Post Your Tuition Requirement</h1><p class="sub">Just answer a few quick questions 👇</p></div>
+<main class="stu-page pr-page">
+ <div class="ac-box"><div class="ac-main">
+ <div class="bd-hero"><p class="hey">Hey ! Student/Parent</p><h1>Post Your Tuition Requirement</h1><p class="sub">Free for students and parents. Just answer a few quick questions 👇</p></div>
  <div id="tutorBox" class="tutorbox hide"></div>
  <form id="form" novalidate></form>
+ </div>
+ <aside class="ac-side"><div class="ac-side-in"><div class="ac-photo"><img src="find-hero.jpg" alt="A student studying at his desk with notes and a laptop"></div><div class="ac-band"><p class="ac-script">Post Once.<br>Get Matched.</p><ul class="ac-checks"><li>Free tuition requirement posting</li><li>Verified home &amp; online tutors</li><li>Free demo class before you decide</li><li>Your number stays private</li></ul></div></div></aside>
+ </div>
 </main>
 <div class="toast hide" id="toast" role="status"></div>
 <script>

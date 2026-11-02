@@ -95,3 +95,29 @@ header.mv-header nav li.mv-extra{display:none}
   .box{padding:14px;border-radius:14px}
   .ask{padding:10px 16px;right:12px}
 }
+
+/* ---------- Page-specific phone fixes ---------- */
+@media(max-width:768px){
+  /* Shop filter bar: not sticky on phones (it was taking ~40% of the screen),
+     search and sort full width, class/subject side by side */
+  .tools:has(>.row){display:block;position:static;padding:12px 0}
+  .tools>.row{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+  .tools>.row>.seg,.tools>.row>input[type=search],.tools>.row>select#sort{grid-column:1 / -1}
+  .tools>.row>.seg{display:flex;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .tools>.row>.seg::-webkit-scrollbar{display:none}
+  .tools>.row>.seg>button{flex:0 0 auto;white-space:nowrap}
+  .tools>.row>.sp{display:none}
+  .tools>.row>input[type=search],.tools>.row>select{width:100%;max-width:none;min-width:0}
+}
+@media(max-width:480px){
+  /* Home page "Send us a message" card: stack the two buttons with a gap */
+  .cbox>a.btn{display:flex;justify-content:center;width:100%}
+  .cbox>a.btn+a.btn{margin-top:10px}
+}
+@media(max-width:480px){
+  /* Card grids with a 250-340px minimum column overflowed narrow phones (320-360px) */
+  .bgrid,.tgrid,.lgrid,.revs,.why,.cgrid,.layout,.grid:not(#aSubs){grid-template-columns:minmax(0,1fr)}
+  /* Long emails/URLs must wrap instead of widening the column */
+  .doc,.cbox,.state,.bempty,.layout>*{overflow-wrap:anywhere;min-width:0}
+}
+@media(max-width:360px){.cbox{padding:22px 16px}}
