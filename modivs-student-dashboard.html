@@ -5,7 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Student Dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <script>
 (function(){
   try {
@@ -21,11 +21,11 @@
 })();
 </script>
 <style>
-button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif}
 
 :root{--navy:#1A2035;--navy2:#2a3350;--yellow:#EBB92E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select,textarea{font:inherit;color:inherit}
 :is(a,button,input,select,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 .app{display:grid;grid-template-columns:290px 1fr;gap:24px;max-width:1280px;margin:0 auto;padding:20px 20px 80px;align-items:start}
@@ -99,59 +99,55 @@ dialog h2{margin:0 0 4px}
 <script src="firebase-sync.js"></script>
 <script src="firebase-chat.js"></script>
 <script src="modivs-avatars.js"></script>
-<script src="modivs-session-ui.js" defer></script>
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
+<link rel="stylesheet" href="modivs-dashboard.css">
 </head>
-<body>
-<header class="mv-header" data-custom>
- <div class="mv-wrap mv-bar">
-  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
-  <nav id="mvNav" aria-label="Main menu">
-   <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="#tutors" id="topFindTutors">Find Tutors</a></li>
-    <li><a href="modivs-guide.html#student" id="topGuide">How to use</a></li>
-    <li><a href="#enquiries" id="topEnquiries">My Enquiries</a></li>
-    <li><a href="modivs-student-registration.html">Update Requirements</a></li>
-   </ul>
-  </nav>
-  <div class="acts" id="mvActs">
-   <a class="btn o" id="studentLogoutBtn" href="index.html">Log out</a>
-   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+<body class="dash">
+<script src="modivs-dashboard.js"></script>
+<header class="dh">
+ <div class="dh-in">
+  <a class="dh-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <div class="dh-sp"></div>
+  <button type="button" class="dh-bell" id="dhBell" aria-label="Open messages"><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><span class="dot" id="dhDot" hidden></span></button>
+  <div class="dh-user">
+   <button type="button" class="dh-ub" id="dhUserBtn" aria-haspopup="true" aria-expanded="false" aria-controls="dhMenu">
+    <span class="dh-av" id="dhAva">ST</span><span class="nm" id="dhName">Hi, Student</span><svg class="ic" aria-hidden="true"><use href="#i-chev"></use></svg>
+   </button>
+   <div class="dh-menu" id="dhMenu" hidden>
+    <div class="dh-who"><b id="dhWho">Student</b><span class="ver">Active Learner</span></div>
+    <a href="index.html"><svg class="ic" aria-hidden="true"><use href="#i-home"></use></svg>Home</a>
+    <a href="modivs-student-registration.html"><svg class="ic" aria-hidden="true"><use href="#i-edit"></use></svg>Update Requirements</a>
+    <a href="modivs-guide.html#student"><svg class="ic" aria-hidden="true"><use href="#i-help"></use></svg>How to use</a>
+    <a class="out" id="studentLogoutBtn" href="index.html"><svg class="ic" aria-hidden="true"><use href="#i-out"></use></svg>Log out</a>
+   </div>
   </div>
  </div>
 </header>
 
 <div class="app">
  <aside class="side" aria-label="Student menu">
-  <div class="pf">
-   <div class="ava" id="stuAva">AS</div>
-   <h2 id="stuName">Aarav Sharma</h2>
-   <p class="hl" id="stuGrade">Class 10 (CBSE) · Student</p>
-   <span class="ver">Active Learner</span>
-   <ul class="mini">
-    <li><span>City</span><span id="stuCity">Ludhiana</span></li>
-    <li><span>Subjects</span><span id="stuSubs">Maths, Science</span></li>
-    <li><span>Mode</span><span id="stuMode">Online & Home</span></li>
-   </ul>
-   <a href="modivs-student-registration.html" class="b y" style="width:100%;margin-top:12px;">Edit Requirements</a>
-  </div>
   <nav class="nav" aria-label="Student dashboard sections">
-   <button type="button" data-sec="overview" aria-current="page">Dashboard Overview</button>
-   <button type="button" data-sec="tutors">Find Tutors <span class="n" id="tutorCount">6</span></button>
-   <button type="button" data-sec="enquiries">My Requests <span class="n" id="reqCount">0</span></button>
-   <button type="button" data-sec="favourites">Favourites <span class="n" id="favCount">0</span></button>
-   <button type="button" data-sec="schedule">Class Schedule</button>
-   <button type="button" data-sec="chat">Chat <span class="n" id="chatCount">0</span></button>
+   <button type="button" data-sec="overview" aria-current="page"><svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg><span>Dashboard</span></button>
+   <button type="button" data-sec="tutors"><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg><span>Find Tutors</span></button>
+   <button type="button" data-sec="enquiries"><svg class="ic" aria-hidden="true"><use href="#i-doc"></use></svg><span>My Enquiries</span></button>
+   <button type="button" data-sec="schedule"><svg class="ic" aria-hidden="true"><use href="#i-cal"></use></svg><span>My Classes</span></button>
+   <button type="button" data-sec="chat"><svg class="ic" aria-hidden="true"><use href="#i-msg"></use></svg><span>Messages</span><span class="n" id="chatCount" hidden>0</span></button>
+   <button type="button" data-sec="payments"><svg class="ic" aria-hidden="true"><use href="#i-card"></use></svg><span>Payments</span></button>
+   <button type="button" data-href="modivs-contact.html"><svg class="ic" aria-hidden="true"><use href="#i-help"></use></svg><span>Help &amp; Support</span></button>
+   <button type="button" data-sec="profile"><svg class="ic" aria-hidden="true"><use href="#i-user"></use></svg><span>My Profile</span></button>
   </nav>
  </aside>
 
  <main id="viewContainer">
   <!-- OVERVIEW SECTION -->
   <section id="sec-overview">
-   <h1>Student Dashboard</h1>
-   <p class="sub">Track your tuition requests, scheduled demo classes, and verified tutors.</p>
+   <h1>Welcome back, <span id="welcomeName">Student</span>! <span class="wave" aria-hidden="true">👋</span></h1>
+   <p class="sub">What would you like to learn today?</p>
+   <form class="wsearch" id="heroSearch" role="search">
+    <label><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg><span class="vh">Search subject, class or tutor</span><input type="search" id="heroSearchInput" placeholder="Search subject, class or tutor..." autocomplete="off"></label>
+    <button type="submit">Search</button>
+   </form>
 <style>
 .gcard{background:#fff;border:1.5px solid #eadfc9;border-left:5px solid #EBB92E;border-radius:14px;padding:16px 18px;margin:0 0 18px;position:relative}
 .gcard h2{margin:0 0 4px;font-size:1.05rem}.gcard p{margin:0 0 10px;color:#555b78;font-size:.9rem}
@@ -166,35 +162,31 @@ dialog h2{margin:0 0 4px}
 <div class="gcard" id="guideCard" role="region" aria-label="Getting started guide" hidden>
  <button type="button" class="gx" id="guideClose" aria-label="Dismiss guide">&times;</button>
  <h2>Getting started</h2><p>New here? Four quick steps to get the most out of Modiv’s Education.</p>
- <ol><li>Open <b>Find Tutors</b> and shortlist the ones you like with the heart icon.</li><li>Send a request and book a <b>free demo class</b>.</li><li>Check <b>My Requests</b> and <b>Class Schedule</b> to track progress.</li><li>Use <b>Chat</b> to agree timings, and <b>Edit Requirements</b> if your needs change.</li></ol><a class="gb" href="modivs-guide.html#student">Open the full guide</a>
+ <ol><li>Open <b>Find Tutors</b> and shortlist the ones you like with the heart icon.</li><li>Send a request and book a <b>free demo class</b>.</li><li>Check <b>My Enquiries</b> and <b>My Classes</b> to track progress.</li><li>Use <b>Messages</b> to agree timings, and <b>Update Requirements</b> (in the menu next to your name) if your needs change.</li></ol><a class="gb" href="modivs-guide.html#student">Open the full guide</a>
 </div>
 <script>(function(){var c=document.getElementById('guideCard'),k='modivs_guide_student';if(!c)return;try{if(localStorage.getItem(k)!=='1')c.hidden=false}catch(e){c.hidden=false}
 document.getElementById('guideClose').addEventListener('click',function(){c.hidden=true;try{localStorage.setItem(k,'1')}catch(e){}})})();</script>
 
-   <div class="stats">
-    <div class="stat hi"><span>Upcoming Demo</span><b>None yet</b><div class="v" style="font-size:0.9rem;font-weight:600;">Book a free demo class</div></div>
-    <div class="stat"><span>Active Requests</span><b id="statRequests">0</b><div class="v">No requests yet</div></div>
-    <div class="stat"><span>Shortlisted Tutors</span><b id="statFavs">0</b><div class="v">Ready to contact</div></div>
-    <div class="stat"><span>Learning Hours</span><b>0 hrs</b><div class="v">This month</div></div>
+
+   <div class="kpis">
+    <div class="kpi"><div class="ic-box"><svg class="ic" aria-hidden="true"><use href="#i-doc"></use></svg></div><span class="lb">My Enquiries</span><b class="num" id="statRequests">0</b><button type="button" class="lnk" data-go="enquiries">View all &rarr;</button></div>
+    <div class="kpi g"><div class="ic-box"><svg class="ic" aria-hidden="true"><use href="#i-cal"></use></svg></div><span class="lb">My Classes</span><b class="num" id="statClasses">0</b><button type="button" class="lnk" data-go="schedule">View all &rarr;</button></div>
+    <div class="kpi o"><div class="ic-box"><svg class="ic" aria-hidden="true"><use href="#i-msg"></use></svg></div><span class="lb">Messages</span><b class="num" id="statChats">0</b><button type="button" class="lnk" data-go="chat">View all &rarr;</button></div>
+    <div class="kpi p"><div class="ic-box"><svg class="ic" aria-hidden="true"><use href="#i-heart"></use></svg></div><span class="lb">Saved Tutors</span><b class="num" id="statFavs">0</b><button type="button" class="lnk" data-go="favourites">View all &rarr;</button></div>
    </div>
 
-   <div class="two">
-    <div class="box">
-     <div class="head"><h2>Next Scheduled Class</h2></div>
-     <p style="margin:0;color:var(--muted);font-size:.9rem;">No class scheduled yet. Book a free demo with a tutor to get started.</p>
-    </div>
-    <div class="box">
-     <div class="head"><h2>Recent Requests Status</h2><a href="#enquiries" class="b o" style="padding:4px 8px;font-size:0.8rem;" onclick="setSection('enquiries')">View all</a></div>
-     <p style="margin:0;color:var(--muted);font-size:.9rem;">No requests sent yet.</p>
-    </div>
-   </div>
+   <section class="box">
+    <div class="head"><h2>Upcoming Classes</h2><button type="button" class="link" data-go="schedule">View All</button></div>
+    <div id="upcomingList"></div>
+   </section>
 
-   <div class="box" style="margin-top:22px;">
-    <div class="head">
-     <h2>Recommended Verified Tutors for You</h2>
-     <button class="b o" type="button" onclick="setSection('tutors')">Browse all tutors →</button>
+   <div class="promo">
+    <div class="tx">
+     <h2>Find More Tutors</h2>
+     <p>Explore verified tutors for all subjects and classes.</p>
+     <button type="button" class="b y" data-go="tutors">Browse Tutors</button>
     </div>
-    <div id="recommendedTutors"></div>
+    <img src="student-side.jpg" alt="" loading="lazy">
    </div>
   </section>
 
@@ -249,6 +241,35 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
    </div>
   </section>
 
+  <!-- MY PROFILE SECTION -->
+  <section id="sec-profile" class="hide">
+   <h1>My Profile</h1>
+   <p class="sub">The requirements tutors see when you send a request.</p>
+   <div class="box" style="margin-top:18px;">
+    <div class="pcard">
+     <div class="ava" id="stuAva">ST</div>
+     <div>
+      <h2 id="stuName">Student</h2>
+      <p class="hl" id="stuGrade">Student</p>
+      <span class="ver">Active Learner</span>
+     </div>
+     <a href="modivs-student-registration.html" class="b y" style="margin-left:auto;text-decoration:none;">Edit Requirements</a>
+    </div>
+    <ul class="pkv">
+     <li><span>City</span><span id="stuCity">&mdash;</span></li>
+     <li><span>Subjects</span><span id="stuSubs">&mdash;</span></li>
+     <li><span>Mode</span><span id="stuMode">&mdash;</span></li>
+    </ul>
+   </div>
+  </section>
+
+  <!-- PAYMENTS SECTION -->
+  <section id="sec-payments" class="hide">
+   <h1>Payments</h1>
+   <p class="sub">Your tuition payments and receipts.</p>
+   <div class="box" style="margin-top:18px;"><div class="empty">No payments yet. Receipts will appear here once you pay for classes.</div></div>
+  </section>
+
   <section id="sec-chat" class="hide">
    <h1>Messages</h1>
    <p class="sub">Chat with tutors about your authorized tutoring requests.</p>
@@ -286,11 +307,20 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     user = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
   } catch(e){}
 
-  if(user){
-    document.getElementById('stuName').textContent = user.name || 'Student';
-    var initials = (user.name || 'Student').split(' ').map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
-    document.getElementById('stuAva').textContent = initials || 'ST';
+  var D = window.ModivsDash;
+  var identity = { name: (user && user.name) || 'Student', src: '' };
+  function applyIdentity(){
+    var ini = D.initials(identity.name) || 'ST';
+    var first = D.firstName(identity.name, 'Student');
+    function t(id, v){ var e = document.getElementById(id); if(e) e.textContent = v; }
+    t('stuName', identity.name);
+    t('dhWho', identity.name);
+    t('dhName', 'Hi, ' + first);
+    t('welcomeName', first);
+    D.paintAvatar(document.getElementById('stuAva'), identity.src, ini);
+    D.paintAvatar(document.getElementById('dhAva'), identity.src, ini);
   }
+  applyIdentity();
 
 // Show the requirement the student saved (Update Requirements writes it)
   try {
@@ -302,8 +332,8 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     if(sr){
       var setT = function(id, v){ var e = document.getElementById(id); if(e && v) e.textContent = v; };
       if(sr.avatar && window.ModivsAvatars && ModivsAvatars.has(sr.avatar)){
-        var avEl = document.getElementById('stuAva');
-        if(avEl){ avEl.textContent = ''; var avImg = document.createElement('img'); avImg.src = ModivsAvatars.src(sr.avatar); avImg.alt = 'Your avatar'; avImg.style.cssText = 'width:100%;height:100%;border-radius:50%;object-fit:cover;display:block'; avEl.style.overflow = 'hidden'; avEl.style.padding = '0'; avEl.appendChild(avImg); }
+        identity.src = ModivsAvatars.src(sr.avatar);
+        applyIdentity();
       }
       setT('stuGrade', [sr.cls, sr.board ? '(' + sr.board + ')' : ''].filter(Boolean).join(' ') + ' · Student');
       setT('stuCity', sr.city);
@@ -335,7 +365,7 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
       fee: t.fee || 500,
       modes: (t.modes && t.modes.length) ? t.modes : ['Online'],
       city: t.city || 'Punjab',
-      headline: t.headline || 'Experienced verified tutor on Modivâ€™s Education',
+      headline: t.headline || 'Experienced verified tutor on Modiv’s Education',
       rating: t.rating || 4.8
     };
   });
@@ -353,23 +383,35 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     document.querySelectorAll('[id^="sec-"]').forEach(function(sec){
       sec.classList.toggle('hide', sec.id !== 'sec-' + secName);
     });
+    var navKey = secName === 'favourites' ? 'tutors' : secName;
     document.querySelectorAll('.side .nav button').forEach(function(btn){
-      btn.setAttribute('aria-current', btn.getAttribute('data-sec') === secName ? 'page' : 'false');
+      btn.setAttribute('aria-current', btn.getAttribute('data-sec') === navKey ? 'page' : 'false');
     });
     window.scrollTo(0,0);
   };
 
   document.querySelectorAll('.side .nav button').forEach(function(btn){
     btn.addEventListener('click', function(){
+      var href = this.getAttribute('data-href');
+      if(href){ window.location.href = href; return; }
       setSection(this.getAttribute('data-sec'));
     });
   });
 
-  document.getElementById('topFindTutors').addEventListener('click', function(e){
-    e.preventDefault(); setSection('tutors');
+  // Any element with data-go="section" jumps to that section (cards, "View all" links, banner)
+  document.addEventListener('click', function(e){
+    var g = e.target.closest && e.target.closest('[data-go]');
+    if(g){ e.preventDefault(); setSection(g.getAttribute('data-go')); }
   });
-  document.getElementById('topEnquiries').addEventListener('click', function(e){
-    e.preventDefault(); setSection('enquiries');
+  document.getElementById('dhBell').addEventListener('click', function(){ setSection('chat'); });
+
+  // Welcome search sends the student to Find Tutors with the text filled in
+  document.getElementById('heroSearch').addEventListener('submit', function(e){
+    e.preventDefault();
+    var q = document.getElementById('heroSearchInput').value.trim();
+    document.getElementById('tutorSearchInput').value = q;
+    renderTutors(activeSubj, q.toLowerCase());
+    setSection('tutors');
   });
 
   function renderStudentChats(){
@@ -379,7 +421,10 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     var count = ModivsChat.conversations().reduce(function(total, c){
       return total + ModivsChat.unread(c, user && user.email);
     }, 0);
-    document.getElementById('chatCount').textContent = count;
+    var cc = document.getElementById('chatCount');
+    cc.textContent = count; cc.hidden = !count;
+    document.getElementById('statChats').textContent = count;
+    document.getElementById('dhDot').hidden = !count;
   }
   window.openStudentChat = function(tutorId, tutorName){
     if(!user || !window.ModivsChat) return;
@@ -433,13 +478,12 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
   function renderFavourites(){
     var list = document.getElementById('favouritesList');
     var favTutors = tutors.filter(function(t){ return favourites.indexOf(t.id) > -1; });
+    document.getElementById('statFavs').textContent = favourites.length;
     if(!favTutors.length){
       list.innerHTML = '<div class="empty">You have no saved tutors yet. Browse tutors and click "Save".</div>';
       return;
     }
     list.innerHTML = favTutors.map(function(t){ return renderTutorCard(t, true); }).join('');
-    document.getElementById('favCount').textContent = favourites.length;
-    document.getElementById('statFavs').textContent = favourites.length;
   }
 
   function renderEnquiries(){
@@ -460,7 +504,6 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
         '</div>' +
       '</div>';
     }).join('');
-    document.getElementById('reqCount').textContent = enquiries.length;
     document.getElementById('statRequests').textContent = enquiries.length;
   }
 
@@ -540,10 +583,28 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     setSection('enquiries');
   });
 
-  // Init recommendations and lists
-  document.getElementById('recommendedTutors').innerHTML = tutors.slice(0,3).map(function(t){
-    return renderTutorCard(t, favourites.indexOf(t.id) > -1);
-  }).join('');
+  // Upcoming classes (filled once a tutor confirms a class)
+  var classes = [];
+  function esc(v){ return String(v == null ? '' : v).replace(/[&<>"']/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]; }); }
+  function renderUpcoming(){
+    var box = document.getElementById('upcomingList');
+    document.getElementById('statClasses').textContent = classes.length;
+    if(!classes.length){
+      box.innerHTML = '<div class="empty">No classes scheduled yet. Book a free demo with a tutor to get started.</div>';
+      return;
+    }
+    box.innerHTML = classes.slice(0, 3).map(function(c){
+      return '<div class="cls">' +
+        '<div class="pic">' + esc(D.initials(c.tutor)) + '</div>' +
+        '<div class="info"><b>' + esc(c.subject) + ' Class</b><small>With ' + esc(c.tutor) + '</small></div>' +
+        '<div class="when2"><b>' + esc(c.date) + '</b>' + esc(c.time) + '</div>' +
+        (c.link ? '<a class="b y" href="' + esc(c.link) + '" target="_blank" rel="noopener" style="text-decoration:none;">Join Class</a>' : '') +
+      '</div>';
+    }).join('');
+  }
+  renderUpcoming();
+
+  // Init lists
   renderTutors('All', '');
   renderFavourites();
   renderEnquiries();
@@ -567,13 +628,12 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
 </script>
 <!-- mv-footer -->
 <footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
 .mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
 .mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
 .mv-foot a[aria-current=page]{color:#EBB92E}
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
-<script src="modivs-menu.js" defer></script>
 </body>
 </html>

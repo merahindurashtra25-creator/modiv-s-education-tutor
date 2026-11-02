@@ -12,6 +12,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="firebase-sync.js"></script>
+<script src="modivs-country.js"></script>
+<script src="modivs-places.js"></script>
+<script src="modivs-subjects.js"></script>
+<script src="modivs-docs.js"></script>
 <style>
 button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
 
@@ -132,7 +136,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 @media(prefers-reduced-motion:no-preference){
  .auth:not(.hide) .auth-card{animation:boxIn .9s cubic-bezier(.22,1,.36,1) both}
  .auth:not(.hide) .auth-card>.brand img{animation:logoPop .9s .2s cubic-bezier(.34,1.56,.64,1) both,logoFloat 4.5s 1.2s ease-in-out infinite}
- .auth:not(.hide) .auth-card>*:not(.brand){animation:fieldRise .7s cubic-bezier(.22,1,.36,1) both}
+ .auth:not(.hide) .auth-card>.ac-main{animation:fieldRise .7s cubic-bezier(.22,1,.36,1) both}
  .auth:not(.hide) .auth-card>*:nth-child(2){animation-delay:.25s}
  .auth:not(.hide) .auth-card>*:nth-child(3){animation-delay:.33s}
  .auth:not(.hide) .auth-card>*:nth-child(4){animation-delay:.41s}
@@ -157,6 +161,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 @media(max-width:520px){.auth-card{padding:26px 20px 24px;border-radius:18px}.auth-form{padding:24px 14px}}
 </style>
+<link rel="stylesheet" href="modivs-auth.css">
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
 </head>
@@ -165,7 +171,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 <!-- LOGIN -->
 <main id="login" class="auth hide">
  <section class="auth-form">
-  <div class="auth-card">
+  <div class="auth-card ac-box"><div class="ac-main">
    <a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education"></a>
    
    <div class="login-tabs" role="tablist" style="display:flex;background:var(--mist);padding:4px;border-radius:10px;margin-bottom:20px;gap:4px;">
@@ -189,36 +195,38 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     <button type="button" class="gbtn" id="googleLogin"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>Continue with Google</span></button>
     <p class="gnote">Google verifies your email, so only genuine users get in.</p></div>
    <p class="switch" id="signupSwitch">New here? <a id="signupLink" href="modivs-signup.html">Sign up</a></p>
+   <a class="tjoin" id="tutorJoin" href="modivs-student-signup.html"><span><b>New to Modiv’s?</b> <span id="tjoinTxt">Sign up free and book a demo class with a verified tutor.</span></span><i aria-hidden="true">→</i></a>
+  </div><aside class="ac-side"><div class="ac-side-in"><div class="ac-photo"><img id="acImg" src="student-side.jpg" alt="Smiling student holding notebooks"></div><div class="ac-band"><p class="ac-script" id="acScript">Your Learning<br>Journey<br>Starts Here</p><ul class="ac-checks" id="acChecks"><li>Find expert tutors</li><li>Learn with confidence</li><li>Achieve your goals</li></ul></div></div></aside>
   </div>
  </section>
- <aside class="auth-side"><span class="side-dots" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11"></i></span><span class="side-line" aria-hidden="true"></span><p>Find the right tutor, or the right students.</p><small>Tutors and parents, in one place.</small></aside>
 </main>
 
-<!-- TUTOR SIGN UP (students / parents sign up on modivs-student-registration.html) -->
+<!-- TUTOR SIGN UP: the single tutor registration page (5-step wizard: account, profile, qualifications, fees, documents). Students / parents sign up on modivs-student-signup.html -->
 <main id="signup" class="auth hide">
  <section class="auth-form">
-  <div class="auth-card">
-   <a href="modivs-home.html" class="brand"><img src="logo.png" alt="Modiv’s Education"></a>
-   <h1 id="signTitle">Create your tutor account</h1>
-   <p class="sub" id="signSub">Sign up with your name, email and password. You’ll set up your tutor profile next.</p>
-   <form id="signForm" novalidate>
-    <label for="sName">Full name</label>
-    <input id="sName" type="text" autocomplete="name">
-    <label for="sEmail">Email</label>
-    <input id="sEmail" type="email" autocomplete="email">
-    <label for="sPass">Password</label>
-    <input id="sPass" type="password" autocomplete="new-password">
-    <label for="sPass2">Confirm password</label>
-    <input id="sPass2" type="password" autocomplete="new-password">
-    <div class="msg" id="sMsg" role="alert"></div>
-    <button class="btn" type="submit">Create tutor account</button>
-   </form>
-   <div class="or"><span>or</span></div>
-   <button type="button" class="gbtn" id="googleSignup"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>Sign up with Google</span></button>
+  <div class="tsu">
+   <a href="modivs-home.html" class="tsu-logo"><img src="logo.png" alt="Modiv’s Education"></a>
+   <h1>Become a Modivian Tutor</h1>
+   <p class="sub">Join thousands of tutors and start teaching with Modiv’s Education.</p>
+   <div class="tsu-grid">
+    <ol class="tsu-steps" id="tsuSteps" aria-label="Sign up progress">
+     <li><i>1</i><div><b>Basic Details</b><small>Personal information</small></div></li>
+     <li><i>2</i><div><b>Teaching Profile</b><small>About, subjects &amp; classes</small></div></li>
+     <li><i>3</i><div><b>Qualifications</b><small>Education &amp; Experience</small></div></li>
+     <li><i>4</i><div><b>Availability &amp; Fees</b><small>Timings &amp; preferred fees</small></div></li>
+     <li><i>5</i><div><b>Documents</b><small>Verification &amp; submit</small></div></li>
+    </ol>
+    <div class="tsu-box">
+     <form id="signForm" novalidate></form>
+     <div id="tsuGoogle">
+      <div class="or"><span>or</span></div>
+      <button type="button" class="gbtn" id="googleSignup"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>Sign up with Google</span></button>
+     </div>
+    </div>
+   </div>
    <p class="switch">Already have an account? <a data-go="login" role="button" tabindex="0">Log in</a> · <a href="modivs-signup.html">Choose a different role</a></p>
   </div>
  </section>
- <aside class="auth-side"><span class="side-dots" aria-hidden="true"><i style="--i:0"></i><i style="--i:1"></i><i style="--i:2"></i><i style="--i:3"></i><i style="--i:4"></i><i style="--i:5"></i><i style="--i:6"></i><i style="--i:7"></i><i style="--i:8"></i><i style="--i:9"></i><i style="--i:10"></i><i style="--i:11"></i></span><span class="side-line" aria-hidden="true"></span><p>Set up your profile in a few minutes.</p><small>You can edit it any time.</small></aside>
 </main>
 
 <div id="menu" class="hide">
@@ -245,7 +253,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 
   var MENU = {
     'Tutor': {
-      'Profile': [['Create or edit profile','Photo, bio, subjects','modivs-tutor-profile.html'],['Qualifications & experience','Degrees and teaching history','modivs-tutor-profile.html'],['Fees & availability','Rates, hours, online, offline & group tuitions','modivs-tutor-profile.html'],['Verification & publishing','Submit your profile for review','modivs-tutor-profile.html']],
+      'Profile': [['Create or edit profile','Photo, bio, subjects','modivs-tutor-edit-profile.html'],['Qualifications & experience','Degrees and teaching history','modivs-tutor-edit-profile.html'],['Fees & availability','Rates, hours, online, offline & group tuitions','modivs-tutor-edit-profile.html'],['Verification & publishing','Submit your profile for review','modivs-tutor-edit-profile.html']],
       'Students': [['Tutoring requests','Accept or decline incoming requests','modivs-tutor-dashboard.html'],['Class schedule','Upcoming and past classes','modivs-tutor-dashboard.html']],
       'Account': [['Messages','Talk to students and parents','modivs-tutor-dashboard.html'],['Reviews & payments','Ratings and earnings','modivs-tutor-dashboard.html'],['Settings','Password and notifications','modivs-tutor-dashboard.html']]
     },
@@ -281,7 +289,25 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   function setSignupLink(kind){
     var a = $('signupLink');
     if(!a) return;
+    if(kind === 'tutor'){ a.textContent = 'Become a Modivian Tutor'; a.setAttribute('href', 'modivs-education.html#tutor-signup'); return; }
     a.textContent = 'Sign up'; a.setAttribute('href', 'modivs-signup.html');
+  }
+
+  var SIDE = {
+    tutor: {img:'tutor-hero.jpg', alt:'A Modivian tutor teaching a live class online', script:'Teach. Inspire.<br>Earn.', checks:['Get verified once','Unlock student leads near you','Set your own fees &amp; timings']},
+    student: {img:'student-side.jpg', alt:'Smiling student holding notebooks', script:'Your Learning<br>Journey<br>Starts Here', checks:['Verified home &amp; online tutors','Demo class before you decide','Track classes in one place']}
+  };
+  function setSidePanel(mode){
+    var d = SIDE[mode === 'tutor' ? 'tutor' : 'student'], im = $('acImg');
+    var box = $('login'); if(box) box.classList.toggle('is-tutor', mode === 'tutor');
+    if(im && im.getAttribute('src') !== d.img){ im.src = d.img; im.alt = d.alt; }
+    if($('acScript')) $('acScript').innerHTML = d.script;
+    if($('acChecks')) $('acChecks').innerHTML = d.checks.map(function(c){ return '<li>'+c+'</li>'; }).join('');
+    var tj = $('tutorJoin'), tt = $('tjoinTxt');
+    if(tj && tt){
+      if(mode === 'tutor'){ tj.href = 'modivs-education.html#tutor-signup'; tt.textContent = 'Create your free tutor profile and start getting student leads.'; }
+      else { tj.href = 'modivs-student-signup.html'; tt.textContent = 'Sign up free and book a demo class with a verified tutor.'; }
+    }
   }
 
   function setLoginMode(mode){
@@ -296,33 +322,36 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         tb.style.background = 'transparent';
         tb.style.color = 'var(--muted)';
         tb.style.boxShadow = 'none';
+        tb.classList.remove('on');
         tb.setAttribute('aria-selected', 'false');
       }
     });
 
     if(mode === 'tutor'){
       if(tabTutor){
-        tabTutor.style.background = 'var(--white)';
-        tabTutor.style.color = 'var(--ink)';
-        tabTutor.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+        tabTutor.style.background = '#1A2035';
+        tabTutor.style.color = '#FEF7EA';
+        tabTutor.style.boxShadow = '0 4px 12px rgba(26,32,53,.18)';
+        tabTutor.classList.add('on');
         tabTutor.setAttribute('aria-selected', 'true');
       }
-      title.textContent = 'Tutor Log in';
-      sub.textContent = 'Access your tutoring dashboard, student enquiries, and schedule.';
-      emailLabel.textContent = 'Tutor Email';
+      title.textContent = 'Welcome back, Tutor';
+      sub.textContent = 'Log in to see new student leads, chats and your class schedule.';
+      emailLabel.textContent = 'Tutor email';
       emailInput.placeholder = 'e.g. priya@example.com';
       submitBtn.textContent = 'Log in as Tutor';
       if(signupSwitch) signupSwitch.style.display = '';
       setSignupLink('tutor');
     } else {
       if(tabStudent){
-        tabStudent.style.background = 'var(--white)';
-        tabStudent.style.color = 'var(--ink)';
-        tabStudent.style.boxShadow = '0 1px 3px rgba(0,0,0,0.08)';
+        tabStudent.style.background = '#1A2035';
+        tabStudent.style.color = '#FEF7EA';
+        tabStudent.style.boxShadow = '0 4px 12px rgba(26,32,53,.18)';
+        tabStudent.classList.add('on');
         tabStudent.setAttribute('aria-selected', 'true');
       }
-      title.textContent = 'Student & Parent Log in';
-      sub.textContent = 'Find verified tutors, view requests, and manage classes.';
+      title.textContent = 'Welcome back!';
+      sub.textContent = 'Log in to see your tutors, requests and class schedule.';
       emailLabel.textContent = 'Email';
       emailInput.placeholder = 'e.g. name@example.com';
       submitBtn.textContent = 'Log in as Student';
@@ -330,6 +359,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       setSignupLink('student');
     }
     if($('googleWrap')) $('googleWrap').style.display = '';
+    setSidePanel(mode);
     renderDemoBtns(mode);
   }
 
@@ -570,7 +600,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       }
       localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: actualRole }));
       toast((isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
-      var dest = actualRole === 'Tutor' ? (isNew ? 'modivs-tutor-profile.html' : 'modivs-tutor-dashboard.html')
+      var dest = actualRole === 'Tutor' ? (isNew ? 'modivs-education.html#tutor-signup' : 'modivs-tutor-dashboard.html')
                                         : (isNew ? 'modivs-student-registration.html' : 'modivs-student-dashboard.html');
       setTimeout(function(){ window.location.href = dest; }, 500);
     }).catch(function(err){
@@ -599,87 +629,424 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   if($('googleLogin')) $('googleLogin').addEventListener('click', function(){ googleAuth(loginMode === 'tutor' ? 'tutor' : 'student', $('lMsg'), this); });
   if($('googleSignup')) $('googleSignup').addEventListener('click', function(){ googleAuth('tutor', $('sMsg'), this); });
 
-  // SIGNUP FORM SUBMISSION
-  $('signForm').addEventListener('submit', function(e){
+  // ===== TUTOR SIGN UP: one 5-step wizard (account + full tutor profile + documents) =====
+  var LANGS = ['English','Hindi','Punjabi','Urdu','Other'];
+  var BOARDS = ['CBSE','ICSE','PSEB','IB','IGCSE','State board'];
+  var TSU_LEVELS = ['Primary (1–5)','Middle (6–8)','Secondary (9–10)','Senior secondary (11–12)','College / University','Competitive exams'];
+  var TSU_MODES = ['Online','Offline (At student’s home)','Offline (At my place / Centre)'];
+  var TSU_FORMATS = ['1-on-1 Individual tuition','Group tuition (Small batches)'];
+  var TSU_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], TSU_SLOTS = ['Morning','Afternoon','Evening'];
+  var TSU_TITLES = [
+    ['Basic Details','Let’s start with your basic information.'],
+    ['Teaching Profile','Tell us about you, what you teach and who you teach.'],
+    ['Qualifications','Your education and teaching experience.'],
+    ['Availability & Fees','When you can teach and what you would like to charge.'],
+    ['Documents','Upload documents so we can verify your profile.']
+  ];
+  var W = { step:1, name:'', email:'', pass:'', pass2:'', photo:'', photoBlur:false, phone:'', altPhone:'', whatsapp:'', waSame:false,
+            city:'', area:'', gender:'', dob:'', headline:'', bio:'', langs:[],
+            subjects:[], levels:[], boards:[],
+            quals:[{degree:'',inst:'',field:'',year:''}], totalYears:'', exp:[{title:'',org:'',from:'',to:'',desc:''}],
+            modes:['Online'], formats:['1-on-1 Individual tuition'], fee:'', groupFee:'', maxBatch:'6 students', trial:'', travel:'', avail:{}, notice:'',
+            idType:'', idName:'', certName:'', agree:false };
+  var PEND = { id:null, cert:null }, DOC_BUSY = 0;
+  var STAR = ' <span class="req" aria-hidden="true">*</span>';
+  var COUNTRIES = (window.ModivsCountry && ModivsCountry.list) || [];
+
+  // A signed-in tutor (e.g. joined with Google) already has an account: skip the password fields.
+  function existingAcct(){
+    try{ var au = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); if(au && au.role === 'Tutor' && au.email) return au; }catch(e){}
+    return null;
+  }
+  (function prefill(){
+    var au = existingAcct();
+    if(au){ W.email = String(au.email).toLowerCase(); W.name = au.name || ''; }
+  })();
+
+  function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
+  function tv(id){ var e = $(id); return e ? e.value.trim() : ''; }
+  function tgroup(n){ return [].map.call($('signForm').querySelectorAll('input[data-group="'+n+'"]:checked'), function(x){ return x.value; }); }
+  function tchips(name, opts, sel){
+    return '<div class="tsu-chips" role="group">' + opts.map(function(o){
+      return '<label class="tsu-chip"><input type="checkbox" data-group="'+name+'" value="'+esc(o)+'"'+(sel.indexOf(o) > -1 ? ' checked' : '')+'><span>'+esc(o)+'</span></label>';
+    }).join('') + '</div>';
+  }
+  function tfield(id, label, type, val, ph, hint, extra){
+    return '<label for="'+id+'">'+label+(hint ? ' <span class="hint">'+hint+'</span>' : '')+'</label><input id="'+id+'" type="'+type+'" value="'+esc(val)+'"'+(ph ? ' placeholder="'+esc(ph)+'"' : '')+(extra || '')+'>';
+  }
+  function tsel(id, label, opts, val, ph){
+    return '<label for="'+id+'">'+label+'</label><select id="'+id+'"><option value="">'+(ph || 'Select')+'</option>' + opts.map(function(o){
+      return '<option'+(o === val ? ' selected' : '')+'>'+esc(o)+'</option>';
+    }).join('') + '</select>';
+  }
+  // ---- phone helpers (country code + number, stored as "+91 9876543210") ----
+  function splitPhone(p){
+    p = String(p || '').trim(); var raw = p.replace(/[\s-]/g, '');
+    if(raw.charAt(0) === '+'){
+      var best = ''; COUNTRIES.forEach(function(c){ if(raw.indexOf(c[1]) === 0 && c[1].length > best.length) best = c[1]; });
+      if(best) return { cc:best, num:raw.slice(best.length).replace(/\D/g, '') };
+    }
+    return { cc:'+91', num:raw.replace(/\D/g, '') };
+  }
+  function phoneField(id, label, val, dis){
+    var s = splitPhone(val);
+    return '<label for="'+id+'">'+label+'</label><div class="phone-row">'+ModivsCountry.html(id, s.cc, dis)+'<input id="'+id+'" type="tel" inputmode="numeric" autocomplete="tel-national" value="'+esc(s.num)+'" placeholder="Phone number"'+(dis ? ' disabled' : '')+'></div>';
+  }
+  function getPhone(id){ var e = $(id), c = $(id+'_cc'), n = e ? e.value.replace(/\D/g, '') : ''; return n ? (c ? c.value : '+91') + ' ' + n : ''; }
+  function validPhone(p){ var m = /^(\+\d{1,4}) (\d+)$/.exec(p || ''); if(!m) return false; if(m[1] === '+91') return /^[6-9]\d{9}$/.test(m[2]); return m[2].length >= 6 && m[2].length <= 14; }
+  function phoneMsg(p, what){ var m = /^(\+\d{1,4})/.exec(p || ''); return (m && m[1] === '+91') ? 'Enter a valid 10-digit '+what+' (Indian numbers start with 6, 7, 8 or 9).' : 'Enter a valid '+what+' for the selected country (6–14 digits).'; }
+  function samePhone(a, b){ return String(a).replace(/\D/g, '') === String(b).replace(/\D/g, ''); }
+  function syncWa(){
+    var c = $('tWaSame'), w = $('whatsapp'), wc = $('whatsapp_cc'), p = $('phone'), pc = $('phone_cc');
+    if(!c || !w || !wc || !p || !pc) return;
+    if(c.checked){ w.value = p.value.replace(/\D/g, ''); wc.value = pc.value; ModivsCountry.set('whatsapp', pc.value); }
+    w.disabled = wc.disabled = c.checked; ModivsCountry.setDisabled('whatsapp', c.checked);
+  }
+  function initials(n){ return String(n || '').split(' ').filter(Boolean).map(function(w){ return w[0]; }).slice(0,2).join('').toUpperCase() || 'TR'; }
+  function dpInner(){ return W.photo ? '<img src="'+esc(W.photo)+'" alt="Your profile photo">' : esc(initials(W.name)); }
+
+  function renderSteps(){
+    [].forEach.call($('tsuSteps').children, function(li, i){
+      li.className = (i + 1 < W.step) ? 'done' : (i + 1 === W.step ? 'on' : '');
+      var ic = li.querySelector('i'); ic.textContent = (i + 1 < W.step) ? '✓' : String(i + 1);
+      if(i + 1 === W.step) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
+    });
+  }
+  function stepBody(){
+    var n = W.step, hasAcct = !!existingAcct();
+    if(n === 1){
+      return '<div class="lab">Profile photo'+STAR+' <span class="hint">shown on your public profile</span></div>' +
+        '<div class="tsu-dprow"><div class="tsu-dp" id="dpBox">'+dpInner()+'</div><div class="tsu-dpside"><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="hide">' +
+        '<div class="tsu-dpbtns"><button type="button" class="tsu-ghost" data-act="pickPhoto">'+(W.photo ? 'Change photo' : 'Upload photo')+'</button>'+(W.photo ? '<button type="button" class="tsu-ghost" data-act="removePhoto">Remove</button>' : '')+'</div>' +
+        '<span class="hint">Clear, front-facing photo in good light. No group photos, sunglasses or filters. JPG, PNG or WebP, up to 500 KB.</span>' +
+        '<div class="tsu-warn" id="dpWarn" role="status">'+(W.photo && W.photoBlur ? 'This photo looks a little blurry. A sharper photo is approved faster.' : '')+'</div></div></div>' +
+        tfield('tName','Full Name'+STAR,'text',W.name,'Enter your full name','',' autocomplete="name"') +
+        tfield('tEmail','Email Address'+STAR,'email',W.email,'Enter your email address','',' autocomplete="email"'+(hasAcct ? ' readonly' : '')) +
+        (hasAcct ? '' : '<div class="tsu-two"><div>'+tfield('tPass','Password'+STAR,'password',W.pass,'At least 8 characters','',' autocomplete="new-password"')+'</div><div>'+tfield('tPass2','Confirm password'+STAR,'password',W.pass2,'Re-enter password','',' autocomplete="new-password"')+'</div></div>') +
+        phoneField('whatsapp','WhatsApp number'+STAR, W.waSame ? W.phone : W.whatsapp, W.waSame) +
+        '<label class="tsu-check" style="margin-top:8px"><input type="checkbox" id="tWaSame"'+(W.waSame ? ' checked' : '')+'><span>Same as my mobile number</span></label>' +
+        phoneField('phone','Mobile Number'+STAR, W.phone) + phoneField('altPhone','Alternate phone number'+STAR, W.altPhone) +
+        '<div class="tsu-two"><div><label for="city">City'+STAR+'</label>' + ModivsPlaces.fieldHTML({ id:'city', kind:'city', val:W.city, areaId:'area' }) + '</div>' +
+        '<div><label for="area">Area / locality'+STAR+'</label>' + ModivsPlaces.fieldHTML({ id:'area', kind:'area', val:W.area, city:W.city }) + '</div></div>' +
+        '<div class="tsu-two"><div>'+tsel('gender','Gender'+STAR,['Female','Male','Other','Prefer not to say'],W.gender)+'</div><div>'+tfield('dob','Date of birth'+STAR,'date',W.dob)+'</div></div>';
+    }
+    if(n === 2){
+      return tfield('headline','Profile headline'+STAR,'text',W.headline,'e.g. Maths tutor for classes 9–12 with 8 years’ experience','one line') +
+        '<label for="bio">About you'+STAR+' <span class="hint">at least 80 characters</span></label><textarea id="bio">'+esc(W.bio)+'</textarea>' +
+        '<div class="lab">Languages you teach in'+STAR+'</div>' + tchips('langs', LANGS, W.langs) +
+        '<div class="lab">Subjects you teach'+STAR+' <span class="hint">tick a category, then choose subjects</span></div>' + ModivsSubjects.picker('subjects', W.subjects) +
+        '<div class="lab">Add your own subject <span class="hint">not in the list? Type it and press Add</span></div>' +
+        '<div class="tsu-addrow"><input id="customSubject" type="text" maxlength="40" placeholder="e.g. Robotics, IELTS, Kathak"><button type="button" class="tsu-ghost" data-act="addSubject">Add</button></div>' +
+        '<div class="lab">Classes you teach'+STAR+'</div>' + tchips('levels', TSU_LEVELS, W.levels) +
+        '<div class="lab">Boards'+STAR+'</div>' + tchips('boards', BOARDS, W.boards);
+    }
+    if(n === 3){
+      return '<div class="lab">Qualifications <span class="hint">add your highest qualification first</span></div><div id="quals">' + W.quals.map(function(q, i){
+        return '<div class="tsu-card">'+(W.quals.length > 1 ? '<button type="button" class="tsu-rm" data-rm="quals" data-i="'+i+'">Remove</button>' : '') +
+          tfield('q_degree'+i,'Degree or certificate'+STAR,'text',q.degree,'e.g. M.Sc. Mathematics') + tfield('q_inst'+i,'Institution'+STAR,'text',q.inst,'e.g. Panjab University') +
+          '<div class="tsu-two"><div>'+tfield('q_field'+i,'Field of study'+STAR,'text',q.field,'e.g. Mathematics')+'</div><div>'+tfield('q_year'+i,'Year completed'+STAR,'number',q.year,'e.g. 2021')+'</div></div></div>';
+      }).join('') + '</div><button type="button" class="tsu-add" data-add="quals">+ Add qualification</button>' +
+      tfield('totalYears','Total years of teaching'+STAR,'number',W.totalYears,'0 if you are a first-time tutor','',' min="0"') +
+      '<div class="lab">Teaching experience <span class="hint">skip if you are a first-time tutor</span></div><div id="exp">' + W.exp.map(function(x, i){
+        return '<div class="tsu-card"><button type="button" class="tsu-rm" data-rm="exp" data-i="'+i+'">Remove</button>' +
+          tfield('e_title'+i,'Role','text',x.title,'e.g. Mathematics teacher') + tfield('e_org'+i,'School, institute or “Private tutoring”','text',x.org) +
+          '<div class="tsu-two"><div>'+tfield('e_from'+i,'From (year)','number',x.from)+'</div><div>'+tfield('e_to'+i,'To (year or “Present”)','text',x.to)+'</div></div>' +
+          '<label for="e_desc'+i+'">What you did</label><textarea id="e_desc'+i+'" style="min-height:70px">'+esc(x.desc)+'</textarea></div>';
+      }).join('') + '</div><button type="button" class="tsu-add" data-add="exp">+ Add experience</button>';
+    }
+    if(n === 4){
+      var rows = TSU_DAYS.map(function(d){
+        return '<tr><td>'+d+'</td>' + TSU_SLOTS.map(function(sl){
+          var k = d + '-' + sl;
+          return '<td><input type="checkbox" data-avail="'+k+'" aria-label="'+d+' '+sl+'"'+(W.avail[k] ? ' checked' : '')+'></td>';
+        }).join('') + '</tr>';
+      }).join('');
+      return '<div class="lab">Teaching mode'+STAR+'</div>' + tchips('modes', TSU_MODES, W.modes) +
+        '<div class="lab">Tuition format offered'+STAR+'</div>' + tchips('formats', TSU_FORMATS, W.formats) +
+        '<div class="tsu-two"><div>'+tfield('fee','1-on-1 fee per hour (₹)'+STAR,'number',W.fee,'e.g. 500')+'</div><div>'+tfield('groupFee','Group fee per student/hr (₹)','number',W.groupFee,'e.g. 250','required for group tuition')+'</div></div>' +
+        '<div class="tsu-two"><div>'+tsel('trial','Free demo class'+STAR,['Yes, 30 minutes','Yes, 1 class','No'],W.trial)+'</div><div>'+tsel('maxBatch','Max group batch size',['4 students','6 students','8 students','10–12 students'],W.maxBatch)+'</div></div>' +
+        tfield('travel','Areas you can travel to','text',W.travel,'e.g. Model Town, Sarabha Nagar','required for offline home tuition') +
+        '<div class="lab">Weekly availability'+STAR+' <span class="hint">tick the slots you can teach</span></div>' +
+        '<table class="tsu-days"><thead><tr><th></th>' + TSU_SLOTS.map(function(sl){ return '<th>'+sl+'</th>'; }).join('') + '</tr></thead><tbody>'+rows+'</tbody></table>' +
+        tsel('notice','Notice needed before a new class'+STAR,['Same day','1 day','2–3 days','1 week'],W.notice);
+    }
+    return tsel('tIdType','Government ID type'+STAR,['Aadhaar','PAN','Passport','Voter ID','Driving licence'], W.idType, 'Select ID type') +
+      '<label for="tIdFile">Upload ID'+STAR+' <span class="hint">JPG, PNG or PDF, up to 500 KB</span></label><input id="tIdFile" type="file" accept=".jpg,.jpeg,.png,.pdf">' + (W.idName ? '<span class="hint">Selected: '+esc(W.idName)+'</span>' : '') +
+      '<label for="tCertFile">Highest qualification certificate'+STAR+' <span class="hint">JPG, PNG or PDF, up to 500 KB</span></label><input id="tCertFile" type="file" accept=".jpg,.jpeg,.png,.pdf">' + (W.certName ? '<span class="hint">Selected: '+esc(W.certName)+'</span>' : '') +
+      '<p class="hint" style="margin:8px 0 0">Only our verification team can see these documents. Your profile goes live after they are checked.</p>' +
+      '<label class="tsu-check" style="margin-top:18px"><input type="checkbox" id="tAgree"'+(W.agree ? ' checked' : '')+'><span>I confirm the details are true and I agree to the <a href="modivs-terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="modivs-privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>. I understand my profile is published only after verification.</span></label>';
+  }
+  function renderStep(){
+    var t = TSU_TITLES[W.step - 1], last = W.step === 5;
+    renderSteps();
+    $('signForm').innerHTML = '<p class="tsu-kicker">Step '+W.step+' of 5</p><h2>'+t[0]+'</h2><p class="tsu-sub">'+t[1]+' Fields marked <span class="req">*</span> are required.</p>' + stepBody() +
+      '<div class="msg" id="sMsg" role="alert"></div>' +
+      '<button class="tsu-go" type="submit" id="tsuNext">'+(last ? 'Submit &amp; Create account' : 'Save &amp; Continue')+' <span aria-hidden="true">→</span></button>' +
+      (W.step > 1 ? '<button class="tsu-back" type="button" data-act="back">← Back</button>' : '');
+    $('tsuGoogle').style.display = (W.step === 1 && !existingAcct()) ? '' : 'none';
+    var m = $('signup'); if(m && !m.classList.contains('hide')) { try{ $('tsuSteps').scrollIntoView({block:'nearest'}); }catch(e){} }
+  }
+  function readSubjects(){
+    var a = tgroup('subjects'), c = tv('customSubject').replace(/\s+/g, ' ').slice(0, 40);
+    if(c){
+      var known = a.concat(W.subjects).concat(ModivsSubjects.all());
+      var m = known.filter(function(x){ return x.toLowerCase() === c.toLowerCase(); })[0];
+      if(!m) a.push(c); else if(a.indexOf(m) < 0) a.push(m);
+    }
+    return a;
+  }
+  // store the current step's inputs into W without validating
+  function readStep(){
+    var n = W.step;
+    if(n === 1){
+      var w = $('tWaSame');
+      W.name = tv('tName'); W.email = tv('tEmail').toLowerCase(); if($('tPass')){ W.pass = $('tPass').value; W.pass2 = $('tPass2').value; }
+      W.phone = getPhone('phone'); W.altPhone = getPhone('altPhone'); W.waSame = !!(w && w.checked); W.whatsapp = W.waSame ? W.phone : getPhone('whatsapp');
+      W.city = ModivsPlaces.canon('city', tv('city')); W.area = ModivsPlaces.canon('area', tv('area'), W.city); W.gender = tv('gender'); W.dob = tv('dob');
+    }
+    if(n === 2){ W.headline = tv('headline'); W.bio = tv('bio'); W.langs = tgroup('langs'); W.subjects = readSubjects(); W.levels = tgroup('levels'); W.boards = tgroup('boards'); }
+    if(n === 3){
+      W.quals.forEach(function(q, i){ q.degree = tv('q_degree'+i); q.inst = tv('q_inst'+i); q.field = tv('q_field'+i); q.year = tv('q_year'+i); });
+      W.totalYears = tv('totalYears');
+      W.exp.forEach(function(x, i){ x.title = tv('e_title'+i); x.org = tv('e_org'+i); x.from = tv('e_from'+i); x.to = tv('e_to'+i); x.desc = tv('e_desc'+i); });
+    }
+    if(n === 4){
+      W.modes = tgroup('modes'); W.formats = tgroup('formats'); W.fee = tv('fee'); W.groupFee = tv('groupFee'); W.maxBatch = tv('maxBatch'); W.trial = tv('trial'); W.travel = tv('travel'); W.notice = tv('notice');
+      W.avail = {}; $('signForm').querySelectorAll('input[data-avail]').forEach(function(c){ if(c.checked) W.avail[c.getAttribute('data-avail')] = 1; });
+    }
+    if(n === 5){ W.idType = tv('tIdType'); W.agree = !!$('tAgree').checked; }
+  }
+  function tfail(id, text){
+    var el = id ? $(id) : null; if(el){ bad(el, true); try{ el.focus(); }catch(e){} }
+    $('sMsg').textContent = text; return false;
+  }
+  function validStep(){
+    var n = W.step;
+    if(n === 1){
+      if(!W.photo) return tfail('dpBox', 'Upload a clear profile photo of your face.');
+      if(!W.name) return tfail('tName', 'Enter your full name.');
+      if(!emailOk(W.email)) return tfail('tEmail', 'Enter a valid email address.');
+      if($('tPass')){
+        if(W.pass.length < 8) return tfail('tPass', 'Use at least 8 characters for your password.');
+        if(W.pass !== W.pass2) return tfail('tPass2', 'Passwords do not match.');
+      }
+      if(!W.waSame && !W.whatsapp) return tfail('whatsapp', 'Enter your WhatsApp number, or tick “Same as my mobile number”.');
+      if(!W.waSame && !validPhone(W.whatsapp)) return tfail('whatsapp', phoneMsg(W.whatsapp, 'WhatsApp number'));
+      if(!validPhone(W.phone)) return tfail('phone', phoneMsg(W.phone, 'mobile number'));
+      if(!W.altPhone) return tfail('altPhone', 'Enter your alternate phone number.');
+      if(!validPhone(W.altPhone)) return tfail('altPhone', phoneMsg(W.altPhone, 'alternate phone number'));
+      if(samePhone(W.altPhone, W.phone)) return tfail('altPhone', 'Alternate number must be different from your mobile number.');
+      if(!W.city) return tfail('city', 'Select your city.');
+      if(!W.area) return tfail('area', 'Select your area or locality.');
+      if(!W.gender) return tfail('gender', 'Select your gender.');
+      if(!W.dob) return tfail('dob', 'Enter your date of birth.');
+    }
+    if(n === 2){
+      if(!W.headline) return tfail('headline', 'Add a one-line headline.');
+      if(W.bio.length < 80) return tfail('bio', 'Write at least 80 characters about yourself ('+W.bio.length+' so far).');
+      if(!W.langs.length) return tfail('', 'Choose at least one language you teach in.');
+      if(!W.subjects.length) return tfail('customSubject', 'Choose at least one subject, or add your own.');
+      if(!W.levels.length) return tfail('', 'Choose at least one class level.');
+      if(!W.boards.length) return tfail('', 'Choose at least one board.');
+    }
+    if(n === 3){
+      for(var i = 0; i < W.quals.length; i++){
+        var q = W.quals[i];
+        if(!q.degree) return tfail('q_degree'+i, 'Enter the degree or certificate.');
+        if(!q.inst) return tfail('q_inst'+i, 'Enter the institution.');
+        if(!q.field) return tfail('q_field'+i, 'Enter your field of study.');
+        if(!/^(19|20)\d\d$/.test(q.year)) return tfail('q_year'+i, 'Enter a valid year, like 2018.');
+      }
+      if(W.totalYears === '' || +W.totalYears < 0) return tfail('totalYears', 'Enter your total years of teaching (0 if none).');
+    }
+    if(n === 4){
+      var grp = W.formats.indexOf('Group tuition (Small batches)') > -1;
+      if(!W.modes.length) return tfail('', 'Choose at least one teaching mode.');
+      if(!W.formats.length) return tfail('', 'Choose at least one tuition format (1-on-1 or Group).');
+      if(!(+W.fee > 0)) return tfail('fee', 'Enter your 1-on-1 fee per hour.');
+      if(grp && !(+W.groupFee > 0)) return tfail('groupFee', 'Enter your group tuition fee per student per hour.');
+      if(!W.trial) return tfail('trial', 'Choose your free demo class option.');
+      if(grp && !W.maxBatch) return tfail('maxBatch', 'Choose a max group batch size.');
+      if(W.modes.indexOf('Offline (At student’s home)') > -1 && !W.travel) return tfail('travel', 'Add the areas you can travel to for offline home tuition.');
+      if(!Object.keys(W.avail).length) return tfail('', 'Tick at least one available slot.');
+      if(!W.notice) return tfail('notice', 'Choose how much notice you need.');
+    }
+    if(n === 5){
+      if(DOC_BUSY) return tfail('', 'Please wait a moment, your document is still being processed.');
+      if(!W.idType) return tfail('tIdType', 'Choose a government ID type.');
+      if(!PEND.id) return tfail('tIdFile', 'Upload your ID (JPG, PNG or PDF up to 500 KB).');
+      if(!PEND.cert) return tfail('tCertFile', 'Upload your qualification certificate (JPG, PNG or PDF up to 500 KB).');
+      if(!W.agree) return tfail('tAgree', 'Please accept the Terms & Conditions to continue.');
+    }
+    return true;
+  }
+
+  // ---- profile photo (cropped square, blur check) ----
+  function sharpness(cv, S){ // variance of Laplacian on a 200px greyscale copy; low = blurry
+    var T = 200, c = document.createElement('canvas'); c.width = c.height = T; var x = c.getContext('2d'); x.drawImage(cv, 0, 0, S, S, 0, 0, T, T);
+    var d = x.getImageData(0, 0, T, T).data, g = new Float32Array(T*T), i, j;
+    for(i = 0; i < T*T; i++) g[i] = .299*d[i*4] + .587*d[i*4+1] + .114*d[i*4+2];
+    var sum = 0, sq = 0, n = 0, l;
+    for(i = 1; i < T-1; i++) for(j = 1; j < T-1; j++){ l = g[(i-1)*T+j] + g[(i+1)*T+j] + g[i*T+j-1] + g[i*T+j+1] - 4*g[i*T+j]; sum += l; sq += l*l; n++; }
+    return sq/n - (sum/n)*(sum/n);
+  }
+  function handlePhoto(file){
+    if(!file) return;
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type)){ toast('Please choose a JPG, PNG or WebP image.'); return; }
+    if(file.size > 512000){ toast('Photo must be 500 KB or smaller.'); return; }
+    var fr = new FileReader();
+    fr.onerror = function(){ toast('Could not read that file. Try another photo.'); };
+    fr.onload = function(){ var img = new Image();
+      img.onerror = function(){ toast('That file is not a valid image.'); };
+      img.onload = function(){
+        if(Math.min(img.width, img.height) < 200){ toast('Photo is too small. Use at least 200 × 200 pixels.'); return; }
+        var S = 400, c = document.createElement('canvas'); c.width = c.height = S; var x = c.getContext('2d');
+        var m = Math.min(img.width, img.height); x.drawImage(img, (img.width-m)/2, (img.height-m)/2, m, m, 0, 0, S, S);
+        var blur = sharpness(c, S);
+        readStep(); W.photo = c.toDataURL('image/jpeg', 0.85); W.photoBlur = blur < 60; renderStep(); toast('Photo added');
+      };
+      img.src = fr.result; };
+    fr.readAsDataURL(file);
+  }
+  function handleDoc(t, kind){
+    var file = t.files && t.files[0]; PEND[kind] = null; if(!file) return;
+    DOC_BUSY++;
+    ModivsDocs.prepare(file).then(function(doc){ PEND[kind] = doc; if(kind === 'id') W.idName = file.name; else W.certName = file.name; bad(t, false); $('sMsg').textContent = ''; toast((kind === 'id' ? 'ID' : 'Certificate') + ' ready to submit'); })
+      .catch(function(err){ t.value = ''; $('sMsg').textContent = (err && err.userMessage) || 'Could not use that file. Choose a JPG, PNG or PDF of 500 KB or less.'; })
+      .then(function(){ DOC_BUSY = Math.max(0, DOC_BUSY - 1); });
+  }
+
+  var sf = $('signForm');
+  sf.addEventListener('change', function(e){
+    var t = e.target;
+    if(t.id === 'tIdFile') handleDoc(t, 'id');
+    if(t.id === 'tCertFile') handleDoc(t, 'cert');
+    if(t.id === 'photoFile') handlePhoto(t.files[0]);
+    if(t.id === 'tWaSame' || t.id === 'phone_cc') syncWa();
+  });
+  sf.addEventListener('input', function(e){
+    if(e.target && e.target.classList) e.target.classList.remove('bad');
+    if(e.target && e.target.id === 'phone') syncWa();
+  });
+  sf.addEventListener('keydown', function(e){ if(e.key === 'Enter' && e.target.id === 'customSubject'){ e.preventDefault(); addCustomSubject(); } });
+  function addCustomSubject(){ if(!tv('customSubject')){ toast('Type a subject name first.'); return; } readStep(); renderStep(); toast('Subject added'); }
+  sf.addEventListener('click', function(e){
+    var t = e.target.closest ? e.target.closest('[data-act],[data-add],[data-rm]') : e.target; if(!t) return;
+    var act = t.getAttribute('data-act');
+    if(act === 'back'){ readStep(); W.step--; renderStep(); window.scrollTo(0, 0); }
+    else if(act === 'addSubject') addCustomSubject();
+    else if(act === 'pickPhoto') $('photoFile').click();
+    else if(act === 'removePhoto'){ readStep(); W.photo = ''; W.photoBlur = false; renderStep(); }
+    else if(t.getAttribute('data-add')){ readStep(); if(t.getAttribute('data-add') === 'quals') W.quals.push({degree:'',inst:'',field:'',year:''}); else W.exp.push({title:'',org:'',from:'',to:'',desc:''}); renderStep(); }
+    else if(t.getAttribute('data-rm')){ readStep(); var k = t.getAttribute('data-rm'); W[k].splice(+t.getAttribute('data-i'), 1); if(k === 'exp' && !W.exp.length) W.exp = [{title:'',org:'',from:'',to:'',desc:''}]; renderStep(); }
+  });
+
+  sf.addEventListener('submit', function(e){
     e.preventDefault();
-    var n = $('sName'), em = $('sEmail'), p1 = $('sPass'), p2 = $('sPass2'), msg = $('sMsg');
-    [n, em, p1, p2].forEach(function(i){ bad(i, false); }); msg.textContent = '';
+    sf.querySelectorAll('.bad').forEach(function(x){ x.classList.remove('bad'); });
+    readStep();
+    if(!validStep()) return;
+    if(W.step < 5){ W.step++; renderStep(); window.scrollTo(0, 0); return; }
+    createTutorAccount();
+  });
 
-    if(!n.value.trim()){ bad(n, true); msg.textContent = 'Enter your full name.'; return; }
-    if(!emailOk(em.value.trim())){ bad(em, true); msg.textContent = 'Enter a valid email address.'; return; }
-    if(p1.value.length < 8){ bad(p1, true); msg.textContent = 'Use at least 8 characters for your password.'; return; }
-    if(p1.value !== p2.value){ bad(p2, true); msg.textContent = 'Passwords do not match.'; return; }
+  function showDone(){
+    W.step = 6; renderSteps(); $('tsuGoogle').style.display = 'none';
+    sf.innerHTML = '<div class="tsu-done"><div style="font-size:3rem;margin-bottom:8px">🎉</div><h2 style="font-size:1.6rem">Tutor account created!</h2>' +
+      '<p class="tsu-sub" style="font-size:1rem">Thanks, <b>'+esc(W.name.split(' ')[0])+'</b>! Your profile has been submitted for admin verification.</p>' +
+      '<p><span class="tsu-status">Status: Pending verification</span></p>' +
+      '<a href="modivs-tutor-dashboard.html" class="tsu-go" style="text-decoration:none;display:inline-flex;width:auto;padding:13px 26px">Open Tutor Dashboard →</a>' +
+      '<p class="hint" style="margin-top:14px">Redirecting to your dashboard…</p></div>';
+  }
 
-    var mail = em.value.trim().toLowerCase();
-    if(window.EducationBFirebase && !window.EducationBFirebase.auth.currentUser && !window.__firebaseSignupInProgress){
-      window.__firebaseSignupInProgress = true;
-      window.EducationBFirebase.auth.createUserWithEmailAndPassword(mail, p1.value).then(function(result){
-        window.__firebaseSignupInProgress = false;
+  function createTutorAccount(){
+    var btn = $('tsuNext'), msg = $('sMsg'), mail = W.email;
+    btn.disabled = true; msg.textContent = '';
+    function persist(uid){
+      var name = W.name, city = W.city, nowIso = new Date().toISOString();
+      var years = +W.totalYears || 0;
+      var newUser = { name: name, email: mail, uid: uid || '', role: 'Tutor' };
+      if(!users.some(function(u){ return String(u.email).toLowerCase() === mail; })) users.push(newUser);
+      try{ localStorage.setItem('modivs_users', JSON.stringify(users)); }catch(err){}
+      var fb = window.EducationBFirebase;
+      if(fb && fb.db && window.firebase){
+        fb.db.collection('users').doc(uid || mail.replace(/[^a-z0-9]/gi, '_')).set({ name: name, email: mail, role: 'Tutor', uid: uid || '', createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(){});
+      }
+      try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: uid || '', role: 'Tutor' })); }catch(err){}
+
+      // verification documents: stored apart from the public tutor record (admin + this tutor only)
+      var docsSaved = true;
+      try{
+        if(PEND.id) docsSaved = ModivsDocs.save(mail, 'id', PEND.id) && docsSaved;
+        if(PEND.cert) docsSaved = ModivsDocs.save(mail, 'cert', PEND.cert) && docsSaved;
+      }catch(err){ docsSaved = false; }
+      if(!docsSaved) toast('Documents could not be stored in this browser. Free some space and re-upload them from Edit Profile.');
+
+      var tutorData = { email: mail, pass: '', role: 'Tutor', name: name, phone: W.phone, altPhone: W.altPhone, whatsapp: W.waSame ? W.phone : W.whatsapp, waSame: W.waSame,
+        photo: W.photo, photoBlur: W.photoBlur, city: city, area: W.area, gender: W.gender, dob: W.dob, headline: W.headline, bio: W.bio, langs: W.langs,
+        quals: W.quals, exp: W.exp.filter(function(x){ return x.title || x.org || x.desc; }), totalYears: W.totalYears,
+        subjects: W.subjects, levels: W.levels, boards: W.boards, modes: W.modes, formats: W.formats, groupFee: W.groupFee, maxBatch: W.maxBatch,
+        travel: W.travel, fee: W.fee, trial: W.trial, avail: W.avail, notice: W.notice,
+        idType: W.idType, idName: W.idName, certName: W.certName, agree: true,
+        status: 'pending', submittedAt: nowIso, rejection_reason: '', rejection_reasons: [], rejection_note: '' };
+      try{
+        localStorage.setItem('modivs_current_tutor', JSON.stringify(tutorData));
+        var wm = JSON.parse(localStorage.getItem('modivs_tutor_welcome') || '{}'); wm[mail] = { created: nowIso, approved: null }; localStorage.setItem('modivs_tutor_welcome', JSON.stringify(wm));
+        try{ sessionStorage.removeItem('modivs_welcome_closed'); }catch(x){}
+
+        // admin approval queue + canonical tutors database
+        var q0 = W.quals[0] || {};
+        var qualDesc = q0.degree ? (q0.degree + ', ' + (q0.inst || '') + ' (' + (q0.year || '') + ')') : 'Certificate on file';
+        var entry = { id: 't_user_' + Date.now(), name: name, headline: W.headline, city: city, area: W.area || '', travel: W.travel || '', phone: W.phone, altPhone: W.altPhone || '',
+          whatsapp: tutorData.whatsapp || '', photo: W.photo || '', bio: W.bio || '', boards: W.boards || [], formats: W.formats || [], groupFee: W.groupFee || '', trial: W.trial || '',
+          rejection_reason: '', rejection_reasons: [], rejection_note: '', email: mail, qual: qualDesc, years: years,
+          subs: W.subjects.length ? W.subjects : ['General'], levels: W.levels.length ? W.levels : ['Secondary'], fee: +W.fee || 500, modes: W.modes.length ? W.modes : ['Online'],
+          langs: W.langs.length ? W.langs : ['English'], idType: W.idType || 'Government ID', idFile: W.idName || 'id_document.pdf', cert: W.certName || 'qualification_cert.pdf',
+          sent: 'Just now', status: 'pending' };
+        var queue = JSON.parse(localStorage.getItem('modivs_submitted_tutors') || '[]');
+        var qi = queue.findIndex(function(item){ return item.email === mail; });
+        if(qi >= 0) queue[qi] = entry; else queue.unshift(entry);
+        localStorage.setItem('modivs_submitted_tutors', JSON.stringify(queue));
+
+        var dbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
+        var di = dbTutors.findIndex(function(item){ return String(item.email).toLowerCase() === mail; });
+        if(di >= 0){ entry.id = dbTutors[di].id || entry.id; dbTutors[di] = Object.assign({}, dbTutors[di], entry); } else dbTutors.unshift(entry);
+        localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
+
+        if(fb && fb.db && window.firebase){
+          fb.db.collection('tutors').doc(String(entry.id).replace(/[/]/g, '_')).set(Object.assign({}, entry, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }), { merge: true }).catch(function(){});
+        }
+        var logs = JSON.parse(localStorage.getItem('modivs_audit_logs') || '[]');
+        logs.unshift({ id: entry.id, name: name, action: 'Application Submitted', admin: 'System',
+          timestamp: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) + ', ' + new Date().toLocaleDateString(),
+          note: 'Complete tutor profile submitted with verification documents. Status set to pending.' });
+        localStorage.setItem('modivs_audit_logs', JSON.stringify(logs.slice(0, 50)));
+      }catch(err){ console.error('Storage error:', err); }
+
+      toast('Tutor account created!');
+      showDone();
+      setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 2200);
+    }
+    var fb2 = window.EducationBFirebase;
+    if(fb2 && fb2.auth && !fb2.auth.currentUser && !existingAcct()){
+      fb2.auth.createUserWithEmailAndPassword(mail, W.pass).then(function(result){
         window.__firebaseUid = result.user.uid;
-        $('signForm').dispatchEvent(new Event('submit', {cancelable:true}));
+        try{ result.user.updateProfile({ displayName: W.name }); }catch(err){}
+        persist(result.user.uid);
       }).catch(function(err){
-        window.__firebaseSignupInProgress = false;
-        msg.textContent = err.code === 'auth/email-already-in-use' ? 'This email already exists in Firebase Authentication. Log in instead.' : 'Firebase account creation failed.';
+        btn.disabled = false;
+        if(err && err.code === 'auth/email-already-in-use'){
+          W.step = 1; renderStep(); $('sMsg').textContent = 'This email already has an account. Log in instead.'; bad($('tEmail'), true);
+        } else {
+          msg.textContent = 'Account creation failed. Check your connection and try again.';
+        }
         console.error('Firebase sign-up failed', err);
       });
       return;
     }
-    var firebaseSignupUid = window.__firebaseUid || (window.EducationBFirebase.auth.currentUser && window.EducationBFirebase.auth.currentUser.uid) || '';
-    var role = 'Tutor';
-    var newUser = { name: n.value.trim(), email: mail, uid: firebaseSignupUid, role: role };
-    users.push(newUser);
-    try {
-      localStorage.setItem('modivs_users', JSON.stringify(users));
-    } catch(err){}
-
-    if(window.EducationBFirebase && window.EducationBFirebase.db){
-      var uidKey = firebaseSignupUid || mail.replace(/[^a-z0-9]/gi, '_');
-      window.EducationBFirebase.db.collection('users').doc(uidKey).set({
-        name: newUser.name,
-        email: mail,
-        role: role,
-        uid: firebaseSignupUid,
-        createdAt: firebase.firestore.FieldValue.serverTimestamp()
-      }, { merge: true }).catch(function(){});
-    }
-
-    localStorage.setItem('modivs_auth_user', JSON.stringify({ name: newUser.name, email: newUser.email, role: newUser.role }));
-
-    // Immediately track incomplete tutor in database so admin dashboard sees them
-    try {
-      var dbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
-      if(!dbTutors.some(function(t){ return t.email === mail; })){
-        dbTutors.push({
-          id: 't_user_' + (mail.replace(/[^a-z0-9]/gi, '_')),
-          name: newUser.name,
-          email: mail,
-          phone: '—',
-          city: '—',
-          headline: 'Account registered. Profile setup incomplete.',
-          qual: 'Profile setup pending',
-          years: 0,
-          subs: ['General'],
-          levels: ['Secondary'],
-          fee: 0,
-          modes: ['Online'],
-          langs: ['English'],
-          idType: 'Pending upload',
-          idFile: '',
-          cert: '',
-          sent: 'Registration completed',
-          status: 'incomplete',
-          submitted_at: new Date().toISOString(),
-          is_demo: false
-        });
-        localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
-      }
-    } catch(err){}
-
-    toast('Tutor account created! Redirecting to tutor profile setup...');
-    setTimeout(function(){
-      window.location.href = 'modivs-tutor-profile.html';
-    }, 600);
-  });
+    persist((fb2 && fb2.auth && fb2.auth.currentUser && fb2.auth.currentUser.uid) || (existingAcct() && existingAcct().uid) || window.__firebaseUid || '');
+  }
+  renderStep();
 
   if($('logout')){
     $('logout').addEventListener('click', function(){

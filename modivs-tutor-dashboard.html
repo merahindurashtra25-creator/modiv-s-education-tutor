@@ -5,13 +5,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Tutor dashboard</title>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+button,input,select,textarea{font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif}
 
 :root{--navy:#1A2035;--navy2:#2a3350;--yellow:#EBB92E;--cream:#FEF7EA;--card:#fff;--muted:#555b78;--line:#eadfc9;--ok:#1d7a4d;--bad:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
 *,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+body{margin:0;background:var(--cream);color:var(--navy);font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
 button,input,select{font:inherit;color:inherit}
 :is(a,button,input,select,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:2px}
 .app{display:grid;grid-template-columns:290px 1fr;gap:24px;max-width:1280px;margin:0 auto;padding:20px 20px 80px;align-items:start}
@@ -177,43 +177,33 @@ dialog h2{margin:0 0 4px}
 <script src="modivs-blogs.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
+<link rel="stylesheet" href="modivs-dashboard.css">
 </head>
-<body>
-<header class="mv-header">
- <div class="mv-wrap mv-bar">
-  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
-  <nav id="mvNav" aria-label="Main menu">
-   <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="modivs-tutors.html">Tutors</a></li>
-    <li><a href="modivs-guide.html">Guide</a></li>
-    <li><a href="modivs-blogs.html">Blogs</a></li>
-    <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-active-leads.html">Find Students</a></li>
-    <li><a href="modivs-contact.html">Contact us</a></li>
-   </ul>
-  </nav>
-  <div class="acts" id="mvActs">
-   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
-   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
-   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+<body class="dash">
+<script src="modivs-dashboard.js"></script>
+<header class="dh">
+ <div class="dh-in">
+  <a class="dh-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <div class="dh-sp"></div>
+  <button type="button" class="dh-bell" id="dhBell" aria-label="Open messages"><svg class="ic" aria-hidden="true"><use href="#i-bell"></use></svg><span class="dot" id="dhDot" hidden></span></button>
+  <div class="dh-user">
+   <button type="button" class="dh-ub" id="dhUserBtn" aria-haspopup="true" aria-expanded="false" aria-controls="dhMenu">
+    <span class="dh-av" id="dhAva">TR</span><span class="nm" id="dhName">Hi, Tutor</span><svg class="ic" aria-hidden="true"><use href="#i-chev"></use></svg>
+   </button>
+   <div class="dh-menu" id="dhMenu" hidden>
+    <div class="dh-who"><b id="dhWho">Tutor</b><span class="ver" id="dhRole">Tutor</span></div>
+    <a href="index.html"><svg class="ic" aria-hidden="true"><use href="#i-home"></use></svg>Home</a>
+    <button type="button" id="dhPhotoBtn"><svg class="ic" aria-hidden="true"><use href="#i-user"></use></svg>Change profile photo</button>
+    <a href="modivs-tutor-edit-profile.html"><svg class="ic" aria-hidden="true"><use href="#i-edit"></use></svg>Edit profile</a>
+    <a href="modivs-guide.html#tutor"><svg class="ic" aria-hidden="true"><use href="#i-help"></use></svg>How to use</a>
+    <button type="button" class="out" id="tutorLogoutBtn"><svg class="ic" aria-hidden="true"><use href="#i-out"></use></svg>Log out</button>
+   </div>
   </div>
  </div>
 </header>
+<input type="file" id="dhPhotoFile" accept="image/jpeg,image/png,image/webp" hidden>
 <div class="app">
  <aside class="side" aria-label="Tutor menu">
-  <div class="pf">
-   <div class="ava" id="tutorAva" aria-hidden="true">PS</div>
-   <h2 id="tutorWelcome">Welcome, Tutor</h2>
-   <p class="hl" id="tutorHeadline">Verified Tutor</p>
-   <span class="ver" id="verPill">Verified</span>
-   <ul class="mini">
-    <li><span>City</span><span id="tutorCity">Ludhiana</span></li>
-    <li><span>Fee</span><span id="tutorFee">600 / hour</span></li>
-    <li><span>Rating</span><span>4.8 (23)</span></li>
-   </ul>
-   <button class="b y" type="button" id="editTop">Edit your profile</button>
-  </div>
   <nav class="nav" id="nav" aria-label="Sections"></nav>
  </aside>
 
@@ -233,27 +223,11 @@ dialog h2{margin:0 0 4px}
 <div class="gcard" id="guideCard" role="region" aria-label="Getting started guide" hidden>
  <button type="button" class="gx" id="guideClose" aria-label="Dismiss guide">&times;</button>
  <h2>Getting started as a tutor</h2><p>New here? Four quick steps to get the most out of Modiv’s Education.</p>
- <ol><li>Complete <b>My Profile</b> with a clear photo, subjects and fees.</li><li>Wait for admin approval. Your status shows in the banner above.</li><li>Open <b>New Leads</b> to find students and unlock their details with coins.</li><li>Reply in <b>Chat</b>, arrange a demo class and start teaching.</li></ol><a class="gb" href="modivs-guide.html#tutor">Open the full guide</a>
+ <ol><li>Complete <b>My Profile</b> with a clear photo, subjects and fees.</li><li>Wait for admin approval. Your status shows in the banner above.</li><li>Open <b>Student Leads</b> to find students and unlock their details with coins.</li><li>Reply in <b>Messages</b>, arrange a demo class and start teaching.</li></ol><a class="gb" href="modivs-guide.html#tutor">Open the full guide</a>
 </div>
 <script>(function(){var c=document.getElementById('guideCard'),k='modivs_guide_tutor';if(!c)return;try{if(localStorage.getItem(k)!=='1')c.hidden=false}catch(e){c.hidden=false}
 document.getElementById('guideClose').addEventListener('click',function(){c.hidden=true;try{localStorage.setItem(k,'1')}catch(e){}})})();</script>
 
-   <div class="coinbar">
-   <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
-     <div><small>AVAILABLE COINS</small><b id="coins">0</b></div>
-     <div style="border-left:1.5px solid var(--line);padding-left:18px;">
-       <small>MEMBERSHIP PLAN</small>
-       <div style="display:flex;align-items:center;gap:8px;margin-top:2px;">
-         <b id="memPlanBadge" style="font-size:1.15rem;">Standard Plan</b>
-         <span id="memStatusPill" class="ver" style="background:#d9f0e3;color:var(--ok);">Active</span>
-       </div>
-     </div>
-   </div>
-   <div class="r">
-     <button class="b o" type="button" id="memBtn">Membership Plans</button>
-     <button class="b y" type="button" id="rech">Recharge Coins</button>
-   </div>
-  </div>
   <div id="view"></div>
  </main>
 </div>
@@ -627,20 +601,28 @@ function nav(){
  var currentChatUser = null;
  try { currentChatUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
  var chatUnread = window.ModivsChat ? ModivsChat.conversations().reduce(function(total,c){ return total + ModivsChat.unread(c, currentChatUser && currentChatUser.email); }, 0) : 0;
- var N=[['dash','🏠','My Dashboard'],['profile','👤','My Profile'],['leads','🎯','New Leads',newLeads().length],['requests','📩','Requests',pendingReq()],['history','📜','History'],['chat','💬','Chat',chatUnread],['membership','👑','Membership'],['blogs','✍️','My Blogs'],['credits','🪙','My Credits'],['settings','⚙️','Settings']];
+ // [view, icon, label, badge]
+ var N=[['dash','dash','Dashboard'],['profile','user','My Profile'],['leads','target','Student Leads',newLeads().length],['classes','cal','My Classes'],['availability','clock','Availability'],['credits','coin','Earnings / Coins'],['chat','msg','Messages',chatUnread],['reviews','star','Reviews'],['help','help','Help & Support']];
+ var M=[['requests','inbox','Requests',pendingReq()],['history','hist','History'],['membership','crown','Membership'],['blogs','edit','My Blogs'],['settings','gear','Settings']];
  var b=$('nav');b.innerHTML='';
- N.forEach(function(x){var btn=el('button');btn.type='button';var i=el('span',null,x[1]);i.setAttribute('aria-hidden','true');btn.appendChild(i);btn.appendChild(el('span',null,x[2]));
+ function add(x,small){
+  var btn=el('button',small?'sm':'');btn.type='button';
+  btn.innerHTML=ModivsDash.icon(x[1]);btn.appendChild(el('span',null,x[2]));
   if(x[3]){btn.appendChild(el('span','n',x[3]))}
   if(state.view===x[0])btn.setAttribute('aria-current','page');
-  btn.addEventListener('click',function(){state.view=x[0];render();window.scrollTo(0,0)});b.appendChild(btn)});
- var lo=el('button','out');lo.type='button';var li=el('span',null,'🚪');li.setAttribute('aria-hidden','true');lo.appendChild(li);lo.appendChild(el('span',null,'Log out'));
+  btn.addEventListener('click',function(){
+   if(x[0]==='help'){window.location.href='modivs-contact.html';return}
+   gotoView(x[0]);
+  });
+  b.appendChild(btn)
+ }
+ N.forEach(function(x){add(x)});
+ b.appendChild(el('div','sep'));b.appendChild(el('div','lbl','More'));
+ M.forEach(function(x){add(x,true)});
+ var lo=el('button','out sm');lo.type='button';lo.innerHTML=ModivsDash.icon('out');lo.appendChild(el('span',null,'Log out'));
  lo.addEventListener('click',doLogout);b.appendChild(lo);
 
- var cnt={leads:newLeads().length,requests:pendingReq(),chat:chatUnread};
- var tn=document.querySelectorAll('#topNav [data-view]');
- for(var ti=0;ti<tn.length;ti++){var a=tn[ti],vw=a.getAttribute('data-view');
-  if(state.view===vw)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
-  var bd=a.querySelector('.tn');if(bd){var c=cnt[vw]||0;bd.textContent=c;bd.hidden=!c}}
+ var dd=$('dhDot');if(dd)dd.hidden=!chatUnread;
 }
 function doLogout(e){
  if(e&&e.preventDefault)e.preventDefault();
@@ -676,23 +658,102 @@ function leadCard(l){
  c.appendChild(L);c.appendChild(A);return c
 }
 
+function gotoView(name){state.view=name;render();window.scrollTo(0,0)}
+(function(){var bell=$('dhBell');if(bell)bell.addEventListener('click',function(){gotoView('chat')})})();
+function kpi(cls,icon,label,val,link,view){
+ var d=el('div','kpi'+(cls?' '+cls:''));
+ var ic=el('div','ic-box');ic.innerHTML=ModivsDash.icon(icon);d.appendChild(ic);
+ d.appendChild(el('span','lb',label));d.appendChild(el('b','num',String(val)));
+ var b=el('button','lnk',link+' \u2192');b.type='button';b.addEventListener('click',function(){gotoView(view)});d.appendChild(b);return d
+}
+function maskName(l){
+ var p=String(l.name||'Student').trim().split(/\s+/);
+ return l.unlocked?(l.name||'Student'):(p[0]+(p[1]?' '+p[1].charAt(0)+'.':''))
+}
+function leadRow(l){
+ var r=el('div','rrow');
+ r.appendChild(el('div','pic',ModivsDash.initials(maskName(l))||'ST'));
+ var i=el('div','info');i.appendChild(el('b','',maskName(l)));
+ i.appendChild(el('small','',[l.cls,(l.subs&&l.subs[0])].filter(Boolean).join(' - ')));
+ if(l.time)i.appendChild(el('small','',l.time));
+ r.appendChild(i);
+ var b=el('button','b o','View');b.type='button';b.addEventListener('click',function(){gotoView(l.unlocked?'requests':'leads')});r.appendChild(b);
+ return r
+}
 function vDash(v){
- v.appendChild(el('h1','','My Dashboard'));v.appendChild(el('p','sub','Your leads, coins and profile at a glance.'));
- var s=el('div','stats');
- s.appendChild(stat('Available Coins',state.coins,'hi'));s.appendChild(stat('New Leads',newLeads().length));s.appendChild(stat('Unlocked Leads',unlockedCount()));
- s.appendChild(stat('Verification',verifyLabel(window.MY_TUTOR||{}),'',1));v.appendChild(s);
- var pc=profileCompletion(window.MY_TUTOR||{});
- var p=el('div','prog');p.appendChild(el('p','','Profile Completion: '+pc.pct+'%'));var d=el('div');var i=el('i');i.style.width=pc.pct+'%';d.appendChild(i);p.appendChild(d);
- if(pc.missing.length){var mm=el('p','','Still to add: '+pc.missing.slice(0,5).join(', ')+(pc.missing.length>5?' and '+(pc.missing.length-5)+' more':'')+'.');mm.style.cssText='margin:8px 0 0;font-size:.88rem';p.appendChild(mm);var eb=el('button','link','Complete my profile');eb.type='button';eb.addEventListener('click',editProfile);p.appendChild(eb)}
- else{var ok=el('p','','Your profile is 100% complete.');ok.style.cssText='margin:8px 0 0;font-size:.88rem';p.appendChild(ok)}
- v.appendChild(p);
- var box=el('section','box');var hd=el('div','head');hd.appendChild(el('h2','','Latest new leads'));var all=el('button','link','See all leads');all.type='button';all.addEventListener('click',function(){state.view='leads';render()});hd.appendChild(all);box.appendChild(hd);
- var nl=newLeads().slice(0,2);if(!nl.length)box.appendChild(el('p','empty','No new leads right now.'));nl.forEach(function(l){box.appendChild(leadCard(l))});v.appendChild(box);
- var two=el('div','two'),a=el('section','box');a.appendChild(el('h2','','Upcoming classes'));
- if(!classes.length)a.appendChild(el('p','empty','No upcoming classes yet.'));classes.forEach(function(x){var r=el('div','row'),w=el('div','when');w.appendChild(el('b','',x[0]));w.appendChild(document.createTextNode(x[1]));var q=el('div');q.appendChild(el('p','',x[2]));q.appendChild(el('small','',x[3]));r.appendChild(w);r.appendChild(q);a.appendChild(r)});
- var b=el('section','box');b.appendChild(el('h2','','Recent activity'));
- b.appendChild(el('p','empty','No recent activity yet.'));
- two.appendChild(a);two.appendChild(b);v.appendChild(two)
+ var t=window.MY_TUTOR||{};
+ var h=el('h1','','Welcome back, '+ModivsDash.firstName(t.name,'Tutor')+'! ');
+ var w=el('span','wave','\ud83d\udc4b');w.setAttribute('aria-hidden','true');h.appendChild(w);v.appendChild(h);
+ v.appendChild(el('p','sub','Here\u2019s what\u2019s happening with your tutoring.'));
+
+ var k=el('div','kpis k3');
+ k.appendChild(kpi('','doc','New Enquiries',newLeads().length,'View Leads','leads'));
+ k.appendChild(kpi('g','cal','Upcoming Classes',classes.length,'View Schedule','classes'));
+ k.appendChild(kpi('o','coin','Available Coins',state.coins,'View Details','credits'));
+ v.appendChild(k);
+
+ var pc=profileCompletion(t);
+ var card=el('section','box pcomp');
+ var hd=el('div','pc-hd');hd.appendChild(el('h2','','Profile Completion'));
+ var vp=el('span','ver',verifyLabel(t));
+ if(t.status!=='approved'){vp.style.background=(t.status==='rejected'?'#f7dcda':'#ecdfc6');vp.style.color=(t.status==='rejected'?'var(--bad)':'var(--navy)')}
+ hd.appendChild(vp);hd.appendChild(el('b','pc-pct',pc.pct+'%'));card.appendChild(hd);
+ var bar=el('div','pc-bar');var fill=el('i');fill.style.width=pc.pct+'%';bar.appendChild(fill);card.appendChild(bar);
+ var row=el('div','pc-row');
+ if(pc.missing.length){
+  row.appendChild(el('p','','Still to add: '+pc.missing.slice(0,5).join(', ')+(pc.missing.length>5?' and '+(pc.missing.length-5)+' more':'')+'. A complete profile gets more student enquiries.'));
+  var cb=el('button','b y','Complete Now');cb.type='button';cb.addEventListener('click',editProfile);row.appendChild(cb);
+ } else {
+  row.appendChild(el('p','','Your profile is 100% complete.'));
+ }
+ card.appendChild(row);v.appendChild(card);
+
+ var box=el('section','box');var bh=el('div','head');bh.appendChild(el('h2','','Recent Enquiries'));
+ var all=el('button','link','View All');all.type='button';all.addEventListener('click',function(){gotoView('leads')});bh.appendChild(all);box.appendChild(bh);
+ var list=el('div');
+ var recent=leads.slice(0,3);
+ if(!recent.length)list.appendChild(el('p','empty','No enquiries yet. New student enquiries will show up here.'));
+ recent.forEach(function(l){list.appendChild(leadRow(l))});
+ box.appendChild(list);v.appendChild(box);
+}
+function vClasses(v){
+ v.appendChild(el('h1','','My Classes'));v.appendChild(el('p','sub','Your upcoming demo and regular classes.'));
+ var box=el('section','box');box.style.marginTop='18px';
+ if(!classes.length){
+  box.appendChild(el('p','empty','No classes scheduled yet. Accept a student request to arrange a demo class.'));
+  var g=el('button','b y','Go to Student Leads');g.type='button';g.style.display='block';g.style.margin='0 auto';g.addEventListener('click',function(){gotoView('leads')});box.appendChild(g);
+ } else classes.forEach(function(x){var r=el('div','row'),w=el('div','when');w.appendChild(el('b','',x[0]));w.appendChild(document.createTextNode(x[1]));var q=el('div');q.appendChild(el('p','',x[2]));q.appendChild(el('small','',x[3]));r.appendChild(w);r.appendChild(q);box.appendChild(r)});
+ v.appendChild(box);
+}
+var AV_DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var AV_SLOTS=[['Morning','6am\u201312pm'],['Afternoon','12\u20134pm'],['Evening','4\u20138pm'],['Night','8\u201310pm']];
+function availKey(){return 'modivs_tutor_avail_'+(currentTutorEmail()||'me')}
+function vAvailability(v){
+ v.appendChild(el('h1','','Availability'));v.appendChild(el('p','sub','Mark the days and time slots when you are usually free to teach.'));
+ var saved={};try{saved=JSON.parse(localStorage.getItem(availKey())||'{}')||{}}catch(e){}
+ var box=el('section','box');box.style.marginTop='18px';
+ var g=el('div','avail');g.appendChild(el('div'));
+ AV_SLOTS.forEach(function(s){var h=el('div','h',s[0]);h.appendChild(el('small','',s[1]));g.appendChild(h)});
+ AV_DAYS.forEach(function(d){
+  g.appendChild(el('div','d',d));
+  AV_SLOTS.forEach(function(s){
+   var key=d+'-'+s[0],b=el('button','tab',saved[key]?'\u2713':'');b.type='button';
+   b.setAttribute('aria-pressed',String(!!saved[key]));b.setAttribute('aria-label',d+' '+s[0]);
+   b.addEventListener('click',function(){saved[key]=!saved[key];b.setAttribute('aria-pressed',String(!!saved[key]));b.textContent=saved[key]?'\u2713':''});
+   g.appendChild(b)
+  })
+ });
+ box.appendChild(g);
+ var foot=el('div','head');foot.style.margin='18px 0 0';
+ var note=el('small','','Saved in this browser.');note.style.color='var(--muted)';foot.appendChild(note);
+ var sv=el('button','b y','Save availability');sv.type='button';
+ sv.addEventListener('click',function(){try{localStorage.setItem(availKey(),JSON.stringify(saved));toast('Availability saved.')}catch(e){toast('Could not save on this device.')}});
+ foot.appendChild(sv);box.appendChild(foot);v.appendChild(box);
+}
+function vReviews(v){
+ v.appendChild(el('h1','','Reviews'));v.appendChild(el('p','sub','What students and parents say about your classes.'));
+ var box=el('section','box');box.style.marginTop='18px';
+ box.appendChild(el('p','empty','No reviews yet. Reviews will appear here once students rate your classes.'));v.appendChild(box);
 }
 function vLeads(v){
  v.appendChild(el('h1','','New Leads'));v.appendChild(el('p','sub','Unlock a lead for '+COST+' coins to see contact details.'));
@@ -726,7 +787,8 @@ function vProfile(v){
  var ph=el('div','');ph.style.cssText='display:flex;align-items:center;gap:14px;text-align:left;margin-bottom:12px';
  var av=el('div','ava');av.style.margin='0';
  if(t.photo){var im=document.createElement('img');im.src=t.photo;im.alt='Your profile photo';av.appendChild(im)}else{av.textContent=((t.name||'Tutor').split(' ').map(function(w){return w[0]}).slice(0,2).join('')).toUpperCase()}
- ph.appendChild(av);var pn=el('div');pn.appendChild(el('b','',t.name||'Tutor'));if(!t.photo){var np=el('small','','No profile photo yet. Add one from Edit profile.');np.style.display='block';pn.appendChild(np)}ph.appendChild(pn);box.appendChild(ph);
+ ph.appendChild(av);var pn=el('div');pn.appendChild(el('b','',t.name||'Tutor'));if(!t.photo){var np=el('small','','No profile photo yet. Add one to help students trust your profile.');np.style.display='block';pn.appendChild(np)}
+ var pb=el('button','b o',t.photo?'Change photo':'Add profile photo');pb.type='button';pn.style.cssText='display:flex;flex-direction:column;align-items:flex-start';pb.style.cssText='margin-top:8px;padding:6px 14px;font-size:.85rem';pb.addEventListener('click',function(){window.mvPickPhoto&&window.mvPickPhoto()});pn.appendChild(pb);ph.appendChild(pn);box.appendChild(ph);
  function list(a,d){return a&&a.length?a.join(', '):d}
  var u=el('ul','kv');[['Name',t.name||'Tutor'],['About',t.bio||'Not added'],['Headline',t.headline||'Not added'],['City',t.city||'Not added'],['Mobile number',t.phone||'—'],['Alternate number',t.altPhone||'Not added'],['WhatsApp number',t.whatsapp||'Not added'],['Qualification',t.qual||(t.quals&&t.quals[0]&&t.quals[0].degree?t.quals[0].degree+', '+(t.quals[0].inst||''):'Not added')],['Experience',(t.years!=null?t.years+' years':(t.totalYears!=null&&t.totalYears!==''?t.totalYears+' years':'Not added'))],['Subjects',list(t.subs||t.subjects,'Not added')],['Levels',list(t.levels,'Not added')],['Fee',t.fee?'₹'+t.fee+' / hour':'Not added'],['Group fee',t.groupFee?'₹'+t.groupFee+' / student / hour':'Not offered'],['Boards',list(t.boards,'Not added')],['Teaching format',list(t.formats,'Not added')],['Mode',list(t.modes,'Not added')],['Languages',list(t.langs,'Not added')],['Verification',t.status?(t.status==='approved'?'Verified':(t.status==='rejected'?'Changes needed':'Pending')):'Pending']].forEach(function(p){var li=el('li');li.appendChild(el('span','',p[0]));li.appendChild(el('span','',p[1]));u.appendChild(li)});
  box.appendChild(u);var b=el('button','b y','Edit profile');b.type='button';b.style.marginTop='16px';b.addEventListener('click',editProfile);box.appendChild(b);v.appendChild(box)
@@ -1184,22 +1246,12 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
   window.MY_TUTOR = tutor;
   function escH(t){return String(t==null?'':t).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 
-  // Update sidebar card
-  var wEl = $('tutorWelcome'), hEl = $('tutorHeadline'), cEl = $('tutorCity'), fEl = $('tutorFee'), aEl = $('tutorAva'), pEl = $('verPill');
-  if(wEl) wEl.textContent = 'Welcome, ' + tutor.name.split(' ')[0];
-  if(hEl) hEl.textContent = tutor.headline || (tutor.status === 'approved' ? 'Verified Tutor' : 'Tutor');
-  if(cEl) cEl.textContent = tutor.city || '—';
-  if(fEl) fEl.textContent = tutor.fee ? '₹' + tutor.fee + ' / hour' : 'Fee not set';
-  if(aEl && tutor.photo){
-    aEl.textContent = '';
-    var pim = document.createElement('img');
-    pim.src = tutor.photo;
-    pim.alt = tutor.name + ' profile photo';
-    aEl.appendChild(pim);
-  } else if(aEl){
-    var inits = tutor.name.split(' ').map(function(w){return w[0]}).slice(0,2).join('').toUpperCase();
-    aEl.textContent = inits || 'TR';
-  }
+  // Update header account menu
+  var D = window.ModivsDash;
+  var hN = $('dhName'), hW = $('dhWho'), pEl = $('dhRole');
+  if(hN) hN.textContent = 'Hi, ' + D.firstName(tutor.name, 'Tutor');
+  if(hW) hW.textContent = tutor.name || 'Tutor';
+  D.paintAvatar($('dhAva'), tutor.photo || '', D.initials(tutor.name) || 'TR');
 
   // Render status banner and pill
   var b = $('statusBanner');
@@ -1210,7 +1262,7 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
         '<span style="font-size:1.8rem;" aria-hidden="true">📝</span>' +
         '<div style="flex:1;min-width:240px;"><h3 style="margin:0;font-size:1.05rem;color:var(--navy);">Create your tutor profile to get started.</h3>' +
         '<p style="margin:4px 0 0;font-size:0.88rem;color:var(--muted);">Complete all steps and submit your documents. Our team will verify your profile before it goes live.</p></div>' +
-        '<a href="modivs-tutor-profile.html" class="b y" style="text-decoration:none;font-size:0.9rem;">Create profile &rarr;</a>' +
+        '<a href="modivs-education.html#tutor-signup" class="b y" style="text-decoration:none;font-size:0.9rem;">Create profile &rarr;</a>' +
       '</div>';
     } else if(tutor.status === 'pending'){
       if(pEl){ pEl.textContent = 'Pending Approval'; pEl.style.background = '#ecdfc6'; pEl.style.color = 'var(--navy)'; }
@@ -1291,21 +1343,10 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
 
 function render(){
  var em = currentTutorEmail();
- if(window.ModivsChat && em){
-   state.coins = ModivsChat.getTutorCoins(em);
-   var mem = ModivsChat.getTutorMembership(em);
-   var badge = $('memPlanBadge');
-   var pill = $('memStatusPill');
-   if(badge) badge.textContent = mem.planName || 'Standard Plan';
-   if(pill){
-     pill.textContent = mem.isValid ? 'Active' : 'Expired';
-     pill.style.background = mem.isValid ? '#d9f0e3' : '#f7dcda';
-     pill.style.color = mem.isValid ? 'var(--ok)' : 'var(--bad)';
-   }
- }
- $('coins').textContent=state.coins;nav();
+ if(window.ModivsChat && em){ state.coins = ModivsChat.getTutorCoins(em); }
+ nav();
  var v=$('view');v.innerHTML='';
- ({dash:vDash,leads:vLeads,requests:vRequests,history:vHistory,profile:vProfile,chat:vChat,blogs:vBlogs,credits:vCredits,membership:vMembership,settings:vSettings})[state.view](v)
+ ({dash:vDash,leads:vLeads,requests:vRequests,history:vHistory,profile:vProfile,chat:vChat,blogs:vBlogs,credits:vCredits,membership:vMembership,settings:vSettings,classes:vClasses,availability:vAvailability,reviews:vReviews})[state.view](v)
 }
 
 // Setup Packs & Modal Listeners
@@ -1400,15 +1441,92 @@ render();
 </script>
 <!-- mv-footer -->
 <footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
 .mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
 .mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
 .mv-foot a[aria-current=page]{color:#EBB92E}
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<script>
+/* Profile photo: add or change it straight from the dashboard */
+(function(){
+  var input = document.getElementById('dhPhotoFile'), btn = document.getElementById('dhPhotoBtn');
+  if(!input) return;
+  function say(t){ if(typeof toast === 'function') toast(t); else alert(t); }
+  function jget(k, d){ try{ var v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? d : v; }catch(e){ return d; } }
+  function sharpness(cv, S){
+    var T = 200, c = document.createElement('canvas'); c.width = c.height = T; var x = c.getContext('2d'); x.drawImage(cv, 0, 0, S, S, 0, 0, T, T);
+    var d = x.getImageData(0, 0, T, T).data, g = new Float32Array(T*T), i, j;
+    for(i = 0; i < T*T; i++) g[i] = .299*d[i*4] + .587*d[i*4+1] + .114*d[i*4+2];
+    var sum = 0, sq = 0, n = 0, l;
+    for(i = 1; i < T-1; i++) for(j = 1; j < T-1; j++){ l = g[(i-1)*T+j] + g[(i+1)*T+j] + g[i*T+j-1] + g[i*T+j+1] - 4*g[i*T+j]; sum += l; sq += l*l; n++; }
+    return sq/n - (sum/n)*(sum/n);
+  }
+  function savePhoto(dataUrl, blurry){
+    var t = window.MY_TUTOR || {}, au = jget('modivs_auth_user', null), email = String((au && au.email) || t.email || '').toLowerCase();
+    if(!email){ say('Please log in again to change your photo.'); return; }
+    var wasApproved = t.status === 'approved';
+    var status = wasApproved ? 'pending' : (t.status || 'pending');   // a new photo is checked by admins, like on Edit profile
+    var now = new Date().toISOString();
+    try{
+      var cur = jget('modivs_current_tutor', null);
+      if(cur && String(cur.email).toLowerCase() === email){
+        cur.photo = dataUrl; cur.photoBlur = !!blurry; if(wasApproved){ cur.status = 'pending'; cur.submittedAt = now; }
+        localStorage.setItem('modivs_current_tutor', JSON.stringify(cur));
+      }
+      var db = jget('modivs_tutors_db', []), i = db.findIndex(function(x){ return String(x.email).toLowerCase() === email; }), id = '';
+      if(i >= 0){ db[i].photo = dataUrl; if(wasApproved) db[i].status = 'pending'; id = db[i].id; localStorage.setItem('modivs_tutors_db', JSON.stringify(db)); }
+      var q = jget('modivs_submitted_tutors', []), qi = q.findIndex(function(x){ return String(x.email).toLowerCase() === email; });
+      if(qi >= 0){ q[qi].photo = dataUrl; if(wasApproved) q[qi].status = 'pending'; localStorage.setItem('modivs_submitted_tutors', JSON.stringify(q)); }
+      else if(wasApproved && i >= 0){ q.unshift(Object.assign({}, db[i], { sent: 'Just now', status: 'pending' })); localStorage.setItem('modivs_submitted_tutors', JSON.stringify(q)); }
+      if(wasApproved){
+        var logs = jget('modivs_audit_logs', []);
+        logs.unshift({ id: id, name: t.name || '', action: 'Profile Edited', admin: 'System',
+          timestamp: new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'}) + ', ' + new Date().toLocaleDateString(),
+          note: 'Tutor changed their profile photo. Status: pending.' });
+        localStorage.setItem('modivs_audit_logs', JSON.stringify(logs.slice(0, 50)));
+      }
+      var fb = window.EducationBFirebase;
+      if(fb && fb.db && window.firebase && id){
+        fb.db.collection('tutors').doc(String(id).replace(/[/]/g, '_')).set({ photo: dataUrl, status: status, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(){});
+      }
+    }catch(err){
+      console.error(err); say('Could not save the photo. Your browser storage may be full. Try a smaller photo.'); return;
+    }
+    t.photo = dataUrl; t.status = status; window.MY_TUTOR = t;
+    var D = window.ModivsDash;
+    if(D) D.paintAvatar(document.getElementById('dhAva'), dataUrl, D.initials(t.name) || 'TR');
+    if(wasApproved){ say('Photo updated. It has been sent to admins for re-verification.'); setTimeout(function(){ location.reload(); }, 900); return; }
+    say(blurry ? 'Photo saved. It looks a little blurry. A sharper photo is approved faster.' : 'Profile photo saved.');
+    if(typeof render === 'function') render();
+  }
+  function handle(file){
+    if(!file) return;
+    if(!/^image\/(jpeg|png|webp)$/.test(file.type)){ say('Please choose a JPG, PNG or WebP image.'); return; }
+    if(file.size > 512000){ say('Photo must be 500 KB or smaller.'); return; }
+    var t = window.MY_TUTOR || {};
+    if(t.status === 'approved' && !confirm('Changing your photo sends your profile to admins for re-verification, and it will be hidden from students until approved. Continue?')) return;
+    var fr = new FileReader();
+    fr.onerror = function(){ say('Could not read that file. Try another photo.'); };
+    fr.onload = function(){
+      var img = new Image();
+      img.onerror = function(){ say('That file is not a valid image.'); };
+      img.onload = function(){
+        if(Math.min(img.width, img.height) < 200){ say('Photo is too small. Use at least 200 × 200 pixels.'); return; }
+        var S = 400, c = document.createElement('canvas'); c.width = c.height = S; var x = c.getContext('2d');
+        var m = Math.min(img.width, img.height); x.drawImage(img, (img.width-m)/2, (img.height-m)/2, m, m, 0, 0, S, S);
+        savePhoto(c.toDataURL('image/jpeg', 0.85), sharpness(c, S) < 60);
+      };
+      img.src = fr.result;
+    };
+    fr.readAsDataURL(file);
+  }
+  window.mvPickPhoto = function(){ input.value = ''; input.click(); };
+  input.addEventListener('change', function(){ handle(input.files && input.files[0]); });
+  if(btn) btn.addEventListener('click', function(){ var m = document.getElementById('dhMenu'); if(m) m.hidden = true; window.mvPickPhoto(); });
+})();
+</script>
 <script src="modivs-avatars.js"></script>
-<script src="modivs-session-ui.js" defer></script>
-<script src="modivs-menu.js" defer></script>
 </body>
 </html>

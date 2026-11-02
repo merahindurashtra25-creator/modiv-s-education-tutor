@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Active Leads</title>
+<meta name="description" content="Home tuition jobs and online tuition jobs for tutors. Browse active student requirements by city, subject and mode on Modiv’s Education.">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
@@ -82,6 +83,8 @@ dialog#addDlg::backdrop{background:rgba(26,32,53,.55)}
 <script src="modivs-session-ui.js" defer></script>
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
+<link rel="stylesheet" href="modivs-faq.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What are active tuition leads?", "acceptedAnswer": {"@type": "Answer", "text": "Every requirement posted by a student or parent appears here, with the class, subjects, city, teaching mode and budget. They are real home tuition and online tuition jobs."}}, {"@type": "Question", "name": "How do I get home tuition jobs from these leads?", "acceptedAnswer": {"@type": "Answer", "text": "Become a Modivian tutor: create your profile and get verified. Approved tutors unlock the leads they want from the tutor dashboard."}}, {"@type": "Question", "name": "Why are student contact details hidden?", "acceptedAnswer": {"@type": "Answer", "text": "Student phone numbers stay private until a verified tutor unlocks the lead. This protects students and parents from spam."}}, {"@type": "Question", "name": "How much does it cost to unlock a tuition lead?", "acceptedAnswer": {"@type": "Answer", "text": "Unlocking an inquiry uses coins (10 coins per inquiry) and needs an active membership plan. You manage both from the bar at the top of your tutor dashboard."}}, {"@type": "Question", "name": "Can I filter tuition leads by city, subject and mode?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Filter by city, teaching mode and subject, and choose leads posted in the last 24 hours, 7 days, 30 days or 90 days."}}, {"@type": "Question", "name": "Are there online tuition jobs I can do from anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose the online teaching mode in the filters to see students who want online classes, so you can teach from any city."}}, {"@type": "Question", "name": "I am a student or parent. How do I add my requirement?", "acceptedAnswer": {"@type": "Answer", "text": "Post your tuition requirement. It appears here for verified tutors, and your contact details stay private."}}]}</script>
 </head>
 <body>
 <header class="mv-header">
@@ -303,6 +306,22 @@ stats();render();
 })();
 </script>
 <!-- mv-footer -->
+<section class="mvfaq" id="page-faq" aria-labelledby="mvfaqH">
+ <div class="mvfaq-in">
+  <h2 id="mvfaqH">Tuition jobs FAQs: home and online tuition leads</h2><p class="mvfaq-sub">How tutors find home tuition jobs and online tuition jobs from real student requirements.</p>
+  <div class="mvfaq-list">
+   <details><summary>What are active tuition leads?</summary><div class="mvfaq-a"><p>Every requirement posted by a student or parent appears here, with the class, subjects, city, teaching mode and budget. They are real home tuition and online tuition jobs.</p></div></details>
+   <details><summary>How do I get home tuition jobs from these leads?</summary><div class="mvfaq-a"><p><a href="modivs-become-tutor.html">Become a Modivian tutor</a>: create your profile and get verified. Approved tutors unlock the leads they want from the tutor dashboard.</p></div></details>
+   <details><summary>Why are student contact details hidden?</summary><div class="mvfaq-a"><p>Student phone numbers stay private until a verified tutor unlocks the lead. This protects students and parents from spam.</p></div></details>
+   <details><summary>How much does it cost to unlock a tuition lead?</summary><div class="mvfaq-a"><p>Unlocking an inquiry uses coins (10 coins per inquiry) and needs an active membership plan. You manage both from the bar at the top of your tutor dashboard.</p></div></details>
+   <details><summary>Can I filter tuition leads by city, subject and mode?</summary><div class="mvfaq-a"><p>Yes. Filter by city, teaching mode and subject, and choose leads posted in the last 24 hours, 7 days, 30 days or 90 days.</p></div></details>
+   <details><summary>Are there online tuition jobs I can do from anywhere?</summary><div class="mvfaq-a"><p>Yes. Choose the online teaching mode in the filters to see students who want online classes, so you can teach from any city.</p></div></details>
+   <details><summary>I am a student or parent. How do I add my requirement?</summary><div class="mvfaq-a"><p><a href="modivs-post-requirement.html">Post your tuition requirement</a>. It appears here for verified tutors, and your contact details stay private.</p></div></details>
+  </div>
+  <p class="mvfaq-more">Still have a question? <a href="modivs-contact.html">Contact us</a> or read the <a href="modivs-guide.html">guide</a>.</p>
+ </div>
+</section>
+
 <footer class="mv-foot"><style>
 .mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}

@@ -41,7 +41,7 @@
   function hideGuestButtons(hd){
     [].forEach.call(hd.querySelectorAll('a,button'),function(b){
       var h=b.getAttribute('href')||'',t=(b.textContent||'').trim().toLowerCase();
-      if(/#login$|#tutor-signup|modivs-signup\.html/.test(h)||/^(log in|login|sign up|sign up \(student\)|sign up as a tutor|become a tutor)$/.test(t))b.style.display='none'})}
+      if(/#login$|#tutor-signup|modivs-signup\.html/.test(h)||/^(log in|login|sign up|sign up \(student\)|sign up as a tutor|become a tutor|become a modivian tutor)$/.test(t))b.style.display='none'})}
   function mount(){
     var u=me();var old=document.getElementById('mvUser');if(old)old.remove();
     if(!u)return;

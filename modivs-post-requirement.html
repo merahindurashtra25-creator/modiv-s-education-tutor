@@ -5,6 +5,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Post a Requirement · Modiv’s Education</title>
+<meta name="description" content="Post your tuition requirement for free and get responses from verified home and online tutors near you on Modiv’s Education.">
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
@@ -116,6 +117,8 @@ textarea{min-height:100px;resize:vertical}
 <script src="modivs-session-ui.js" defer></script>
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
+<link rel="stylesheet" href="modivs-faq.css">
+<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I post a tuition requirement?", "acceptedAnswer": {"@type": "Answer", "text": "Answer a few quick questions: class or level, board, subjects, city and area, teaching mode, classes per week and your budget. Verified tutors who teach your subjects can then respond."}}, {"@type": "Question", "name": "Is posting a tuition requirement free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Creating an account, posting a requirement and browsing tutors is free for students and parents."}}, {"@type": "Question", "name": "Who can see my requirement and phone number?", "acceptedAnswer": {"@type": "Answer", "text": "Your requirement appears to verified tutors in Active Leads. Your contact details stay private until a tutor unlocks your requirement."}}, {"@type": "Question", "name": "Can I ask for a home tutor or an online tutor?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose the teaching mode you want, home tuition, online classes or both, when you post your requirement."}}, {"@type": "Question", "name": "Can I set my budget for tuition?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Enter a budget range per hour so tutors know what you are looking for before they reply."}}, {"@type": "Question", "name": "Nobody has replied to my requirement yet. What should I do?", "acceptedAnswer": {"@type": "Answer", "text": "Give it a little time and make sure your city, subjects and budget are filled in. You can also open Find Tutors in your dashboard and send requests to tutors yourself."}}, {"@type": "Question", "name": "Can I change my requirement later?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Use Edit Requirements in your student dashboard to update subjects, budget or timings at any time."}}]}</script>
 </head>
 <body>
 <header class="mv-header">
@@ -233,6 +236,22 @@ f.addEventListener('submit',function(e){
 })();
 </script>
 <!-- mv-footer -->
+<section class="mvfaq" id="page-faq" aria-labelledby="mvfaqH">
+ <div class="mvfaq-in">
+  <h2 id="mvfaqH">Post a tuition requirement: FAQs</h2><p class="mvfaq-sub">How to post your requirement and get responses from verified home and online tutors.</p>
+  <div class="mvfaq-list">
+   <details><summary>How do I post a tuition requirement?</summary><div class="mvfaq-a"><p>Answer a few quick questions: class or level, board, subjects, city and area, teaching mode, classes per week and your budget. Verified tutors who teach your subjects can then respond.</p></div></details>
+   <details><summary>Is posting a tuition requirement free?</summary><div class="mvfaq-a"><p>Yes. Creating an account, posting a requirement and browsing tutors is free for students and parents.</p></div></details>
+   <details><summary>Who can see my requirement and phone number?</summary><div class="mvfaq-a"><p>Your requirement appears to verified tutors in Active Leads. Your contact details stay private until a tutor unlocks your requirement.</p></div></details>
+   <details><summary>Can I ask for a home tutor or an online tutor?</summary><div class="mvfaq-a"><p>Yes. Choose the teaching mode you want, home tuition, online classes or both, when you post your requirement.</p></div></details>
+   <details><summary>Can I set my budget for tuition?</summary><div class="mvfaq-a"><p>Yes. Enter a budget range per hour so tutors know what you are looking for before they reply.</p></div></details>
+   <details><summary>Nobody has replied to my requirement yet. What should I do?</summary><div class="mvfaq-a"><p>Give it a little time and make sure your city, subjects and budget are filled in. You can also open Find Tutors in your dashboard and send requests to tutors yourself.</p></div></details>
+   <details><summary>Can I change my requirement later?</summary><div class="mvfaq-a"><p>Yes. Use Edit Requirements in your student dashboard to update subjects, budget or timings at any time.</p></div></details>
+  </div>
+  <p class="mvfaq-more">Still have a question? <a href="modivs-contact.html">Contact us</a> or read the <a href="modivs-guide.html">guide</a>.</p>
+ </div>
+</section>
+
 <footer class="mv-foot"><style>
 .mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
 .mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
