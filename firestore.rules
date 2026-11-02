@@ -60,6 +60,28 @@ service cloud.firestore {
     }
 
     // ==========================================
+    // 0. Accounts Collection (Global Unique Email)
+    // ==========================================
+    match /accounts/{emailId} {
+      allow read: if isAdmin() || isEmail(emailId);
+
+      // Enforce global uniqueness: document ID must not exist prior to creation
+      allow create: if (isAdmin() || (signedIn() && isEmail(emailId)))
+        && !exists(/databases/$(database)/documents/accounts/$(emailId))
+        && request.resource.data.email == emailId.lower()
+        && (request.resource.data.role in ['student', 'tutor', 'user']);
+
+      // Prevent users from tampering with their role or email
+      allow update: if isAdmin() || (
+        signedIn() && isEmail(emailId) &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.email == resource.data.email
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
     // 1. Users Collection
     // ==========================================
     match /users/{uid} {

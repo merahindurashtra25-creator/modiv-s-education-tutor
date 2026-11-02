@@ -69,10 +69,17 @@ input:disabled{background:var(--mist);color:var(--muted)}
 .empty{text-align:center;padding:60px 0}
 @media(max-width:700px){.two{grid-template-columns:1fr}.top{padding:8px 14px}}
 </style>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
 <script src="modivs-country.js"></script>
 <script src="modivs-places.js"></script>
 <script src="modivs-subjects.js"></script>
 <script src="modivs-docs.js"></script>
+<script src="modivs-location.js"></script>
+<script src="modivs-auth-unique.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
 </head>
@@ -189,6 +196,7 @@ function render(){
   phoneField('whatsapp','WhatsApp number'+STAR,D.waSame?D.phone:D.whatsapp,'',D.waSame)+'<label class="check"><input type="checkbox" id="waSame"'+(D.waSame?' checked':'')+'><span>Same as my mobile number</span></label>'+
   '<div class="two"><div>'+phoneField('phone','Mobile number'+STAR,D.phone)+'</div><div>'+phoneField('altPhone','Alternate phone number'+STAR,D.altPhone)+'</div></div>'+
   cityField(D.city)+areaField(D.area,D.city)+
+  '<div id="tutorEditLocPicker"></div>'+
   '<div class="two"><div>'+sel('gender','Gender'+STAR,D.gender,['Female','Male','Other','Prefer not to say'])+'</div><div>'+field('dob','Date of birth'+STAR,D.dob,'date')+'</div></div>'+
   field('headline','Profile headline'+STAR,D.headline,'text','one line','e.g. Maths tutor for classes 9–12 with 8 years’ experience')+
   '<label for="bio">About you'+STAR+' <span class="hint">at least 80 characters</span></label><textarea id="bio">'+esc(D.bio)+'</textarea>'+
@@ -214,13 +222,33 @@ function render(){
   '<label for="idFile">ID document'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (each file up to 500 KB)</small><input id="idFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="idCur">'+(D.idName?'Current: '+esc(D.idName):'')+'</small></div>'+
   '<label for="certFile">Highest qualification certificate'+STAR+'</label><div class="up"><small>JPG, PNG or PDF (each file up to 500 KB)</small><input id="certFile" type="file" accept=".jpg,.jpeg,.png,.pdf"><small id="certCur">'+(D.certName?'Current: '+esc(D.certName):'')+'</small></div></section>';
   document.getElementById('savebar').classList.remove('hide');
+
+  if(window.ModivsLocation){
+    setTimeout(function(){
+      ModivsLocation.attachLocationPicker({
+        containerId: 'tutorEditLocPicker',
+        cityInputId: 'city',
+        areaInputId: 'area',
+        initialLocation: D.location || { city: D.city, area: D.area, fullAddress: (D.area ? D.area + ', ' : '') + D.city },
+        onLocationChange: function(loc){
+          D.location = loc;
+          if(loc.city) D.city = loc.city;
+          if(loc.area) D.area = loc.area;
+        }
+      });
+    }, 50);
+  }
 }
 
 /* ---------- read form into D ---------- */
 function readAll(){
   var w=document.getElementById('waSame');
   D.name=v('name');D.phone=getPhone('phone');D.altPhone=getPhone('altPhone');D.waSame=!!(w&&w.checked);D.whatsapp=D.waSame?D.phone:getPhone('whatsapp');
-  D.city=ModivsPlaces.canon('city',v('city'));D.area=ModivsPlaces.canon('area',v('area'),D.city);D.gender=v('gender');D.dob=v('dob');D.headline=v('headline');D.bio=v('bio');D.langs=group('langs');
+  D.city=ModivsPlaces.canon('city',v('city'));D.area=ModivsPlaces.canon('area',v('area'),D.city);
+  if(!D.location) D.location={};
+  D.location.city=D.city;D.location.area=D.area;
+  if(!D.location.fullAddress) D.location.fullAddress=(D.area?D.area+', ':'')+D.city;
+  D.gender=v('gender');D.dob=v('dob');D.headline=v('headline');D.bio=v('bio');D.langs=group('langs');
   D.quals.forEach(function(q,i){q.degree=v('q_degree'+i);q.inst=v('q_inst'+i);q.field=v('q_field'+i);q.year=v('q_year'+i)});
   D.totalYears=v('totalYears');
   D.exp.forEach(function(x,i){x.title=v('e_title'+i);x.org=v('e_org'+i);x.from=v('e_from'+i);x.to=v('e_to'+i);x.desc=v('e_desc'+i)});
@@ -295,7 +323,7 @@ function persist(){
   localStorage.setItem('modivs_auth_user',JSON.stringify({name:t.name,email:t.email,role:'Tutor'}));
 
   var qualDesc=(t.quals[0]&&t.quals[0].degree)?(t.quals[0].degree+', '+(t.quals[0].inst||'')+' ('+(t.quals[0].year||'')+')'):'Certificate on file';
-  var summary={name:t.name,headline:t.headline,city:t.city,area:t.area||'',travel:t.travel||'',phone:t.phone,altPhone:t.altPhone||'',whatsapp:t.whatsapp||'',photo:t.photo||'',email:t.email,
+  var summary={name:t.name,headline:t.headline,city:t.city,area:t.area||'',location:t.location||{},travel:t.travel||'',phone:t.phone,altPhone:t.altPhone||'',whatsapp:t.whatsapp||'',photo:t.photo||'',email:t.email,
     qual:qualDesc,years:t.totalYears||0,subs:t.subjects,levels:t.levels,fee:+t.fee||0,modes:t.modes,langs:t.langs,
     idType:t.idType,idFile:t.idName,cert:t.certName,sent:'Just now',status:status};
   if(status==='pending'){summary.rejection_reason='';summary.rejection_reasons=[];summary.rejection_note=''}
@@ -308,6 +336,24 @@ function persist(){
   if(i>=0){full.id=db[i].id||('t_user_'+Date.now());db[i]=Object.assign({},db[i],full)}
   else{full.id='t_user_'+Date.now();db.unshift(full)}
   localStorage.setItem('modivs_tutors_db',JSON.stringify(db));
+
+  if(window.EducationBFirebase && window.EducationBFirebase.db){
+    try{
+      var fdb = window.EducationBFirebase.db;
+      fdb.collection('tutors').doc(full.id).set(Object.assign({}, full, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }), { merge: true });
+      if(t.email){
+        var normEmail = String(t.email).trim().toLowerCase();
+        fdb.collection('accounts').doc(normEmail).set({
+          name: t.name,
+          phone: t.phone,
+          city: t.city,
+          area: t.area,
+          location: t.location || {},
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true });
+      }
+    }catch(e){ console.warn('Firestore tutor profile update failed', e); }
+  }
 
   // admin queue only if re-verification is needed
   if(status==='pending'){

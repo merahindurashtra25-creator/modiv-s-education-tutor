@@ -12,6 +12,8 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
 <script src="firebase-config.js" defer></script>
 <script src="firebase-sync.js" defer></script>
+<script src="modivs-location.js" defer></script>
+<script src="modivs-auth-unique.js" defer></script>
 <style>
 button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
 
@@ -318,6 +320,13 @@ if(tid){
 }
 
 f.innerHTML=
+ '<div style="margin-bottom:20px;text-align:center">'+
+ ' <button type="button" id="googleStudentSignup" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:10px;padding:12px 16px;font-weight:700;font-size:.95rem;border:1.5px solid var(--line);border-radius:10px;background:#fff;cursor:pointer;color:var(--ink);transition:all .15s ease">'+
+ '  <svg width="18" height="18" viewBox="0 0 18 18"><path fill="#4285F4" d="M17.64 9.2c0-.637-.057-1.251-.164-1.84H9v3.481h4.844c-.209 1.125-.843 2.078-1.796 2.717v2.258h2.908c1.702-1.567 2.684-3.874 2.684-6.616z"/><path fill="#34A853" d="M9 18c2.43 0 4.467-.806 5.956-2.184l-2.908-2.258c-.806.54-1.837.86-3.048.86-2.344 0-4.328-1.584-5.036-3.711H.957v2.332C2.438 15.983 5.482 18 9 18z"/><path fill="#FBBC05" d="M3.964 10.707c-.18-.54-.282-1.117-.282-1.707s.102-1.167.282-1.707V4.961H.957C.347 6.175 0 7.55 0 9s.347 2.825.957 4.039l3.007-2.332z"/><path fill="#EA4335" d="M9 3.58c1.321 0 2.508.454 3.44 1.345l2.582-2.58C13.463.891 11.426 0 9 0 5.482 0 2.438 2.017.957 4.961L3.964 7.293C4.672 5.166 6.656 3.58 9 3.58z"/></svg>'+
+ '  <span>Continue with Google</span>'+
+ ' </button>'+
+ ' <div style="display:flex;align-items:center;margin:16px 0 10px;gap:12px;color:var(--muted);font-size:.85rem"><div style="flex:1;height:1px;background:var(--line)"></div><span>or register with email</span><div style="flex:1;height:1px;background:var(--line)"></div></div>'+
+ '</div>'+
  '<div class="qs"><div class="lab">Which Category Of subject(s) do you need help with? <span class="hint">tick the categories, then choose subjects</span></div>'+ModivsSubjects.picker('subjects',[])+
  '<label for="otherSub">Any Other Subject <span class="hint">optional</span></label><input id="otherSub" type="text" placeholder="e.g. Sanskrit grammar"></div>'+
  '<div class="qs"><div class="two"><div>'+sel('cls','Select Learning Class / Academic Level',CLASSES)+'</div><div>'+sel('board','Which board or curriculum do you follow?',BOARDS,'Select your board or curriculum')+'</div></div></div>'+
@@ -330,9 +339,45 @@ f.innerHTML=
  '<div class="two"><div><label for="phone">Mobile / WhatsApp Number <span class="hint">kept private, never shown publicly</span></label><input id="phone" type="tel" autocomplete="tel"></div><div><label for="email">Email address</label><input id="email" type="email" autocomplete="email"></div></div>'+
  '<label for="pass">Create a password <span class="hint">at least 8 characters, to log in to your Student Dashboard</span></label><input id="pass" type="password" autocomplete="new-password">'+
  '<label for="needs">Tell us more about your learning needs</label><textarea id="needs"></textarea>'+
-  '<label for="city">Where are you located?</label>'+ModivsPlaces.fieldHTML({id:'city',kind:'city',val:''})+'</div>'+
- '<div class="msg" id="msg" role="alert"></div><button type="submit" class="btn">Let’s Book Demo Class</button>'+
+ '<label for="city">Where are you located?</label>'+ModivsPlaces.fieldHTML({id:'city',kind:'city',val:''})+
+ '<div id="stuLocPicker"></div></div>'+
+ '<div class="msg" id="msg" role="alert"></div><button type="submit" class="btn" id="subBtn">Let’s Book Demo Class</button>'+
  '<p class="sub" style="margin-top:16px;font-size:.9rem;text-align:center">Already have an account? <a href="modivs-education.html#login" style="color:var(--accent-d);font-weight:600">Log in</a> · <a href="modivs-education.html#tutor-signup" style="color:var(--accent-d);font-weight:600">Tutor sign up</a></p>';
+
+var stuLocPicker = null;
+if(window.ModivsLocation){
+ stuLocPicker = ModivsLocation.attachLocationPicker({
+  containerId: 'stuLocPicker',
+  cityInputId: 'city',
+  addressInputId: 'addr'
+ });
+}
+
+var gBtn = document.getElementById('googleStudentSignup');
+if(gBtn && window.ModivsAuthUnique){
+ gBtn.addEventListener('click', function(){
+  var msgEl = document.getElementById('msg');
+  msgEl.innerHTML = '';
+  ModivsAuthUnique.continueWithGoogle('student', {
+   button: gBtn,
+   noticeContainer: msgEl,
+   onSuccess: function(res){
+    if(res && res.user){
+     var nm = document.getElementById('name'); if(nm && !nm.value) nm.value = res.user.displayName || '';
+     var em = document.getElementById('email'); if(em && !em.value) em.value = res.user.email || '';
+     var pw = document.getElementById('pass'); if(pw) pw.value = 'google_authenticated';
+    }
+    toast('Google sign-in successful as Student');
+    if(!res.isNew){
+     setTimeout(function(){ window.location.href = 'modivs-student-dashboard.html'; }, 400);
+    }
+   },
+   onError: function(err){
+    if(msgEl && !msgEl.innerHTML) msgEl.textContent = err;
+   }
+  });
+ });
+}
 
 function syncAddr(){var m=group('modes'),need=rad('ttype')==='Home Tutor'||m.some(function(x){return x.indexOf('Online')<0});document.getElementById('addrBox').classList.toggle('hide',!need)}
 f.addEventListener('change',syncAddr);
@@ -345,6 +390,7 @@ f.addEventListener('submit',function(e){
  e.preventDefault();f.querySelectorAll('.bad').forEach(function(x){x.classList.remove('bad')});
  var subs=group('subjects'),other=v('otherSub');if(other)other.split(',').forEach(function(x){x=x.trim();if(x&&subs.indexOf(x)<0)subs.push(x)});
  var modes=group('modes'),email=v('email').toLowerCase(),pass=document.getElementById('pass').value,phone=v('phone'),city=ModivsPlaces.canon('city',v('city'));
+ var msgEl = document.getElementById('msg'); msgEl.innerHTML = '';
  if(!subs.length)return fail('otherSub','Choose at least one subject, or type one in “Any Other Subject”.');
  if(!v('cls'))return fail('cls','Select the class / academic level.');
  if(!v('board'))return fail('board','Select your board or curriculum.');
@@ -362,28 +408,78 @@ f.addEventListener('submit',function(e){
  if(!rad('avatar'))return fail('avatarBox','Choose a boy or girl avatar for your requirement.');
  if(!/^[+0-9\s-]{10,15}$/.test(phone))return fail('phone','Enter a valid mobile / WhatsApp number.');
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return fail('email','Enter a valid email address.');
-  if(pass.length<8&&document.getElementById('pass'))return fail('pass','Use at least 8 characters for your password.');
+ if(pass!=='google_authenticated'&&pass.length<8&&document.getElementById('pass'))return fail('pass','Use at least 8 characters for your password.');
  if(!city)return fail('city','Select where you are located.');
- var fee=v('fee').replace('Rs ','₹'),stamp=new Date().toISOString();
- var req={id:'stu_'+Date.now(),name:v('name'),parentName:v('name'),email:email,phone:phone,city:city,cls:v('cls'),board:v('board'),school:'',avatar:rad('avatar'),formats:formats,
-  subs:subs,level:'Average',goals:['Demo class'],notes:v('needs'),mode:modes,tutorType:rad('ttype'),tutorGender:rad('tgender'),
-  budget:fee,freq:v('days'),timeSlot:v('time'),freeDemo:rad('demo'),address:needAddr?v('addr'):'',tutorId:tid,
-  status:'pending',sent:'Just now',registered_at:stamp,by:'Student / Parent'};
- try{
-  var db=jget('modivs_students_db',[]),i=email?db.findIndex(function(s){return s.email===email}):-1;
-  if(i>=0)db[i]=req;else db.unshift(req);localStorage.setItem('modivs_students_db',JSON.stringify(db));
-  var leads=jget('modivs_active_leads',[]),lead=Object.assign({},req,{status:'active'});leads.unshift(lead);localStorage.setItem('modivs_active_leads',JSON.stringify(leads));
-  var dr=jget('modivs_demo_requests',[]);dr.unshift({id:req.id,tutorId:tid,student:req.name,phone:phone,email:email,subs:subs,city:city,requested_at:stamp});localStorage.setItem('modivs_demo_requests',JSON.stringify(dr));
-  {
-   var us=jget('modivs_users',[]);if(!us.some(function(u){return u.email===email}))us.push({name:req.name,email:email,phone:phone,city:city,role:'Student / Parent',created_at:stamp});localStorage.setItem('modivs_users',JSON.stringify(us));
-   localStorage.setItem('modivs_auth_user',JSON.stringify({name:req.name,email:email,role:'Student / Parent'}));localStorage.setItem('modivs_student_req',JSON.stringify(req));
+
+ var locDetails = (stuLocPicker && stuLocPicker.getLocation()) || (window.ModivsLocation && ModivsLocation.formatLocationForSave({}, city, '')) || { city: city, country: 'India' };
+ if(!locDetails.city) locDetails.city = city;
+ if(v('addr') && !locDetails.fullAddress) locDetails.fullAddress = v('addr');
+
+ var sBtn = document.getElementById('subBtn');
+ if(sBtn) sBtn.disabled = true;
+
+ function proceedRegistration(){
+  var fee=v('fee').replace('Rs ','₹'),stamp=new Date().toISOString();
+  var req={id:'stu_'+Date.now(),name:v('name'),parentName:v('name'),email:email,phone:phone,city:city,cls:v('cls'),board:v('board'),school:'',avatar:rad('avatar'),formats:formats,
+   subs:subs,level:'Average',goals:['Demo class'],notes:v('needs'),mode:modes,tutorType:rad('ttype'),tutorGender:rad('tgender'),
+   budget:fee,freq:v('days'),timeSlot:v('time'),freeDemo:rad('demo'),address:needAddr?v('addr'):'',tutorId:tid,
+   location:locDetails,
+   status:'pending',sent:'Just now',registered_at:stamp,by:'Student / Parent'};
+
+  if(window.ModivsAuthUnique){
+   ModivsAuthUnique.registerAccountAtomic({
+    email: email,
+    role: 'student',
+    name: req.name,
+    phone: phone,
+    location: locDetails,
+    provider: pass === 'google_authenticated' ? 'google' : 'password'
+   }).catch(function(e){ console.warn(e); });
   }
-  if(window.EducationBFirebase){var A=window.EducationBFirebase.auth,F=window.EducationBFirebase.db;
-   if(A&&email&&pass&&!A.currentUser)A.createUserWithEmailAndPassword(email,pass).then(function(r){if(r&&r.user)r.user.updateProfile({displayName:req.name})}).catch(function(){});
-   if(F){F.collection('students').doc(req.id).set(req,{merge:true}).catch(function(){});F.collection('leads').doc(req.id).set(lead,{merge:true}).catch(function(){});F.collection('demoRequests').doc(req.id).set({tutorId:tid,studentId:req.id,name:req.name,phone:phone,email:email,subs:subs,city:city,requested_at:stamp}).catch(function(){})}}
- }catch(err){}
- f.innerHTML='<div class="ok"><h1>Demo class requested!</h1><p class="sub">Thanks, '+esc(req.name.split(' ')[0])+'. Our team will call or WhatsApp you on '+esc(phone)+' to arrange your demo class'+(tid?' with '+esc(tutor&&tutor.name?tutor.name:'tutor #'+tid):'')+'.</p><div class="nav" style="justify-content:center;gap:12px">'+'<a href="modivs-student-dashboard.html" class="btn" style="text-decoration:none;width:auto;padding:12px 24px;margin:0">Open Student Dashboard &rarr;</a>'+'<a href="modivs-tutors.html" class="btn ghost" style="text-decoration:none;width:auto;padding:12px 24px;margin:0">Browse tutors</a></div></div>';
- window.scrollTo(0,0);
+
+  try{
+   var db=jget('modivs_students_db',[]),i=email?db.findIndex(function(s){return s.email===email}):-1;
+   if(i>=0)db[i]=req;else db.unshift(req);localStorage.setItem('modivs_students_db',JSON.stringify(db));
+   var leads=jget('modivs_active_leads',[]),lead=Object.assign({},req,{status:'active'});leads.unshift(lead);localStorage.setItem('modivs_active_leads',JSON.stringify(leads));
+   var dr=jget('modivs_demo_requests',[]);dr.unshift({id:req.id,tutorId:tid,student:req.name,phone:phone,email:email,subs:subs,city:city,requested_at:stamp});localStorage.setItem('modivs_demo_requests',JSON.stringify(dr));
+   {
+    var us=jget('modivs_users',[]);if(!us.some(function(u){return u.email===email}))us.push({name:req.name,email:email,phone:phone,city:city,role:'Student / Parent',location:locDetails,created_at:stamp});localStorage.setItem('modivs_users',JSON.stringify(us));
+    localStorage.setItem('modivs_auth_user',JSON.stringify({name:req.name,email:email,role:'Student / Parent'}));localStorage.setItem('modivs_student_req',JSON.stringify(req));
+   }
+   if(window.EducationBFirebase){var A=window.EducationBFirebase.auth,F=window.EducationBFirebase.db;
+    if(A&&email&&pass&&pass!=='google_authenticated'&&!A.currentUser)A.createUserWithEmailAndPassword(email,pass).then(function(r){if(r&&r.user)r.user.updateProfile({displayName:req.name})}).catch(function(){});
+    if(F){
+      F.collection('students').doc(req.id).set(req,{merge:true}).catch(function(){});
+      F.collection('leads').doc(req.id).set(lead,{merge:true}).catch(function(){});
+      F.collection('demoRequests').doc(req.id).set({tutorId:tid,studentId:req.id,name:req.name,phone:phone,email:email,subs:subs,city:city,requested_at:stamp}).catch(function(){});
+      F.collection('accounts').doc(email).set({
+        email: email,
+        role: 'student',
+        roleName: 'Student / Parent',
+        name: req.name,
+        phone: phone,
+        location: locDetails,
+        updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true}).catch(function(){});
+    }
+   }
+  }catch(err){}
+  f.innerHTML='<div class="ok"><h1>Demo class requested!</h1><p class="sub">Thanks, '+esc(req.name.split(' ')[0])+'. Our team will call or WhatsApp you on '+esc(phone)+' to arrange your demo class'+(tid?' with '+esc(tutor&&tutor.name?tutor.name:'tutor #'+tid):'')+'.</p><div class="nav" style="justify-content:center;gap:12px">'+'<a href="modivs-student-dashboard.html" class="btn" style="text-decoration:none;width:auto;padding:12px 24px;margin:0">Open Student Dashboard &rarr;</a>'+'<a href="modivs-tutors.html" class="btn ghost" style="text-decoration:none;width:auto;padding:12px 24px;margin:0">Browse tutors</a></div></div>';
+  window.scrollTo(0,0);
+ }
+
+ if(window.ModivsAuthUnique){
+  ModivsAuthUnique.checkEmailExists(email).then(function(checkRes){
+   if(checkRes && checkRes.exists){
+    if(sBtn) sBtn.disabled = false;
+    ModivsAuthUnique.renderDuplicateNotice('msg', checkRes.role, 'student');
+    return;
+   }
+   proceedRegistration();
+  }).catch(function(){ proceedRegistration(); });
+ } else {
+  proceedRegistration();
+ }
 });
 })();
 </script>

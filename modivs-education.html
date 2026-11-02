@@ -16,6 +16,8 @@
 <script src="modivs-places.js"></script>
 <script src="modivs-subjects.js"></script>
 <script src="modivs-docs.js"></script>
+<script src="modivs-location.js"></script>
+<script src="modivs-auth-unique.js"></script>
 <style>
 button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
 
@@ -475,17 +477,34 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       } else if(matchStudent || (foundUser && foundUser.role === 'Student / Parent')){
         resolvedRole = 'Student / Parent';
         displayName = (matchStudent && (matchStudent.name || matchStudent.parentName)) || (foundUser && foundUser.name) || emailVal.split('@')[0];
+      } else if(foundUser && (foundUser.role === 'General User' || foundUser.roleKey === 'user')){
+        resolvedRole = 'General User';
+        displayName = (foundUser && foundUser.name) || emailVal.split('@')[0];
       } else {
         resolvedRole = (loginMode === 'tutor' ? 'Tutor' : 'Student / Parent');
         displayName = (foundUser && foundUser.name) || emailVal.split('@')[0];
       }
 
-      var authObj = { name: displayName, email: emailVal, uid: firebaseUid, role: resolvedRole };
-      localStorage.setItem('modivs_auth_user', JSON.stringify(authObj));
-      toast('Welcome back, ' + displayName.split(' ')[0] + '! Opening ' + (resolvedRole === 'Tutor' ? 'Tutor' : 'Student') + ' Dashboard...');
-      setTimeout(function(){
-        window.location.href = resolvedRole === 'Tutor' ? 'modivs-tutor-dashboard.html' : 'modivs-student-dashboard.html';
-      }, 500);
+      function finishSession(role, name){
+        var authObj = { name: name, email: emailVal, uid: firebaseUid, role: role };
+        localStorage.setItem('modivs_auth_user', JSON.stringify(authObj));
+        toast('Welcome back, ' + name.split(' ')[0] + '!');
+        var dest = (role === 'Tutor' ? 'modivs-tutor-dashboard.html' : (role === 'Student / Parent' ? 'modivs-student-dashboard.html' : (role === 'Admin' ? 'modivs-admin.html' : 'modivs-home.html')));
+        setTimeout(function(){ window.location.href = dest; }, 500);
+      }
+
+      if(window.ModivsAuth && (!matchTutor && !matchStudent && !foundUser)){
+        ModivsAuth.checkEmailRole(emailVal).then(function(acc){
+          if(acc.exists){
+            var r = acc.role === 'tutor' ? 'Tutor' : (acc.role === 'student' ? 'Student / Parent' : (acc.role === 'admin' ? 'Admin' : 'General User'));
+            finishSession(r, acc.name || emailVal.split('@')[0]);
+          } else {
+            finishSession(resolvedRole, displayName);
+          }
+        }).catch(function(){ finishSession(resolvedRole, displayName); });
+      } else {
+        finishSession(resolvedRole, displayName);
+      }
     }
 
     if(window.EducationBFirebase && !window.EducationBFirebase.auth.currentUser && !window.__firebaseLoginInProgress){
@@ -512,7 +531,33 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   // ===== CONTINUE WITH GOOGLE (verified email only) =====
   function googleAuth(mode, msgEl, btn){
     var fb = window.EducationBFirebase;
-    msgEl.textContent = '';
+    msgEl.innerHTML = '';
+    if(window.ModivsAuthUnique){
+      ModivsAuthUnique.continueWithGoogle(mode, {
+        isLogin: true,
+        button: btn,
+        noticeContainer: msgEl,
+        onSuccess: function(res){
+          var u = res.user || {};
+          var mail = String(u.email || '').toLowerCase();
+          var name = u.displayName || mail.split('@')[0];
+          if(isAdminEmail(mail)){
+            handleAdminLoginSuccess(mail, name, u.uid);
+            return;
+          }
+          var actualRole = res.role === 'tutor' ? 'Tutor' : (res.role === 'student' ? 'Student / Parent' : (res.role === 'admin' ? 'Admin' : 'General User'));
+          localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: actualRole, roleKey: res.role }));
+          toast((res.isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
+          var dest = actualRole === 'Tutor' ? (res.isNew ? 'modivs-education.html#tutor-signup' : 'modivs-tutor-dashboard.html')
+                                            : (actualRole === 'Student / Parent' ? (res.isNew ? 'modivs-student-registration.html' : 'modivs-student-dashboard.html') : 'modivs-home.html');
+          setTimeout(function(){ window.location.href = dest; }, 500);
+        },
+        onError: function(err){
+          if(msgEl && !msgEl.innerHTML) msgEl.textContent = err;
+        }
+      });
+      return;
+    }
     if(!fb || !fb.auth || !window.firebase || !firebase.auth){
       msgEl.textContent = 'Google sign-in is not available right now. Check your connection and try again.';
       return;
@@ -627,7 +672,36 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     });
   }
   if($('googleLogin')) $('googleLogin').addEventListener('click', function(){ googleAuth(loginMode === 'tutor' ? 'tutor' : 'student', $('lMsg'), this); });
-  if($('googleSignup')) $('googleSignup').addEventListener('click', function(){ googleAuth('tutor', $('sMsg'), this); });
+  if($('googleSignup')) $('googleSignup').addEventListener('click', function(){
+    var msg = $('sMsg');
+    msg.innerHTML = '';
+    if(window.ModivsAuthUnique){
+      ModivsAuthUnique.continueWithGoogle('tutor', {
+        isLogin: false,
+        button: this,
+        noticeContainer: msg,
+        onSuccess: function(res){
+          var u = res.user || {};
+          var mail = String(u.email || '').toLowerCase();
+          var name = u.displayName || mail.split('@')[0];
+          W.name = name;
+          W.email = mail;
+          localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: 'Tutor', roleKey: 'tutor' }));
+          toast((res.isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
+          if(!res.isNew){
+            setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 500);
+          } else {
+            renderStep();
+          }
+        },
+        onError: function(err){
+          if(msg && !msg.innerHTML) msg.textContent = err;
+        }
+      });
+    } else {
+      googleAuth('tutor', $('sMsg'), this);
+    }
+  });
 
   // ===== TUTOR SIGN UP: one 5-step wizard (account + full tutor profile + documents) =====
   var LANGS = ['English','Hindi','Punjabi','Urdu','Other'];
@@ -728,6 +802,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         phoneField('phone','Mobile Number'+STAR, W.phone) + phoneField('altPhone','Alternate phone number'+STAR, W.altPhone) +
         '<div class="tsu-two"><div><label for="city">City'+STAR+'</label>' + ModivsPlaces.fieldHTML({ id:'city', kind:'city', val:W.city, areaId:'area' }) + '</div>' +
         '<div><label for="area">Area / locality'+STAR+'</label>' + ModivsPlaces.fieldHTML({ id:'area', kind:'area', val:W.area, city:W.city }) + '</div></div>' +
+        '<div id="tutorLocPicker"></div>' +
         '<div class="tsu-two"><div>'+tsel('gender','Gender'+STAR,['Female','Male','Other','Prefer not to say'],W.gender)+'</div><div>'+tfield('dob','Date of birth'+STAR,'date',W.dob)+'</div></div>';
     }
     if(n === 2){
@@ -784,6 +859,21 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       '<button class="tsu-go" type="submit" id="tsuNext">'+(last ? 'Submit &amp; Create account' : 'Save &amp; Continue')+' <span aria-hidden="true">→</span></button>' +
       (W.step > 1 ? '<button class="tsu-back" type="button" data-act="back">← Back</button>' : '');
     $('tsuGoogle').style.display = (W.step === 1 && !existingAcct()) ? '' : 'none';
+    if(W.step === 1 && window.ModivsLocation){
+      setTimeout(function(){
+        ModivsLocation.attachLocationPicker({
+          containerId: 'tutorLocPicker',
+          cityInputId: 'city',
+          areaInputId: 'area',
+          initialLocation: W.location,
+          onLocationChange: function(loc){
+            W.location = loc;
+            if(loc.city) W.city = loc.city;
+            if(loc.area) W.area = loc.area;
+          }
+        });
+      }, 50);
+    }
     var m = $('signup'); if(m && !m.classList.contains('hide')) { try{ $('tsuSteps').scrollIntoView({block:'nearest'}); }catch(e){} }
   }
   function readSubjects(){
@@ -946,6 +1036,24 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     sf.querySelectorAll('.bad').forEach(function(x){ x.classList.remove('bad'); });
     readStep();
     if(!validStep()) return;
+    if(W.step === 1 && !existingAcct()){
+      var btn = $('tsuNext');
+      btn.disabled = true;
+      if(window.ModivsAuthUnique){
+        ModivsAuthUnique.checkEmailExists(W.email).then(function(res){
+          btn.disabled = false;
+          if(res && res.exists){
+            ModivsAuthUnique.renderDuplicateNotice($('sMsg'), res.role, 'tutor');
+            return;
+          }
+          W.step++; renderStep(); window.scrollTo(0, 0);
+        }).catch(function(){
+          btn.disabled = false;
+          W.step++; renderStep(); window.scrollTo(0, 0);
+        });
+        return;
+      }
+    }
     if(W.step < 5){ W.step++; renderStep(); window.scrollTo(0, 0); return; }
     createTutorAccount();
   });
@@ -965,14 +1073,40 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     function persist(uid){
       var name = W.name, city = W.city, nowIso = new Date().toISOString();
       var years = +W.totalYears || 0;
-      var newUser = { name: name, email: mail, uid: uid || '', role: 'Tutor' };
+      var locData = W.location || (window.ModivsLocation && ModivsLocation.formatLocationForSave({}, city, W.area)) || { city: city, area: W.area, country: 'India' };
+      if(!locData.city) locData.city = city;
+      if(!locData.area) locData.area = W.area;
+
+      var newUser = { name: name, email: mail, uid: uid || '', role: 'Tutor', roleKey: 'tutor', location: locData };
       if(!users.some(function(u){ return String(u.email).toLowerCase() === mail; })) users.push(newUser);
       try{ localStorage.setItem('modivs_users', JSON.stringify(users)); }catch(err){}
       var fb = window.EducationBFirebase;
       if(fb && fb.db && window.firebase){
-        fb.db.collection('users').doc(uid || mail.replace(/[^a-z0-9]/gi, '_')).set({ name: name, email: mail, role: 'Tutor', uid: uid || '', createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(){});
+        fb.db.collection('users').doc(uid || mail.replace(/[^a-z0-9]/gi, '_')).set({ name: name, email: mail, role: 'Tutor', roleKey: 'tutor', location: locData, uid: uid || '', createdAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function(){});
+        fb.db.collection('accounts').doc(mail).set({
+          email: mail,
+          role: 'tutor',
+          roleName: 'Tutor',
+          name: name,
+          phone: W.phone,
+          location: locData,
+          city: city,
+          area: W.area || '',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(function(){});
       }
-      try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: uid || '', role: 'Tutor' })); }catch(err){}
+      if(window.ModivsAuthUnique){
+        ModivsAuthUnique.registerAccountAtomic({
+          email: mail,
+          role: 'tutor',
+          name: name,
+          phone: W.phone,
+          uid: uid,
+          location: locData,
+          provider: W.pass ? 'password' : 'google'
+        }).catch(function(e){ console.warn(e); });
+      }
+      try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: uid || '', role: 'Tutor', roleKey: 'tutor' })); }catch(err){}
 
       // verification documents: stored apart from the public tutor record (admin + this tutor only)
       var docsSaved = true;
@@ -983,7 +1117,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       if(!docsSaved) toast('Documents could not be stored in this browser. Free some space and re-upload them from Edit Profile.');
 
       var tutorData = { email: mail, pass: '', role: 'Tutor', name: name, phone: W.phone, altPhone: W.altPhone, whatsapp: W.waSame ? W.phone : W.whatsapp, waSame: W.waSame,
-        photo: W.photo, photoBlur: W.photoBlur, city: city, area: W.area, gender: W.gender, dob: W.dob, headline: W.headline, bio: W.bio, langs: W.langs,
+        photo: W.photo, photoBlur: W.photoBlur, city: city, area: W.area, location: locData, gender: W.gender, dob: W.dob, headline: W.headline, bio: W.bio, langs: W.langs,
         quals: W.quals, exp: W.exp.filter(function(x){ return x.title || x.org || x.desc; }), totalYears: W.totalYears,
         subjects: W.subjects, levels: W.levels, boards: W.boards, modes: W.modes, formats: W.formats, groupFee: W.groupFee, maxBatch: W.maxBatch,
         travel: W.travel, fee: W.fee, trial: W.trial, avail: W.avail, notice: W.notice,
@@ -997,7 +1131,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         // admin approval queue + canonical tutors database
         var q0 = W.quals[0] || {};
         var qualDesc = q0.degree ? (q0.degree + ', ' + (q0.inst || '') + ' (' + (q0.year || '') + ')') : 'Certificate on file';
-        var entry = { id: 't_user_' + Date.now(), name: name, headline: W.headline, city: city, area: W.area || '', travel: W.travel || '', phone: W.phone, altPhone: W.altPhone || '',
+        var entry = { id: 't_user_' + Date.now(), name: name, headline: W.headline, city: city, area: W.area || '', location: locData, travel: W.travel || '', phone: W.phone, altPhone: W.altPhone || '',
           whatsapp: tutorData.whatsapp || '', photo: W.photo || '', bio: W.bio || '', boards: W.boards || [], formats: W.formats || [], groupFee: W.groupFee || '', trial: W.trial || '',
           rejection_reason: '', rejection_reasons: [], rejection_note: '', email: mail, qual: qualDesc, years: years,
           subs: W.subjects.length ? W.subjects : ['General'], levels: W.levels.length ? W.levels : ['Secondary'], fee: +W.fee || 500, modes: W.modes.length ? W.modes : ['Online'],

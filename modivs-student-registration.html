@@ -6,11 +6,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>Modiv’s Education – Student / Parent registration</title>
 <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js" defer></script>
-<script src="firebase-sync.js" defer></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
+<script src="modivs-location.js"></script>
+<script src="modivs-auth-unique.js"></script>
 <style>
 button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
 
@@ -208,8 +210,11 @@ function avatarPicker(){var p=D.role==='Parent';
 var views=[
 function(){return '<h1>Student / Parent sign up</h1><p class="sub">Create your account as a parent or as a student, then tell us what you need.</p>'+
  '<div class="lab">I am a</div><div class="roles">'+['Parent','Student'].map(function(r){return '<label class="chip"><input type="radio" name="role" value="'+r+'"'+(D.role===r?' checked':'')+'><span>'+r+'<small>'+(r==='Parent'?'Registering for my child':'Registering for myself')+'</small></span></label>'}).join('')+'</div>'+
- field('regName','Your full name',D.regName)+'<div class="two"><div>'+field('phone','Mobile number',D.phone,'tel')+'</div><div>'+'<label for="city">City</label>'+ModivsPlaces.fieldHTML({id:'city',kind:'city',val:D.city})+'</div></div>'+
- field('email','Email',D.email,'email')+(D.google?'':field('pass','Password',D.pass,'password','at least 8 characters')+field('pass2','Confirm password','','password'))+MSG+nav()+'<p class="sub" style="margin-top:16px;font-size:0.9rem;">Already have an account? <a href="modivs-education.html#login" style="color:var(--accent-d);font-weight:600;">Log in</a> · <a href="modivs-education.html#tutor-signup" style="color:var(--accent-d);font-weight:600;">Tutor sign up</a></p>'},
+ field('regName','Your full name',D.regName)+'<div class="two"><div>'+field('phone','Mobile number',D.phone,'tel')+'</div><div>'+field('email','Email',D.email,'email')+'</div></div>'+
+ '<div id="studentLocPicker0" style="margin:10px 0;"></div><input type="hidden" id="city" value="'+esc(D.city)+'">'+
+ (D.google?'':field('pass','Password',D.pass,'password','at least 8 characters')+field('pass2','Confirm password','','password'))+
+ '<div style="margin:14px 0 6px;"><button type="button" id="googleStudentBtn" class="btn ghost" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-weight:600;"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continue with Google</button></div>'+
+ MSG+nav()+'<p class="sub" style="margin-top:16px;font-size:0.9rem;">Already have an account? <a href="modivs-education.html#login" style="color:var(--accent-d);font-weight:600;">Log in</a> · <a href="modivs-education.html#tutor-signup" style="color:var(--accent-d);font-weight:600;">Tutor sign up</a></p>'},
 function(){var p=D.role==='Parent';return '<h1>'+(p?'Your child’s details':'About you')+'</h1><p class="sub">This helps us match the right tutor.</p>'+
  field('stuName',p?'Child’s name':'Your name',D.stuName)+'<div class="two"><div>'+field('stuAge','Age',D.stuAge,'number')+'</div><div>'+sel('cls','Class / level',D.cls,CLASSES)+'</div></div>'+
  '<div class="two"><div>'+sel('board','Board',D.board,BOARDS)+'</div><div>'+field('school','School or college',D.school,'text','optional')+'</div></div>'+
@@ -223,7 +228,7 @@ function(){return '<h1>'+(EDIT?'Update your requirements':'What do you need help
 function(){return '<h1>Tutor preferences</h1><p class="sub">Tell us how and when you want classes.</p>'+
  '<div class="lab">Teaching mode</div>'+chips('modes',['Online','Offline (Tutor comes to my home)','Offline (At tutor’s place)'],D.modes)+
  '<div class="lab">Tuition format</div>'+chips('formats',['1-on-1 Individual tuition','Group tuition (Small batch)'],D.formats)+
- field('area','Your area or locality',D.area,'text','for offline or in-person classes')+
+ '<div id="studentLocPicker3" style="margin:10px 0;"></div><input type="hidden" id="area" value="'+esc(D.area)+'">'+
  '<div class="two"><div>'+field('budgetMin','Budget from (₹ per hour)',D.budgetMin,'number')+'</div><div>'+field('budgetMax','Budget up to (₹ per hour)',D.budgetMax,'number')+'</div></div>'+
  '<div class="two"><div>'+sel('freq','Classes per week',D.freq,['1','2','3','4','5','6 or more'])+'</div><div>'+field('start','Preferred start date',D.start,'date')+'</div></div>'+
  '<div class="lab">Preferred days</div>'+chips('days',DAYS,D.days)+'<div class="lab">Preferred time</div>'+chips('times',TIMES,D.times)+
@@ -247,13 +252,16 @@ function render(){
 
       // Save student user account
       var users = JSON.parse(localStorage.getItem('modivs_users') || '[]');
+      var locData = D.location || { city: D.city, area: D.area, fullAddress: (D.area ? D.area + ', ' : '') + D.city };
       if(!users.some(function(u){ return u.email === D.email.toLowerCase(); })){
         users.push({
           name: D.regName,
           email: D.email.toLowerCase(),
           phone: D.phone,
           city: D.city,
+          location: locData,
           role: 'Student / Parent',
+          roleKey: 'student',
           created_at: new Date().toISOString()
         });
         localStorage.setItem('modivs_users', JSON.stringify(users));
@@ -267,6 +275,8 @@ function render(){
         email: D.email.toLowerCase(),
         phone: D.phone,
         city: D.city,
+        area: D.area || '',
+        location: locData,
         cls: D.cls,
         board: D.board,
         school: D.school || '',
@@ -293,7 +303,7 @@ function render(){
       localStorage.setItem('modivs_student_req', JSON.stringify(studentReq));
       var keep=JSON.parse(JSON.stringify(D));delete keep.pass;localStorage.setItem('modivs_student_form', JSON.stringify(keep));
       // keep the saved account details in sync
-      var us2=JSON.parse(localStorage.getItem('modivs_users') || '[]');us2.forEach(function(u){if(u.email===D.email.toLowerCase()){u.name=D.regName;u.phone=D.phone;u.city=D.city}});localStorage.setItem('modivs_users',JSON.stringify(us2));
+      var us2=JSON.parse(localStorage.getItem('modivs_users') || '[]');us2.forEach(function(u){if(u.email===D.email.toLowerCase()){u.name=D.regName;u.phone=D.phone;u.city=D.city;u.location=locData}});localStorage.setItem('modivs_users',JSON.stringify(us2));
 
       // Publish the requirement to the Active Leads page
       var leadsDb = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]');
@@ -301,6 +311,17 @@ function render(){
       var lIdx = leadsDb.findIndex(function(l){ return l.email === lead.email; });
       if(lIdx >= 0){ leadsDb[lIdx] = lead; } else { leadsDb.unshift(lead); }
       localStorage.setItem('modivs_active_leads', JSON.stringify(leadsDb));
+
+      // Global Unique Email registration in centralized accounts collection
+      if(window.ModivsAuth && ModivsAuth.registerAccount){
+        ModivsAuth.registerAccount({
+          email: D.email,
+          role: 'student',
+          name: D.regName,
+          phone: D.phone,
+          location: locData
+        }).catch(function(e){ console.warn('registerAccount sync error', e); });
+      }
 
       // Sync to Firebase if connected
       if(window.EducationBFirebase){
@@ -318,6 +339,7 @@ function render(){
             email: D.email.toLowerCase(),
             phone: D.phone,
             city: D.city,
+            location: locData,
             role: 'Student / Parent',
             updatedAt: firebase.firestore.FieldValue.serverTimestamp()
           }, { merge: true }).catch(function(){});
@@ -328,6 +350,77 @@ function render(){
     return;
   }
  f.innerHTML=views[step]();window.scrollTo(0,0);
+ if(step===0){
+   setTimeout(function(){
+     var box = document.getElementById('studentLocPicker0');
+     if(box && window.ModivsLocation){
+       ModivsLocation.attachLocationPicker(box, {
+         idPrefix: 'stu_loc_',
+         label: 'Your Location / City',
+         placeholder: 'Search city, locality, or use current location',
+         initialLocation: D.location || (D.city ? { city: D.city, area: D.area, fullAddress: (D.area ? D.area + ', ' : '') + D.city } : null),
+         onLocationChange: function(loc){
+           D.location = loc;
+           if(loc.city) D.city = loc.city;
+           if(loc.area) D.area = loc.area;
+           var cInput = document.getElementById('city');
+           if(cInput) cInput.value = D.city;
+         }
+       });
+     }
+     var gBtn = document.getElementById('googleStudentBtn');
+     if(gBtn && window.ModivsAuth){
+       gBtn.addEventListener('click', function(){
+         gBtn.disabled = true;
+         gBtn.textContent = 'Connecting with Google…';
+         ModivsAuth.continueWithGoogle('student').then(function(res){
+           if(res.isExisting){
+             if(res.role === 'student'){
+               location.href = 'modivs-student-dashboard.html';
+             } else {
+               gBtn.disabled = false;
+               gBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continue with Google';
+               ModivsAuth.renderDuplicateNotice('msg', res, 'student');
+             }
+           } else {
+             D.email = res.email;
+             D.regName = (res.user && res.user.displayName) || D.regName || res.email.split('@')[0];
+             D.google = true;
+             step = 1;
+             render();
+           }
+         }).catch(function(err){
+           gBtn.disabled = false;
+           gBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continue with Google';
+           if(err && err.isExisting){
+             ModivsAuth.renderDuplicateNotice('msg', err, 'student');
+           } else if(err && err.message){
+             say(err.message);
+           }
+         });
+       });
+     }
+   }, 50);
+ } else if(step===3){
+   setTimeout(function(){
+     var box = document.getElementById('studentLocPicker3');
+     if(box && window.ModivsLocation){
+       ModivsLocation.attachLocationPicker(box, {
+         idPrefix: 'stu_pref_loc_',
+         label: 'Locality / Preferred Area',
+         placeholder: 'Search area or use current location',
+         initialLocation: D.location || (D.area ? { area: D.area, city: D.city, fullAddress: D.area + (D.city ? ', ' + D.city : '') } : null),
+         onLocationChange: function(loc){
+           D.location = Object.assign({}, D.location, loc);
+           if(loc.area) D.area = loc.area;
+           if(loc.city) D.city = loc.city;
+           var aInput = document.getElementById('area');
+           if(aInput) aInput.value = D.area || '';
+         }
+       });
+     }
+   }, 50);
+ }
 }
 function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
 function group(n){return Array.prototype.map.call(f.querySelectorAll('input[data-group="'+n+'"]:checked'),function(x){return x.value})}
@@ -335,10 +428,23 @@ function flag(id,m){var e=document.getElementById(id);if(e){e.classList.add('bad
 function say(m){document.getElementById('msg').textContent=m;return false}
 
 function read(){ // store current inputs
- if(step===0){var r=f.querySelector('input[name=role]:checked');if(r)D.role=r.value;D.regName=v('regName');D.phone=v('phone');D.city=ModivsPlaces.canon('city',v('city'));D.email=v('email');if(!D.google)D.pass=v('pass')}
+ if(step===0){
+   var r=f.querySelector('input[name=role]:checked');if(r)D.role=r.value;
+   D.regName=v('regName');D.phone=v('phone');
+   D.city=v('city')||ModivsPlaces.canon('city',v('city'));
+   D.email=v('email');
+   if(!D.google)D.pass=v('pass');
+   if(!D.location) D.location={};
+   if(D.city) D.location.city=D.city;
+ }
  if(step===1){var av=f.querySelector('input[name=avatar]:checked');D.avatar=av?av.value:D.avatar;D.stuName=v('stuName');D.stuAge=v('stuAge');D.cls=v('cls');D.board=v('board');D.school=v('school')}
  if(step===2){D.subjects=group('subjects');D.level=v('level');D.goals=group('goals');D.weak=v('weak');D.notes=v('notes')}
- if(step===3){D.modes=group('modes');D.formats=group('formats');D.area=v('area');D.budgetMin=v('budgetMin');D.budgetMax=v('budgetMax');D.freq=v('freq');D.start=v('start');D.days=group('days');D.times=group('times');D.tGender=v('tGender');D.demo=v('demo');D.langs=group('langs')}
+ if(step===3){
+   D.modes=group('modes');D.formats=group('formats');D.area=v('area');
+   if(!D.location) D.location={};
+   if(D.area) D.location.area=D.area;
+   D.budgetMin=v('budgetMin');D.budgetMax=v('budgetMax');D.freq=v('freq');D.start=v('start');D.days=group('days');D.times=group('times');D.tGender=v('tGender');D.demo=v('demo');D.langs=group('langs');
+ }
  if(step===4){D.agree=document.getElementById('agree').checked}
 }
 function check(){
@@ -373,9 +479,32 @@ function check(){
  if(step===4&&!D.agree)return say('Tick the confirmation to submit.');
  return true;
 }
-f.addEventListener('submit',function(e){e.preventDefault();read();if(!check())return;
- if(step===4){submitted=true;render();return}
- step++;render();toast('Progress saved')});
+f.addEventListener('submit',function(e){
+  e.preventDefault();
+  read();
+  if(!check()) return;
+  if(step===0 && !EDIT){
+    var submitBtn = f.querySelector('button[type="submit"]');
+    if(submitBtn) submitBtn.disabled = true;
+    if(window.ModivsAuth){
+      ModivsAuth.checkEmailRole(D.email).then(function(res){
+        if(submitBtn) submitBtn.disabled = false;
+        if(res.exists && res.role !== 'student'){
+          ModivsAuth.renderDuplicateNotice('msg', res, 'student');
+          flag('email','');
+          return;
+        }
+        step++;render();toast('Progress saved');
+      }).catch(function(){
+        if(submitBtn) submitBtn.disabled = false;
+        step++;render();toast('Progress saved');
+      });
+      return;
+    }
+  }
+  if(step===4){submitted=true;render();return}
+  step++;render();toast('Progress saved')
+});
 function saveAll(){ // edit mode: validate steps 1-3, then save without walking through the review step
  read();var keep=step;
  for(var st=1;st<=3;st++){step=st;render();if(!check())return}

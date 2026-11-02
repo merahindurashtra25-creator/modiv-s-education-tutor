@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>User Sign Up · Modiv’s Education</title>
+<meta name="description" content="Create a general user account on Modiv’s Education.">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
+<script src="modivs-location.js"></script>
+<script src="modivs-auth-unique.js"></script>
+<style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+:root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--tint:#e8f5f1;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:linear-gradient(135deg,#f7faf9 0%,#eaf3f1 55%,#fdf6e7 100%);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+.wrap{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:32px 20px}
+.card{width:100%;max-width:540px;background:var(--white);border-radius:20px;padding:36px 32px;box-shadow:0 10px 40px rgba(20,33,61,.08);border:1px solid var(--line)}
+.brand{display:flex;justify-content:center}.brand img{height:68px;width:auto;display:block;margin-bottom:18px}
+h1{font-size:1.8rem;line-height:1.15;margin:0 0 6px;letter-spacing:-.02em;font-weight:800}
+.sub{color:var(--muted);margin:0 0 20px;font-size:.95rem}
+label{display:block;font-weight:600;font-size:.9rem;margin:14px 0 6px}
+input[type=text],input[type=email],input[type=password],input[type=tel]{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:8px;background:var(--white);font:inherit}
+:is(input,button):focus-visible{outline:3px solid #7fd1bd;outline-offset:2px}
+.bad{border-color:var(--err)!important}
+.btn{width:100%;padding:12px 22px;border-radius:8px;border:0;font-weight:600;cursor:pointer;background:var(--accent);color:#fff;font-size:1rem;margin-top:18px;display:inline-flex;align-items:center;justify-content:center;text-decoration:none}
+.btn:hover{background:var(--accent-d)}
+.btn.ghost{background:var(--white);border:1.5px solid var(--line);color:var(--ink);margin-top:10px}
+.btn.ghost:hover{background:var(--mist)}
+.msg{color:var(--err);font-size:.88rem;min-height:1.3em;margin-top:10px}
+.divider{display:flex;align-items:center;margin:16px 0;color:var(--muted);font-size:.82rem}
+.divider::before,.divider::after{content:"";flex:1;height:1px;background:var(--line)}
+.divider span{padding:0 10px}
+.switch{margin-top:20px;color:var(--muted);font-size:.92rem;text-align:center}
+.switch a{color:var(--accent-d);font-weight:600;text-decoration:none}
+.switch a:hover{text-decoration:underline}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:540px){.two{grid-template-columns:1fr}.card{padding:26px 18px}}
+</style>
+<link rel="stylesheet" href="modivs-menu.css">
+<link rel="stylesheet" href="modivs-mobile.css">
+</head>
+<body>
+<div class="wrap">
+ <main class="card">
+  <a class="brand" href="modivs-home.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <h1>Create General User account</h1>
+  <p class="sub">Sign up as a general learner / user to explore courses and educational resources.</p>
+
+  <button type="button" id="googleUserBtn" class="btn ghost">
+    <svg width="18" height="18" viewBox="0 0 24 24" style="margin-right:10px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+    Continue with Google
+  </button>
+
+  <div class="divider"><span>or sign up with email</span></div>
+
+  <form id="userForm" novalidate>
+    <label for="name">Full Name</label>
+    <input type="text" id="name" placeholder="Your name" autocomplete="name">
+
+    <div class="two">
+      <div>
+        <label for="phone">Mobile Number</label>
+        <input type="tel" id="phone" placeholder="10-digit number" autocomplete="tel">
+      </div>
+      <div>
+        <label for="email">Email Address</label>
+        <input type="email" id="email" placeholder="you@example.com" autocomplete="email">
+      </div>
+    </div>
+
+    <div id="userLocPicker" style="margin:12px 0 6px;"></div>
+
+    <div class="two">
+      <div>
+        <label for="pass">Password</label>
+        <input type="password" id="pass" placeholder="At least 8 characters">
+      </div>
+      <div>
+        <label for="pass2">Confirm Password</label>
+        <input type="password" id="pass2" placeholder="Re-enter password">
+      </div>
+    </div>
+
+    <div class="msg" id="msg" role="alert"></div>
+
+    <button type="submit" id="submitBtn" class="btn">Create User Account</button>
+  </form>
+
+  <p class="switch">Already have an account? <a href="modivs-education.html#login">Log in</a> · <a href="modivs-signup.html">Other roles</a></p>
+ </main>
+</div>
+
+<script>
+(function(){
+  var userLoc = null;
+  var locContainer = document.getElementById('userLocPicker');
+  if(locContainer && window.ModivsLocation){
+    ModivsLocation.attachLocationPicker(locContainer, {
+      idPrefix: 'usr_loc_',
+      label: 'Your Location / City',
+      placeholder: 'Search city, locality, or use current location',
+      onLocationChange: function(loc){ userLoc = loc; }
+    });
+  }
+
+  var gBtn = document.getElementById('googleUserBtn');
+  if(gBtn && window.ModivsAuth){
+    gBtn.addEventListener('click', function(){
+      gBtn.disabled = true;
+      gBtn.textContent = 'Connecting with Google…';
+      ModivsAuth.continueWithGoogle('user').then(function(res){
+        if(res.isExisting){
+          if(res.role === 'user'){
+            location.href = 'modivs-home.html';
+          } else {
+            gBtn.disabled = false;
+            gBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" style="margin-right:10px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continue with Google';
+            ModivsAuth.renderDuplicateNotice('msg', res, 'user');
+          }
+        } else {
+          location.href = 'modivs-home.html';
+        }
+      }).catch(function(err){
+        gBtn.disabled = false;
+        gBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24" style="margin-right:10px;"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continue with Google';
+        if(err && err.isExisting){
+          ModivsAuth.renderDuplicateNotice('msg', err, 'user');
+        } else if(err && err.message){
+          document.getElementById('msg').textContent = err.message;
+        }
+      });
+    });
+  }
+
+  var form = document.getElementById('userForm');
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    var name = (document.getElementById('name').value || '').trim();
+    var phone = (document.getElementById('phone').value || '').trim();
+    var email = (document.getElementById('email').value || '').trim().toLowerCase();
+    var pass = document.getElementById('pass').value || '';
+    var pass2 = document.getElementById('pass2').value || '';
+    var msg = document.getElementById('msg');
+    msg.textContent = '';
+
+    if(!name){ msg.textContent = 'Please enter your full name.'; return; }
+    if(!/^[+0-9\s-]{10,15}$/.test(phone)){ msg.textContent = 'Please enter a valid mobile number.'; return; }
+    if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){ msg.textContent = 'Please enter a valid email address.'; return; }
+    if(pass.length < 8){ msg.textContent = 'Password must be at least 8 characters.'; return; }
+    if(pass !== pass2){ msg.textContent = 'Passwords do not match.'; return; }
+
+    var submitBtn = document.getElementById('submitBtn');
+    submitBtn.disabled = true;
+
+    ModivsAuth.checkEmailRole(email).then(function(checkRes){
+      if(checkRes.exists){
+        submitBtn.disabled = false;
+        ModivsAuth.renderDuplicateNotice('msg', checkRes, 'user');
+        return;
+      }
+
+      var fbAuth = window.EducationBFirebase && window.EducationBFirebase.auth;
+      var authPromise = (fbAuth && !fbAuth.currentUser) ? fbAuth.createUserWithEmailAndPassword(email, pass).then(function(cred){
+        if(cred && cred.user) cred.user.updateProfile({ displayName: name });
+        return cred.user;
+      }).catch(function(err){
+        if(err.code === 'auth/email-already-in-use'){
+          return null;
+        }
+        throw err;
+      }) : Promise.resolve(null);
+
+      authPromise.then(function(){
+        return ModivsAuth.registerAccount({
+          email: email,
+          role: 'user',
+          name: name,
+          phone: phone,
+          location: userLoc || {}
+        });
+      }).then(function(){
+        // Store in localStorage
+        var users = JSON.parse(localStorage.getItem('modivs_users') || '[]');
+        if(!users.some(function(u){ return u.email === email; })){
+          users.push({
+            name: name,
+            email: email,
+            phone: phone,
+            role: 'General User',
+            roleKey: 'user',
+            location: userLoc || {},
+            created_at: new Date().toISOString()
+          });
+          localStorage.setItem('modivs_users', JSON.stringify(users));
+        }
+        localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: email, role: 'General User' }));
+        location.href = 'modivs-home.html';
+      }).catch(function(err){
+        submitBtn.disabled = false;
+        msg.textContent = (err && err.message) || 'Registration failed. Please try again.';
+      });
+    }).catch(function(err){
+      submitBtn.disabled = false;
+      msg.textContent = (err && err.message) || 'Error checking account. Please try again.';
+    });
+  });
+})();
+</script>
+<footer class="mv-foot"><style>
+.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
+.mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
+.mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
+.mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
+.mv-foot a[aria-current=page]{color:#EBB92E}
+.mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
+</style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+</body>
+</html>
