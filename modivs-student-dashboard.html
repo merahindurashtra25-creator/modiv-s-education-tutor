@@ -344,8 +344,10 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
         identity.src = ModivsAvatars.src(sr.avatar);
         applyIdentity();
       }
-      setT('stuGrade', [sr.cls, sr.board ? '(' + sr.board + ')' : ''].filter(Boolean).join(' ') + ' · Student');
-      if(sr.id) setT('sideId', 'Student ID: ' + sr.id);
+      var isParent = (user && (user.role === 'Parent' || user.roleKey === 'parent' || (user.by && user.by.toLowerCase().indexOf('parent') >= 0) || (sr && sr.created_by_role === 'parent')));
+      var roleTitle = isParent ? 'Parent' : 'Student';
+      setT('stuGrade', [sr.cls, sr.board ? '(' + sr.board + ')' : ''].filter(Boolean).join(' ') + ' · ' + roleTitle);
+      if(sr.id) setT('sideId', (isParent ? 'Enquiry ID: ' : 'Student ID: ') + (sr.enquiry_id || sr.id));
       setT('stuCity', sr.city);
       setT('stuSubs', (sr.subs || []).join(', '));
       var md = (sr.mode || []).map(function(m){ return /online/i.test(m) ? 'Online' : (/comes to|student|home/i.test(m) ? 'At home' : 'At tutor’s place'); });
@@ -440,7 +442,7 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
   function renderStudentChats(){
     var box = document.getElementById('studentChatInbox');
     if(!box || !window.ModivsChat) return;
-    ModivsChat.inbox(box, function(c){ ModivsChat.open({student:c.student, tutor:c.tutor}); });
+    ModivsChat.inbox(box, function(c){ ModivsChat.open({student:c.student, tutor:c.tutor, enquiry:c.enquiry}); });
     var count = ModivsChat.conversations().reduce(function(total, c){
       return total + ModivsChat.unread(c, user && user.email);
     }, 0);

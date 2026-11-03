@@ -677,6 +677,29 @@ function unlock(l){
   window.ModivsFirebaseSync.saveUnlock(em, l.id || l.name, COST).catch(function(){});
  }
 
+ // Sync conversation unlock state
+ if(window.ModivsChat && em){
+   var ownerMail = l.owner_email || l.email || l.studentEmail || '';
+   var ownerRole = l.created_by_role || (l.by && l.by.toLowerCase().indexOf('parent') >= 0 ? 'parent' : 'student');
+   var conv = ModivsChat.ensure({
+     id: l.student_id || l.id,
+     name: l.name,
+     email: ownerMail,
+     created_by_role: ownerRole
+   }, window.MY_TUTOR || { email: em }, l);
+   if(conv && !conv.unlocked){
+     conv.unlocked = true;
+     conv.unlockedAt = new Date().toISOString();
+     conv.unlockedBy = em;
+     conv.status = 'unlocked';
+     var allConvs = ModivsChat.conversations();
+     for(var ci=0; ci<allConvs.length; ci++){
+       if(allConvs[ci].id === conv.id){ allConvs[ci] = conv; break; }
+     }
+     try { localStorage.setItem('modivs_chat_conversations', JSON.stringify(allConvs)); } catch(e){}
+   }
+ }
+
  hist.unshift({t:'Unlocked '+l.name,d:'Today',a:-COST});
  toast('Unlocked '+l.name+'. Contact details are now visible.');
  render();

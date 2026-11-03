@@ -234,7 +234,8 @@ f.innerHTML=
  '<div class="lab">Preferred Mode of Learning</div>'+boxes('modes',['Student’s Home','Tutor’s Place','Online (Skype or Zoom Class)'])+'<div class="lab">Tuition format <span class="hint">works for online and offline classes</span></div>'+boxes('formats',['1-on-1 Individual tuition','Group tuition (Small batch)'])+'<div id="addrBox" class="hide"><label for="addr">Detailed address <span class="hint">house no., street, area, landmark, pincode. Kept private, never shown publicly</span></label><textarea id="addr" style="min-height:80px"></textarea></div></div>'+
  '<div class="qs"><div class="two"><div>'+sel('days','How many days per week do you want classes?',DAYS,'Select Class Days')+'</div><div>'+sel('time','What time suits you best for classes?',TIMES,'Choose a time slot')+'</div></div>'+
  '<div class="lab">Would you like a free demo class?</div>'+radios('demo',['Yes','No'])+sel('fee','Fee Range',FEES)+'</div>'+
- '<div class="qs"><label for="name">What’s your name?</label><input id="name" type="text" autocomplete="name">'+avatarPicker()+
+ '<div class="qs"><div class="lab">Are you posting this enquiry as a Student or a Parent?</div>'+radios('postRole',['Student','Parent'])+
+ '<div class="two"><div><label for="name">Your Name</label><input id="name" type="text" autocomplete="name"></div><div id="childNameBox" class="hide"><label for="childName">Student / Child’s Name <span class="hint">optional</span></label><input id="childName" type="text"></div></div>'+avatarPicker()+
  '<div class="two"><div><label for="phone">Mobile / WhatsApp Number <span class="hint">kept private, never shown publicly</span></label><input id="phone" type="tel" autocomplete="tel"></div><div><label for="email">Email address</label><input id="email" type="email" autocomplete="email"></div></div>'+
   '<label for="needs">Tell us more about your learning needs</label><textarea id="needs"></textarea>'+
   '<div id="reqLocPicker" style="margin:14px 0 6px;"></div><input type="hidden" id="city" value=""></div>'+
@@ -261,7 +262,27 @@ setTimeout(function(){
 }, 50);
 
 function syncAddr(){var m=group('modes'),need=rad('ttype')==='Home Tutor'||m.some(function(x){return x.indexOf('Online')<0});document.getElementById('addrBox').classList.toggle('hide',!need)}
-f.addEventListener('change',syncAddr);
+function syncRole(){
+  var r = rad('postRole');
+  var cb = document.getElementById('childNameBox');
+  if(cb) cb.classList.toggle('hide', r !== 'Parent');
+}
+f.addEventListener('change',function(){ syncAddr(); syncRole(); });
+
+setTimeout(function(){
+  var curUser = jget('modivs_auth_user', null);
+  if(curUser){
+    var isPar = (curUser.role === 'Parent' || (curUser.roleKey && curUser.roleKey === 'parent'));
+    var rEl = f.querySelector('input[name="postRole"][value="' + (isPar ? 'Parent' : 'Student') + '"]');
+    if(rEl){ rEl.checked = true; syncRole(); }
+    var ne = document.getElementById('name'); if(ne && curUser.name && !ne.value) ne.value = curUser.name;
+    var ee = document.getElementById('email'); if(ee && curUser.email && !ee.value) ee.value = curUser.email;
+    var pe = document.getElementById('phone'); if(pe && curUser.phone && !pe.value) pe.value = curUser.phone;
+  } else {
+    var defR = f.querySelector('input[name="postRole"][value="Student"]');
+    if(defR){ defR.checked = true; syncRole(); }
+  }
+}, 60);
 function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
 function group(n){return [].map.call(f.querySelectorAll('input[data-group="'+n+'"]:checked'),function(x){return x.value})}
 function rad(n){var e=f.querySelector('input[name="'+n+'"]:checked');return e?e.value:''}
@@ -294,11 +315,53 @@ f.addEventListener('submit',function(e){
  function proceed(){
    var rad0=rad('demo')==='Yes',fee=v('fee').replace('Rs ','₹'),stamp=new Date().toISOString();
    var locData=chosenLoc||{city:city,area:v('addr')||'',fullAddress:(v('addr')?v('addr')+', ':'')+city};
-   var req={id:'stu_'+Date.now(),name:v('name'),parentName:v('name'),email:email,phone:phone,city:city,location:locData,cls:v('cls'),board:v('board'),school:'',avatar:rad('avatar'),formats:formats,
-    subs:subs,level:'Average',goals:['Demo class'],notes:v('needs'),mode:modes,tutorType:rad('ttype'),tutorGender:rad('tgender'),
-    budget:fee,freq:v('days'),timeSlot:v('time'),freeDemo:rad('demo'),address:needAddr?v('addr'):'',tutorId:tid,
-    status:'pending',sent:'Just now',registered_at:stamp,by:'Student / Parent'};
-   try{
+   var postRole = (rad('postRole') || 'Student').toLowerCase();
+   var authUser = jget('modivs_auth_user', null);
+   var createdByUserId = (authUser && (authUser.uid || authUser.email)) || email;
+   var enquiryId = 'enq_' + Date.now();
+   var parentName = postRole === 'parent' ? v('name') : '';
+   var childName = v('childName');
+   var studentName = postRole === 'parent' ? (childName || 'Student') : v('name');
+   var req={
+     id: enquiryId,
+     enquiry_id: enquiryId,
+     created_by_user_id: createdByUserId,
+     created_by_role: postRole,
+     owner_email: email,
+     student_id: postRole === 'student' ? createdByUserId : ('stu_' + Date.now()),
+     student_name: studentName,
+     name: studentName,
+     parent_id: postRole === 'parent' ? createdByUserId : '',
+     parent_name: parentName,
+     parentName: parentName || v('name'),
+     email: email,
+     phone: phone,
+     city: city,
+     location: locData,
+     cls: v('cls'),
+     board: v('board'),
+     school: '',
+     avatar: rad('avatar'),
+     formats: formats,
+     subs: subs,
+     level: 'Average',
+     goals: ['Demo class'],
+     notes: v('needs'),
+     mode: modes,
+     tutorType: rad('ttype'),
+     tutorGender: rad('tgender'),
+     budget: fee,
+     freq: v('days'),
+     timeSlot: v('time'),
+     freeDemo: rad('demo'),
+     address: needAddr?v('addr'):'',
+     tutorId: tid,
+     status: 'active',
+     sent: 'Just now',
+     registered_at: stamp,
+     created_at: stamp,
+     by: postRole === 'parent' ? 'Parent' : 'Student'
+   };
     var db=jget('modivs_students_db',[]),i=email?db.findIndex(function(s){return s.email===email}):-1;
     if(i>=0)db[i]=req;else db.unshift(req);localStorage.setItem('modivs_students_db',JSON.stringify(db));
     var leads=jget('modivs_active_leads',[]),lead=Object.assign({},req,{status:'active'});leads.unshift(lead);localStorage.setItem('modivs_active_leads',JSON.stringify(leads));

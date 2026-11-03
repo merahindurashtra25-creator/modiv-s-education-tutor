@@ -409,27 +409,40 @@
   });
 
   function tutorRecord(tutor){
-    if(typeof tutor === 'object' && tutor) return tutor;
+    var res = (typeof tutor === 'object' && tutor) ? Object.assign({}, tutor) : null;
     var list = read('modivs_tutors_db', []);
-    var match = (Array.isArray(list) ? list : []).filter(function(x){
-      return x.id === tutor || x.email === tutor || x.name === tutor;
-    })[0];
-    return match || { id: String(tutor || ''), name: String(tutor || 'Tutor'), email: String(tutor && tutor.indexOf('@') > 0 ? tutor : '') };
+    var em = res ? emailOf(res.email || res.id) : emailOf(tutor);
+    var match = (Array.isArray(list) ? list : []).find(function(x){
+      return (em && emailOf(x.email) === em) || x.id === (res && res.id) || x.name === (res && res.name);
+    });
+    if(!res){
+      res = match ? Object.assign({}, match) : { id: String(tutor || ''), name: String(tutor || 'Tutor'), email: String(tutor && tutor.indexOf('@') > 0 ? tutor : '') };
+    }
+    if(match){
+      if(!res.photo && match.photo) res.photo = match.photo;
+      if(!res.avatar && match.avatar) res.avatar = match.avatar;
+    }
+    return res;
   }
 
   function studentRecord(student){
-    if(typeof student === 'object' && student) return student;
+    var res = (typeof student === 'object' && student) ? Object.assign({}, student) : null;
     var list = read('modivs_students_db', []);
-    var match = (Array.isArray(list) ? list : []).filter(function(x){
-      return x.id === student || x.name === student || emailOf(x) === emailOf(student);
-    })[0];
-    return match || { id: String(student || ''), name: String(student || 'Student'), email: String(student && student.indexOf('@') > 0 ? student : '') };
+    var em = res ? emailOf(res.owner_email || res.email || res.id) : emailOf(student);
+    var match = (Array.isArray(list) ? list : []).find(function(x){
+      return (em && (emailOf(x.email) === em || emailOf(x.owner_email) === em)) || x.id === (res && res.id);
+    });
+    if(!res){
+      res = match ? Object.assign({}, match) : { id: String(student || ''), name: String(student || 'Student'), email: String(student && student.indexOf('@') > 0 ? student : '') };
+    }
+    return res;
   }
 
-  function convKey(student, tutor){
-    var s = emailOf(student) || cleanStr(student.id || student.name).toLowerCase();
-    var t = emailOf(tutor) || cleanStr(tutor.id || tutor.name).toLowerCase();
-    return (s || 'student') + '__' + (t || 'tutor');
+  function convKey(ownerOrStudent, tutor, enquiryId){
+    var s = emailOf(ownerOrStudent && (ownerOrStudent.owner_email || ownerOrStudent.email)) || cleanStr(ownerOrStudent && (ownerOrStudent.id || ownerOrStudent.name) || 'owner').toLowerCase();
+    var t = emailOf(tutor && tutor.email) || cleanStr(tutor && (tutor.id || tutor.name) || 'tutor').toLowerCase();
+    var enq = enquiryId ? cleanStr(enquiryId) : '';
+    return enq ? safeDocId(enq + '__' + s + '__' + t) : safeDocId(s + '__' + t);
   }
 
   function safeDocId(key){
@@ -437,7 +450,7 @@
   }
 
   function find(id){
-    return conversations().filter(function(x){ return x.id === id || x.docId === id; })[0] || null;
+    return conversations().filter(function(x){ return x.id === id || x.docId === id || x.conversation_id === id; })[0] || null;
   }
 
   function participant(c){
@@ -445,8 +458,21 @@
     if(isAdmin()) return true;
     if(!u) return false;
     var e = emailOf(u), uid = u.uid;
-    return (!!e && (e === emailOf(c.student) || e === emailOf(c.tutor))) ||
-           (!!uid && (uid === c.student.uid || uid === c.tutor.uid || (c.participantIds && c.participantIds.indexOf(uid) > -1)));
+    var ownerMail = emailOf(c.enquiry_owner_email || c.owner_email || c.studentEmail || (c.student && (c.student.owner_email || c.student.email)));
+    var tutorMail = emailOf(c.tutorEmail || (c.tutor && c.tutor.email));
+
+    // Tutor access
+    if(e === tutorMail || (!!uid && (uid === (c.tutor && c.tutor.uid) || uid === c.tutor_id || uid === c.tutorId))){
+      return true;
+    }
+
+    // Parent-owned enquiry: strictly visible only to the parent account, never child account
+    if(c.enquiry_owner_role === 'parent' || c.created_by_role === 'parent'){
+      return (e === ownerMail) || (!!uid && (uid === c.enquiry_owner_user_id || uid === c.created_by_user_id || uid === c.parent_id));
+    }
+
+    // Student-owned enquiry
+    return (e === ownerMail) || (!!uid && (uid === c.student_id || uid === (c.student && c.student.uid) || uid === c.studentId || (c.participantIds && c.participantIds.indexOf(uid) > -1)));
   }
 
   function isConversationUnlockedForTutor(conv, tutorEmailOrUser){
@@ -468,33 +494,104 @@
     }).join(' ');
   }
 
-  function ensure(studentInput, tutorInput){
+  function ensure(studentInput, tutorInput, enquiryInput){
     var student = studentRecord(studentInput), tutor = tutorRecord(tutorInput);
-    var id = convKey(student, tutor), all = conversations(), c = all.filter(function(x){ return x.id === id; })[0];
+    var enq = enquiryInput || (studentInput && studentInput.enquiry) || null;
+    var enquiryId = (enq && (enq.enquiry_id || enq.id)) || (studentInput && (studentInput.enquiry_id || studentInput.id)) || '';
+    var ownerRole = ((enq && enq.created_by_role) || (enq && enq.by && enq.by.toLowerCase().indexOf('parent') >= 0 ? 'parent' : '') || (studentInput && studentInput.created_by_role) || (studentInput && studentInput.role && studentInput.role.toLowerCase() === 'parent' ? 'parent' : '') || 'student').toLowerCase();
+    var ownerEmail = emailOf((enq && (enq.owner_email || enq.email)) || (studentInput && (studentInput.owner_email || studentInput.email)) || emailOf(student));
+    var ownerUserId = (enq && (enq.created_by_user_id || enq.owner_email || enq.email)) || (studentInput && (studentInput.created_by_user_id || studentInput.uid || studentInput.id)) || ownerEmail;
+    var studentId = (enq && enq.student_id) || (studentInput && (studentInput.student_id || studentInput.id)) || student.id || student.uid || '';
+    var parentId = (enq && enq.parent_id) || (ownerRole === 'parent' ? ownerUserId : '');
+
+    var id = convKey(ownerEmail || student, tutor, enquiryId);
+    var all = conversations();
+    var c = all.filter(function(x){
+      if(x.id === id || x.docId === id || x.conversation_id === id) return true;
+      if(enquiryId && (x.enquiry_id === enquiryId || x.enquiryId === enquiryId)){
+        var emTutor = emailOf(x.tutorEmail || (x.tutor && x.tutor.email));
+        var emOwner = emailOf(x.enquiry_owner_email || x.studentEmail || (x.student && (x.student.owner_email || x.student.email)));
+        if(emTutor === emailOf(tutor) && emOwner === ownerEmail) return true;
+      }
+      return false;
+    })[0];
+
     if(!c){
       c = {
         id: id,
         docId: safeDocId(id),
-        student: { id: student.id || '', name: nameOf(student), email: emailOf(student), phone: student.phone || '', uid: student.uid || '' },
-        tutor: { id: tutor.id || '', name: nameOf(tutor), email: emailOf(tutor), uid: tutor.uid || '' },
-        studentId: student.uid || emailOf(student),
+        conversation_id: id,
+        enquiry_id: enquiryId,
+        enquiryId: enquiryId,
+        tutor_id: tutor.id || tutor.uid || emailOf(tutor),
         tutorId: tutor.uid || emailOf(tutor),
-        studentEmail: emailOf(student),
+        enquiry_owner_user_id: ownerUserId,
+        enquiry_owner_role: ownerRole,
+        created_by_user_id: ownerUserId,
+        created_by_role: ownerRole,
+        created_at: new Date().toISOString(),
+        student_id: studentId,
+        parent_id: parentId,
+        enquiry_owner_email: ownerEmail,
+        student: {
+          id: studentId,
+          name: (enq && (enq.student_name || enq.name)) || nameOf(student),
+          email: ownerEmail,
+          phone: (enq && enq.phone) || student.phone || '',
+          uid: student.uid || ''
+        },
+        tutor: {
+          id: tutor.id || '',
+          name: nameOf(tutor),
+          email: emailOf(tutor),
+          uid: tutor.uid || '',
+          photo: tutor.photo || tutor.avatar || tutor.profile_image || ''
+        },
+        enquiry: enq ? {
+          id: enquiryId,
+          cls: enq.cls || '',
+          subs: enq.subs || [],
+          board: enq.board || '',
+          mode: enq.mode || '',
+          city: enq.city || '',
+          budget: enq.budget || ''
+        } : null,
+        studentId: studentId || student.uid || ownerEmail,
+        tutorId: tutor.uid || emailOf(tutor),
+        studentEmail: ownerEmail,
         tutorEmail: emailOf(tutor),
-        participantIds: [student.uid, tutor.uid, emailOf(student), emailOf(tutor)].filter(Boolean),
+        participantIds: [student.uid, tutor.uid, ownerEmail, emailOf(tutor), ownerUserId].filter(Boolean),
         unlocked: false,
         unlockedAt: null,
         unlockCostCoins: UNLOCK_COST,
         status: 'inquiry_pending',
         messages: [],
         accessLog: [
-          { action: 'inquiry_created', by: emailOf(student), timestamp: new Date().toISOString() }
+          { action: 'inquiry_created', by: ownerEmail, role: ownerRole, timestamp: new Date().toISOString() }
         ],
         createdAt: new Date().toISOString(),
         updatedAt: new Date().toISOString()
       };
       all.unshift(c);
       save(all);
+    } else {
+      if(enq && !c.enquiry){
+        c.enquiry = {
+          id: enquiryId,
+          cls: enq.cls || '',
+          subs: enq.subs || [],
+          board: enq.board || '',
+          mode: enq.mode || '',
+          city: enq.city || '',
+          budget: enq.budget || ''
+        };
+        save(all);
+      }
+      if(tutor.photo && (!c.tutor || !c.tutor.photo)){
+        if(!c.tutor) c.tutor = tutor;
+        else c.tutor.photo = tutor.photo;
+        save(all);
+      }
     }
     syncConversationToFirestore(c);
     return c;
@@ -507,13 +604,25 @@
     firestore.collection('conversations').doc(docId).set({
       id: c.id,
       docId: docId,
+      conversation_id: c.id,
+      enquiry_id: c.enquiry_id || c.enquiryId || '',
+      tutor_id: c.tutor_id || c.tutorId || c.tutor.uid || emailOf(c.tutor),
+      enquiry_owner_user_id: c.enquiry_owner_user_id || c.created_by_user_id || '',
+      enquiry_owner_role: c.enquiry_owner_role || c.created_by_role || 'student',
+      created_by_user_id: c.created_by_user_id || c.enquiry_owner_user_id || '',
+      created_by_role: c.created_by_role || c.enquiry_owner_role || 'student',
+      created_at: c.created_at || c.createdAt || new Date().toISOString(),
+      student_id: c.student_id || '',
+      parent_id: c.parent_id || '',
+      enquiry_owner_email: c.enquiry_owner_email || emailOf(c.student),
       studentId: c.studentId || c.student.uid || emailOf(c.student),
       tutorId: c.tutorId || c.tutor.uid || emailOf(c.tutor),
       studentEmail: emailOf(c.student),
       tutorEmail: emailOf(c.tutor),
       student: { name: c.student.name, email: emailOf(c.student), phone: c.student.phone || '' },
-      tutor: { name: c.tutor.name, email: emailOf(c.tutor) },
-      participantIds: [emailOf(c.student), emailOf(c.tutor), c.student.uid, c.tutor.uid].filter(Boolean),
+      tutor: { name: c.tutor.name, email: emailOf(c.tutor), photo: c.tutor.photo || '' },
+      enquiry: c.enquiry || null,
+      participantIds: [emailOf(c.student), emailOf(c.tutor), c.enquiry_owner_email, c.student.uid, c.tutor.uid].filter(Boolean),
       unlocked: !!c.unlocked,
       unlockedAt: c.unlockedAt || null,
       unlockCostCoins: UNLOCK_COST,
@@ -619,13 +728,23 @@
     var meEmail = emailOf(meUser);
     var nowIso = new Date().toISOString();
     var msgId = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-    var myRole = meEmail === emailOf(conv.student) ? 'Student / Parent' : (isAdmin() ? 'Admin' : 'Tutor');
+    var isTutor = (meEmail === emailOf(conv.tutorEmail) || meEmail === emailOf(conv.tutor && conv.tutor.email));
+    var isParent = (conv.enquiry_owner_role === 'parent' || conv.created_by_role === 'parent' || (meUser && (meUser.role === 'Parent' || meUser.roleKey === 'parent')));
+    var myRole = 'Student';
+    if(isAdmin()){
+      myRole = 'Admin';
+    } else if(isTutor){
+      myRole = 'Tutor';
+    } else if(isParent){
+      myRole = 'Parent';
+    } else {
+      myRole = 'Student';
+    }
 
-    // Neither student nor tutor can send arbitrary custom messages
     if(myRole === 'Tutor'){
-      text = DEFAULT_DEMO_MESSAGE;
-    } else if(myRole === 'Student / Parent'){
-      if(!text || (text.indexOf('Demo Class Booking Request') === -1 && text.indexOf('book') === -1)){
+      text = text || DEFAULT_DEMO_MESSAGE;
+    } else if(myRole === 'Student' || myRole === 'Parent'){
+      if(!text || (text.indexOf('Demo Class Booking Request') === -1 && text.indexOf('book') === -1 && text.indexOf('demo') === -1)){
         text = DEFAULT_STUDENT_BOOKING_MESSAGE;
       }
     }
@@ -990,15 +1109,15 @@
   // =========================================================================
   function open(input){
     ensureStyles();
-    var c = ensure(input.student, input.tutor);
+    var c = ensure(input.student, input.tutor, input.enquiry);
     var meUser = user();
     var meEmail = emailOf(meUser);
-    var isTutorParticipant = (meEmail === emailOf(c.tutor));
+    var isTutorParticipant = (meEmail === emailOf(c.tutor) || meEmail === emailOf(c.tutorEmail));
 
     // If teacher participant and conversation is locked, trigger teacher notification popup
     if(isTutorParticipant && !c.unlocked && !isAdmin()){
       showTeacherInquiryPopup(c, function(unlockedConv){
-        open({ student: unlockedConv.student, tutor: unlockedConv.tutor });
+        open({ student: unlockedConv.student, tutor: unlockedConv.tutor, enquiry: unlockedConv.enquiry });
       });
       return;
     }
@@ -1006,12 +1125,14 @@
     var d = document.createElement('dialog');
     d.className = 'mc-dialog';
 
-    var otherRawName = isAdmin() ? (c.student.name + ' & ' + c.tutor.name) : (meEmail === emailOf(c.student) ? c.tutor.name : c.student.name);
-    var otherRole = isAdmin() ? 'Monitoring' : (meEmail === emailOf(c.student) ? 'Tutor' : 'Student / Parent');
+    var otherRawName = isAdmin() ? (c.student.name + ' & ' + c.tutor.name) : (isTutorParticipant ? c.student.name : (c.tutor ? c.tutor.name : 'Tutor'));
+    var otherRole = isAdmin() ? 'Monitoring' : (isTutorParticipant ? (c.enquiry_owner_role === 'parent' ? 'Parent' : 'Student') : 'Tutor');
 
-    // Display student name (masked if not unlocked for monitoring)
+    var otherPhoto = (!isTutorParticipant && c.tutor && (c.tutor.photo || c.tutor.avatar)) ? (c.tutor.photo || c.tutor.avatar) : '';
     var otherName = otherRawName;
     var initials = otherName.split(' ').filter(Boolean).map(function(w){ return w[0]; }).slice(0, 2).join('').toUpperCase() || 'U';
+
+    var enqChip = c.enquiry ? (' · <span style="font-weight:500;opacity:0.9;">' + escapeHtml([c.enquiry.cls, (Array.isArray(c.enquiry.subs) ? c.enquiry.subs.join(', ') : c.enquiry.subs)].filter(Boolean).join(' - ')) + '</span>') : '';
 
     function markRead(conv){
       var updated = false;
@@ -1032,11 +1153,15 @@
       var current = find(c.id) || c;
       markRead(current);
 
+      var avatarHtml = otherPhoto ?
+        '<img src="' + escapeHtml(otherPhoto) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="' + escapeHtml(otherName) + '">' :
+        escapeHtml(initials);
+
       d.innerHTML =
         '<div class="mc-head">' +
           '<div class="mc-user">' +
-            '<div class="mc-avatar">' + escapeHtml(initials) + '</div>' +
-            '<div><h2>' + escapeHtml(otherName) + '</h2><div class="mc-status">' + escapeHtml(otherRole) + ' · Online</div></div>' +
+            '<div class="mc-avatar" style="overflow:hidden;padding:0;">' + avatarHtml + '</div>' +
+            '<div><h2>' + escapeHtml(otherName) + '</h2><div class="mc-status">' + escapeHtml(otherRole) + enqChip + ' · Active</div></div>' +
           '</div>' +
           '<button class="mc-close" type="button">Close</button>' +
         '</div>' +
@@ -1052,7 +1177,7 @@
               '<div class="txt">' + escapeHtml(m.text) + '</div>' +
               '<small>' + escapeHtml(formatTime(m.createdAt)) + '</small>' +
             '</div>';
-          }).join('') : '<div class="mc-empty">👋 Connect regarding demo class with ' + escapeHtml(otherName) + '!<br><small style="color:#7180ad">Send your official class booking request below.</small></div>') +
+          }).join('') : '<div class="mc-empty">👋 Connect regarding tuition enquiry with ' + escapeHtml(otherName) + '!<br><small style="color:#7180ad">Send your class message below.</small></div>') +
         '</div>' +
         (isAdmin() ? '<div style="padding:14px 20px;background:#fff;text-align:center;font-size:.85rem;color:#7180ad;">Read-only administrator view. All messages decrypted via platform keys.</div>' :
           (isTutorParticipant ?
@@ -1065,7 +1190,7 @@
             '</form>'
           :
             '<div style="padding:8px 18px;background:#eef4ff;border-top:1px solid #c7d7f8;font-size:0.8rem;color:#1d4ed8;display:flex;align-items:center;justify-content:space-between;">' +
-              '<span>📋 <b>Booking Request:</b> Students send standardized class booking requests only.</span>' +
+              '<span>📋 <b>Booking Request:</b> Standardized class booking request.</span>' +
             '</div>' +
             '<form class="mc-compose" id="mcForm">' +
               '<textarea id="mcText" readonly style="background:#f9f9fb;font-size:0.85rem;color:#1A2035;font-weight:600;line-height:1.4;">' + escapeHtml(DEFAULT_STUDENT_BOOKING_MESSAGE) + '</textarea>' +
@@ -1087,7 +1212,7 @@
             if(!text) return;
             var nowIso = new Date().toISOString();
             var msgId = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
-            var myRole = meEmail === emailOf(current.student) ? 'Student / Parent' : 'Tutor';
+            var myRole = isTutorParticipant ? 'Tutor' : (c.enquiry_owner_role === 'parent' ? 'Parent' : 'Student');
 
             // Optimistic update
             var newMsg = {
@@ -1157,7 +1282,6 @@
     });
     d.showModal();
   }
-
   // =========================================================================
   // Inbox View for Dashboards
   // =========================================================================
@@ -1174,24 +1298,36 @@
     }
 
     container.innerHTML = rows.map(function(c){
-      var isTutor = (me === emailOf(c.tutor));
+      var isTutor = (me === emailOf(c.tutor) || me === emailOf(c.tutorEmail));
       var isUnlocked = !isTutor || !!c.unlocked;
-      var otherRaw = isAdmin() ? (c.student.name + ' ↔ ' + c.tutor.name) : (me === emailOf(c.student) ? c.tutor.name : c.student.name);
+      var otherRaw = isAdmin() ? (c.student.name + ' ↔ ' + c.tutor.name) : (isTutor ? c.student.name : (c.tutor ? c.tutor.name : 'Tutor'));
       var displayName = (isTutor && !isUnlocked) ? maskStudentName(otherRaw) : otherRaw;
       var initials = displayName.split(' ').filter(Boolean).map(function(w){ return w[0]; }).slice(0, 2).join('').toUpperCase() || 'U';
+      var photo = (!isTutor && c.tutor && (c.tutor.photo || c.tutor.avatar)) ? (c.tutor.photo || c.tutor.avatar) : '';
+      var avatarContent = photo ?
+        '<img src="' + escapeHtml(photo) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="' + escapeHtml(displayName) + '">' :
+        escapeHtml(initials);
+
       var last = c.messages && c.messages.length ? c.messages[c.messages.length - 1] : null;
-      var lastText = last ? last.text : 'New student inquiry';
+      var lastText = last ? last.text : 'New tuition inquiry';
       if(isTutor && !isUnlocked){
         lastText = '🔒 Message protected. Unlock with membership & coins to read.';
       }
       var unreadCount = unread(c, me);
+      var enqTag = c.enquiry ? ('<span style="background:#eef2f7;color:#334155;border-radius:6px;padding:2px 7px;font-size:0.73rem;font-weight:600;margin-left:8px;">' + escapeHtml([c.enquiry.cls, (Array.isArray(c.enquiry.subs) ? c.enquiry.subs.join(', ') : c.enquiry.subs)].filter(Boolean).join(' · ')) + '</span>') : '';
+      var statusBadge = isUnlocked ?
+        '<span class="mc-badge" style="background:#dcfce7;color:#166534;font-size:0.72rem;">' + (c.status === 'demo' ? 'Demo Offered' : 'Active') + '</span>' :
+        '<span class="mc-badge locked-pill" style="margin-left:6px;">🔒 Locked</span>';
 
       return '<div class="mc-row ' + (!isUnlocked ? 'locked' : '') + '" data-chat-id="' + escapeHtml(c.id) + '">' +
         '<div class="mc-row-left">' +
-          '<div class="mc-avatar" style="width:38px;height:38px;font-size:.9rem;">' + escapeHtml(initials) + '</div>' +
+          '<div class="mc-avatar" style="width:42px;height:42px;font-size:.9rem;flex-shrink:0;overflow:hidden;padding:0;">' + avatarContent + '</div>' +
           '<div>' +
-            '<b>' + escapeHtml(displayName) + '</b>' +
-            (!isUnlocked ? '<span class="mc-badge locked-pill" style="margin-left:8px;">🔒 Locked Inquiry</span>' : '') +
+            '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">' +
+              '<b>' + escapeHtml(displayName) + '</b>' +
+              enqTag +
+              statusBadge +
+            '</div>' +
             '<small>' + escapeHtml(lastText.slice(0, 80)) + (lastText.length > 80 ? '...' : '') + (last ? ' · ' + escapeHtml(formatTime(last.createdAt)) : '') + '</small>' +
           '</div>' +
         '</div>' +
@@ -1218,7 +1354,6 @@
       };
     });
   }
-
   // =========================================================================
   // Admin Conversations List with Search & Inspection
   // =========================================================================
@@ -1299,8 +1434,20 @@
           var newC = {
             id: id,
             docId: docSnap.id,
+            conversation_id: id,
+            enquiry_id: d.enquiry_id || d.enquiryId || '',
+            enquiryId: d.enquiry_id || d.enquiryId || '',
+            tutor_id: d.tutor_id || d.tutorId || '',
+            enquiry_owner_user_id: d.enquiry_owner_user_id || d.created_by_user_id || '',
+            enquiry_owner_role: d.enquiry_owner_role || d.created_by_role || 'student',
+            created_by_user_id: d.created_by_user_id || d.enquiry_owner_user_id || '',
+            created_by_role: d.created_by_role || d.enquiry_owner_role || 'student',
+            enquiry_owner_email: d.enquiry_owner_email || d.studentEmail || '',
+            student_id: d.student_id || '',
+            parent_id: d.parent_id || '',
             student: d.student || { name: 'Student', email: d.studentEmail || '' },
-            tutor: d.tutor || { name: 'Tutor', email: d.tutorEmail || '' },
+            tutor: d.tutor || { name: 'Tutor', email: d.tutorEmail || '', photo: '' },
+            enquiry: d.enquiry || null,
             studentEmail: d.studentEmail,
             tutorEmail: d.tutorEmail,
             studentId: d.studentId,
@@ -1342,6 +1489,15 @@
             existing.status = d.status;
             changed = true;
           }
+          if(d.enquiry && !existing.enquiry){
+            existing.enquiry = d.enquiry;
+            changed = true;
+          }
+          if(d.tutor && d.tutor.photo && (!existing.tutor || !existing.tutor.photo)){
+            if(!existing.tutor) existing.tutor = d.tutor;
+            else existing.tutor.photo = d.tutor.photo;
+            changed = true;
+          }
           watchFirestoreMessages(existing, notify);
         }
       });
@@ -1361,6 +1517,11 @@
         .where('studentEmail', '==', em)
         .onSnapshot(handleSnapshot, function(err){ console.warn('Student conversations listener notice:', err); });
       liveConvUnsubs.push(unsubStudent);
+
+      var unsubOwner = firestore.collection('conversations')
+        .where('enquiry_owner_email', '==', em)
+        .onSnapshot(handleSnapshot, function(err){ console.warn('Owner conversations listener notice:', err); });
+      liveConvUnsubs.push(unsubOwner);
     } catch(err){
       console.warn('Conversation listener initialization error:', err);
     }
@@ -1370,7 +1531,6 @@
       liveConvUnsubs = [];
     };
   }
-
   function listenForTeacherInquiries(tutorEmail, onInquiry){
     return listenForConversations(tutorEmail, onInquiry);
   }
