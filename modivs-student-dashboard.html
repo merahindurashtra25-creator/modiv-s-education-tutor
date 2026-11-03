@@ -129,6 +129,11 @@ dialog h2{margin:0 0 4px}
 
 <div class="app">
  <aside class="side" aria-label="Student menu">
+  <div class="side-me">
+   <div class="sm-av" id="sideAva">ST</div>
+   <b class="sm-nm" id="sideName">Student</b>
+   <span class="sm-id" id="sideId">Student / Parent</span>
+  </div>
   <nav class="nav" aria-label="Student dashboard sections">
    <button type="button" data-sec="overview" aria-current="page"><svg class="ic" aria-hidden="true"><use href="#i-dash"></use></svg><span>Dashboard</span></button>
    <button type="button" data-sec="tutors"><svg class="ic" aria-hidden="true"><use href="#i-search"></use></svg><span>Find Tutors</span></button>
@@ -321,6 +326,8 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     t('welcomeName', first);
     D.paintAvatar(document.getElementById('stuAva'), identity.src, ini);
     D.paintAvatar(document.getElementById('dhAva'), identity.src, ini);
+    D.paintAvatar(document.getElementById('sideAva'), identity.src, ini);
+    t('sideName', identity.name);
   }
   applyIdentity();
 
@@ -338,6 +345,7 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
         applyIdentity();
       }
       setT('stuGrade', [sr.cls, sr.board ? '(' + sr.board + ')' : ''].filter(Boolean).join(' ') + ' · Student');
+      if(sr.id) setT('sideId', 'Student ID: ' + sr.id);
       setT('stuCity', sr.city);
       setT('stuSubs', (sr.subs || []).join(', '));
       var md = (sr.mode || []).map(function(m){ return /online/i.test(m) ? 'Online' : (/comes to|student|home/i.test(m) ? 'At home' : 'At tutor’s place'); });

@@ -206,6 +206,12 @@ dialog h2{margin:0 0 4px}
 <input type="file" id="dhPhotoFile" accept="image/jpeg,image/png,image/webp" hidden>
 <div class="app">
  <aside class="side" aria-label="Tutor menu">
+  <div class="side-me">
+   <div class="sm-av" id="sideAva">TR</div>
+   <b class="sm-nm" id="sideName">Tutor</b>
+   <span class="sm-id" id="sideId">Tutor ID: pending</span>
+   <span class="sm-tier bronze" id="sideTier" hidden></span>
+  </div>
   <nav class="nav" id="nav" aria-label="Sections"></nav>
  </aside>
 
@@ -350,7 +356,7 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
       </div>
       <div>
         <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:#334155;">CVV</label>
-        <input type="password" id="payCardCvv" placeholder="•••" maxlength="4" value="882" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;box-sizing:border-box;">
+        <input type="password" id="payCardCvv" data-no-eye placeholder="•••" maxlength="4" value="882" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;box-sizing:border-box;">
       </div>
     </div>
   </div>
@@ -561,6 +567,7 @@ function activateMembership(planName, days, price, bonusCoins, isUpgrade){
  var em = currentTutorEmail();
  if(window.ModivsChat && em){
   ModivsChat.setTutorMembership(em, planName, days, 'active', false, price);
+  if(window.mvPaintTier) window.mvPaintTier();
   if(bonusCoins > 0){
    var res = ModivsChat.addTutorCoins(em, bonusCoins, 'Bonus coins for ' + planName + ' purchase (' + price + ')');
    state.coins = res.balance;
@@ -1254,6 +1261,21 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
   if(hN) hN.textContent = 'Hi, ' + D.firstName(tutor.name, 'Tutor');
   if(hW) hW.textContent = tutor.name || 'Tutor';
   D.paintAvatar($('dhAva'), tutor.photo || '', D.initials(tutor.name) || 'TR');
+  D.paintAvatar($('sideAva'), tutor.photo || '', D.initials(tutor.name) || 'TR');
+  if($('sideName')) $('sideName').textContent = tutor.name || 'Tutor';
+  if($('sideId')) $('sideId').textContent = 'Tutor ID: ' + (tutor.id || 'pending');
+  // membership tier shown under the DP: no active plan = Bronze, Standard = Silver, Professional = Gold, Premium = Platinum
+  window.mvPaintTier = function(){
+    var tEl = $('sideTier'); if(!tEl) return;
+    var mem = window.ModivsChat ? ModivsChat.getTutorMembership(email || tutor.email || '') : { planName: 'None', isValid: false };
+    var tiers = { 'Standard Plan': 'Silver', 'Professional Plan': 'Gold', 'Premium Plan': 'Platinum' };
+    var tier = (mem.isValid && tiers[mem.planName]) || 'Bronze';
+    tEl.className = 'sm-tier ' + tier.toLowerCase();
+    tEl.innerHTML = D.icon('crown') + '<span>' + tier + ' Member</span>';
+    tEl.title = mem.isValid ? mem.planName + ' · ' + mem.daysLeft + ' days left' : 'No active membership plan';
+    tEl.hidden = false;
+  };
+  window.mvPaintTier();
 
   // Render status banner and pill
   var b = $('statusBanner');
@@ -1499,6 +1521,7 @@ render();
     t.photo = dataUrl; t.status = status; window.MY_TUTOR = t;
     var D = window.ModivsDash;
     if(D) D.paintAvatar(document.getElementById('dhAva'), dataUrl, D.initials(t.name) || 'TR');
+    if(D) D.paintAvatar(document.getElementById('sideAva'), dataUrl, D.initials(t.name) || 'TR');
     if(wasApproved){ say('Photo updated. It has been sent to admins for re-verification.'); setTimeout(function(){ location.reload(); }, 900); return; }
     say(blurry ? 'Photo saved. It looks a little blurry. A sharper photo is approved faster.' : 'Profile photo saved.');
     if(typeof render === 'function') render();
@@ -1530,5 +1553,6 @@ render();
 })();
 </script>
 <script src="modivs-avatars.js"></script>
+<script src="modivs-pass-eye.js"></script>
 </body>
 </html>

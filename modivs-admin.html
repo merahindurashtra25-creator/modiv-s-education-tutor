@@ -125,6 +125,32 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 .lightbox{position:fixed;inset:0;background:rgba(26,32,53,.85);display:grid;place-items:center;z-index:50;padding:20px;cursor:zoom-out}
 .lightbox img{max-width:min(90vw,520px);max-height:80vh;border-radius:14px;background:#fff}
 @media(max-width:980px){.main{grid-template-columns:1fr}.detail{position:static}.top{padding:12px 16px}.top .r span{display:none}.admin-nav{display:none}}
+.cms{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:start}
+.cms.hide{display:none}
+.cms h2{margin:0 0 4px;font-size:1.15rem}
+.cms-sub{margin:0 0 14px;color:var(--muted);font-size:.88rem}
+.cms label{display:block;font-weight:600;font-size:.85rem;margin:10px 0 4px}
+.cms input,.cms select,.cms textarea{width:100%;padding:9px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--cream)}
+.cms textarea{resize:vertical;line-height:1.5}
+.cms input:focus,.cms select:focus,.cms textarea:focus{outline:2px solid var(--yellow);outline-offset:1px;border-color:var(--yellow)}
+.cms-2{display:grid;grid-template-columns:1fr 1fr;gap:0 12px}
+.cms-hint{font-size:.78rem;color:var(--muted);margin-top:4px;display:flex;justify-content:space-between;gap:8px}
+.cms-err{color:var(--bad);font-size:.88rem;min-height:1.3em;margin:10px 0 6px}
+.cms-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.cms-row{display:flex;justify-content:space-between;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px}
+.cms-row b{display:block;font-size:.98rem}
+.cms-row small{display:block;color:var(--muted);margin-top:2px}
+.cms-row .acts3{display:flex;gap:6px;flex:none}
+.cms-tag{display:inline-block;background:var(--cream);border:1px solid var(--line);border-radius:99px;padding:0 8px;font-size:.72rem;font-weight:700;margin-right:6px;color:var(--navy)}
+.cms-empty{color:var(--muted);text-align:center;padding:24px 0;margin:0}
+.cbtn{display:inline-block;padding:9px 16px;border-radius:8px;border:1.5px solid var(--navy);background:var(--card);color:var(--navy);font-weight:700;cursor:pointer;text-decoration:none;font-size:.88rem}
+.cbtn.y{background:var(--yellow);border-color:var(--yellow)}
+.cbtn.sm{padding:5px 12px;font-size:.8rem}
+.cbtn.del{border-color:var(--bad);color:var(--bad)}
+.cbtn.del:hover{background:var(--bad);color:#fff}
+.cbtn:disabled{opacity:.6;cursor:wait}
+@media(max-width:980px){.cms{grid-template-columns:1fr}}
+@media(max-width:520px){.cms-2{grid-template-columns:1fr}.cms-row{flex-direction:column;align-items:stretch}}
 </style>
 <script src="modivs-avatars.js"></script>
 <script src="modivs-docs.js"></script>
@@ -136,6 +162,8 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 <script src="firebase-config.js"></script>
 <script src="firebase-sync.js"></script>
 <script src="firebase-chat.js"></script>
+<script src="modivs-shop-data.js"></script>
+<script src="modivs-blogs.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
 </head>
@@ -149,6 +177,8 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
     <li><a href="modivs-active-leads.html">Active Leads</a></li>
     <li><a href="#students" id="navStudents">Student Portal</a></li>
     <li><a href="#tutors" id="navTutors">Tutor Portal</a></li>
+    <li><a href="#shop" id="navShop">Shop</a></li>
+    <li><a href="#blogs" id="navBlogs">Blogs</a></li>
    </ul>
   </nav>
   <div class="acts" id="mvActs">
@@ -184,6 +214,8 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 
     <section class="box detail" id="detail" aria-live="polite"></section>
   </div>
+
+  <div class="cms hide" id="cms"></div>
 </div>
 
 <div class="toast hide" id="toast" role="status"></div>
@@ -550,7 +582,9 @@ function tabs(){
     { key: 'approved', label: 'Approved Tutors (' + cnt(tutors, 'approved') + ')' },
     { key: 'rejected', label: 'Rejected Applications (' + cnt(tutors, 'rejected') + ')' },
     { key: 'students', label: 'Student Inquiries (' + students.length + ')' },
-    { key: 'chat', label: 'Chat & Inquiries Monitoring (' + totalChats + ')' }
+    { key: 'chat', label: 'Chat & Inquiries Monitoring (' + totalChats + ')' },
+    { key: 'shop', label: 'Shop Items (' + cmsShop.length + ')' },
+    { key: 'blogs', label: 'Blogs' + (cmsBlogs ? ' (' + cmsBlogs.length + ')' : '') }
   ];
 
   sections.forEach(function(sec){
@@ -571,7 +605,8 @@ function tabs(){
 function syncPortalNav(){
   var st = (currentSection === 'students');
   var nt = $('navTutors'), ns = $('navStudents');
-  if(nt){ if(!st && currentSection !== 'chat') nt.setAttribute('aria-current','page'); else nt.removeAttribute('aria-current'); }
+  if(nt){ if(!st && currentSection !== 'chat' && !isCms()) nt.setAttribute('aria-current','page'); else nt.removeAttribute('aria-current'); }
+  [['navShop','shop'],['navBlogs','blogs']].forEach(function(x){ var n = $(x[0]); if(n){ if(currentSection === x[1]) n.setAttribute('aria-current','page'); else n.removeAttribute('aria-current'); } });
   if(ns){ if(st) ns.setAttribute('aria-current','page'); else ns.removeAttribute('aria-current'); }
 }
 
@@ -1344,10 +1379,138 @@ function recent(){
   box.appendChild(lb);
 }
 
+// ---------- Shop & Blogs: admin adds and deletes items ----------
+var cmsShop = window.ModivsShop ? ModivsShop.cached() : [];
+var cmsBlogs = null, cmsBlogErr = '';
+function isCms(){ return currentSection === 'shop' || currentSection === 'blogs'; }
+function escH(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function inrH(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
+function fld(id, label, input, hint){ return '<div><label for="' + id + '">' + label + '</label>' + input + (hint ? '<div class="cms-hint">' + hint + '</div>' : '') + '</div>'; }
+function cmsRefresh(){ tabs(); if(isCms()) renderCms(); }
+if(window.ModivsShop) ModivsShop.load().then(function(p){ cmsShop = p; cmsRefresh(); });
+function loadBlogs(){
+  if(!window.ModivsBlogs){ cmsBlogs = []; cmsBlogErr = 'The blogs module did not load.'; return; }
+  ModivsBlogs.list(200).then(function(r){ cmsBlogs = r; cmsBlogErr = ''; cmsRefresh(); },
+    function(e){ cmsBlogs = []; cmsBlogErr = 'Could not load blogs: ' + ((e && e.message) || 'unknown error'); cmsRefresh(); });
+}
+loadBlogs();
+
+function renderCms(){ if(currentSection === 'shop') renderShopCms($('cms')); else renderBlogCms($('cms')); }
+
+function saveShop(list, msg){
+  cmsShop = list;
+  cmsRefresh();
+  toast(msg);
+  ModivsShop.save(list).then(function(r){
+    if(!r.cloud) toast('Saved in this browser only (Firebase: ' + r.reason + '). Publish firestore.rules and log in again as admin so every visitor sees the change.');
+  });
+}
+
+function renderShopCms(box){
+  var T = ModivsShop.TYPES;
+  box.innerHTML =
+    '<section class="box"><h2>Add a shop item</h2><p class="cms-sub">New items appear at the top of the Shop page.</p><form id="shopForm" novalidate>' +
+    fld('sTitle', 'Title', '<input id="sTitle" maxlength="120" placeholder="e.g. Class 10 Maths: Formula Book">') +
+    '<div class="cms-2">' +
+      fld('sType', 'Type', '<select id="sType"><option value="ebook">E-book</option><option value="video">Video lectures</option><option value="bundle">Combo</option></select>') +
+      fld('sFormat', 'Format', '<input id="sFormat" maxlength="40" placeholder="e.g. PDF e-book">') +
+      fld('sSubject', 'Subject', '<input id="sSubject" maxlength="40" placeholder="e.g. Mathematics">') +
+      fld('sCls', 'Class', '<input id="sCls" maxlength="30" placeholder="e.g. Class 10 or All classes">') +
+      fld('sBoard', 'Board <small>(optional)</small>', '<input id="sBoard" maxlength="20" placeholder="e.g. CBSE">') +
+      fld('sPreview', 'Free preview link <small>(optional)</small>', '<input id="sPreview" type="url" placeholder="https://...">') +
+      fld('sPrice', 'Price (₹)', '<input id="sPrice" type="number" min="1" step="1" inputmode="numeric" placeholder="199">') +
+      fld('sMrp', 'MRP (₹) <small>(optional)</small>', '<input id="sMrp" type="number" min="1" step="1" inputmode="numeric" placeholder="349">', 'Shows as a crossed-out price with % off.') +
+    '</div>' +
+    fld('sDesc', 'Short description', '<textarea id="sDesc" rows="3" maxlength="400" placeholder="What is this product and who is it for?"></textarea>') +
+    fld('sInc', 'What you get <small>(one point per line)</small>', '<textarea id="sInc" rows="3" placeholder="All chapters of the syllabus&#10;Solved examples"></textarea>') +
+    '<div class="cms-err" id="sErr" role="alert"></div><button class="cbtn y" type="submit">Add item</button></form></section>' +
+    '<section class="box"><div class="cms-head"><h2>Shop items (' + cmsShop.length + ')</h2><a class="cbtn sm" href="modivs-shop.html" target="_blank" rel="noopener">View shop</a></div>' +
+    (cmsShop.length ? cmsShop.map(function(p){
+      return '<div class="cms-row"><div><b>' + escH(p.title) + '</b><small><span class="cms-tag">' + escH(T[p.type] || p.type) + '</span>' + escH(p.cls) + (p.board ? ' · ' + escH(p.board) : '') + ' · ' + inrH(p.price) + (p.mrp > p.price ? ' <s>' + inrH(p.mrp) + '</s>' : '') + '</small></div>' +
+        '<div class="acts3"><button type="button" class="cbtn sm del" data-del-item="' + escH(p.id) + '">Delete</button></div></div>';
+    }).join('') : '<p class="cms-empty">No items in the shop. Add your first one.</p>') + '</section>';
+
+  $('shopForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var v = function(id){ return $(id).value.trim(); }, er = $('sErr');
+    var price = Number(v('sPrice')), mrp = Number(v('sMrp')) || 0, pv = v('sPreview'), type = $('sType').value;
+    var fail = function(id, t){ er.textContent = t; $(id).focus(); };
+    if(v('sTitle').length < 5) return fail('sTitle', 'Enter a title (at least 5 characters).');
+    if(!v('sSubject')) return fail('sSubject', 'Enter the subject.');
+    if(!v('sCls')) return fail('sCls', 'Enter the class, e.g. Class 10 or All classes.');
+    if(pv && !/^https?:\/\//i.test(pv)) return fail('sPreview', 'The preview link must start with http:// or https://');
+    if(!(price > 0)) return fail('sPrice', 'Enter a price above ₹0.');
+    if(mrp && mrp < price) return fail('sMrp', 'MRP should be the same as or more than the price.');
+    if(v('sDesc').length < 10) return fail('sDesc', 'Add a short description (at least 10 characters).');
+    var inc = v('sInc').split('\n').map(function(x){ return x.trim(); }).filter(Boolean).slice(0, 10);
+    var item = { id: 'p' + Date.now().toString(36), type: type, title: v('sTitle'), subject: v('sSubject'), cls: v('sCls'), board: v('sBoard'),
+      format: v('sFormat') || T[type], price: Math.round(price), mrp: Math.round(mrp || price), desc: v('sDesc'), inc: inc.length ? inc : [v('sDesc')], preview: pv };
+    er.textContent = '';
+    saveShop([item].concat(cmsShop), 'Added “' + item.title + '” to the shop.');
+  });
+  box.querySelectorAll('[data-del-item]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-del-item'), p = cmsShop.filter(function(x){ return x.id === id; })[0];
+      if(!p || !confirm('Delete “' + p.title + '” from the shop?')) return;
+      saveShop(cmsShop.filter(function(x){ return x.id !== id; }), 'Deleted “' + p.title + '”.');
+    });
+  });
+}
+
+function renderBlogCms(box){
+  var B = window.ModivsBlogs, cats = B ? B.CATEGORIES : [];
+  box.innerHTML =
+    '<section class="box"><h2>Write a blog</h2><p class="cms-sub">Published straight to the Blogs page. Admin posts have no monthly limit.</p><form id="blogForm" novalidate>' +
+    fld('bTitle', 'Title', '<input id="bTitle" maxlength="150" placeholder="e.g. 5 smart ways to revise before board exams">') +
+    '<div class="cms-2">' +
+      fld('bCat', 'Category', '<select id="bCat"><option value="">Choose…</option>' + cats.map(function(c){ return '<option>' + escH(c) + '</option>'; }).join('') + '</select>') +
+      fld('bAuthor', 'Author name', '<input id="bAuthor" maxlength="80" value="Modiv’s Team">') +
+    '</div>' +
+    fld('bBody', 'Blog', '<textarea id="bBody" rows="12" maxlength="20000" placeholder="Start writing…"></textarea>', '<span>“## ” for a heading, “- ” for a bullet, blank line for a new paragraph.</span><span id="bCount">0 / 100 min</span>') +
+    '<div class="cms-err" id="bErr" role="alert"></div><button class="cbtn y" type="submit" id="bPub">Publish blog</button></form></section>' +
+    '<section class="box"><div class="cms-head"><h2>Blogs' + (cmsBlogs ? ' (' + cmsBlogs.length + ')' : '') + '</h2><a class="cbtn sm" href="modivs-blogs.html" target="_blank" rel="noopener">View blogs</a></div>' +
+    (cmsBlogErr ? '<p class="cms-err">' + escH(cmsBlogErr) + '</p>' : '') +
+    (cmsBlogs === null ? '<p class="cms-empty">Loading blogs…</p>' : cmsBlogs.length ? cmsBlogs.map(function(p){
+      return '<div class="cms-row"><div><b>' + escH(p.title) + '</b><small><span class="cms-tag">' + escH(p.category) + '</span>' + escH(p.authorName) + ' · ' + escH(B.fmtDate(p.date, 1)) + '</small></div>' +
+        '<div class="acts3"><a class="cbtn sm" href="modivs-blogs.html#' + encodeURIComponent(p.id) + '" target="_blank" rel="noopener">View</a><button type="button" class="cbtn sm del" data-del-blog="' + escH(p.id) + '">Delete</button></div></div>';
+    }).join('') : (cmsBlogErr ? '' : '<p class="cms-empty">No blogs yet. Write the first one.</p>')) + '</section>';
+
+  var body = $('bBody');
+  body.addEventListener('input', function(){ var n = body.value.trim().length; $('bCount').textContent = n < 100 ? n + ' / 100 min' : n.toLocaleString('en-IN') + ' characters'; });
+  $('blogForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var er = $('bErr'), btn = $('bPub');
+    if(!B){ er.textContent = 'The blogs module did not load.'; return; }
+    er.textContent = ''; btn.disabled = true; btn.textContent = 'Publishing…';
+    var o = { title: $('bTitle').value, category: $('bCat').value, authorName: $('bAuthor').value, body: body.value };
+    B.authReady().then(function(){ return B.adminPublish(o); }).then(function(){
+      toast('Blog published: “' + o.title.trim() + '”.');
+      cmsBlogs = null; renderCms(); loadBlogs();
+    }, function(err){ er.textContent = (err && err.message) || 'Could not publish.'; btn.disabled = false; btn.textContent = 'Publish blog'; });
+  });
+  box.querySelectorAll('[data-del-blog]').forEach(function(btn){
+    btn.addEventListener('click', function(){
+      var id = btn.getAttribute('data-del-blog'), p = (cmsBlogs || []).filter(function(x){ return x.id === id; })[0];
+      if(!p || !confirm('Delete the blog “' + p.title + '”? Its comments will no longer be shown.')) return;
+      btn.disabled = true;
+      B.authReady().then(function(){ return B.remove(id); }).then(function(){
+        cmsBlogs = cmsBlogs.filter(function(x){ return x.id !== id; }); cmsRefresh(); toast('Blog deleted.');
+      }, function(err){
+        btn.disabled = false;
+        toast(err && err.code === 'permission-denied' ? 'Firebase blocked the delete. Log out and log in again with the admin email.' : 'Could not delete: ' + ((err && err.message) || 'unknown error'));
+      });
+    });
+  });
+}
+
 function render(){
+  var cms = isCms();
+  document.querySelector('.main').classList.toggle('hide', cms);
+  $('cms').classList.toggle('hide', !cms);
   stats();
   recent();
   tabs();
+  if(cms){ renderCms(); return; }
   list();
   detail();
 }
@@ -1388,11 +1551,17 @@ function goPortal(key){ currentSection = key; selId = null; currentPage = 1; que
 function applyHash(){
   if(location.hash === '#students') goPortal('students');
   else if(location.hash === '#tutors') goPortal('all');
+  else if(location.hash === '#shop') goPortal('shop');
+  else if(location.hash === '#blogs') goPortal('blogs');
 }
+[['navShop', 'shop'], ['navBlogs', 'blogs']].forEach(function(x){
+  $(x[0]).addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null, '', '#' + x[1]); goPortal(x[1]); });
+});
 $('navTutors').addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null,'','#tutors'); goPortal('all'); });
 $('navStudents').addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null,'','#students'); goPortal('students'); });
 window.addEventListener('hashchange', applyHash);
 if(location.hash === '#students') currentSection = 'students';
+if(location.hash === '#shop' || location.hash === '#blogs') currentSection = location.hash.slice(1);
 
 render();
 })();

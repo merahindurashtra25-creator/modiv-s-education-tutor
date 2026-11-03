@@ -74,17 +74,23 @@
     return t.length > 170 ? t.slice(0, 167).replace(/\s+\S*$/, '') + '…' : t;
   }
 
+  function invalid(title, body, category){
+    if(title.length < 5) return 'Please add a title (at least 5 characters).';
+    if(title.length > 150) return 'The title is too long (max 150 characters).';
+    if(body.length < 100) return 'Please write at least 100 characters in the blog.';
+    if(body.length > 20000) return 'The blog is too long (max 20,000 characters).';
+    if(CATEGORIES.indexOf(category) < 0) return 'Please choose a category.';
+    return '';
+  }
+
   // Publish a blog. Writes the quota counter and the blog in ONE batch; the rules reject the batch
   // if the tutor already has 2 posts this month.
   function publish(o){
     var u = me();
     if(!u) return Promise.reject(new Error('Please log out and log in again, then try publishing.'));
     var title = String(o.title || '').trim(), body = String(o.body || '').trim();
-    if(title.length < 5) return Promise.reject(new Error('Please add a title (at least 5 characters).'));
-    if(title.length > 150) return Promise.reject(new Error('The title is too long (max 150 characters).'));
-    if(body.length < 100) return Promise.reject(new Error('Please write at least 100 characters in the blog.'));
-    if(body.length > 20000) return Promise.reject(new Error('The blog is too long (max 20,000 characters).'));
-    if(CATEGORIES.indexOf(o.category) < 0) return Promise.reject(new Error('Please choose a category.'));
+    var bad = invalid(title, body, o.category);
+    if(bad) return Promise.reject(new Error(bad));
     return quota(u.uid).then(function(q){
       if(q.used >= MAX_PER_MONTH) throw new Error('You have already published ' + MAX_PER_MONTH + ' blogs this month. You can publish again from ' + q.resets.toLocaleDateString('en-IN', { day: 'numeric', month: 'long', timeZone: 'UTC' }) + '.');
       var next = q.used + 1, f = fb(), qid = quotaId(u.uid), blogId = qid + '_' + next;
@@ -100,6 +106,22 @@
       return batch.commit().then(function(){ return blogId; });
     }).catch(function(e){
       if(e && e.code === 'permission-denied') throw new Error('Publishing was blocked by the database rules (permission-denied). If you have published fewer than ' + MAX_PER_MONTH + ' blogs this month, the site owner needs to publish the latest firestore.rules.');
+      throw e;
+    });
+  }
+  // Admin posts from the Admin Dashboard: no monthly limit (firestore.rules lets admins create blogs directly)
+  function adminPublish(o){
+    var title = String(o.title || '').trim(), body = String(o.body || '').trim();
+    var bad = invalid(title, body, o.category);
+    if(bad) return Promise.reject(new Error(bad));
+    var u = me();
+    if(!u) return Promise.reject(new Error('Firebase has not signed you in as admin. Log out, log in again with the admin email, then retry.'));
+    return fb().db.collection('blogs').add({
+      authorUid: u.uid, authorName: String(o.authorName || 'Modiv’s Team').trim().slice(0, 80) || 'Modiv’s Team',
+      title: title, category: o.category, excerpt: makeExcerpt(body), body: body,
+      read: Math.max(1, Math.round(body.split(/\s+/).length / 200)), createdAt: ts()
+    }).then(function(r){ return r.id; }).catch(function(e){
+      if(e && e.code === 'permission-denied') throw new Error('Firebase blocked this (permission-denied). Publish the latest firestore.rules and make sure you logged in with the admin email.');
       throw e;
     });
   }
@@ -175,7 +197,7 @@
   window.ModivsBlogs = {
     MAX_PER_MONTH: MAX_PER_MONTH, CATEGORIES: CATEGORIES,
     ready: ready, authReady: authReady, me: me, session: session,
-    list: list, get: get, byAuthor: byAuthor, quota: quota, publish: publish, remove: remove,
+    list: list, get: get, byAuthor: byAuthor, quota: quota, publish: publish, adminPublish: adminPublish, remove: remove,
     comments: comments, addComment: addComment, removeComment: removeComment,
     esc: esc, render: render, fmtDate: fmtDate
   };

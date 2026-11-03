@@ -190,7 +190,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     <input id="lEmail" type="email" autocomplete="email" placeholder="e.g. name@example.com">
     <label for="lPass">Password</label>
     <input id="lPass" type="password" autocomplete="current-password" placeholder="Enter your password">
-    <div class="row"><span></span><a id="forgot" role="button" tabindex="0">Forgot password?</a></div>
+    <div class="row"><a id="forgot" role="button" tabindex="0">Forgot password?</a><span></span></div>
     <div class="msg" id="lMsg" role="alert"></div>
     <button class="btn" type="submit" id="lSubmitBtn">Log in</button>
     
@@ -199,8 +199,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     <button type="button" class="gbtn" id="googleLogin"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>Continue with Google</span></button>
     <p class="gnote">Google verifies your email, so only genuine users get in.</p></div>
    <p class="switch" id="signupSwitch">New here? <a id="signupLink" href="modivs-signup.html">Sign up</a></p>
-   <a class="tjoin" id="tutorJoin" href="modivs-student-signup.html"><span><b>New to Modiv’s?</b> <span id="tjoinTxt">Sign up free and book a demo class with a verified tutor.</span></span><i aria-hidden="true">→</i></a>
-  </div><aside class="ac-side"><div class="ac-side-in"><div class="ac-photo"><img id="acImg" src="student-side.jpg" alt="Smiling student holding notebooks"></div><div class="ac-band"><p class="ac-script" id="acScript">Your Learning<br>Journey<br>Starts Here</p><ul class="ac-checks" id="acChecks"><li>Find expert tutors</li><li>Learn with confidence</li><li>Achieve your goals</li></ul></div></div></aside>
+   <a class="tjoin tj-card" id="tutorJoin" href="modivs-student-signup.html"><span class="tj-top"><b id="tjoinHead">Hey Student / Parent! New to Modiv’s?</b><i aria-hidden="true">→</i></span><span class="tj-grid" id="tjoinTxt"><span class="tj-step" style="--d:0"><em>1</em><span class="tj-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="4"/><path d="M2 21a7 7 0 0 1 14 0"/><path d="M19 8v6M16 11h6"/></svg></span><span class="tj-lb">Sign up free</span></span><span class="tj-step" style="--d:1"><em>2</em><span class="tj-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M16 3v4M8 3v4M3 10h18"/><path d="m9 15 2 2 4-4"/></svg></span><span class="tj-lb">Book a demo class</span></span><span class="tj-step" style="--d:2"><em>3</em><span class="tj-ic"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 5a2 2 0 0 1 2-1h5a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H2z"/><path d="M22 5a2 2 0 0 0-2-1h-5a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h8z"/></svg></span><span class="tj-lb">Start learning</span></span></span></a>
+  </div><aside class="ac-side"><div class="ac-side-in"><div class="ac-photo"><img id="acImg" src="student-login.jpg" alt="Smiling student holding notebooks"></div><div class="ac-band"><p class="ac-script" id="acScript">Your Learning<br>Journey<br>Starts Here</p><ul class="ac-checks" id="acChecks"><li>Find expert tutors</li><li>Learn with confidence</li><li>Achieve your goals</li></ul></div></div></aside>
   </div>
  </section>
 </main>
@@ -290,6 +290,16 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     }
   }
 
+  function showNoAccount(mail){
+    var msg = $('lMsg'), tutor = loginMode === 'tutor';
+    bad($('lEmail'), true);
+    msg.innerHTML = '<div class="noacc"><b>Oops, looks like you’re new here!</b>' +
+      '<span>We couldn’t find any account for <em></em>. No worries, signing up only takes a minute.</span>' +
+      '<a class="noacc-btn" href="' + (tutor ? 'modivs-education.html#tutor-signup' : 'modivs-student-signup.html') + '">' +
+      (tutor ? 'Create my tutor profile' : 'Sign up free') + ' →</a></div>';
+    msg.querySelector('em').textContent = mail;
+  }
+
   function setSignupLink(kind){
     var a = $('signupLink');
     if(!a) return;
@@ -298,8 +308,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   }
 
   var SIDE = {
-    tutor: {img:'tutor-hero.jpg', alt:'A Modivian tutor teaching a live class online', script:'Teach. Inspire.<br>Earn.', checks:['Get verified once','Unlock student leads near you','Set your own fees &amp; timings']},
-    student: {img:'student-side.jpg', alt:'Smiling student holding notebooks', script:'Your Learning<br>Journey<br>Starts Here', checks:['Verified home &amp; online tutors','Demo class before you decide','Track classes in one place']}
+    tutor: {img:'tutor-login.jpg', alt:'A Modivian tutor teaching a live class online', script:'Teach. Inspire.<br>Earn.', checks:['Get verified once','Unlock student leads near you','Set your own fees &amp; timings']},
+    student: {img:'student-login.jpg', alt:'Smiling student holding notebooks', script:'Your Learning<br>Journey<br>Starts Here', checks:['Verified home &amp; online tutors','Demo class before you decide','Track classes in one place']}
   };
   function setSidePanel(mode){
     var d = SIDE[mode === 'tutor' ? 'tutor' : 'student'], im = $('acImg');
@@ -309,8 +319,11 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     if($('acChecks')) $('acChecks').innerHTML = d.checks.map(function(c){ return '<li>'+c+'</li>'; }).join('');
     var tj = $('tutorJoin'), tt = $('tjoinTxt');
     if(tj && tt){
-      if(mode === 'tutor'){ tj.href = 'modivs-education.html#tutor-signup'; tt.textContent = 'Create your free tutor profile and start getting student leads.'; }
-      else { tj.href = 'modivs-student-signup.html'; tt.textContent = 'Sign up free and book a demo class with a verified tutor.'; }
+      var ICO = {"join": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"9\" cy=\"8\" r=\"4\"/><path d=\"M2 21a7 7 0 0 1 14 0\"/><path d=\"M19 8v6M16 11h6\"/></svg>", "demo": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M16 3v4M8 3v4M3 10h18\"/><path d=\"m9 15 2 2 4-4\"/></svg>", "learn": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 5a2 2 0 0 1 2-1h5a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H2z\"/><path d=\"M22 5a2 2 0 0 0-2-1h-5a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h8z\"/></svg>", "prof": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><circle cx=\"9\" cy=\"11\" r=\"2.5\"/><path d=\"M5.5 17a3.5 3.5 0 0 1 7 0\"/><path d=\"M15 9h3M15 13h3\"/></svg>", "lead": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9\"/><path d=\"M10.3 21a1.9 1.9 0 0 0 3.4 0\"/></svg>", "earn": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 4h12M6 9h12\"/><path d=\"M9 4c3.5 0 6 1.8 6 5s-2.5 5-6 5H6l8 7\"/></svg>"};
+      var steps = {"student": [["Sign up free", "join"], ["Book a demo class", "demo"], ["Start learning", "learn"]], "tutor": [["Create your tutor profile", "prof"], ["Start getting leads", "lead"], ["Start earning", "earn"]]}[mode === 'tutor' ? 'tutor' : 'student'];
+      if($('tjoinHead')) $('tjoinHead').textContent = (mode === 'tutor' ? 'Hey Tutor!' : 'Hey Student / Parent!') + ' New to Modiv’s?';
+      tj.href = mode === 'tutor' ? 'modivs-education.html#tutor-signup' : 'modivs-student-signup.html';
+      tt.innerHTML = steps.map(function(x, i){ return '<span class="tj-step" style="--d:' + i + '"><em>' + (i + 1) + '</em><span class="tj-ic">' + ICO[x[1]] + '</span><span class="tj-lb">' + x[0] + '</span></span>'; }).join('');
     }
   }
 
@@ -339,8 +352,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         tabTutor.classList.add('on');
         tabTutor.setAttribute('aria-selected', 'true');
       }
-      title.textContent = 'Welcome back, Tutor';
-      sub.textContent = 'Log in to see new student leads, chats and your class schedule.';
+      title.textContent = 'Welcome back, Modivian Tutor!';
+      sub.textContent = 'Ready to inspire today? Log in for new student leads, chats and your class schedule.';
       emailLabel.textContent = 'Tutor email';
       emailInput.placeholder = 'e.g. priya@example.com';
       submitBtn.textContent = 'Log in as Tutor';
@@ -354,8 +367,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         tabStudent.classList.add('on');
         tabStudent.setAttribute('aria-selected', 'true');
       }
-      title.textContent = 'Welcome back!';
-      sub.textContent = 'Log in to see your tutors, requests and class schedule.';
+      title.textContent = 'Welcome back, Modivian Student!';
+      sub.textContent = 'How’s the learning going? Log in to check your tutors, requests and classes.';
       emailLabel.textContent = 'Email';
       emailInput.placeholder = 'e.g. name@example.com';
       submitBtn.textContent = 'Log in as Student';
@@ -363,6 +376,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       setSignupLink('student');
     }
     if($('googleWrap')) $('googleWrap').style.display = '';
+    if($('lMsg')) $('lMsg').innerHTML = '';
     setSidePanel(mode);
     renderDemoBtns(mode);
   }
@@ -495,15 +509,22 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         setTimeout(function(){ window.location.href = dest; }, 500);
       }
 
-      if(window.ModivsAuth && (!matchTutor && !matchStudent && !foundUser)){
+      // a Firebase-verified sign-in means the account exists even if no profile record was found
+      var fbVerified = !!firebaseUid && !/^local_/.test(firebaseUid);
+      var noRecord = !matchTutor && !matchStudent && !foundUser;
+      if(noRecord && window.ModivsAuth){
         ModivsAuth.checkEmailRole(emailVal).then(function(acc){
-          if(acc.exists){
+          if(acc && acc.exists){
             var r = acc.role === 'tutor' ? 'Tutor' : (acc.role === 'student' ? 'Student / Parent' : (acc.role === 'admin' ? 'Admin' : 'General User'));
             finishSession(r, acc.name || emailVal.split('@')[0]);
-          } else {
+          } else if(fbVerified){
             finishSession(resolvedRole, displayName);
+          } else {
+            showNoAccount(emailVal);
           }
-        }).catch(function(){ finishSession(resolvedRole, displayName); });
+        }).catch(function(){ if(fbVerified) finishSession(resolvedRole, displayName); else showNoAccount(emailVal); });
+      } else if(noRecord && !fbVerified){
+        showNoAccount(emailVal);
       } else {
         finishSession(resolvedRole, displayName);
       }
@@ -520,6 +541,13 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         var found = users.find(function(x){ return x.email === emailVal; });
         if(found){
           proceedLogin('local_' + Date.now());
+          return;
+        }
+        if(window.ModivsAuth){
+          ModivsAuth.checkEmailRole(emailVal).then(function(acc){
+            if(acc && acc.exists) msg.textContent = 'Invalid email or password.';
+            else showNoAccount(emailVal);
+          }).catch(function(){ msg.textContent = 'Invalid email or password.'; });
           return;
         }
         msg.textContent = 'Invalid email or password.';
@@ -1234,5 +1262,6 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 <script src="modivs-menu.js" defer></script>
 <script src="modivs-avatars.js"></script>
 <script src="modivs-session-ui.js" defer></script>
+<script src="modivs-pass-eye.js"></script>
 </body>
 </html>

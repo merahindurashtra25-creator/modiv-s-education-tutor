@@ -242,6 +242,14 @@ service cloud.firestore {
     }
 
     // ==========================================
+    // 7b. Site content edited by the admin (shop catalogue: site_content/shop)
+    // ==========================================
+    match /site_content/{docId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    // ==========================================
     // 8. Blogs (tutors publish, anyone reads, signed-in users comment)
     // Limit: each tutor can publish at most 2 blogs per calendar month (UTC).
     // The quota counter and the blog are written together in one batch. The blog id must be
@@ -286,6 +294,13 @@ service cloud.firestore {
         && getAfter(quotaPath()).data.count <= 2
         && getAfter(quotaPath()).data.count == (exists(quotaPath()) ? get(quotaPath()).data.count : 0) + 1
         && blogId == request.auth.uid + '_' + monthTag() + '_' + string(getAfter(quotaPath()).data.count);
+
+      // Admin can publish from the Admin Dashboard without the monthly limit
+      allow create: if isAdmin()
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 5 && request.resource.data.title.size() <= 150
+        && request.resource.data.body is string
+        && request.resource.data.body.size() >= 100 && request.resource.data.body.size() <= 20000;
 
       allow update: if isAdmin();
       allow delete: if isAdmin() || (signedIn() && resource.data.authorUid == request.auth.uid);
