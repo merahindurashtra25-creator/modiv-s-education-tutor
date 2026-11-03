@@ -391,7 +391,41 @@ var $=function(id){return document.getElementById(id)};
 function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 var state={view:'dash',coins:30,filter:'new',q:'',tT:null};
 var COST=10;
-var leads=[];
+function loadTutorLeads(){
+  var raw = [];
+  try { raw = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]'); } catch(e){}
+  if(!raw.length){
+    try { raw = JSON.parse(localStorage.getItem('modivs_students_db') || '[]'); } catch(e){}
+  }
+  return raw.map(function(item){
+    return {
+      id: item.id || ('l_' + Math.random()),
+      name: item.name || 'Student',
+      parent: item.parentName || item.by || item.name || 'Parent',
+      cls: item.cls || 'Class 10',
+      board: item.board || 'CBSE',
+      subs: item.subs || ['Mathematics'],
+      city: item.city || 'Chandigarh',
+      area: item.area || '',
+      mode: Array.isArray(item.mode) ? item.mode.join(', ') : (item.mode || 'Online'),
+      budget: item.budget || '₹500 / hr',
+      notes: item.notes || '',
+      phone: item.phone || '',
+      email: item.email || '',
+      status: item.unlocked ? 'accepted' : 'new',
+      unlocked: !!item.unlocked,
+      sent: item.sent || 'Recently',
+      registered_at: item.registered_at || ''
+    };
+  });
+}
+var leads=loadTutorLeads();
+if(window.ModivsFirebaseSync){
+  window.ModivsFirebaseSync.onLeads(function(freshList){
+    leads = loadTutorLeads();
+    try { render(); } catch(e){}
+  });
+}
 var hist=[{t:'Joined bonus',d:'Oct 20',a:30}];
 var classes=[];
 var PACKS=[[50,'₹500'],[120,'₹1,000'],[300,'₹2,000']];

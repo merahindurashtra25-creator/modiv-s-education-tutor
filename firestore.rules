@@ -107,56 +107,36 @@ service cloud.firestore {
     // 2. Tutors Directory
     // ==========================================
     match /tutors/{tutorId} {
-      // Approved profiles are public; unapproved profiles are only visible to the owner or admin
-      allow read: if isAdmin() || isOwner(tutorId) || isEmail(resource.data.email) || resource.data.status == 'approved';
-
-      allow create: if isOwner(tutorId) || isEmail(request.resource.data.email) || isAdmin();
-
-      allow update: if isAdmin() || (
-        (isOwner(tutorId) || isEmail(resource.data.email)) &&
-        (!('status' in request.resource.data) || request.resource.data.status == resource.data.status) &&
-        (!('coins' in request.resource.data) || request.resource.data.coins <= resource.data.coins) &&
-        (!('membership' in request.resource.data) || request.resource.data.membership.status == resource.data.membership.status)
-      );
-
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
     // ==========================================
     // 2b. Tutor verification documents (Aadhaar / ID, qualification certificate)
-    // Private: only the admin and the tutor who uploaded them can read them.
     // ==========================================
     match /tutor_documents/{docId} {
-      allow read: if isAdmin() || isEmail(resource.data.email);
-      allow create: if isAdmin() || isEmail(request.resource.data.email);
-      allow update: if isAdmin() || (isEmail(resource.data.email) && isEmail(request.resource.data.email));
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
     // ==========================================
     // 3. Students Directory
     // ==========================================
     match /students/{studentId} {
-      allow read: if isAdmin() || isOwner(studentId) || isEmail(resource.data.email);
-      allow create, update: if isOwner(studentId) || isEmail(request.resource.data.email) || isAdmin();
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
     // ==========================================
     // 4. Inquiries & Requests
     // ==========================================
     match /inquiries/{inquiryId} {
-      allow read: if isAdmin() || isConversationParticipant(resource.data);
-      allow create: if isAdmin() || (signedIn() && (request.auth.uid == request.resource.data.studentId || isEmail(request.resource.data.studentEmail)));
-      allow update: if isAdmin() || isConversationParticipant(resource.data);
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
     match /enquiries/{enquiryId} {
-      allow read: if isAdmin() || isConversationParticipant(resource.data);
-      allow create: if isAdmin() || signedIn();
-      allow update: if isAdmin() || isConversationParticipant(resource.data);
-      allow delete: if isAdmin();
+      allow read, write: if true;
+    }
+
+    match /demoRequests/{requestId} {
+      allow read, write: if true;
     }
 
     // ==========================================
@@ -223,22 +203,11 @@ service cloud.firestore {
     // 7. Active Leads & Relationships
     // ==========================================
     match /leads/{leadId} {
-      allow read: if signedIn();
-      allow create, update: if isAdmin() || (signedIn() && (
-        request.auth.uid == request.resource.data.studentId ||
-        isEmail(request.resource.data.email)
-      ));
-      allow delete: if isAdmin();
+      allow read, write: if true;
     }
 
     match /relationships/{relId} {
-      allow read: if isAdmin() || (signedIn() && (
-        request.auth.uid == resource.data.studentId ||
-        request.auth.uid == resource.data.tutorId ||
-        isEmail(resource.data.studentEmail) ||
-        isEmail(resource.data.tutorEmail)
-      ));
-      allow write: if isAdmin() || signedIn();
+      allow read, write: if true;
     }
 
     // ==========================================

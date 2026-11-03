@@ -364,21 +364,34 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     rawDbTutors = [];
   }
 
+  function mapTutors(list){
+    return (list || []).filter(function(t){ return t.status === 'approved'; }).map(function(t){
+      return {
+        id: t.id,
+        name: t.name,
+        qual: t.qual || 'Verified Qualifications',
+        exp: (t.years || 0) + ' yrs exp',
+        subs: (t.subs && t.subs.length) ? t.subs : ['General'],
+        fee: t.fee || 500,
+        modes: (t.modes && t.modes.length) ? t.modes : ['Online'],
+        city: t.city || 'Punjab',
+        headline: t.headline || 'Experienced verified tutor on Modiv’s Education',
+        rating: t.rating || 4.8
+      };
+    });
+  }
+
   // Strictly filter only APPROVED tutors for student browsing
-  var tutors = rawDbTutors.filter(function(t){ return t.status === 'approved'; }).map(function(t){
-    return {
-      id: t.id,
-      name: t.name,
-      qual: t.qual || 'Verified Qualifications',
-      exp: (t.years || 0) + ' yrs exp',
-      subs: (t.subs && t.subs.length) ? t.subs : ['General'],
-      fee: t.fee || 500,
-      modes: (t.modes && t.modes.length) ? t.modes : ['Online'],
-      city: t.city || 'Punjab',
-      headline: t.headline || 'Experienced verified tutor on Modiv’s Education',
-      rating: t.rating || 4.8
-    };
-  });
+  var tutors = mapTutors(rawDbTutors);
+
+  if(window.ModivsFirebaseSync){
+    window.ModivsFirebaseSync.onTutors(function(freshTutors){
+      if(Array.isArray(freshTutors)){
+        tutors = mapTutors(freshTutors);
+        try { renderTutors(typeof activeSubj !== 'undefined' ? activeSubj : 'All', ''); } catch(e){}
+      }
+    });
+  }
 
   var favourites = [];
   var enquiries = [];

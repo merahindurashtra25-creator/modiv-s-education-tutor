@@ -193,6 +193,10 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 <div class="wrap">
   <h1>Admin Dashboard</h1>
   <p class="sub">Review all registered tutor profiles, approve pending applications, and view registered students.</p>
+  <div style="display:flex;gap:10px;margin:12px 0 16px;flex-wrap:wrap;">
+    <a href="modivs-tutors.html#add" class="btn" style="background:#0e7c66;border-color:#0e7c66;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">+ Add Tutor Profile</a>
+    <a href="modivs-active-leads.html#post" class="btn" style="background:#1A2035;border-color:#1A2035;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">+ Add Student Inquiry</a>
+  </div>
 
   <div class="stats" id="stats"></div>
 
@@ -372,6 +376,28 @@ syncDatabases();
   students=students.filter(function(x){return !((x.id&&tb.indexOf(x.id)>-1)||(x.email&&tb.indexOf(String(x.email).toLowerCase())>-1))});
   localStorage.setItem('modivs_students_db', JSON.stringify(students));
 })();
+
+if(window.ModivsFirebaseSync){
+  window.ModivsFirebaseSync.onTutors(function(freshTutors){
+    if(Array.isArray(freshTutors) && freshTutors.length){
+      tutors = freshTutors;
+      try{ render(); }catch(e){}
+    }
+  });
+  window.ModivsFirebaseSync.onStudents(function(freshStudents){
+    if(Array.isArray(freshStudents) && freshStudents.length){
+      students = freshStudents;
+      try{ render(); }catch(e){}
+    }
+  });
+} else {
+  setTimeout(function(){
+    if(window.ModivsFirebaseSync){
+      window.ModivsFirebaseSync.onTutors(function(freshTutors){ if(Array.isArray(freshTutors)&&freshTutors.length){ tutors = freshTutors; try{ render(); }catch(e){} } });
+      window.ModivsFirebaseSync.onStudents(function(freshStudents){ if(Array.isArray(freshStudents)&&freshStudents.length){ students = freshStudents; try{ render(); }catch(e){} } });
+    }
+  }, 200);
+}
 
 function saveTutorsDb(){
   try {
@@ -1287,6 +1313,9 @@ function decide(x, s, verb, note, reasons){
 
   logAction(x.id, x.name, verb, s === 'rejected' ? x.rejection_reason : note);
   saveTutorsDb();
+  if(window.ModivsFirebaseSync){
+    window.ModivsFirebaseSync.saveTutor(x);
+  }
 
   // If the currently logged in tutor is this tutor, update their session
   try {

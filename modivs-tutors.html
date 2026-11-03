@@ -341,18 +341,36 @@ function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null
 function arr(x){return Array.isArray(x)?x.filter(Boolean):[]}
 function load(){
  var by={};
- SEED.forEach(function(t){by[t.email]=t});
  read('modivs_tutors_db').concat(read('modivs_submitted_tutors')).forEach(function(t){
   if(t&&t.email){by[t.email]=Object.assign({},by[t.email]||{},t)}
  });
  var gone=read('modivs_deleted_tutors');
  var all=Object.keys(by).map(function(k){return by[k]}).filter(function(t){return t.status==='approved'&&t.name&&gone.indexOf(String(t.id||''))<0&&gone.indexOf(String(t.email||'').toLowerCase())<0});
- // demo profiles only appear while there are no real ones
- var real=all.filter(function(t){return !t.is_demo});
- return real.length?real:all;
+ return all;
 }
 function normCity(c){return String(c||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()})}
 var tutors=load().map(function(t){return Object.assign({},t,{city:normCity(t.city)})}),$=function(i){return document.getElementById(i)};
+
+function updateTutorsFromDb(freshList){
+ if(!Array.isArray(freshList)) return;
+ var gone = read('modivs_deleted_tutors');
+ var valid = freshList.filter(function(t){
+  return t && t.status === 'approved' && t.name && gone.indexOf(String(t.id||'')) < 0 && gone.indexOf(String(t.email||'').toLowerCase()) < 0;
+ });
+ tutors = valid.map(function(t){ return Object.assign({}, t, { city: normCity(t.city) }); });
+ var cityOpts = Array.from(new Set(tutors.map(function(t){ return t.city; }).filter(Boolean)));
+ var subOpts = Array.from(new Set([].concat.apply([], tutors.map(function(t){ return arr(t.subs); })).filter(Boolean)));
+ if($('fSub')) fillSelect('fSub', subOpts.slice().sort());
+ if($('fCity')) fillSelect('fCity', cityOpts.slice().sort());
+ fillAreas();
+ stats();
+ render();
+}
+if(window.ModivsFirebaseSync){
+ window.ModivsFirebaseSync.onTutors(updateTutorsFromDb);
+} else {
+ setTimeout(function(){ if(window.ModivsFirebaseSync) window.ModivsFirebaseSync.onTutors(updateTutorsFromDb); }, 200);
+}
 function initials(n){return String(n).split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()}
 function avatar(t,box){
  box.textContent='';
@@ -435,6 +453,9 @@ function askDelete(t){
 }
 function doDelete(t){
  var id=String(t.id||''),em=String(t.email||'').toLowerCase();
+ if(window.ModivsFirebaseSync){
+  window.ModivsFirebaseSync.deleteTutor(id, em);
+ }
  function hit(x){return x&&((id&&String(x.id)===id)||(em&&String(x.email||'').toLowerCase()===em))}
  ['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){
   var a=read(k),b=a.filter(function(x){return !hit(x)});
@@ -743,10 +764,15 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
   if(cF){t.cert=cF.name}
   var sb=$('addTForm').querySelector('button[type=submit]');sb.disabled=true;err.textContent='';
   function finish(){
-  all.unshift(t);localStorage.setItem('modivs_tutors_db',JSON.stringify(all));
-  try{var fb=window.EducationBFirebase;if(fb&&fb.db)fb.db.collection('tutors').doc(id).set(t,{merge:true}).catch(function(){})}catch(x){}
+  if(window.ModivsFirebaseSync){
+   window.ModivsFirebaseSync.saveTutor(t);
+  } else {
+   all.unshift(t);localStorage.setItem('modivs_tutors_db',JSON.stringify(all));
+   try{var fb=window.EducationBFirebase;if(fb&&fb.db)fb.db.collection('tutors').doc(id).set(t,{merge:true}).catch(function(){})}catch(x){}
+  }
   try{var lg=read('modivs_audit_logs');lg.unshift({id:id,name:name,action:'Tutor Added',admin:adminMail,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:'Profile added directly by admin and approved.'});localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,50)))}catch(x){}
-  $('addT').close();location.reload();
+  $('addT').close();
+  updateTutorsFromDb(read('modivs_tutors_db'));
   }
   Promise.all([idF?ModivsDocs.prepare(idF):null,cF?ModivsDocs.prepare(cF):null]).then(function(d){
    if(d[0]&&!ModivsDocs.save(t.email,'id',d[0]))throw {userMessage:'Not enough browser storage to keep the ID document. Try a smaller file.'};

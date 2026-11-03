@@ -327,6 +327,9 @@ function render(){
       }
 
       // Sync to Firebase if connected
+      if(window.ModivsFirebaseSync){
+        ModivsFirebaseSync.saveLead(lead).catch(function(e){ console.warn('Sync save lead failed', e); });
+      }
       if(window.EducationBFirebase){
         var fbAuth = window.EducationBFirebase.auth, firestore = window.EducationBFirebase.db;
         if(fbAuth && D.pass && !fbAuth.currentUser){

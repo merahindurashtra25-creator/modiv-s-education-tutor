@@ -312,6 +312,9 @@ f.addEventListener('submit',function(e){
         location: locData
       }).catch(function(e){ console.warn('Account sync failed', e); });
     }
+    if(window.ModivsFirebaseSync){
+      ModivsFirebaseSync.saveLead(lead).catch(function(e){ console.warn('Sync save lead failed', e); });
+    }
     if(window.EducationBFirebase){var A=window.EducationBFirebase.auth,F=window.EducationBFirebase.db;
      if(A&&email&&pass&&!A.currentUser)A.createUserWithEmailAndPassword(email,pass).then(function(r){if(r&&r.user)r.user.updateProfile({displayName:req.name})}).catch(function(){});
      if(F){

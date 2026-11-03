@@ -452,6 +452,9 @@ f.addEventListener('submit',function(e){
     var us=jget('modivs_users',[]);if(!us.some(function(u){return u.email===email}))us.push({name:req.name,email:email,phone:phone,city:city,role:'Student / Parent',location:locDetails,created_at:stamp});localStorage.setItem('modivs_users',JSON.stringify(us));
     localStorage.setItem('modivs_auth_user',JSON.stringify({name:req.name,email:email,role:'Student / Parent'}));localStorage.setItem('modivs_student_req',JSON.stringify(req));
    }
+   if(window.ModivsFirebaseSync){
+     ModivsFirebaseSync.saveLead(lead).catch(function(e){ console.warn('Sync save lead failed', e); });
+   }
    if(window.EducationBFirebase){var A=window.EducationBFirebase.auth,F=window.EducationBFirebase.db;
     if(A&&email&&pass&&pass!=='google_authenticated'&&!A.currentUser)A.createUserWithEmailAndPassword(email,pass).then(function(r){if(r&&r.user)r.user.updateProfile({displayName:req.name})}).catch(function(){});
     if(F){

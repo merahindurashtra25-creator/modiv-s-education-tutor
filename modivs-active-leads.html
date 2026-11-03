@@ -167,11 +167,22 @@ function load(){
   var tb=tomb();if((l.id&&tb.indexOf(l.id)>-1)||(l.email&&tb.indexOf(String(l.email).toLowerCase())>-1))return;
   out.push(l);
  });
- if(!out.length)SEED.forEach(function(l){out.push(l)}); // demo leads only while there are no real ones
  out.sort(function(a,b){return (new Date(b.registered_at||0))-(new Date(a.registered_at||0))});
  return out;
 }
 var leads=load(),$=function(i){return document.getElementById(i)};
+
+if(window.ModivsFirebaseSync){
+ window.ModivsFirebaseSync.onLeads(function(freshLeads){
+  reloadAll();
+ });
+} else {
+ setTimeout(function(){
+  if(window.ModivsFirebaseSync){
+   window.ModivsFirebaseSync.onLeads(function(freshLeads){ reloadAll(); });
+  }
+ }, 200);
+}
 var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','admin@gmail.com'];
 var ADMIN=false;try{var as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');ADMIN=!!(as&&as.email&&ADMIN_EMAILS.indexOf(as.email.toLowerCase())!==-1)}catch(e){}
 function tomb(){return read('modivs_deleted_leads')}
@@ -253,6 +264,9 @@ function reloadAll(){
 function removeLead(l){
  if(!confirm('Delete the inquiry from '+l.name+'? This removes it from Active leads and the admin Student Inquiries list.'))return;
  var id=l.id,em=(l.email||'').toLowerCase();
+ if(window.ModivsFirebaseSync){
+  window.ModivsFirebaseSync.deleteLead(id, em);
+ }
  function same(x){return (id&&x.id===id)||(em&&(x.email||'').toLowerCase()===em)}
  save('modivs_active_leads',read('modivs_active_leads').filter(function(x){return !same(x)}));
  save('modivs_students_db',read('modivs_students_db').filter(function(x){return !same(x)}));
@@ -290,7 +304,11 @@ function submitAdd(e){
   status:'active',sent:'Just now',by:parent?'Parent: '+parent+' (posted by admin)':'Posted by admin',registered_at:new Date().toISOString(),posted_by_admin:true};
  var a=read('modivs_active_leads');a.unshift(lead);save('modivs_active_leads',a);
  var st=read('modivs_students_db');st.unshift(lead);save('modivs_students_db',st);
- fsDo(function(db){db.collection('leads').doc(id).set(lead,{merge:true}).catch(function(){});db.collection('students').doc(id).set(lead,{merge:true}).catch(function(){})});
+ if(window.ModivsFirebaseSync){
+  window.ModivsFirebaseSync.saveLead(lead);
+ } else {
+  fsDo(function(db){db.collection('leads').doc(id).set(lead,{merge:true}).catch(function(){});db.collection('students').doc(id).set(lead,{merge:true}).catch(function(){})});
+ }
  $('addDlg').close();
  ['q','fCity','fMode','fSub','fAge'].forEach(function(i){$(i).value=''});
  reloadAll();
