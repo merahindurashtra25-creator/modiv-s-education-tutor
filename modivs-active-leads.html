@@ -218,20 +218,53 @@ function stats(){
   });
   s.appendChild(d)});
 }
+var activeTutorUser = null;
+try {
+  activeTutorUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
+} catch(e){}
+var activeTutorEmail = (activeTutorUser && activeTutorUser.role === 'Tutor' && activeTutorUser.email) ? activeTutorUser.email.toLowerCase() : '';
+var activeUnlockedLeads = {};
+if(window.ModivsFirebaseSync && activeTutorEmail){
+  window.ModivsFirebaseSync.onUnlocks(activeTutorEmail, function(ids){
+    activeUnlockedLeads = {};
+    ids.forEach(function(id){ activeUnlockedLeads[String(id).replace(/[\/\\#?]/g,'_').trim()] = true; });
+    try { render(); } catch(e){}
+  });
+}
+
 function card(l){
  var c=el('article','card'),t=el('div','top'),n=el('div');
+ var lid = String(l.id || '').replace(/[\/\\#?]/g,'_').trim();
+ var isUnlocked = !!activeUnlockedLeads[lid] || !!l.unlocked;
+
  var ava=null;
  if(l.avatar&&window.ModivsAvatars&&ModivsAvatars.has(l.avatar)){ava=document.createElement('img');ava.src=ModivsAvatars.src(l.avatar);ava.alt=(l.avatar==='male'?'Boy':'Girl')+' avatar';ava.className='lavatar'}
  n.appendChild(el('h3','',l.name));n.appendChild(el('div','by',l.by||(l.parentName&&l.parentName!==l.name?'Parent: '+l.parentName:'Student')));
- var left=el('div','lwho');if(ava)left.appendChild(ava);left.appendChild(n);t.appendChild(left);t.appendChild(el('span','badge','Active'));c.appendChild(t);
+ var left=el('div','lwho');if(ava)left.appendChild(ava);left.appendChild(n);t.appendChild(left);
+ if(isUnlocked){
+  var ub=el('span','badge','✓ Unlocked');
+  ub.style.background='#d9f0e3';ub.style.color='var(--ok)';
+  t.appendChild(ub);
+ } else {
+  t.appendChild(el('span','badge','Active'));
+ }
+ c.appendChild(t);
  var d=el('dl','meta');
  [['Class',[l.cls,l.board].filter(Boolean).join(' · ')],['City',(l.area?l.area+', ':'')+(l.city||'')],['Mode',normModes(l.mode).join(', ')],['Budget',l.budget],['Days',l.freq],['Format',(l.formats||[]).join(', ')]].filter(function(p){return p[1]}).forEach(function(p){
   var w=el('div');w.appendChild(el('dt','',p[0]));w.appendChild(el('dd','',p[1]||'—'));d.appendChild(w)});
  c.appendChild(d);
  var tg=el('div','tags');(l.subs||[]).concat(l.goals||[]).forEach(function(x){tg.appendChild(el('span','',x))});c.appendChild(tg);
  if(l.notes)c.appendChild(el('p','note','“'+l.notes+'”'));
+ if(isUnlocked && l.phone){
+  var cp = el('p','note','📞 Contact: ' + l.phone + (l.email ? ' · ✉ ' + l.email : ''));
+  cp.style.fontWeight = '700';cp.style.color = 'var(--navy)';c.appendChild(cp);
+ }
  var f=el('div','foot');f.appendChild(el('span','',ago(l)));
- var a=el('a','',"Unlock in Tutor dashboard →");a.href='modivs-tutor-dashboard.html';a.style.fontWeight='600';f.appendChild(a);
+ if(isUnlocked){
+  var a=el('a','',"Open in Tutor Dashboard →");a.href='modivs-tutor-dashboard.html';a.style.fontWeight='600';f.appendChild(a);
+ } else {
+  var a=el('a','',"Unlock in Tutor dashboard →");a.href='modivs-tutor-dashboard.html';a.style.fontWeight='600';f.appendChild(a);
+ }
  if(ADMIN){var x=el('button','xbtn','Delete');x.type='button';x.setAttribute('aria-label','Delete lead for '+l.name);x.addEventListener('click',function(){removeLead(l)});f.appendChild(x)}
  c.appendChild(f);return c;
 }

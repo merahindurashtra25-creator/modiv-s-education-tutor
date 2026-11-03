@@ -391,6 +391,9 @@ var $=function(id){return document.getElementById(id)};
 function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 var state={view:'dash',coins:30,filter:'new',q:'',tT:null};
 var COST=10;
+// Set of lead IDs this tutor has already unlocked (fetched from Firestore)
+var _unlockedSet = {};
+
 function loadTutorLeads(){
   var raw = [];
   try { raw = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]'); } catch(e){}
@@ -398,6 +401,11 @@ function loadTutorLeads(){
     try { raw = JSON.parse(localStorage.getItem('modivs_students_db') || '[]'); } catch(e){}
   }
   return raw.map(function(item){
+    var lid = String(item.id || '').replace(/[\/\\#?]/g,'_').trim();
+    var isUnlocked = !!item.unlocked || !!_unlockedSet[lid];
+    var myEm = (currentTutorEmail() || '').toLowerCase();
+    var isAcceptedByMe = item.acceptedByTutor && String(item.acceptedByTutor).toLowerCase() === myEm;
+    var st = isAcceptedByMe ? (item.status || 'accepted') : (item.status === 'active' ? 'new' : (item.status || 'new'));
     return {
       id: item.id || ('l_' + Math.random()),
       name: item.name || 'Student',
@@ -412,14 +420,27 @@ function loadTutorLeads(){
       notes: item.notes || '',
       phone: item.phone || '',
       email: item.email || '',
-      status: item.unlocked ? 'accepted' : 'new',
-      unlocked: !!item.unlocked,
+      status: st,
+      unlocked: isUnlocked,
       sent: item.sent || 'Recently',
       registered_at: item.registered_at || ''
     };
   });
 }
 var leads=loadTutorLeads();
+
+// Subscribe to real-time Firestore unlock records for this tutor
+function initUnlockListener(){
+  var em = currentTutorEmail();
+  if(!em || !window.ModivsFirebaseSync) return;
+  window.ModivsFirebaseSync.onUnlocks(em, function(unlockedLeadIds){
+    _unlockedSet = {};
+    unlockedLeadIds.forEach(function(lid){ _unlockedSet[lid] = true; });
+    leads = loadTutorLeads();
+    try { render(); } catch(e){}
+  });
+}
+
 if(window.ModivsFirebaseSync){
   window.ModivsFirebaseSync.onLeads(function(freshList){
     leads = loadTutorLeads();
@@ -615,6 +636,16 @@ function activateMembership(planName, days, price, bonusCoins, isUpgrade){
 
 function unlock(l){
  var em = currentTutorEmail();
+ var lid = String(l.id || '').replace(/[\/\\#?]/g,'_').trim();
+
+ // One-time unlock guard: if already in Firestore, show details without charging
+ if(_unlockedSet[lid] || l.unlocked){
+  l.unlocked = true;
+  toast('Already unlocked: ' + l.name + '. No coins deducted.');
+  render();
+  return;
+ }
+
  if(window.ModivsChat && em){
   var mem = ModivsChat.getTutorMembership(em);
   if(!mem.isValid){
@@ -628,13 +659,24 @@ function unlock(l){
    openRecharge();
    return;
   }
+  // Deduct coins
   var res = ModivsChat.addTutorCoins(em, -COST, 'Unlocked lead ' + l.name);
   state.coins = res.balance;
  } else {
   if(state.coins < COST){toast('Not enough coins. Recharge to unlock this lead.');openRecharge();return}
   state.coins -= COST;
  }
- l.unlocked=true;
+
+ // Mark unlocked locally
+ _unlockedSet[lid] = true;
+ l.unlocked = true;
+ l.status = 'new'; // pending response
+
+ // Persist to Firestore (idempotent)
+ if(window.ModivsFirebaseSync && em){
+  window.ModivsFirebaseSync.saveUnlock(em, l.id || l.name, COST).catch(function(){});
+ }
+
  hist.unshift({t:'Unlocked '+l.name,d:'Today',a:-COST});
  toast('Unlocked '+l.name+'. Contact details are now visible.');
  render();
@@ -681,13 +723,24 @@ function stat(label,val,cls,small){var d=el('div','stat'+(cls?' '+cls:''));d.app
 function leadCard(l){
  var c=el('div','lead'),L=el('div'),A=el('div','acts');
  var title=l.unlocked?l.name:l.name.split(' ')[0]+' '+l.name.split(' ')[1].charAt(0)+'.';
- var h=el('h3','',title+' ');h.appendChild(el('span','badge '+(l.unlocked?l.status:'locked'),l.unlocked?LABEL[l.status]:'Locked'));L.appendChild(h);
+ var badgeCls='badge '+(l.unlocked?l.status:'locked');
+ var badgeLabel=l.unlocked?(LABEL[l.status]||'Accepted'):'Locked';
+ var h=el('h3','',title+' ');h.appendChild(el('span',badgeCls,badgeLabel));
+ // Persistent "Unlocked" marker — visible even after refresh
+ if(l.unlocked){var ub=el('span','badge accepted','✓ Unlocked');ub.style.marginLeft='6px';h.appendChild(ub);}
+ L.appendChild(h);
  L.appendChild(el('p','meta',(l.unlocked?l.who+' · ':'')+l.cls+' · '+l.board+' · '+l.city+' · '+l.time));
  var t=el('div','tags');l.subs.concat([l.mode,'Budget '+l.budget,l.when]).forEach(function(x){t.appendChild(el('span','',x))});L.appendChild(t);
- if(l.unlocked){L.appendChild(el('p','note',l.note));L.appendChild(el('p','contact','Contact: '+l.phone))}
+ if(l.unlocked){L.appendChild(el('p','note',l.notes||l.note));L.appendChild(el('p','contact','Contact: '+l.phone))}
  else L.appendChild(el('p','lock','Unlock to see the full name, contact number and notes.'));
  function btn(x,cls,fn){var b=el('button','b '+cls,x);b.type='button';b.addEventListener('click',fn);A.appendChild(b)}
- function set(s,m){l.status=s;toast(m);render()}
+ function set(s,m){
+   l.status=s;
+   if(window.ModivsFirebaseSync && l.id && currentTutorEmail()){
+     window.ModivsFirebaseSync.updateLeadStatus(l.id, currentTutorEmail(), s).catch(function(){});
+   }
+   toast(m);render();
+ }
  if(!l.unlocked)btn('Unlock · '+COST+' coins','y',function(){unlock(l)});
  else {
    if(l.status==='new'){btn('Accept','y',function(){set('accepted','Accepted '+l.name+'.')});btn('Offer demo','',function(){set('demo','Demo offered to '+l.name+'.')});btn('Decline','o',function(){set('declined','Declined '+l.name+'.')})}
@@ -729,11 +782,28 @@ function vDash(v){
  var w=el('span','wave','\ud83d\udc4b');w.setAttribute('aria-hidden','true');h.appendChild(w);v.appendChild(h);
  v.appendChild(el('p','sub','Here\u2019s what\u2019s happening with your tutoring.'));
 
- var k=el('div','kpis k3');
- k.appendChild(kpi('','doc','New Enquiries',newLeads().length,'View Leads','leads'));
- k.appendChild(kpi('g','cal','Upcoming Classes',classes.length,'View Schedule','classes'));
+ var totalL = leads.length;
+ var availL = newLeads().length;
+ var unlkL = unlockedCount();
+ var accL = leads.filter(function(l){ return l.unlocked && l.status === 'accepted'; }).length;
+ var pendL = leads.filter(function(l){ return l.unlocked && l.status === 'new'; }).length;
+ var demoL = leads.filter(function(l){ return l.unlocked && (l.status === 'demo' || l.status === 'converted'); }).length;
+
+ var k=el('div','kpis');
+ k.appendChild(kpi('','doc','Available Leads',availL,'View Leads','leads'));
+ k.appendChild(kpi('g','target','Unlocked Leads',unlkL,'View Unlocked','requests'));
+ k.appendChild(kpi('p','cal','Accepted Leads',accL,'View Requests','requests'));
  k.appendChild(kpi('o','coin','Available Coins',state.coins,'View Details','credits'));
  v.appendChild(k);
+
+ var sbox = el('div','stats');
+ sbox.appendChild(stat('Total Leads', totalL));
+ sbox.appendChild(stat('Available Leads', availL));
+ sbox.appendChild(stat('Unlocked Leads', unlkL, unlkL ? 'hi' : ''));
+ sbox.appendChild(stat('Accepted Leads', accL));
+ sbox.appendChild(stat('Pending Leads', pendL));
+ sbox.appendChild(stat('Demo / Converted', demoL));
+ v.appendChild(sbox);
 
  var pc=profileCompletion(t);
  var card=el('section','box pcomp');
@@ -1494,6 +1564,7 @@ if(window.ModivsChat && window.MY_TUTOR && window.MY_TUTOR.email){
 }
 
 try{if(window.ModivsChat) ModivsChat.subscribe(render);}catch(e){}
+initUnlockListener();
 render();
 })();
 </script>

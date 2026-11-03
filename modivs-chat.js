@@ -1166,6 +1166,7 @@
     var me = emailOf(user());
     var isTutorUser = (user() && user().role === 'Tutor');
     var rows = conversations().filter(function(c){ return isAdmin() || participant(c); });
+    rows.forEach(function(c){ watchFirestoreMessages(c, notify); });
 
     if(!rows.length){
       container.innerHTML = '<div class="mc-empty">No conversations yet.<br><small style="color:#7180ad">Messages from your enquiries and leads will appear here.</small></div>';
@@ -1266,71 +1267,112 @@
   }
 
   // =========================================================================
-  // Background Listener for Incoming Teacher Inquiries
-  // Automatically triggers when a new locked inquiry arrives for this tutor
+  // Background Listener for Incoming Conversations & Messages
+  // Supports both Tutor & Student accounts with real-time updates
   // =========================================================================
-  var teacherListenerUnsub = null;
-  function listenForTeacherInquiries(tutorEmail, onInquiry){
+  var liveConvUnsubs = [];
+  function listenForConversations(userEmailOrUser, onInquiry){
     var firestore = db();
-    var em = emailOf(tutorEmail);
+    var u = typeof userEmailOrUser === 'object' ? userEmailOrUser : (userEmailOrUser ? { email: userEmailOrUser } : user());
+    var em = emailOf(u);
     if(!firestore || !em) return function(){};
 
-    if(teacherListenerUnsub) teacherListenerUnsub();
+    liveConvUnsubs.forEach(function(unsub){ try { unsub(); } catch(e){} });
+    liveConvUnsubs = [];
 
     var seenInquiriesKey = 'modivs_seen_inquiries_' + em;
     var seen = {};
     try { seen = JSON.parse(localStorage.getItem(seenInquiriesKey) || '{}'); } catch(e){}
 
-    teacherListenerUnsub = firestore.collection('conversations')
-      .where('tutorEmail', '==', em)
-      .onSnapshot(function(snapshot){
-        if(snapshot.empty) return;
-        var all = conversations();
-        var byId = {};
-        all.forEach(function(x){ byId[x.id] = x; });
+    function handleSnapshot(snapshot){
+      if(!snapshot || snapshot.empty) return;
+      var all = conversations();
+      var byId = {};
+      all.forEach(function(x){ byId[x.id] = x; if(x.docId) byId[x.docId] = x; });
+      var changed = false;
 
-        snapshot.docChanges().forEach(function(change){
-          var d = change.doc.data();
-          var id = d.id || change.doc.id;
-          if(!byId[id]){
-            var newC = {
-              id: id,
-              docId: change.doc.id,
-              student: d.student || { name: 'Student', email: d.studentEmail || '' },
-              tutor: d.tutor || { name: 'Tutor', email: d.tutorEmail || '' },
-              studentEmail: d.studentEmail,
-              tutorEmail: d.tutorEmail,
-              studentId: d.studentId,
-              tutorId: d.tutorId,
-              participantIds: d.participantIds || [],
-              unlocked: !!d.unlocked,
-              unlockedAt: d.unlockedAt || null,
-              messages: [],
-              createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : new Date().toISOString(),
-              updatedAt: d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate().toISOString() : new Date().toISOString()
-            };
-            all.unshift(newC);
-            byId[id] = newC;
-            save(all);
+      snapshot.docs.forEach(function(docSnap){
+        var d = docSnap.data() || {};
+        var id = d.id || docSnap.id;
+        var existing = byId[id] || byId[docSnap.id];
+        if(!existing){
+          var newC = {
+            id: id,
+            docId: docSnap.id,
+            student: d.student || { name: 'Student', email: d.studentEmail || '' },
+            tutor: d.tutor || { name: 'Tutor', email: d.tutorEmail || '' },
+            studentEmail: d.studentEmail,
+            tutorEmail: d.tutorEmail,
+            studentId: d.studentId,
+            tutorId: d.tutorId,
+            participantIds: d.participantIds || [],
+            unlocked: !!d.unlocked,
+            unlockedAt: d.unlockedAt || null,
+            status: d.status || (d.unlocked ? 'unlocked' : 'inquiry_pending'),
+            lastMessage: d.lastMessage || '',
+            messages: [],
+            createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : new Date().toISOString(),
+            updatedAt: d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate().toISOString() : new Date().toISOString()
+          };
+          all.unshift(newC);
+          byId[id] = newC;
+          byId[docSnap.id] = newC;
+          changed = true;
 
-            // If it's a new locked inquiry and hasn't been shown in this session yet
-            if(!d.unlocked && !seen[id]){
-              seen[id] = true;
-              try { localStorage.setItem(seenInquiriesKey, JSON.stringify(seen)); } catch(e){}
-              if(onInquiry) onInquiry(newC);
-            }
-          } else {
-            // Update unlock status in memory
-            if(d.unlocked && !byId[id].unlocked){
-              byId[id].unlocked = true;
-              byId[id].unlockedAt = d.unlockedAt || new Date().toISOString();
-              save(all);
-            }
+          // Start watching messages immediately
+          watchFirestoreMessages(newC, notify);
+
+          // If tutor and inquiry is locked, notify popup
+          if(emailOf(newC.tutorEmail) === em && !d.unlocked && !seen[id]){
+            seen[id] = true;
+            try { localStorage.setItem(seenInquiriesKey, JSON.stringify(seen)); } catch(e){}
+            if(onInquiry) onInquiry(newC);
           }
-        });
-      }, function(err){ console.warn('Teacher inquiry listener error:', err); });
+        } else {
+          if(d.unlocked !== undefined && existing.unlocked !== !!d.unlocked){
+            existing.unlocked = !!d.unlocked;
+            existing.unlockedAt = d.unlockedAt || existing.unlockedAt;
+            changed = true;
+          }
+          if(d.lastMessage && existing.lastMessage !== d.lastMessage){
+            existing.lastMessage = d.lastMessage;
+            changed = true;
+          }
+          if(d.status && existing.status !== d.status){
+            existing.status = d.status;
+            changed = true;
+          }
+          watchFirestoreMessages(existing, notify);
+        }
+      });
 
-    return teacherListenerUnsub;
+      if(changed){
+        save(all);
+      }
+    }
+
+    try {
+      var unsubTutor = firestore.collection('conversations')
+        .where('tutorEmail', '==', em)
+        .onSnapshot(handleSnapshot, function(err){ console.warn('Tutor conversations listener notice:', err); });
+      liveConvUnsubs.push(unsubTutor);
+
+      var unsubStudent = firestore.collection('conversations')
+        .where('studentEmail', '==', em)
+        .onSnapshot(handleSnapshot, function(err){ console.warn('Student conversations listener notice:', err); });
+      liveConvUnsubs.push(unsubStudent);
+    } catch(err){
+      console.warn('Conversation listener initialization error:', err);
+    }
+
+    return function(){
+      liveConvUnsubs.forEach(function(unsub){ try{ unsub(); }catch(e){} });
+      liveConvUnsubs = [];
+    };
+  }
+
+  function listenForTeacherInquiries(tutorEmail, onInquiry){
+    return listenForConversations(tutorEmail, onInquiry);
   }
 
   // =========================================================================
@@ -1363,9 +1405,11 @@
     isConversationUnlockedForTutor: isConversationUnlockedForTutor,
     maskStudentName: maskStudentName,
 
-    // Notification Popup
+    // Notification Popup & Realtime Listeners
     showTeacherInquiryPopup: showTeacherInquiryPopup,
     listenForTeacherInquiries: listenForTeacherInquiries,
+    listenForConversations: listenForConversations,
+    watchFirestoreMessages: watchFirestoreMessages,
 
     // Automated Messages
     sendMessage: sendMessage,
@@ -1375,4 +1419,14 @@
 
     firebaseReady: function(){ return !!(fbAuth() && fbAuth().currentUser); }
   };
+
+  // Auto-start realtime conversations listener if user is signed in
+  if(typeof window !== 'undefined'){
+    setTimeout(function(){
+      var u = user();
+      if(u && (u.email || u.uid)){
+        listenForConversations(u);
+      }
+    }, 400);
+  }
 })();

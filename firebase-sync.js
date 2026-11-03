@@ -427,6 +427,158 @@
     }, 100);
   }
 
+  // ==========================================
+  // UNLOCK RECORDS — persistent, tutor-specific
+  // ==========================================
+  var unlockListeners = {};   // keyed by tutorEmail
+  var unlockCache = {};       // keyed by tutorEmail → { leadId: true }
+  var unlockUnsubs = {};      // keyed by tutorEmail → unsubscribe fn
+
+  function unlockDocId(tutorEmail, leadId) {
+    return sanitizeId(tutorEmail) + '__' + sanitizeId(leadId);
+  }
+
+  /** Check (synchronously, from cache) whether a lead is already unlocked for this tutor. */
+  function isLeadUnlocked(tutorEmail, leadId) {
+    var em = String(tutorEmail || '').toLowerCase();
+    var cache = unlockCache[em] || {};
+    return !!cache[sanitizeId(leadId)];
+  }
+
+  /** Persist an unlock record to Firestore (idempotent — uses fixed doc ID). */
+  function saveUnlock(tutorEmail, leadId, coinsDeducted) {
+    var em = String(tutorEmail || '').toLowerCase();
+    var lid = sanitizeId(leadId);
+    var docId = sanitizeId(em) + '__' + lid;
+    var relDocId = 'unlock__' + docId;
+    var txId = 'tx_unl_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6);
+
+    // Update local cache immediately
+    if (!unlockCache[em]) unlockCache[em] = {};
+    unlockCache[em][lid] = true;
+
+    return ensureAuth().then(function() {
+      var firestore = db();
+      if (!firestore) return;
+      var nowTs = (window.firebase && firebase.firestore)
+        ? firebase.firestore.FieldValue.serverTimestamp()
+        : new Date().toISOString();
+
+      var record = {
+        id: docId,
+        type: 'unlock',
+        tutor_id: em,
+        tutorEmail: em,
+        lead_id: leadId,
+        leadId: leadId,
+        unlock_status: 'unlocked',
+        coins_deducted: coinsDeducted || 10,
+        coinsDeducted: coinsDeducted || 10,
+        transaction_id: txId,
+        unlocked_at: nowTs,
+        unlockedAt: nowTs
+      };
+
+      // Dual-write: write to relationships (guaranteed allowed by existing cloud rules) and unlocks
+      return Promise.all([
+        firestore.collection('relationships').doc(relDocId).set(record, { merge: true }).catch(function(e){ console.warn('Relationships unlock write notice:', e); }),
+        firestore.collection('unlocks').doc(docId).set(record, { merge: true }).catch(function(e){ console.warn('Unlocks write notice:', e); })
+      ]);
+    });
+  }
+
+  /** Update the lead status in Firestore (accepted / demo / declined). */
+  function updateLeadStatus(leadId, tutorEmail, status) {
+    var lid = sanitizeId(leadId);
+    return ensureAuth().then(function() {
+      var firestore = db();
+      if (!firestore) return;
+      var payload = {
+        acceptedByTutor: tutorEmail || '',
+        status: status,
+        updatedAt: (window.firebase && firebase.firestore)
+          ? firebase.firestore.FieldValue.serverTimestamp()
+          : new Date().toISOString()
+      };
+      return Promise.all([
+        firestore.collection('leads').doc(lid).set(payload, { merge: true }).catch(function() {}),
+        firestore.collection('students').doc(lid).set(payload, { merge: true }).catch(function() {})
+      ]);
+    });
+  }
+
+  /** Real-time listener for unlocks for a specific tutor.  Calls callback(unlockedLeadIds[]) */
+  function onUnlocks(tutorEmail, callback) {
+    if (typeof callback !== 'function') return function() {};
+    var em = String(tutorEmail || '').toLowerCase();
+
+    // Register listener
+    if (!unlockListeners[em]) unlockListeners[em] = [];
+    unlockListeners[em].push(callback);
+
+    // Serve from cache if available
+    if (unlockCache[em]) {
+      callback(Object.keys(unlockCache[em]));
+    }
+
+    // Start Firestore listeners (once per tutor)
+    if (!unlockUnsubs[em]) {
+      ensureAuth().then(function() {
+        var firestore = db();
+        if (!firestore) return;
+
+        function updateFromDocs(docs) {
+          if (!unlockCache[em]) unlockCache[em] = {};
+          var added = false;
+          docs.forEach(function(doc) {
+            var data = doc.data ? doc.data() : doc;
+            var lId = data.leadId || data.lead_id;
+            if (lId) {
+              var sId = sanitizeId(lId);
+              if (!unlockCache[em][sId]) {
+                unlockCache[em][sId] = true;
+                added = true;
+              }
+            }
+          });
+          var ids = Object.keys(unlockCache[em]);
+          (unlockListeners[em] || []).forEach(function(fn) {
+            try { fn(ids); } catch(e) { console.error('Unlock listener error', e); }
+          });
+        }
+
+        // Listener 1: relationships collection
+        try {
+          firestore.collection('relationships')
+            .where('type', '==', 'unlock')
+            .where('tutorEmail', '==', em)
+            .onSnapshot(function(snapshot) {
+              if (snapshot && !snapshot.empty) updateFromDocs(snapshot.docs);
+            }, function(err) {
+              console.warn('Relationships unlock listener notice:', err);
+            });
+        } catch(e) {}
+
+        // Listener 2: unlocks collection
+        try {
+          firestore.collection('unlocks')
+            .where('tutorEmail', '==', em)
+            .onSnapshot(function(snapshot) {
+              if (snapshot && !snapshot.empty) updateFromDocs(snapshot.docs);
+            }, function(err) {
+              console.warn('Unlocks snapshot listener notice:', err);
+            });
+        } catch(e) {}
+      });
+    }
+
+    // Return unsubscribe function
+    return function() {
+      if (!unlockListeners[em]) return;
+      unlockListeners[em] = unlockListeners[em].filter(function(fn) { return fn !== callback; });
+    };
+  }
+
   window.ModivsFirebaseSync = {
     ensureAuth: ensureAuth,
     onTutors: onTutors,
@@ -436,6 +588,11 @@
     deleteTutor: deleteTutor,
     saveLead: saveLead,
     deleteLead: deleteLead,
-    syncAll: syncAll
+    syncAll: syncAll,
+    // Unlock system
+    isLeadUnlocked: isLeadUnlocked,
+    saveUnlock: saveUnlock,
+    onUnlocks: onUnlocks,
+    updateLeadStatus: updateLeadStatus
   };
 })();
