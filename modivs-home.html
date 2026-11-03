@@ -626,7 +626,7 @@ nav li.nt-m{display:none}
    if(!cardsBox)return;cardsBox.textContent='';
    FEATURED.forEach(function(f){
     var n=counts[(f.key||f.city).toLowerCase()]||0;
-    var a=el('a','lcard');a.href=n?'modivs-tutors.html?city='+encodeURIComponent(f.key||f.city):'modivs-student-registration.html';
+    var a=el('a','lcard');a.href=n?'modivs-tutors.html?city='+encodeURIComponent(f.key||f.city):'modivs-student-signup.html';
     var p=el('span','pin');p.innerHTML=PIN;a.appendChild(p);
     a.appendChild(el('h3','',f.city));a.appendChild(el('div','st',f.st));
     var ar=el('div','ar');f.areas.forEach(function(x){ar.appendChild(el('span','',x))});a.appendChild(ar);

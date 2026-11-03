@@ -438,8 +438,12 @@ function buildGroup(boxId,g,opts,limit){
 function fillSelect(id,vals){var s=$(id);Array.from(new Set(vals.filter(Boolean))).forEach(function(v){var o=el('option','',v);o.value=v;s.appendChild(o)})}
 
 var au=null;try{au=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
-var studentHref='modivs-student-registration.html';
+var studentHref='modivs-student-signup.html';
 if(au&&au.role==='Student / Parent')studentHref='modivs-student-dashboard.html';
+function getEnquireHref(t){
+ if(au&&au.role==='Student / Parent')return 'modivs-student-dashboard.html';
+ return 'modivs-student-signup.html'+(t&&t.id?'?tutor='+encodeURIComponent(t.id):'');
+}
 if(au&&au.role==='Tutor'){['navJoin','ctaJoin'].forEach(function(i){var a=$(i);a.href='modivs-tutor-dashboard.html';a.textContent=i==='navJoin'?'My dashboard':'Edit your profile'})}
 
 function stats(){}
@@ -528,7 +532,7 @@ function card(t){
  var st=el('div','tf-stats'),a=el('div','tf-stat');a.appendChild(el('b','',expOf(t)));a.appendChild(el('span','','Experience'));
  var b=el('div','tf-stat');b.appendChild(el('b','','₹'+(t.fee||'—')));b.appendChild(el('span','','per hour'));st.appendChild(a);st.appendChild(b);c.appendChild(st);
  var bt=el('div','tf-btns'),vp=el('button','btn o','View Profile');vp.type='button';vp.addEventListener('click',function(){openProfile(t)});bt.appendChild(vp);
- var en=el('a','btn y','Enquire Now');en.href=studentHref;bt.appendChild(en);
+ var en=el('a','btn y','Enquire Now');en.href=getEnquireHref(t);bt.appendChild(en);
  var db=el('button','btn adm-del','Delete profile');db.type='button';db.addEventListener('click',function(){askDelete(t)});bt.appendChild(db);
  c.appendChild(bt);
  return c;
@@ -546,7 +550,7 @@ function classChips(t){
  c.extra.forEach(function(x){d.appendChild(el('span','',x))});
  return d.childNodes.length?d:null;
 }
-function enquireBtn(cls){var a=el('a','btn y '+(cls||''),'Enquire Now');a.href=studentHref;return a}
+function enquireBtn(cls, t){var a=el('a','btn y '+(cls||''),'Enquire Now');a.href=getEnquireHref(t);return a}
 function aboutPane(t){
  var p=el('div','tf-two'),l=el('div'),r=el('div');
  block(l,'About Me',para(about(t)));
@@ -556,7 +560,7 @@ function aboutPane(t){
  block(r,'Subjects I Teach',chips(t.subs));
  block(r,'Classes',classChips(t));
  block(r,'Languages',chips(t.langs));
- r.appendChild(enquireBtn('tf-big'));
+ r.appendChild(enquireBtn('tf-big', t));
  p.appendChild(l);p.appendChild(r);return p;
 }
 function subjectsPane(t){
@@ -587,7 +591,7 @@ function renderProfile(t){
  if(t.headline)pi.appendChild(el('p','tf-phead',t.headline));
  var act=el('div','tf-pact'),hb=el('button','tf-heart');hb.type='button';hb.setAttribute('aria-label','Save tutor');hb.setAttribute('aria-pressed',savedList().indexOf(key(t))>-1?'true':'false');hb.innerHTML=svg('heart','');
  hb.addEventListener('click',function(){hb.setAttribute('aria-pressed',toggleSaved(t)?'true':'false')});act.appendChild(hb);
- act.appendChild(enquireBtn());
+ act.appendChild(enquireBtn('', t));
  if(window.ModivsChat&&au&&au.role==='Student / Parent'){var mb=el('button','btn','Message tutor');mb.type='button';mb.addEventListener('click',function(){ModivsChat.open({student:au,tutor:t})});act.appendChild(mb)}
  else if(!au){var lb=el('a','btn o','Log in to Chat');lb.href='modivs-education.html#student-login';act.appendChild(lb)}
  var dx=el('button','btn adm-del','Delete profile');dx.type='button';dx.addEventListener('click',function(){askDelete(t)});act.appendChild(dx);
