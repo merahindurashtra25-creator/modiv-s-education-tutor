@@ -78,9 +78,32 @@ dialog#addT::backdrop{background:rgba(26,32,53,.6)}
 h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;margin:0 0 6px}
 .tf-hero{padding:34px 0 18px}
 .tf-sub{color:var(--muted);margin:0 0 20px;max-width:640px}
-.tf-search{display:grid;grid-template-columns:1fr 1fr 1fr auto;gap:10px;max-width:880px}
+.tf-search{display:grid;grid-template-columns:1fr 1fr 1.35fr auto;gap:10px;max-width:940px}
 .tf-search select{font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy);min-width:0;width:100%}
 .tf-go{padding:12px 28px;font-size:.95rem}
+.ls-wrap{position:relative;min-width:0}
+.ls-input{font:inherit;width:100%;padding:12px 38px 12px 38px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy);min-width:0;text-overflow:ellipsis}
+.ls-input::placeholder{color:#7b8099}
+.ls-pin{position:absolute;left:12px;top:13px;width:18px;height:18px;stroke:#a87500;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;pointer-events:none}
+.ls-clear{position:absolute;right:6px;top:7px;width:30px;height:30px;border:0;border-radius:50%;background:transparent;color:var(--muted);font-size:1.35rem;line-height:1;cursor:pointer;padding:0}
+.ls-clear:hover{background:var(--cream);color:var(--navy)}
+.ls-list{position:absolute;left:0;right:0;top:calc(100% + 6px);z-index:60;margin:0;padding:6px;list-style:none;background:#fff;border:1.5px solid var(--line);border-radius:12px;box-shadow:0 12px 28px rgba(26,32,53,.16);max-height:340px;overflow:auto;min-width:240px}
+.ls-h{padding:6px 10px 4px;font-size:.72rem;font-weight:800;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}
+.ls-opt{display:flex;align-items:center;gap:10px;padding:9px 10px;border-radius:8px;cursor:pointer}
+.ls-opt:hover,.ls-opt[aria-selected=true]{background:var(--cream)}
+.ls-opt[aria-selected=true]{box-shadow:inset 3px 0 0 var(--yellow)}
+.ls-ico{width:17px;height:17px;flex:none;stroke:var(--muted);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.ls-t{flex:1;min-width:0;display:flex;flex-direction:column;line-height:1.25}
+.ls-m{font-size:.94rem;font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.ls-m b{font-weight:800}
+.ls-s{font-size:.78rem;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.ls-n{flex:none;font-size:.72rem;font-weight:700;color:var(--ok);background:#e6f4ec;border-radius:99px;padding:2px 9px;white-space:nowrap}
+.ls-msg{padding:12px 10px;font-size:.88rem;color:var(--muted)}
+.ls-g{padding:6px 10px 2px;text-align:right;font-size:.68rem;color:#7b8099}
+.ls-modes{grid-column:1/-1;display:flex;align-items:center;gap:8px;font-size:.84rem;color:var(--muted)}
+.ls-mode{font:inherit;font-size:.84rem;font-weight:600;padding:5px 14px;border:1.5px solid var(--line);border-radius:99px;background:#fff;color:var(--navy);cursor:pointer}
+.ls-mode:hover{border-color:var(--navy)}
+.ls-mode[aria-checked=true]{background:var(--navy);border-color:var(--navy);color:var(--cream)}
+.ls-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .tf-layout{display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:start;margin-bottom:48px}
 .tf-filters{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px 18px 8px;position:sticky;top:88px;max-height:calc(100vh - 104px);overflow:auto}
 .tf-fhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
@@ -164,7 +187,7 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
  .tf-layout{grid-template-columns:1fr}
  .tf-filters{display:none;position:static;max-height:none}.tf-filters.open{display:block}
  .tf-ftoggle{display:inline-block}
- .tf-search{grid-template-columns:1fr 1fr}.tf-go{grid-column:1/-1}
+ .tf-search{grid-template-columns:1fr 1fr}.tf-go{grid-column:1/-1}.ls-wrap{grid-column:1/-1}
  .tf-two{grid-template-columns:1fr;gap:6px}
 }
 @media(max-width:620px){
@@ -185,6 +208,8 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
 <script src="modivs-places.js"></script>
 <script src="modivs-subjects.js"></script>
 <script src="modivs-map.js"></script>
+<script src="modivs-location.js"></script>
+<script src="modivs-loc-search.js"></script>
 <script src="modivs-chat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
@@ -231,8 +256,16 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
    <form class="tf-search" id="tfSearch" role="search">
     <select id="fSub" aria-label="Subject"><option value="">Subject</option></select>
     <select id="fLevel" aria-label="Class or grade"><option value="">Class / Grade</option></select>
-    <select id="fCity" aria-label="Location"><option value="">Location</option></select>
+    <div class="ls-wrap" id="lsWrap">
+     <svg class="ls-pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
+     <input type="text" id="lsInput" class="ls-input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="Search location" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" maxlength="60" placeholder="Type your city, e.g. Lud…">
+     <button type="button" class="ls-clear" id="lsClear" aria-label="Clear location" hidden>&times;</button>
+     <ul class="ls-list" id="lsList" role="listbox" aria-label="Location suggestions" hidden></ul>
+     <span class="ls-sr" id="lsStatus" aria-live="polite"></span>
+     <select id="fCity" aria-label="Location" hidden><option value="">Location</option></select>
+    </div>
     <button type="submit" class="btn y tf-go">Search</button>
+    <div class="ls-modes" role="radiogroup" aria-label="Search location by"><span>Search location by</span><button type="button" class="ls-mode" role="radio" aria-checked="true" data-mode="city">City</button><button type="button" class="ls-mode" role="radio" aria-checked="false" data-mode="area" tabindex="-1">Locality</button></div>
    </form>
   </section>
   <button type="button" class="btn o tf-ftoggle" id="ftoggle" aria-expanded="false" aria-controls="filters">Filters</button>
@@ -637,6 +670,7 @@ function route(){
 }
 function render(){
  var q=$('q').value.toLowerCase().trim(),area=MM()?MM().normArea($('fArea').value):$('fArea').value.trim(),sort=$('fSort').value,g=$('grid');g.textContent='';
+ if(window.ModivsLocSearch)ModivsLocSearch.sync();
  function any(sel,have){return !sel.length||sel.some(function(x){return have.indexOf(x)>-1})}
  var rows=tutors.filter(function(t){
   if(!any(F.subs,arr(t.subs)))return false;
@@ -658,7 +692,7 @@ function render(){
  $('count').textContent='Showing '+rows.length+(rows.length===1?' tutor':' tutors');
  if(!rows.length){
   g.appendChild(el('p','empty','No tutors match your search yet. Try removing a filter.'));
-  if(area&&MM()){var nb=el('div','nearbox');g.appendChild(nb);MM().renderSuggest(nb,MM().suggest(MM().groups(tutors),F.cities.length===1?F.cities[0]:'',area),pickGroup)}
+  if((area||F.cities.length===1)&&MM()){var nb=el('div','nearbox');g.appendChild(nb);MM().renderSuggest(nb,MM().suggest(MM().groups(tutors),F.cities.length===1?F.cities[0]:'',area),pickGroup)}
   return;
  }
  rows.forEach(function(t){g.appendChild(card(t))});
@@ -692,7 +726,7 @@ function render(){
   F[p[1]]=this.value?[this.value]:[];if(p[1]==='cities')fillAreas();syncChecks();render();
  })});
  ['q','fArea','fSort'].forEach(function(i){$(i).addEventListener('input',render)});
- $('tfSearch').addEventListener('submit',function(e){e.preventDefault();render();$('count').scrollIntoView({behavior:'smooth',block:'start'})});
+ $('tfSearch').addEventListener('submit',function(e){e.preventDefault();if(window.ModivsLocSearch)ModivsLocSearch.commit();render();$('count').scrollIntoView({behavior:'smooth',block:'start'})});
  $('clearAll').addEventListener('click',function(){
   F.subs=[];F.levels=[];F.modes=[];F.cities=[];F.formats=[];$('q').value='';
   fillAreas();syncTop();syncChecks();history.replaceState(null,'',location.pathname);render();
@@ -702,6 +736,23 @@ function render(){
 })();
 stats();render();route();
 
+/* location search box: City / Locality suggestions (own lists + Google Places) */
+if(window.ModivsLocSearch)ModivsLocSearch.init({
+ input:$('lsInput'),list:$('lsList'),clear:$('lsClear'),status:$('lsStatus'),modes:document.querySelectorAll('.ls-mode'),
+ getTutors:function(){return tutors},
+ getCity:function(){return F.cities.length===1?F.cities[0]:''},
+ getArea:function(){return $('fArea').value},
+ getFreeText:function(){return $('q').value.trim()},
+ pickCity:function(city){F.cities=city?[city]:[];fillAreas();syncTop();syncChecks();render()},
+ pickLocality:function(city,area){
+  F.cities=city?[city]:[];fillAreas(area);
+  var s=$('fArea');if(area&&s.value.toLowerCase()!==String(area).toLowerCase())setSel('fArea',area);
+  syncTop();syncChecks();render();
+ },
+ clearLocation:function(){F.cities=[];fillAreas();syncTop();syncChecks();render()},
+ freeText:function(t){$('q').value=t;render()}
+});
+if(window.ModivsLocSearch)ModivsLocSearch.sync();
 if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
 /* ---------- admin: add tutor profile directly ---------- */
 (function(){
