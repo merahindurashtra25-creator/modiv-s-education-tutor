@@ -331,31 +331,51 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
   }
   applyIdentity();
 
-// Show the requirement the student saved (Update Requirements writes it)
-  try {
-    var em = user && user.email ? String(user.email).toLowerCase() : '';
-    var sr = JSON.parse(localStorage.getItem('modivs_student_req') || 'null');
-    if(!sr || String(sr.email).toLowerCase() !== em){
-      sr = (JSON.parse(localStorage.getItem('modivs_students_db') || '[]') || []).filter(function(x){ return String(x.email).toLowerCase() === em; })[0] || null;
-    }
-    if(sr){
-      var setT = function(id, v){ var e = document.getElementById(id); if(e && v) e.textContent = v; };
+  // Show the requirement the student saved (Update Requirements writes it, and Admin edits sync here in real time)
+  function applyStudentRequirement(sr){
+    if(!sr) return;
+    try {
+      var setT = function(id, v){ var e = document.getElementById(id); if(e && v !== undefined && v !== null) e.textContent = v; };
       if(sr.avatar && window.ModivsAvatars && ModivsAvatars.has(sr.avatar)){
         identity.src = ModivsAvatars.src(sr.avatar);
+        applyIdentity();
+      }
+      if(sr.name && (!user || !user.name || user.name === 'Student' || user.name === 'Parent')){
+        identity.name = sr.name;
         applyIdentity();
       }
       var isParent = (user && (user.role === 'Parent' || user.roleKey === 'parent' || (user.by && user.by.toLowerCase().indexOf('parent') >= 0) || (sr && sr.created_by_role === 'parent')));
       var roleTitle = isParent ? 'Parent' : 'Student';
       setT('stuGrade', [sr.cls, sr.board ? '(' + sr.board + ')' : ''].filter(Boolean).join(' ') + ' · ' + roleTitle);
       if(sr.id) setT('sideId', (isParent ? 'Enquiry ID: ' : 'Student ID: ') + (sr.enquiry_id || sr.id));
-      setT('stuCity', sr.city);
-      setT('stuSubs', (sr.subs || []).join(', '));
-      var md = (sr.mode || []).map(function(m){ return /online/i.test(m) ? 'Online' : (/comes to|student|home/i.test(m) ? 'At home' : 'At tutor’s place'); });
-      setT('stuMode', md.filter(function(x, i){ return md.indexOf(x) === i; }).join(' · '));
-    }
-  } catch(e){}
+      setT('stuCity', sr.city ? (sr.city + (sr.area ? ' (' + sr.area + ')' : '')) : '—');
+      setT('stuSubs', sr.subs ? (Array.isArray(sr.subs) ? sr.subs.join(', ') : sr.subs) : '—');
+      if(sr.mode){
+        var mArr = Array.isArray(sr.mode) ? sr.mode : [sr.mode];
+        var md = mArr.map(function(m){ return /online/i.test(m) ? 'Online' : (/comes to|student|home/i.test(m) ? 'At home' : 'At tutor’s place'); });
+        setT('stuMode', md.filter(function(x, i){ return md.indexOf(x) === i; }).join(' · '));
+      }
+    } catch(e){}
+  }
 
-// Dynamic tutor data loading strictly from canonical modivs_tutors_db (Only Approved Tutors)
+  function loadAndApplyStudentRequirement(){
+    try {
+      var em = user && user.email ? String(user.email).toLowerCase() : '';
+      var uid = user && (user.id || user.uid) ? String(user.id || user.uid) : '';
+      var sr = JSON.parse(localStorage.getItem('modivs_student_req') || 'null');
+      if(!sr || (em && String(sr.email).toLowerCase() !== em)){
+        var list = JSON.parse(localStorage.getItem('modivs_students_db') || '[]') || [];
+        sr = list.filter(function(x){
+          return (em && String(x.email).toLowerCase() === em) || (uid && (String(x.user_id) === uid || String(x.created_by_user_id) === uid || String(x.id) === uid));
+        })[0] || null;
+      }
+      if(sr) applyStudentRequirement(sr);
+    } catch(e){}
+  }
+
+  loadAndApplyStudentRequirement();
+
+  // Dynamic tutor data loading strictly from canonical modivs_tutors_db (Only Approved Tutors)
   var rawDbTutors = [];
   try {
     rawDbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || 'null');
@@ -393,7 +413,31 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
         try { renderTutors(typeof activeSubj !== 'undefined' ? activeSubj : 'All', ''); } catch(e){}
       }
     });
+    if(window.ModivsFirebaseSync.onStudents){
+      window.ModivsFirebaseSync.onStudents(function(freshStudents){
+        if(!Array.isArray(freshStudents)) return;
+        var em = user && user.email ? String(user.email).toLowerCase() : '';
+        var uid = user && (user.id || user.uid) ? String(user.id || user.uid) : '';
+        var matched = freshStudents.filter(function(x){
+          return (em && String(x.email).toLowerCase() === em) || (uid && (String(x.user_id) === uid || String(x.created_by_user_id) === uid || String(x.id) === uid));
+        })[0];
+        if(matched){
+          try {
+            var curr = JSON.parse(localStorage.getItem('modivs_student_req') || '{}') || {};
+            var merged = Object.assign({}, curr, matched);
+            localStorage.setItem('modivs_student_req', JSON.stringify(merged));
+          } catch(e){}
+          applyStudentRequirement(matched);
+        }
+      });
+    }
   }
+
+  window.addEventListener('storage', function(e){
+    if(e.key === 'modivs_student_req' || e.key === 'modivs_students_db'){
+      loadAndApplyStudentRequirement();
+    }
+  });
 
   var favourites = [];
   var enquiries = [];

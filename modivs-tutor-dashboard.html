@@ -408,8 +408,8 @@ function loadTutorLeads(){
     var st = isAcceptedByMe ? (item.status || 'accepted') : (item.status === 'active' ? 'new' : (item.status || 'new'));
     return {
       id: item.id || ('l_' + Math.random()),
-      name: item.name || 'Student',
-      parent: item.parentName || item.by || item.name || 'Parent',
+      name: item.student_name || item.name || 'Student',
+      parent: item.parentName || item.parent_name || item.by || item.name || 'Parent',
       cls: item.cls || 'Class 10',
       board: item.board || 'CBSE',
       subs: item.subs || ['Mathematics'],
@@ -447,6 +447,12 @@ if(window.ModivsFirebaseSync){
     try { render(); } catch(e){}
   });
 }
+window.addEventListener('storage', function(e){
+  if(e.key === 'modivs_active_leads' || e.key === 'modivs_students_db'){
+    leads = loadTutorLeads();
+    try { render(); } catch(err){}
+  }
+});
 var hist=[{t:'Joined bonus',d:'Oct 20',a:30}];
 var classes=[];
 var PACKS=[[50,'₹500'],[120,'₹1,000'],[300,'₹2,000']];

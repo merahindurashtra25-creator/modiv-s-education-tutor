@@ -124,6 +124,16 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 .rejlist{margin:8px 0 0;padding-left:20px;font-size:.9rem}
 .lightbox{position:fixed;inset:0;background:rgba(26,32,53,.85);display:grid;place-items:center;z-index:50;padding:20px;cursor:zoom-out}
 .lightbox img{max-width:min(90vw,520px);max-height:80vh;border-radius:14px;background:#fff}
+.admin-modal-overlay{position:fixed;inset:0;background:rgba(26,32,53,0.75);backdrop-filter:blur(3px);display:grid;place-items:center;z-index:100;padding:16px;overflow-y:auto}
+.admin-modal-card{background:#FEF7EA;color:#1A2035;border-radius:18px;max-width:580px;width:100%;padding:24px;border:2px solid #EBB92E;box-shadow:0 20px 50px rgba(0,0,0,0.3);position:relative;max-height:90vh;overflow-y:auto}
+.admin-modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;border-bottom:1px solid #eedda6;padding-bottom:10px}
+.admin-modal-head h3{margin:0;font-size:1.2rem;font-weight:700}
+.admin-modal-close{background:transparent;border:0;font-size:1.6rem;line-height:1;cursor:pointer;color:#1A2035}
+.admin-form-group{margin-bottom:12px}
+.admin-form-group label{display:block;font-size:0.84rem;font-weight:700;margin-bottom:4px;color:#1A2035}
+.admin-form-group input, .admin-form-group select, .admin-form-group textarea{width:100%;box-sizing:border-box;padding:9px 12px;border:1.5px solid #eadfc9;border-radius:8px;font:inherit;font-size:0.9rem;background:#fff;color:#1A2035;outline:none}
+.admin-form-group input:focus, .admin-form-group select:focus, .admin-form-group textarea:focus{border-color:#1A2035}
+.admin-form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 @media(max-width:980px){.main{grid-template-columns:1fr}.detail{position:static}.top{padding:12px 16px}.top .r span{display:none}.admin-nav{display:none}}
 .cms{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.15fr);gap:24px;align-items:start}
 .cms.hide{display:none}
@@ -479,6 +489,136 @@ function showPhoto(x){
   o.appendChild(im);
   o.addEventListener('click', function(){ o.remove(); });
   document.body.appendChild(o);
+}
+
+function openAdminEditStudentModal(x){
+  var existing = document.getElementById('adminEditModal');
+  if(existing) existing.remove();
+
+  var ov = el('div', 'admin-modal-overlay');
+  ov.id = 'adminEditModal';
+
+  var card = el('div', 'admin-modal-card');
+  card.innerHTML =
+    '<div class="admin-modal-head">' +
+      '<h3>✏️ Edit Student Lead (ID: ' + escapeHtml(x.id) + ')</h3>' +
+      '<button type="button" class="admin-modal-close" id="closeAdminEdit">&times;</button>' +
+    '</div>' +
+    '<form id="adminEditLeadForm">' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="edName">Student Name *</label><input type="text" id="edName" value="' + escapeHtml(x.name || x.student_name || '') + '" required></div>' +
+        '<div class="admin-form-group"><label for="edParent">Parent / Guardian Name</label><input type="text" id="edParent" value="' + escapeHtml(x.parentName || x.parent_name || '') + '"></div>' +
+      '</div>' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="edPhone">Mobile Phone *</label><input type="tel" id="edPhone" value="' + escapeHtml(x.phone || '') + '" required></div>' +
+        '<div class="admin-form-group"><label for="edEmail">Email Address</label><input type="email" id="edEmail" value="' + escapeHtml(x.email || x.owner_email || '') + '"></div>' +
+      '</div>' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="edCity">City *</label><input type="text" id="edCity" value="' + escapeHtml(x.city || '') + '" required></div>' +
+        '<div class="admin-form-group"><label for="edArea">Area / Locality</label><input type="text" id="edArea" value="' + escapeHtml(x.area || '') + '"></div>' +
+      '</div>' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="edCls">Class / Grade *</label><input type="text" id="edCls" value="' + escapeHtml(x.cls || '') + '" required></div>' +
+        '<div class="admin-form-group"><label for="edBoard">Board</label><input type="text" id="edBoard" value="' + escapeHtml(x.board || '') + '"></div>' +
+      '</div>' +
+      '<div class="admin-form-group"><label for="edSubs">Subjects Needed (comma separated) *</label><input type="text" id="edSubs" value="' + escapeHtml(Array.isArray(x.subs) ? x.subs.join(', ') : (x.subs || '')) + '" required></div>' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="edMode">Learning Mode</label><input type="text" id="edMode" value="' + escapeHtml(Array.isArray(x.mode) ? x.mode.join(', ') : (x.mode || 'Online')) + '"></div>' +
+        '<div class="admin-form-group"><label for="edBudget">Tuition Budget / Fee</label><input type="text" id="edBudget" value="' + escapeHtml(x.budget || '') + '"></div>' +
+      '</div>' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="edRole">Posted By</label><select id="edRole"><option value="Student"' + ((x.created_by_role === 'student' || (x.by && x.by.toLowerCase().indexOf('student') >= 0)) ? ' selected' : '') + '>Student</option><option value="Parent"' + ((x.created_by_role === 'parent' || (x.by && x.by.toLowerCase().indexOf('parent') >= 0)) ? ' selected' : '') + '>Parent</option></select></div>' +
+        '<div class="admin-form-group"><label for="edStatus">Lead Status</label><select id="edStatus"><option value="active"' + (x.status === 'active' || x.status === 'new' ? ' selected' : '') + '>Active / New</option><option value="accepted"' + (x.status === 'accepted' ? ' selected' : '') + '>Accepted</option><option value="demo"' + (x.status === 'demo' ? ' selected' : '') + '>Demo Offered</option><option value="pending"' + (x.status === 'pending' ? ' selected' : '') + '>Pending</option></select></div>' +
+      '</div>' +
+      '<div class="admin-form-group"><label for="edNotes">Learning Goals & Notes</label><textarea id="edNotes" style="min-height:70px;">' + escapeHtml(x.notes || '') + '</textarea></div>' +
+      '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">' +
+        '<button type="button" class="btn" id="cancelAdminEdit" style="background:transparent;border:1.5px solid #1A2035;color:#1A2035;padding:9px 18px;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>' +
+        '<button type="submit" class="btn" style="background:#1A2035;border:1.5px solid #1A2035;color:#EBB92E;padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;">Save & Sync Lead</button>' +
+      '</div>' +
+    '</form>';
+
+  ov.appendChild(card);
+  document.body.appendChild(ov);
+
+  card.querySelector('#closeAdminEdit').onclick = function(){ ov.remove(); };
+  card.querySelector('#cancelAdminEdit').onclick = function(){ ov.remove(); };
+  ov.onclick = function(e){ if(e.target === ov) ov.remove(); };
+
+  card.querySelector('#adminEditLeadForm').onsubmit = function(e){
+    e.preventDefault();
+    var nameVal = card.querySelector('#edName').value.trim();
+    var parentVal = card.querySelector('#edParent').value.trim();
+    var phoneVal = card.querySelector('#edPhone').value.trim();
+    var emailVal = card.querySelector('#edEmail').value.trim();
+    var cityVal = card.querySelector('#edCity').value.trim();
+    var areaVal = card.querySelector('#edArea').value.trim();
+    var clsVal = card.querySelector('#edCls').value.trim();
+    var boardVal = card.querySelector('#edBoard').value.trim();
+    var subsVal = card.querySelector('#edSubs').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+    var modeVal = card.querySelector('#edMode').value.trim();
+    var budgetVal = card.querySelector('#edBudget').value.trim();
+    var roleVal = card.querySelector('#edRole').value;
+    var statusVal = card.querySelector('#edStatus').value;
+    var notesVal = card.querySelector('#edNotes').value.trim();
+
+    var updated = Object.assign({}, x, {
+      name: nameVal,
+      student_name: nameVal,
+      parentName: parentVal || nameVal,
+      parent_name: parentVal,
+      phone: phoneVal,
+      email: emailVal,
+      owner_email: emailVal,
+      city: cityVal,
+      area: areaVal,
+      cls: clsVal,
+      board: boardVal,
+      subs: subsVal,
+      mode: modeVal,
+      budget: budgetVal,
+      by: roleVal,
+      created_by_role: roleVal.toLowerCase(),
+      status: statusVal,
+      notes: notesVal,
+      updatedAt: new Date().toISOString()
+    });
+
+    // Update in local students array
+    var idx = students.findIndex(function(s){ return s.id === x.id; });
+    if(idx > -1) students[idx] = updated;
+    else students.unshift(updated);
+    try { localStorage.setItem('modivs_students_db', JSON.stringify(students)); } catch(err){}
+
+    // Update in active leads
+    var actLeads = [];
+    try { actLeads = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]'); } catch(err){}
+    var aIdx = actLeads.findIndex(function(l){ return l.id === x.id || (x.email && l.email && l.email.toLowerCase() === x.email.toLowerCase()); });
+    if(aIdx > -1) actLeads[aIdx] = Object.assign({}, actLeads[aIdx], updated);
+    else actLeads.unshift(updated);
+    try { localStorage.setItem('modivs_active_leads', JSON.stringify(actLeads)); } catch(err){}
+
+    // Update student requirement if matching
+    try {
+      var sReq = JSON.parse(localStorage.getItem('modivs_student_req') || 'null');
+      if(sReq && (sReq.id === x.id || (x.email && sReq.email && sReq.email.toLowerCase() === x.email.toLowerCase()))){
+        localStorage.setItem('modivs_student_req', JSON.stringify(updated));
+      }
+    } catch(err){}
+
+    // Save and sync to Firestore (instantly loads for all students and tutors)
+    if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.saveLead){
+      window.ModivsFirebaseSync.saveLead(updated).then(function(){
+        toast('Lead updated and synced with Firestore.');
+      }).catch(function(err){
+        console.warn('Firestore sync notice:', err);
+      });
+    }
+
+    ov.remove();
+    toast('Lead updated successfully! Synchronized across Student & Tutor dashboards.');
+    selId = updated.id;
+    render();
+  };
 }
 
 var LABEL = {
@@ -926,6 +1066,32 @@ function detail(){
     } else {
       d.appendChild(el('p', 'sub', 'No demo classes requested yet.'));
     }
+
+    // Admin Action Buttons for Student Leads
+    var acts = el('div', 'acts');
+    acts.style.cssText = 'display:flex;gap:10px;margin-top:18px;flex-wrap:wrap;';
+    var editBtn = el('button', 'btn', '✏️ Edit Student Lead');
+    editBtn.type = 'button';
+    editBtn.style.cssText = 'background:#1A2035;border:1.5px solid #1A2035;color:#EBB92E;font-weight:700;padding:10px 18px;border-radius:10px;cursor:pointer;';
+    editBtn.addEventListener('click', function(){ openAdminEditStudentModal(x); });
+    acts.appendChild(editBtn);
+
+    var delBtn = el('button', 'btn', '🗑️ Delete Lead');
+    delBtn.type = 'button';
+    delBtn.style.cssText = 'background:#fff;border:1.5px solid #b3261e;color:#b3261e;font-weight:600;padding:10px 16px;border-radius:10px;cursor:pointer;';
+    delBtn.addEventListener('click', function(){
+      if(!confirm('Delete this lead for ' + x.name + '? This removes it from Active leads and the admin Student Inquiries list.')) return;
+      if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.deleteLead){
+        window.ModivsFirebaseSync.deleteLead(x.id, x.email);
+      }
+      students = students.filter(function(s){ return s.id !== x.id; });
+      try { localStorage.setItem('modivs_students_db', JSON.stringify(students)); } catch(e){}
+      toast('Student lead deleted.');
+      selId = null;
+      render();
+    });
+    acts.appendChild(delBtn);
+    d.appendChild(acts);
     return;
   }
 

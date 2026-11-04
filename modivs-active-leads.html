@@ -149,6 +149,7 @@ ModivsPlaces.upgrade('aCity','aArea');
 var SEED=[];
 function read(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
 function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
+function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function ago(l){
  if(!l.registered_at)return l.sent||'Recently';
  var m=Math.round((Date.now()-new Date(l.registered_at).getTime())/60000);
@@ -265,7 +266,19 @@ function card(l){
  } else {
   var a=el('a','',"Unlock in Tutor dashboard →");a.href='modivs-tutor-dashboard.html';a.style.fontWeight='600';f.appendChild(a);
  }
- if(ADMIN){var x=el('button','xbtn','Delete');x.type='button';x.setAttribute('aria-label','Delete lead for '+l.name);x.addEventListener('click',function(){removeLead(l)});f.appendChild(x)}
+ if(ADMIN){
+  var eb=el('button','xbtn','Edit');
+  eb.type='button';
+  eb.setAttribute('aria-label','Edit lead for '+l.name);
+  eb.style.cssText='background:#1A2035;color:#EBB92E;border:1.5px solid #1A2035;margin-right:6px;';
+  eb.addEventListener('click',function(e){ e.stopPropagation(); openEditLead(l); });
+  f.appendChild(eb);
+  var x=el('button','xbtn','Delete');
+  x.type='button';
+  x.setAttribute('aria-label','Delete lead for '+l.name);
+  x.addEventListener('click',function(){removeLead(l)});
+  f.appendChild(x);
+ }
  c.appendChild(f);return c;
 }
 function render(){
@@ -306,6 +319,106 @@ function removeLead(l){
  var t=tomb();if(id&&t.indexOf(id)<0)t.push(id);if(em&&t.indexOf(em)<0)t.push(em);save('modivs_deleted_leads',t);
  fsDo(function(db){if(id){db.collection('leads').doc(String(id)).delete().catch(function(){});db.collection('students').doc(String(id)).delete().catch(function(){})}});
  reloadAll();
+}
+
+function openEditLead(l){
+  var existing = document.getElementById('editLeadDlg');
+  if(existing) existing.remove();
+
+  var dlg = document.createElement('dialog');
+  dlg.id = 'editLeadDlg';
+  dlg.style.cssText = 'border:2px solid var(--yellow);border-radius:16px;max-width:540px;width:calc(100% - 24px);padding:22px;background:var(--cream);color:var(--navy);box-shadow:0 20px 50px rgba(0,0,0,0.3);';
+
+  dlg.innerHTML =
+    '<form id="editLeadForm">' +
+      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:8px;">' +
+        '<h2 style="margin:0;font-size:1.2rem;">✏️ Edit Student Lead</h2>' +
+        '<button type="button" id="closeEditDlg" style="background:transparent;border:0;font-size:1.5rem;cursor:pointer;">&times;</button>' +
+      '</div>' +
+      '<div class="two"><div><label for="edlName">Student name *</label><input type="text" id="edlName" value="' + escapeHtml(l.name || l.student_name || '') + '" required></div><div><label for="edlParent">Parent name</label><input type="text" id="edlParent" value="' + escapeHtml(l.parentName || l.parent_name || '') + '"></div></div>' +
+      '<div class="two"><div><label for="edlPhone">Mobile number *</label><input type="tel" id="edlPhone" value="' + escapeHtml(l.phone || '') + '" required></div><div><label for="edlEmail">Email address</label><input type="email" id="edlEmail" value="' + escapeHtml(l.email || l.owner_email || '') + '"></div></div>' +
+      '<div class="two"><div><label for="edlCity">City *</label><input type="text" id="edlCity" value="' + escapeHtml(l.city || '') + '" required></div><div><label for="edlArea">Area / locality</label><input type="text" id="edlArea" value="' + escapeHtml(l.area || '') + '"></div></div>' +
+      '<div class="two"><div><label for="edlCls">Class / level *</label><input type="text" id="edlCls" value="' + escapeHtml(l.cls || '') + '" required></div><div><label for="edlBoard">Board</label><input type="text" id="edlBoard" value="' + escapeHtml(l.board || '') + '"></div></div>' +
+      '<label for="edlSubs">Subjects needed (comma-separated) *</label><input type="text" id="edlSubs" value="' + escapeHtml(Array.isArray(l.subs) ? l.subs.join(', ') : (l.subs || '')) + '" required>' +
+      '<div class="two"><div><label for="edlMode">Teaching mode</label><input type="text" id="edlMode" value="' + escapeHtml(Array.isArray(l.mode) ? l.mode.join(', ') : (l.mode || 'Online')) + '"></div><div><label for="edlBudget">Budget</label><input type="text" id="edlBudget" value="' + escapeHtml(l.budget || '') + '"></div></div>' +
+      '<div class="two"><div><label for="edlRole">Posted by</label><select id="edlRole"><option value="Student"' + ((l.created_by_role === 'student' || (l.by && l.by.toLowerCase().indexOf('student') >= 0)) ? ' selected' : '') + '>Student</option><option value="Parent"' + ((l.created_by_role === 'parent' || (l.by && l.by.toLowerCase().indexOf('parent') >= 0)) ? ' selected' : '') + '>Parent</option></select></div><div><label for="edlStatus">Status</label><select id="edlStatus"><option value="active"' + (l.status === 'active' || l.status === 'new' ? ' selected' : '') + '>Active</option><option value="accepted"' + (l.status === 'accepted' ? ' selected' : '') + '>Accepted</option><option value="demo"' + (l.status === 'demo' ? ' selected' : '') + '>Demo Offered</option></select></div></div>' +
+      '<label for="edlNotes">Notes for tutors</label><textarea id="edlNotes" style="width:100%;min-height:60px;margin-bottom:12px;">' + escapeHtml(l.notes || '') + '</textarea>' +
+      '<div class="acts"><button type="button" class="btn o" id="cancelEditDlg">Cancel</button><button type="submit" class="btn y">Save Changes</button></div>' +
+    '</form>';
+
+  document.body.appendChild(dlg);
+  dlg.showModal();
+
+  dlg.querySelector('#closeEditDlg').onclick = function(){ dlg.close(); dlg.remove(); };
+  dlg.querySelector('#cancelEditDlg').onclick = function(){ dlg.close(); dlg.remove(); };
+
+  dlg.querySelector('#editLeadForm').onsubmit = function(e){
+    e.preventDefault();
+    var nameVal = dlg.querySelector('#edlName').value.trim();
+    var parentVal = dlg.querySelector('#edlParent').value.trim();
+    var phoneVal = dlg.querySelector('#edlPhone').value.trim();
+    var emailVal = dlg.querySelector('#edlEmail').value.trim();
+    var cityVal = dlg.querySelector('#edlCity').value.trim();
+    var areaVal = dlg.querySelector('#edlArea').value.trim();
+    var clsVal = dlg.querySelector('#edlCls').value.trim();
+    var boardVal = dlg.querySelector('#edlBoard').value.trim();
+    var subsVal = dlg.querySelector('#edlSubs').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+    var modeVal = dlg.querySelector('#edlMode').value.trim();
+    var budgetVal = dlg.querySelector('#edlBudget').value.trim();
+    var roleVal = dlg.querySelector('#edlRole').value;
+    var statusVal = dlg.querySelector('#edlStatus').value;
+    var notesVal = dlg.querySelector('#edlNotes').value.trim();
+
+    var updated = Object.assign({}, l, {
+      name: nameVal,
+      student_name: nameVal,
+      parentName: parentVal || nameVal,
+      parent_name: parentVal,
+      phone: phoneVal,
+      email: emailVal,
+      owner_email: emailVal,
+      city: cityVal,
+      area: areaVal,
+      cls: clsVal,
+      board: boardVal,
+      subs: subsVal,
+      mode: modeVal,
+      budget: budgetVal,
+      by: roleVal,
+      created_by_role: roleVal.toLowerCase(),
+      status: statusVal,
+      notes: notesVal,
+      updatedAt: new Date().toISOString()
+    });
+
+    // Save to local storage
+    var activeLeads = read('modivs_active_leads');
+    var aIdx = activeLeads.findIndex(function(x){ return x.id === l.id; });
+    if(aIdx > -1) activeLeads[aIdx] = Object.assign({}, activeLeads[aIdx], updated);
+    else activeLeads.unshift(updated);
+    save('modivs_active_leads', activeLeads);
+
+    var studentsDb = read('modivs_students_db');
+    var sIdx = studentsDb.findIndex(function(x){ return x.id === l.id; });
+    if(sIdx > -1) studentsDb[sIdx] = Object.assign({}, studentsDb[sIdx], updated);
+    else studentsDb.unshift(updated);
+    save('modivs_students_db', studentsDb);
+
+    try {
+      var sReq = JSON.parse(localStorage.getItem('modivs_student_req') || 'null');
+      if(sReq && (sReq.id === l.id || (l.email && sReq.email && sReq.email.toLowerCase() === l.email.toLowerCase()))){
+        save('modivs_student_req', Object.assign({}, sReq, updated));
+      }
+    } catch(err){}
+
+    if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.saveLead){
+      window.ModivsFirebaseSync.saveLead(updated);
+    }
+
+    dlg.close();
+    dlg.remove();
+    reloadAll();
+  };
 }
 var SUBJECTS=(window.ModivsSubjects?ModivsSubjects.all():['Mathematics','Physics','Chemistry','Biology','English']);
 var CLASSES=['Nursery–KG','Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12','College / University','Adult learner'];
