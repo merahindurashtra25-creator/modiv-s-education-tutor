@@ -93,11 +93,13 @@ input:disabled{background:var(--mist);color:var(--muted)}
    <ul>
     <li><a href="index.html">Home</a></li>
     <li><a href="modivs-active-leads.html">Active leads</a></li>
-    <li><a href="modivs-tutors.html">Tutors</a></li>
-    <li><a href="modivs-guide.html">Guide</a></li>
-    <li><a href="modivs-blogs.html">Blogs</a></li>
+    <li><a href="modivs-tutors.html">Find a tutor</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-contact.html">Contact us</a></li>
+    <li class="mv-dd"><button type="button" class="mv-dd-b" aria-haspopup="true" aria-expanded="false">More <span class="car" aria-hidden="true">▾</span></button><ul class="mv-dd-m">
+     <li><a href="modivs-guide.html">Guide</a></li>
+     <li><a href="modivs-blogs.html">Blogs</a></li>
+     <li><a href="modivs-contact.html">Contact us</a></li>
+    </ul></li>
    </ul>
   </nav>
   <div class="acts" id="mvActs">
@@ -182,7 +184,7 @@ function load(){
 function cityList(){var o={};['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){try{(JSON.parse(localStorage.getItem(k)||'[]')||[]).forEach(function(t){if(t&&t.status==='approved'&&t.city&&!t.is_demo)o[String(t.city).trim()]=1})}catch(e){}});return Object.keys(o).sort()}
 function normCity(c){return String(c||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()})}
 function areaList(city){var o={},c=String(city||'').trim().toLowerCase();['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){try{(JSON.parse(localStorage.getItem(k)||'[]')||[]).forEach(function(t){if(t&&t.status==='approved'&&!t.is_demo&&String(t.city||'').trim().toLowerCase()===c){[t.area].concat(String(t.travel||'').split(/[,;\n\/]+/)).forEach(function(a){a=normCity(a);if(a)o[a]=1})}})}catch(e){}});return Object.keys(o).sort()}
-function areaField(val,city){return '<label for="area">Area / locality'+STAR+' <span class="hint">where you live or mainly teach; pick your city first</span></label>'+ModivsPlaces.fieldHTML({id:'area',kind:'area',val:val,city:city})}
+function areaField(val,city){return '<label for="area">Area / locality'+STAR+' <span class="hint">type your locality and the city fills in by itself</span></label>'+ModivsPlaces.fieldHTML({id:'area',kind:'area',val:val,city:city})}
 /* city change refills the area dropdown (handled by modivs-places.js) */
 function cityField(val){return '<label for="city">City'+STAR+' <span class="hint">shown on the site after admin approval</span></label>'+ModivsPlaces.fieldHTML({id:'city',kind:'city',val:val,areaId:'area'})}
 /* ---------- render ---------- */
@@ -467,5 +469,7 @@ if(!D){
 <script src="modivs-avatars.js"></script>
 <script src="modivs-session-ui.js" defer></script>
 <script src="modivs-menu.js" defer></script>
+<script src="modivs-social.js" defer></script>
+<script src="modivs-dropdown.js" defer></script>
 </body>
 </html>

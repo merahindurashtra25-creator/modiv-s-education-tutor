@@ -174,6 +174,7 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 <script src="firebase-chat.js"></script>
 <script src="modivs-shop-data.js"></script>
 <script src="modivs-blogs.js"></script>
+<script src="modivs-reviews.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
 </head>
@@ -750,7 +751,8 @@ function tabs(){
     { key: 'students', label: 'Student Inquiries (' + students.length + ')' },
     { key: 'chat', label: 'Chat & Inquiries Monitoring (' + totalChats + ')' },
     { key: 'shop', label: 'Shop Items (' + cmsShop.length + ')' },
-    { key: 'blogs', label: 'Blogs' + (cmsBlogs ? ' (' + cmsBlogs.length + ')' : '') }
+    { key: 'blogs', label: 'Blogs' + (cmsBlogs ? ' (' + cmsBlogs.length + ')' : '') },
+    { key: 'reviews', label: 'Reviews' + (cmsRevs ? ' (' + cmsRevs.length + (cmsRevs.filter(function(r){ return r.status === 'pending'; }).length ? ', ' + cmsRevs.filter(function(r){ return r.status === 'pending'; }).length + ' new' : '') + ')' : '') }
   ];
 
   sections.forEach(function(sec){
@@ -1590,7 +1592,7 @@ function recent(){
 // ---------- Shop & Blogs: admin adds and deletes items ----------
 var cmsShop = window.ModivsShop ? ModivsShop.cached() : [];
 var cmsBlogs = null, cmsBlogErr = '';
-function isCms(){ return currentSection === 'shop' || currentSection === 'blogs'; }
+function isCms(){ return currentSection === 'shop' || currentSection === 'blogs' || currentSection === 'reviews'; }
 function escH(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function inrH(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
 function fld(id, label, input, hint){ return '<div><label for="' + id + '">' + label + '</label>' + input + (hint ? '<div class="cms-hint">' + hint + '</div>' : '') + '</div>'; }
@@ -1603,7 +1605,89 @@ function loadBlogs(){
 }
 loadBlogs();
 
-function renderCms(){ if(currentSection === 'shop') renderShopCms($('cms')); else renderBlogCms($('cms')); }
+function renderCms(){ if(currentSection === 'shop') renderShopCms($('cms')); else if(currentSection === 'reviews') renderReviewCms($('cms')); else renderBlogCms($('cms')); }
+
+// ---------- Reviews: approve, edit, delete, add ----------
+var cmsRevs = null, cmsRevErr = '', editRevId = null;
+function loadRevs(){
+  if(!window.ModivsReviews){ cmsRevs = []; cmsRevErr = 'The reviews module did not load.'; return; }
+  ModivsReviews.listAll(300).then(function(r){ cmsRevs = r; cmsRevErr = ''; cmsRefresh(); },
+    function(e){ cmsRevs = []; cmsRevErr = 'Could not load reviews: ' + ((e && e.message) || 'unknown error'); cmsRefresh(); });
+}
+loadRevs();
+var SAMPLE_REVS = [
+  { name: 'Aarav Sharma', role: 'Student', place: 'Ludhiana', stars: 5, text: 'Maths used to scare me. My tutor breaks every chapter into small steps, and I scored 92 in my pre-boards. The demo class made it an easy choice.' },
+  { name: 'Priya Verma', role: 'Parent of a student', place: 'Chandigarh', stars: 5, text: 'We chose home tuition and the tutor reaches on time every day. She explains patiently and sends a short progress update every week.' },
+  { name: 'Harpreet Kaur', role: 'Student', place: 'Online', stars: 5, text: 'Online Physics classes fit around my school hours. The tutor shares the screen and notes, so revision before JEE is much easier.' },
+  { name: 'Rajesh Malhotra', role: 'Parent of a student', place: 'Mohali', stars: 5, text: 'Verified profiles gave us confidence. We compared three tutors and picked one within two days.' }
+];
+function starsTxt(n){ return '★★★★★'.slice(0, n) + '☆☆☆☆☆'.slice(0, 5 - n); }
+function revStatusTag(st){ return st === 'approved' ? '<span class="cms-tag" style="background:#e3f4e6;color:#1d6b2f">Shown on site</span>' : st === 'hidden' ? '<span class="cms-tag" style="background:#eee;color:#555">Hidden</span>' : '<span class="cms-tag" style="background:#fff1cc;color:#8a5b00">Waiting for approval</span>'; }
+function roleOpts(sel){ return '<option value="">Choose…</option>' + ModivsReviews.ROLES.concat(sel && ModivsReviews.ROLES.indexOf(sel) < 0 ? [sel] : []).map(function(r){ return '<option' + (r === sel ? ' selected' : '') + '>' + escH(r) + '</option>'; }).join(''); }
+function renderReviewCms(box){
+  var R = window.ModivsReviews, list = cmsRevs || [];
+  var pend = list.filter(function(r){ return r.status === 'pending'; }).length;
+  box.innerHTML =
+    '<section class="box"><h2>Add a review</h2><p class="cms-sub">Added by you, it is shown on the home page at once. Visitor reviews wait here for your approval.</p><form id="rvAddForm" novalidate>' +
+    '<div class="cms-2">' + fld('rName', 'Name', '<input id="rName" maxlength="60">') +
+    fld('rRole', 'Role', '<select id="rRole">' + roleOpts('') + '</select>') +
+    fld('rPlace', 'City <small>(optional)</small>', '<input id="rPlace" maxlength="40">') +
+    fld('rStars', 'Stars', '<select id="rStars"><option>5</option><option>4</option><option>3</option><option>2</option><option>1</option></select>') + '</div>' +
+    fld('rText', 'Review', '<textarea id="rText" rows="3" maxlength="500" placeholder="At least 20 characters"></textarea>') +
+    '<div class="cms-err" id="rErr" role="alert"></div><button class="cbtn y" type="submit">Add review</button></form></section>' +
+    '<section class="box"><div class="cms-head"><h2>Reviews' + (cmsRevs ? ' (' + list.length + ')' : '') + (pend ? ' · ' + pend + ' waiting' : '') + '</h2><a class="cbtn sm" href="index.html#reviews" target="_blank" rel="noopener">View on site</a></div>' +
+    (cmsRevErr ? '<p class="cms-err">' + escH(cmsRevErr) + '</p>' : '') +
+    (cmsRevs === null ? '<p class="cms-empty">Loading reviews…</p>' : list.length ? list.map(function(r){
+      if(r.id === editRevId){
+        return '<div class="cms-row" style="display:block" data-edit-box="' + escH(r.id) + '"><div class="cms-2">' +
+          fld('eName', 'Name', '<input id="eName" maxlength="60" value="' + escH(r.name) + '">') +
+          fld('eRole', 'Role', '<select id="eRole">' + roleOpts(r.role) + '</select>') +
+          fld('ePlace', 'City', '<input id="ePlace" maxlength="40" value="' + escH(r.place) + '">') +
+          fld('eStars', 'Stars', '<select id="eStars">' + [5,4,3,2,1].map(function(n){ return '<option' + (n === r.stars ? ' selected' : '') + '>' + n + '</option>'; }).join('') + '</select>') + '</div>' +
+          fld('eText', 'Review', '<textarea id="eText" rows="3" maxlength="500">' + escH(r.text) + '</textarea>') +
+          '<div class="cms-err" id="eErr" role="alert"></div><div class="acts3" style="margin-top:8px"><button type="button" class="cbtn y sm" data-save-rev="' + escH(r.id) + '">Save changes</button><button type="button" class="cbtn sm" data-cancel-rev>Cancel</button></div></div>';
+      }
+      return '<div class="cms-row"><div><b>' + escH(r.name) + '</b> <span style="color:#c48d00">' + starsTxt(r.stars) + '</span><small>' + revStatusTag(r.status) + escH(r.role) + (r.place ? ' · ' + escH(r.place) : '') + '</small>' +
+        '<small style="display:block;margin-top:4px;white-space:normal">“' + escH(r.text) + '”</small></div>' +
+        '<div class="acts3">' +
+        (r.status !== 'approved' ? '<button type="button" class="cbtn sm y" data-rev-st="approved" data-id="' + escH(r.id) + '">' + (r.status === 'hidden' ? 'Show' : 'Approve') + '</button>' : '<button type="button" class="cbtn sm" data-rev-st="hidden" data-id="' + escH(r.id) + '">Hide</button>') +
+        '<button type="button" class="cbtn sm" data-edit-rev="' + escH(r.id) + '">Edit</button><button type="button" class="cbtn sm del" data-del-rev="' + escH(r.id) + '">Delete</button></div></div>';
+    }).join('') : (cmsRevErr ? '' : '<p class="cms-empty">No reviews in the database yet. The home page shows sample reviews until you add or approve one.</p>')) +
+    (cmsRevs && !list.length && !cmsRevErr ? '<div style="margin-top:10px"><button type="button" class="cbtn sm" id="rvSeed">Load 4 sample reviews so I can edit or delete them</button></div>' : '') + '</section>';
+
+  var er = function(t){ var e = $('rErr'); if(e) e.textContent = t; };
+  var fail = function(e, id){ toast((e && e.message) || 'Something went wrong.'); };
+  $('rvAddForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var o = { name: $('rName').value, role: $('rRole').value, place: $('rPlace').value, stars: $('rStars').value, text: $('rText').value };
+    var c = R.clean(o); if(!c.ok){ er(c.err); return; }
+    er('');
+    R.adminAdd(o).then(function(){ toast('Review added.'); cmsRevs = null; renderCms(); loadRevs(); }, function(x){ er((x && x.code === 'permission-denied') ? 'Firebase blocked this. Publish firestore.rules, then log in again as admin.' : ((x && x.message) || 'Could not add.')); });
+  });
+  var seed = $('rvSeed');
+  if(seed) seed.addEventListener('click', function(){
+    seed.disabled = true;
+    Promise.all(SAMPLE_REVS.map(function(r){ return R.adminAdd(r); })).then(function(){ toast('Sample reviews loaded. Edit or delete them as you like.'); cmsRevs = null; renderCms(); loadRevs(); }, function(x){ seed.disabled = false; fail(x); });
+  });
+  box.querySelectorAll('[data-rev-st]').forEach(function(b){ b.addEventListener('click', function(){
+    var st = b.getAttribute('data-rev-st'); b.disabled = true;
+    R.setStatus(b.getAttribute('data-id'), st).then(function(){ toast(st === 'approved' ? 'Review is now shown on the site.' : 'Review hidden.'); loadRevs(); }, function(x){ b.disabled = false; fail(x); });
+  }); });
+  box.querySelectorAll('[data-edit-rev]').forEach(function(b){ b.addEventListener('click', function(){ editRevId = b.getAttribute('data-edit-rev'); renderCms(); }); });
+  box.querySelectorAll('[data-cancel-rev]').forEach(function(b){ b.addEventListener('click', function(){ editRevId = null; renderCms(); }); });
+  box.querySelectorAll('[data-save-rev]').forEach(function(b){ b.addEventListener('click', function(){
+    var o = { name: $('eName').value, role: $('eRole').value, place: $('ePlace').value, stars: $('eStars').value, text: $('eText').value };
+    var c = R.clean(o); if(!c.ok){ $('eErr').textContent = c.err; return; }
+    b.disabled = true;
+    R.update(b.getAttribute('data-save-rev'), o).then(function(){ toast('Review updated.'); editRevId = null; loadRevs(); }, function(x){ b.disabled = false; $('eErr').textContent = (x && x.message) || 'Could not save.'; });
+  }); });
+  box.querySelectorAll('[data-del-rev]').forEach(function(b){ b.addEventListener('click', function(){
+    var id = b.getAttribute('data-del-rev'), r = list.filter(function(x){ return x.id === id; })[0];
+    if(!r || !confirm('Delete the review by ' + r.name + '? This cannot be undone.')) return;
+    b.disabled = true;
+    R.remove(id).then(function(){ cmsRevs = cmsRevs.filter(function(x){ return x.id !== id; }); cmsRefresh(); toast('Review deleted.'); }, function(x){ b.disabled = false; toast(x && x.code === 'permission-denied' ? 'Firebase blocked the delete. Log out and log in again with the admin email.' : 'Could not delete: ' + ((x && x.message) || 'unknown error')); });
+  }); });
+}
 
 function saveShop(list, msg){
   cmsShop = list;
@@ -1761,6 +1845,7 @@ function applyHash(){
   else if(location.hash === '#tutors') goPortal('all');
   else if(location.hash === '#shop') goPortal('shop');
   else if(location.hash === '#blogs') goPortal('blogs');
+  else if(location.hash === '#reviews') goPortal('reviews');
 }
 [['navShop', 'shop'], ['navBlogs', 'blogs']].forEach(function(x){
   $(x[0]).addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null, '', '#' + x[1]); goPortal(x[1]); });
@@ -1769,7 +1854,7 @@ $('navTutors').addEventListener('click', function(e){ e.preventDefault(); histor
 $('navStudents').addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null,'','#students'); goPortal('students'); });
 window.addEventListener('hashchange', applyHash);
 if(location.hash === '#students') currentSection = 'students';
-if(location.hash === '#shop' || location.hash === '#blogs') currentSection = location.hash.slice(1);
+if(location.hash === '#shop' || location.hash === '#blogs' || location.hash === '#reviews') currentSection = location.hash.slice(1);
 
 render();
 })();
@@ -1785,5 +1870,6 @@ render();
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
 <script src="modivs-menu.js" defer></script>
 <script src="modivs-session-ui.js" defer></script>
+<script src="modivs-social.js" defer></script>
 </body>
 </html>

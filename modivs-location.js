@@ -8,7 +8,7 @@
 (function(window){
   'use strict';
 
-  var GOOGLE_MAPS_API_KEY = (window.EducationBFirebase && window.EducationBFirebase.config && window.EducationBFirebase.config.apiKey) || 'AIzaSyB2I8iFDkcUZJBDBwkALHNeoIR3a9k-fcY';
+  var GOOGLE_MAPS_API_KEY = window.MODIVS_MAPS_KEY || 'AIzaSyDi4be0HNq7v1Ayf3Wlikdkc2iGpf22VBo';
   var mapsScriptLoading = false;
   var mapsScriptLoaded = false;
   var mapsLoadCallbacks = [];
@@ -28,12 +28,19 @@
     script.async = true;
     script.defer = true;
     script.onload = function(){
-      mapsScriptLoaded = true;
-      mapsScriptLoading = false;
-      while(mapsLoadCallbacks.length){
-        var cb = mapsLoadCallbacks.shift();
-        try{ cb(); }catch(e){ console.warn(e); }
+      function done(){
+        mapsScriptLoaded = true;
+        mapsScriptLoading = false;
+        while(mapsLoadCallbacks.length){
+          var cb = mapsLoadCallbacks.shift();
+          try{ cb(); }catch(e){ console.warn(e); }
+        }
       }
+      // With loading=async the classes (Map, Geocoder, Autocomplete) only exist after importLibrary
+      if(window.google && google.maps && google.maps.importLibrary){
+        Promise.all([google.maps.importLibrary('maps'), google.maps.importLibrary('places'), google.maps.importLibrary('geocoding')])
+          .then(done).catch(function(e){ console.warn('Google Maps libraries failed to load', e); done(); });
+      } else { done(); }
     };
     script.onerror = function(err){
       mapsScriptLoading = false;
@@ -73,6 +80,11 @@
       '.mv-loc-details.show{display:block}',
       '.mv-loc-details b{color:#14213d}',
       '.mv-loc-spinner{display:inline-block;width:13px;height:13px;border:2px solid rgba(255,255,255,.3);border-radius:50%;border-top-color:#fff;animation:mvLocSpin .7s linear infinite}',
+      '.mv-loc-mapwrap{position:relative;margin-top:10px;border-radius:10px;overflow:hidden;border:1.5px solid #dfe5ee;display:none}',
+      '.mv-loc-mapwrap.show{display:block}',
+      '.mv-loc-map{width:100%;height:260px;background:#e8edf3}',
+      '.mv-loc-maphint{position:absolute;left:8px;bottom:8px;right:58px;background:rgba(255,255,255,.94);border-radius:8px;padding:5px 9px;font-size:.76rem;color:#334155;pointer-events:none;box-shadow:0 1px 4px rgba(0,0,0,.18)}',
+      '@media(max-width:520px){.mv-loc-map{height:230px}}',
       '@keyframes mvLocSpin{to{transform:rotate(360deg)}}'
     ].join('\n');
     document.head.appendChild(style);
@@ -217,7 +229,10 @@
       onLocationChange: function(locDetails)
     }
   */
-  function attachLocationPicker(options){
+  function attachLocationPicker(options, opts2){
+    // also accept attachLocationPicker(element, {...})
+    if(options && options.nodeType === 1){ opts2 = Object.assign({}, opts2 || {}); opts2.containerId = options; options = opts2; }
+    options = options || {};
     var container = typeof options.containerId === 'string' ? document.getElementById(options.containerId) : options.containerId;
     if(!container) return null;
 
@@ -244,6 +259,7 @@
       '  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"></circle><line x1="21" y1="21" x2="16.65" y2="16.65"></line></svg>',
       '  <input type="text" id="mvLocSearchInput" placeholder="Search and select any location (Powered by Google)" autocomplete="off">',
       '</div>',
+      '<div class="mv-loc-mapwrap"><div class="mv-loc-map"></div><div class="mv-loc-maphint">Tap the map or drag the pin to set your exact location</div></div>',
       '<div class="mv-loc-status" id="mvLocStatus"></div>',
       '<div class="mv-loc-details" id="mvLocDetails"></div>'
     ].join('\n');
@@ -253,6 +269,10 @@
     var btn = widget.querySelector('#mvLocBtn');
     var searchInput = widget.querySelector('#mvLocSearchInput');
     var statusEl = widget.querySelector('#mvLocStatus');
+    var mapWrap = widget.querySelector('.mv-loc-mapwrap');
+    var mapEl = widget.querySelector('.mv-loc-map');
+    var map = null, marker = null, mapsReady = false;
+    var DEFAULT_CENTER = { lat: 30.7333, lng: 76.7794 }; // Chandigarh
     var detailsEl = widget.querySelector('#mvLocDetails');
 
     function showStatus(text, type){
@@ -264,7 +284,52 @@
       statusEl.innerHTML = '';
     }
 
-    function applyLocation(loc, updateInputs){
+    function mapPoint(){
+      return (currentLocation && typeof currentLocation.lat === 'number' && typeof currentLocation.lng === 'number')
+        ? { lat: currentLocation.lat, lng: currentLocation.lng } : null;
+    }
+    function placeMarker(pt, zoom){
+      if(!map || !marker || !pt) return;
+      marker.setPosition(pt);
+      map.setCenter(pt);
+      if(zoom) map.setZoom(zoom);
+    }
+    function pickFromMap(pt){
+      marker.setPosition(pt);
+      showStatus('Finding the address for this spot…', 'loading');
+      reverseGeocode(pt.lat, pt.lng).then(function(loc){
+        showStatus('✓ Location set from map: ' + (loc.area ? (loc.area + ', ' + loc.city) : (loc.city || loc.fullAddress)), 'success');
+        if(searchInput) searchInput.value = loc.fullAddress || '';
+        applyLocation(loc, true, true);
+      }).catch(function(){
+        var loc = { country: 'India', state: '', city: '', area: '', fullAddress: 'Latitude: ' + pt.lat.toFixed(5) + ', Longitude: ' + pt.lng.toFixed(5), lat: pt.lat, lng: pt.lng };
+        showStatus('Pin saved, but the address could not be found. Please also search or type your city.', 'error');
+        applyLocation(loc, false, true);
+      });
+    }
+    function ensureMap(){
+      if(map){
+        // the box may have been hidden (slider step) when the map was drawn
+        if(mapEl.offsetWidth){ google.maps.event.trigger(map, 'resize'); var pt0 = mapPoint(); if(pt0) map.setCenter(pt0); }
+        return;
+      }
+      if(!(window.google && google.maps && google.maps.Map) || !mapEl.offsetWidth) return;
+      var pt = mapPoint();
+      try{
+        map = new google.maps.Map(mapEl, {
+          center: pt || DEFAULT_CENTER, zoom: pt ? 16 : 11,
+          mapTypeControl: false, streetViewControl: false, fullscreenControl: true, gestureHandling: 'greedy'
+        });
+        marker = new google.maps.Marker({ map: map, position: pt || DEFAULT_CENTER, draggable: true, title: 'Drag me to your exact location' });
+        marker.addListener('dragend', function(){ var p = marker.getPosition(); pickFromMap({ lat: p.lat(), lng: p.lng() }); });
+        map.addListener('click', function(ev){ pickFromMap({ lat: ev.latLng.lat(), lng: ev.latLng.lng() }); });
+        mapWrap.classList.add('show');
+      }catch(e){ console.warn('Google Map could not start', e); mapWrap.classList.remove('show'); }
+    }
+    if(window.ResizeObserver){ new ResizeObserver(function(){ if(mapsReady) ensureMap(); }).observe(mapWrap.parentNode); }
+    window.addEventListener('resize', function(){ if(mapsReady && map) ensureMap(); });
+
+    function applyLocation(loc, updateInputs, fromMap){
       currentLocation = Object.assign({}, loc);
       if(updateInputs !== false){
         if(cityInput && loc.city){
@@ -331,6 +396,7 @@
       if(loc.country) parts.push(loc.country);
       var summary = parts.join(', ');
 
+      if(!fromMap && map && typeof loc.lat === 'number' && typeof loc.lng === 'number') placeMarker({ lat: loc.lat, lng: loc.lng }, 16);
       detailsEl.className = 'mv-loc-details show';
       detailsEl.innerHTML = '<b>Selected Location:</b> ' + (summary || loc.fullAddress || 'Coordinates saved') +
         (loc.lat && loc.lng ? ' <small style="display:block;color:#64748b;margin-top:2px;">(Lat: ' + loc.lat.toFixed(4) + ', Lng: ' + loc.lng.toFixed(4) + ')</small>' : '');
@@ -359,6 +425,12 @@
 
     // Initialize Google Places Autocomplete on the search input
     loadGoogleMapsScript(function(){
+      if(window.google && window.google.maps && window.google.maps.Map){
+        mapsReady = true;
+        mapWrap.classList.add('show');   // takes space so it can be measured; hidden again if the map fails
+        ensureMap();
+        if(!map) setTimeout(ensureMap, 300);
+      }
       if(window.google && window.google.maps && window.google.maps.places && searchInput){
         try{
           var autocomplete = new google.maps.places.Autocomplete(searchInput, {

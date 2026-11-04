@@ -314,5 +314,23 @@ service cloud.firestore {
         ));
       }
     }
+
+    // ==========================================
+    // 9. Reviews (visitors send a review as "pending"; the admin approves, edits and deletes)
+    // Anyone can read approved reviews. Pending/hidden ones are visible to the admin only.
+    // ==========================================
+    match /reviews/{reviewId} {
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      allow create: if isAdmin() || (signedIn()
+        && request.resource.data.keys().hasOnly(['name', 'role', 'place', 'stars', 'text', 'status', 'createdAt'])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 60
+        && request.resource.data.role is string && request.resource.data.role.size() <= 40
+        && request.resource.data.place is string && request.resource.data.place.size() <= 40
+        && request.resource.data.stars is int && request.resource.data.stars >= 1 && request.resource.data.stars <= 5
+        && request.resource.data.text is string && request.resource.data.text.size() >= 20 && request.resource.data.text.size() <= 500);
+      allow update, delete: if isAdmin();
+    }
   }
 }

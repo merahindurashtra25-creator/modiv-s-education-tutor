@@ -126,17 +126,22 @@ nav li.nt-m{display:none}
 .adm-pill{background:var(--navy);color:var(--cream);border-radius:99px;padding:6px 14px;font-size:.82rem;font-weight:600;white-space:nowrap}.adm-pill b{color:var(--yellow)}
 @media(max-width:1180px){.adm-pill .em{display:none}}
 
-.lgrid{display:flex;flex-direction:column;gap:10px;margin-bottom:36px;overflow:hidden}
-.lgrid .course{display:flex;flex-wrap:wrap;gap:10px}
-.lgrid .course:nth-child(even){padding-left:44px}
-.brick{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600;font-size:.95rem;line-height:1.2;white-space:nowrap;background:#fff;color:var(--navy);border:1.5px solid var(--line);box-shadow:0 3px 0 rgba(26,32,53,.08);transition:transform .15s ease,box-shadow .15s ease}
-.brick:hover{transform:translateY(-2px);box-shadow:0 6px 0 rgba(26,32,53,.12)}
-.brick.city{font-weight:800;font-size:1.05rem;padding:12px 24px;border:0;color:var(--cream);background:linear-gradient(135deg,#1A2035 0%,#33406f 100%)}
-.brick.city small{font-weight:600;font-size:.75rem;opacity:.8}
-.course:nth-child(3n+2) .brick.city{background:linear-gradient(135deg,#EBB92E 0%,#f6d56b 100%);color:var(--navy)}
-.course:nth-child(3n) .brick.city{background:linear-gradient(135deg,#2a3350 0%,#4a3b7a 100%)}
-.brick svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
-@media(max-width:600px){.lgrid .course:nth-child(even){padding-left:20px}.brick{padding:10px 14px;font-size:.88rem}.brick.city{padding:10px 18px}}
+.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:18px;margin-bottom:36px}
+.ccard{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:16px 16px 18px;display:flex;flex-direction:column;gap:14px;box-shadow:0 8px 22px rgba(26,32,53,.06);transition:transform .2s ease,box-shadow .2s ease}
+.ccard:hover{transform:translateY(-3px);box-shadow:0 14px 30px rgba(26,32,53,.12)}
+.ccard-h{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--navy)}
+.ccard-pin{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;flex:none;background:var(--navy);color:var(--yellow)}
+.ccard:nth-child(3n+2) .ccard-pin{background:var(--yellow);color:var(--navy)}
+.ccard:nth-child(3n) .ccard-pin{background:#33406f;color:#fff}
+.ccard-pin svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.ccard-t{flex:1;min-width:0;line-height:1.25}.ccard-t b{display:block;font-size:1.08rem;font-weight:800}
+.ccard-t small{display:block;margin-top:2px;color:var(--muted);font-size:.8rem;font-weight:500}
+.ccard-go{font-weight:800;font-size:1.2rem;color:var(--navy);transition:transform .2s}.ccard-h:hover .ccard-go{transform:translateX(3px)}
+.ccard-areas{display:flex;flex-wrap:wrap;gap:8px;padding-top:14px;border-top:1px dashed var(--line)}
+.achip{padding:6px 13px;border-radius:99px;background:var(--cream);border:1px solid var(--line);color:var(--navy);font-weight:600;font-size:.84rem;line-height:1.3;text-decoration:none;transition:background .15s,border-color .15s}
+.achip:hover,.achip:focus-visible{background:var(--yellow);border-color:var(--yellow)}
+.ccard-h:focus-visible,.achip:focus-visible{outline:3px solid var(--yellow);outline-offset:2px;border-radius:12px}
+@media(prefers-reduced-motion:reduce){.ccard,.ccard-go{transition:none}.ccard:hover{transform:none}}
 .sh{margin:8px 0 4px;font-size:1.25rem}
 .finder{display:grid;grid-template-columns:minmax(160px,220px) 1fr auto;gap:10px;margin-bottom:14px}
 .finder select,.finder input{font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy);min-width:0}
@@ -150,6 +155,25 @@ nav li.nt-m{display:none}
 .wcard ul{margin:12px 0 0;padding:0;list-style:none;display:grid;gap:10px}
 .wcard li{padding-left:28px;position:relative;color:var(--muted)}.wcard li b{color:var(--navy)}
 .wcard li::before{content:"✓";position:absolute;left:0;top:0;width:20px;height:20px;border-radius:50%;background:var(--navy);color:var(--yellow);font-size:.7rem;font-weight:800;display:grid;place-items:center;margin-top:2px}
+.revhead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;flex-wrap:wrap;margin-bottom:6px}
+.revhead .btn{margin-bottom:6px}
+.rvm{position:fixed;inset:0;z-index:300;background:rgba(26,32,53,.55);display:none;align-items:center;justify-content:center;padding:16px;overflow:auto}
+.rvm.open{display:flex}
+.rvm-card{background:#fff;border-radius:18px;max-width:480px;width:100%;padding:24px 22px;box-shadow:0 24px 60px rgba(26,32,53,.3);position:relative;max-height:calc(100vh - 32px);overflow:auto}
+.rvm-card h3{margin:0 0 4px;font-size:1.25rem}.rvm-card p.sub{margin:0 0 14px;color:var(--muted);font-size:.9rem}
+.rvm-card label{display:block;font-weight:600;font-size:.88rem;margin:12px 0 5px}
+.rvm-card input[type=text],.rvm-card select,.rvm-card textarea{width:100%;font:inherit;padding:11px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy);box-sizing:border-box}
+.rvm-card textarea{resize:vertical;min-height:110px}
+.rvm-x{position:absolute;top:10px;right:12px;background:none;border:0;font-size:1.6rem;line-height:1;cursor:pointer;color:var(--muted)}
+.rvm-stars{display:flex;flex-direction:row-reverse;justify-content:flex-end;gap:2px}
+.rvm-stars input{position:absolute;opacity:0;pointer-events:none}
+.rvm-stars label{margin:0;font-size:2rem;line-height:1;color:#d9d2c0;cursor:pointer;font-weight:400}
+.rvm-stars input:checked~label,.rvm-stars label:hover,.rvm-stars label:hover~label{color:#EBB92E}
+.rvm-stars input:focus-visible+label{outline:3px solid var(--yellow);outline-offset:2px;border-radius:4px}
+.rvm-cnt{font-size:.78rem;color:var(--muted);text-align:right;margin-top:3px}
+.rvm-err{color:#b3261e;font-size:.88rem;min-height:1.2em;margin:8px 0 0}
+.rvm-ok{text-align:center;padding:10px 0}.rvm-ok .tick{font-size:2.4rem}
+.rvm-card .btn{width:100%;margin-top:12px;text-align:center}
 .revs{display:grid;grid-template-columns:repeat(auto-fit,minmax(280px,1fr));gap:18px}
 .rev{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:22px;display:flex;flex-direction:column;gap:12px;margin:0}
 .rev .st{color:#c48d00;letter-spacing:2px;font-size:1rem}
@@ -228,6 +252,7 @@ nav li.nt-m{display:none}
 @media(max-width:620px){.qb-tiles{grid-template-columns:repeat(2,1fr)}.qb-stat+.qb-stat{border-left:0;border-top:1px solid var(--line)}.qb{margin-top:0}}
 </style>
 <script src="modivs-blogs.js"></script>
+<script src="modivs-reviews.js"></script>
 <script src="modivs-import-data.js" defer></script>
 <script src="modivs-places.js"></script>
 <script src="modivs-subjects.js"></script>
@@ -248,11 +273,13 @@ nav li.nt-m{display:none}
    <ul>
     <li><a href="index.html" id="navHome" aria-current="page">Home</a></li>
     <li><a href="modivs-active-leads.html" id="navActiveLeads">Active leads</a></li>
-    <li><a href="modivs-tutors.html" id="navTutors">Tutors</a></li>
-    <li><a href="modivs-guide.html" id="navGuide">Guide</a></li>
-    <li><a href="modivs-blogs.html" id="navBlogs">Blogs</a></li>
+    <li><a href="modivs-tutors.html" id="navTutors">Find a tutor</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="#contact" id="navContact">Contact us</a></li>
+    <li class="mv-dd"><button type="button" class="mv-dd-b" aria-haspopup="true" aria-expanded="false">More <span class="car" aria-hidden="true">▾</span></button><ul class="mv-dd-m">
+     <li><a href="modivs-guide.html" id="navGuide">Guide</a></li>
+     <li><a href="modivs-blogs.html" id="navBlogs">Blogs</a></li>
+     <li><a href="#contact" id="navContact">Contact us</a></li>
+    </ul></li>
     <li class="nt-m"><a href="modivs-become-tutor.html">Become a Tutor</a></li>
    </ul>
   </nav>
@@ -372,8 +399,38 @@ nav li.nt-m{display:none}
 
  <section id="reviews" style="background:var(--card)">
   <div class="wrap">
-   <h2 class="t">What parents and students say</h2><p class="s">Feedback from families learning with Modiv’s online and home tuition.</p>
+   <div class="revhead"><div><h2 class="t">What parents and students say</h2><p class="s">Feedback from families learning with Modiv’s online and home tuition.</p></div>
+   <button type="button" class="btn y" id="revAdd">★ Write a review</button></div>
    <div class="revs" id="revs"></div>
+   <div class="rvm" id="rvm" role="dialog" aria-modal="true" aria-labelledby="rvmT"><div class="rvm-card">
+    <button type="button" class="rvm-x" id="rvmX" aria-label="Close">×</button>
+    <div id="rvmForm"><h3 id="rvmT">Share your experience</h3><p class="sub">Your review is shown on this page after our team approves it.</p>
+     <form id="rvf" novalidate>
+      <label for="rvName">Your name</label><input type="text" id="rvName" maxlength="60" autocomplete="name">
+      <label for="rvRole">I am a</label><select id="rvRole"><option value="">Choose…</option><option>Student</option><option>Parent of a student</option><option>Tutor</option></select>
+      <label for="rvPlace">City <span style="font-weight:400;color:var(--muted)">(optional)</span></label><input type="text" id="rvPlace" maxlength="40" autocomplete="address-level2">
+      <label id="rvStL">Your rating</label>
+      <div class="rvm-stars" role="radiogroup" aria-labelledby="rvStL">
+       <input type="radio" name="rvs" id="rvs5" value="5"><label for="rvs5" title="5 stars">★</label>
+       <input type="radio" name="rvs" id="rvs4" value="4"><label for="rvs4" title="4 stars">★</label>
+       <input type="radio" name="rvs" id="rvs3" value="3"><label for="rvs3" title="3 stars">★</label>
+       <input type="radio" name="rvs" id="rvs2" value="2"><label for="rvs2" title="2 stars">★</label>
+       <input type="radio" name="rvs" id="rvs1" value="1"><label for="rvs1" title="1 star">★</label>
+      </div>
+      <label for="rvText">Your review</label><textarea id="rvText" maxlength="500" placeholder="How was your experience with Modiv’s tutors?"></textarea>
+      <div class="rvm-cnt"><span id="rvCnt">0</span> / 500</div>
+      <div class="rvm-err" id="rvErr" role="alert"></div>
+      <button type="submit" class="btn y" id="rvSend">Submit review</button>
+     </form></div>
+    <div id="rvmDone" class="rvm-ok" style="display:none"><div class="tick">✅</div><h3>Thank you!</h3><p class="sub">Your review was sent. It will appear here once our team approves it.</p><button type="button" class="btn" id="rvDoneBtn">Close</button></div>
+   </div></div>
+  </div>
+ </section>
+
+ <section id="stories" aria-labelledby="storiesH">
+  <div class="wrap">
+   <h2 class="t" id="storiesH">Success stories</h2><p class="s">Hear from students, parents and tutors who found their match on Modiv’s.</p>
+   <div id="storiesBox"></div>
   </div>
  </section>
 
@@ -537,15 +594,49 @@ nav li.nt-m{display:none}
    {name:'Kavita Bansal',role:'Parent of a Class 11 student',place:'Panchkula',stars:5,text:'Chemistry was my daughter’s weak point. In three months her confidence and test marks have both gone up.'}
   ];
   var rb=document.getElementById('revs');
-  if(rb)REVIEWS.forEach(function(r){
-   var f=el('figure','rev');
-   f.appendChild(el('div','st','★★★★★'.slice(0,r.stars)+'☆☆☆☆☆'.slice(0,5-r.stars)));
-   f.lastChild.setAttribute('aria-label',r.stars+' out of 5 stars');
-   f.appendChild(el('blockquote','','“'+r.text+'”'));
-   var c=el('figcaption'),av=el('span','av',r.name.charAt(0)),w=el('span');
-   w.appendChild(el('b','',r.name));w.appendChild(document.createTextNode(r.role+' · '+r.place));
-   c.appendChild(av);c.appendChild(w);f.appendChild(c);rb.appendChild(f);
-  });
+  function drawReviews(list){
+   if(!rb)return;rb.innerHTML='';
+   list.forEach(function(r){
+    var f=el('figure','rev');
+    f.appendChild(el('div','st','★★★★★'.slice(0,r.stars)+'☆☆☆☆☆'.slice(0,5-r.stars)));
+    f.lastChild.setAttribute('aria-label',r.stars+' out of 5 stars');
+    f.appendChild(el('blockquote','','“'+r.text+'”'));
+    var c=el('figcaption'),av=el('span','av',(r.name||'?').charAt(0).toUpperCase()),w=el('span');
+    w.appendChild(el('b','',r.name));w.appendChild(document.createTextNode(r.role+(r.place?' · '+r.place:'')));
+    c.appendChild(av);c.appendChild(w);f.appendChild(c);rb.appendChild(f);
+   });
+  }
+  /* sample reviews show only until the admin has approved real ones (admin: Reviews tab) */
+  drawReviews(REVIEWS);
+  if(window.ModivsReviews)ModivsReviews.listApproved(60).then(function(l){if(l.length)drawReviews(l)},function(){});
+
+  /* "Write a review" form */
+  (function(){
+   var m=document.getElementById('rvm'),openB=document.getElementById('revAdd');if(!m||!openB)return;
+   var form=document.getElementById('rvf'),err=document.getElementById('rvErr'),send=document.getElementById('rvSend'),
+       t=document.getElementById('rvText'),cnt=document.getElementById('rvCnt'),last=null;
+   function open(){form.reset();cnt.textContent='0';err.textContent='';document.getElementById('rvmForm').style.display='';document.getElementById('rvmDone').style.display='none';
+    send.disabled=false;send.textContent='Submit review';
+    try{var u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null');if(u&&(u.name||u.fullName))document.getElementById('rvName').value=u.name||u.fullName}catch(e){}
+    last=document.activeElement;m.classList.add('open');document.getElementById('rvName').focus()}
+   function close(){m.classList.remove('open');if(last)try{last.focus()}catch(e){}}
+   openB.addEventListener('click',open);
+   document.getElementById('rvmX').addEventListener('click',close);document.getElementById('rvDoneBtn').addEventListener('click',close);
+   m.addEventListener('click',function(e){if(e.target===m)close()});
+   document.addEventListener('keydown',function(e){if(e.key==='Escape'&&m.classList.contains('open'))close()});
+   t.addEventListener('input',function(){cnt.textContent=t.value.length});
+   form.addEventListener('submit',function(e){
+    e.preventDefault();err.textContent='';
+    var st=form.querySelector('input[name=rvs]:checked');
+    var o={name:document.getElementById('rvName').value,role:document.getElementById('rvRole').value,place:document.getElementById('rvPlace').value,stars:st?st.value:0,text:t.value};
+    if(!window.ModivsReviews){err.textContent='Reviews are not available right now. Please try again later.';return}
+    var c=ModivsReviews.clean(o);if(!c.ok){err.textContent=c.err;return}
+    send.disabled=true;send.textContent='Sending…';
+    ModivsReviews.submit(o).then(function(){
+     document.getElementById('rvmForm').style.display='none';document.getElementById('rvmDone').style.display='';document.getElementById('rvDoneBtn').focus();
+    },function(x){err.textContent=(x&&x.code==='permission-denied')?'Could not send the review. Please refresh the page and try again.':((x&&x.message)||'Could not send the review.');send.disabled=false;send.textContent='Submit review'});
+   });
+  })();
 
   var FAQS=[
    ['How do I find a tutor?','Fill in the student or parent form with the class, subject, board and area. You will see verified tutors who match, and you can ask for a demo class before you decide.'],
@@ -625,12 +716,17 @@ nav li.nt-m{display:none}
    FEATURED.forEach(function(f){
     var key=f.key||f.city,n=counts[key.toLowerCase()]||0;
     var href=n?'modivs-tutors.html?city='+encodeURIComponent(key):'modivs-student-signup.html';
-    var row=el('div','course');
-    var c=el('a','brick city');c.href=href;c.innerHTML=PIN;c.appendChild(document.createTextNode(f.city));c.appendChild(el('small','',f.st));row.appendChild(c);
+    var card=el('article','ccard');
+    var h=el('a','ccard-h');h.href=href;
+    var pin=el('span','ccard-pin');pin.innerHTML=PIN;h.appendChild(pin);
+    var t=el('span','ccard-t');t.appendChild(el('b','',f.city));
+    t.appendChild(el('small','',f.st+' · '+(n?n+' verified tutor'+(n>1?'s':''):'Online tuition')));h.appendChild(t);
+    h.appendChild(el('span','ccard-go','→'));card.appendChild(h);
+    var ar=el('div','ccard-areas');
     f.areas.forEach(function(x){
-     var a=el('a','brick',x);a.href=n?href+'&area='+encodeURIComponent(x):href;a.title=f.city;row.appendChild(a);
+     var a=el('a','achip',x);a.href=n?href+'&area='+encodeURIComponent(x):href;a.title=f.city+', '+x;ar.appendChild(a);
     });
-    cardsBox.appendChild(row);
+    card.appendChild(ar);cardsBox.appendChild(card);
    });
   }
   function paint(){
@@ -787,5 +883,8 @@ nav li.nt-m{display:none}
  });
 })();
 </script>
+<script src="modivs-social.js" defer></script>
+<script src="modivs-dropdown.js" defer></script>
+<script src="modivs-stories.js" defer></script>
 </body>
 </html>

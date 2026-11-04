@@ -423,7 +423,11 @@ function loadTutorLeads(){
       status: st,
       unlocked: isUnlocked,
       sent: item.sent || 'Recently',
-      registered_at: item.registered_at || ''
+      registered_at: item.registered_at || '',
+      who: item.by || (item.parent_name ? 'Parent' : 'Student'),
+      time: item.timeSlot || item.sent || 'Recently',
+      when: [item.freq, item.timeSlot].filter(Boolean).join(' · ') || 'Flexible timing',
+      note: item.notes || ''
     };
   });
 }
@@ -751,7 +755,7 @@ function stat(label,val,cls,small){var d=el('div','stat'+(cls?' '+cls:''));d.app
 
 function leadCard(l){
  var c=el('div','lead'),L=el('div'),A=el('div','acts');
- var title=l.unlocked?l.name:l.name.split(' ')[0]+' '+l.name.split(' ')[1].charAt(0)+'.';
+ var title=maskName(l);
  var badgeCls='badge '+(l.unlocked?l.status:'locked');
  var badgeLabel=l.unlocked?(LABEL[l.status]||'Accepted'):'Locked';
  var h=el('h3','',title+' ');h.appendChild(el('span',badgeCls,badgeLabel));
@@ -1688,5 +1692,6 @@ render();
 </script>
 <script src="modivs-avatars.js"></script>
 <script src="modivs-pass-eye.js"></script>
+<script src="modivs-social.js" defer></script>
 </body>
 </html>

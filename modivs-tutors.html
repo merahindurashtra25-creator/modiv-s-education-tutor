@@ -204,11 +204,13 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
    <ul>
     <li><a href="index.html">Home</a></li>
     <li><a href="modivs-active-leads.html">Active leads</a></li>
-    <li><a href="modivs-tutors.html">Tutors</a></li>
-    <li><a href="modivs-guide.html">Guide</a></li>
-    <li><a href="modivs-blogs.html">Blogs</a></li>
+    <li><a href="modivs-tutors.html">Find a tutor</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-contact.html">Contact us</a></li>
+    <li class="mv-dd"><button type="button" class="mv-dd-b" aria-haspopup="true" aria-expanded="false">More <span class="car" aria-hidden="true">▾</span></button><ul class="mv-dd-m">
+     <li><a href="modivs-guide.html">Guide</a></li>
+     <li><a href="modivs-blogs.html">Blogs</a></li>
+     <li><a href="modivs-contact.html">Contact us</a></li>
+    </ul></li>
    </ul>
   </nav>
   <div class="acts" id="mvActs">
@@ -844,5 +846,7 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
 <script src="modivs-avatars.js"></script>
 <script src="modivs-session-ui.js" defer></script>
 <script src="modivs-menu.js" defer></script>
+<script src="modivs-social.js" defer></script>
+<script src="modivs-dropdown.js" defer></script>
 </body>
 </html>

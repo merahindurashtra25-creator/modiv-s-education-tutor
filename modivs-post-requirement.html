@@ -164,6 +164,23 @@ textarea{min-height:100px;resize:vertical}
 .pr-page .ac-main .btn.ghost{background:#fff;color:#1A2035;border:1.5px solid #eadfc9}
 .pr-page .ok .btn{width:auto}
 .pr-page .ac-main a{color:#1A2035!important;text-decoration:underline;text-decoration-color:#EBB92E;text-underline-offset:3px}
+/* step-by-step (slider) form */
+.pr-prog{margin:18px 0 4px}
+.pr-prog-top{display:flex;justify-content:space-between;gap:10px;font-size:.84rem;font-weight:700;color:#1A2035;margin-bottom:7px}
+.pr-prog-top span:last-child{font-weight:600;color:#555b78}
+.pr-bar{height:8px;border-radius:99px;background:#eadfc9;overflow:hidden}
+.pr-bar i{display:block;height:100%;width:0;background:#EBB92E;border-radius:99px;transition:width .35s ease}
+.pr-page .qs.pr-step{display:none;border-top:0;margin-top:14px;padding-top:0}
+.pr-page .qs.pr-step.on{display:block;animation:prInR .32s ease both}
+.pr-page .qs.pr-step.on.back{animation-name:prInL}
+@keyframes prInR{from{opacity:0;transform:translateX(34px)}to{opacity:1;transform:none}}
+@keyframes prInL{from{opacity:0;transform:translateX(-34px)}to{opacity:1;transform:none}}
+.pr-page .pr-step>.lab:first-child,.pr-page .pr-step>label:first-child{font-size:1.05rem;font-weight:700}
+.pr-nav{display:flex;gap:12px;margin-top:22px}
+.pr-page .ac-main .pr-nav .btn{width:auto;flex:1;margin-top:0}
+.pr-page .ac-main .pr-nav #prBack{flex:0 0 auto;min-width:110px}
+.pr-nav #prBack[hidden],.pr-nav #prNext[hidden],.pr-nav #prSubmit[hidden]{display:none}
+@media(prefers-reduced-motion:reduce){.pr-page .qs.pr-step.on,.pr-bar i{animation:none;transition:none}}
 @media(max-width:820px){.pr-page{padding:18px 12px 40px}.pr-page .ac-main{padding:22px 16px 26px}.pr-page .rg{grid-template-columns:1fr 1fr}}
 @media(max-width:420px){.pr-page .rg{grid-template-columns:1fr}}
 </style>
@@ -177,11 +194,13 @@ textarea{min-height:100px;resize:vertical}
    <ul>
     <li><a href="index.html">Home</a></li>
     <li><a href="modivs-active-leads.html">Active leads</a></li>
-    <li><a href="modivs-tutors.html">Tutors</a></li>
-    <li><a href="modivs-guide.html">Guide</a></li>
-    <li><a href="modivs-blogs.html">Blogs</a></li>
+    <li><a href="modivs-tutors.html">Find a tutor</a></li>
     <li><a href="modivs-shop.html">Shop</a></li>
-    <li><a href="modivs-contact.html">Contact us</a></li>
+    <li class="mv-dd"><button type="button" class="mv-dd-b" aria-haspopup="true" aria-expanded="false">More <span class="car" aria-hidden="true">▾</span></button><ul class="mv-dd-m">
+     <li><a href="modivs-guide.html">Guide</a></li>
+     <li><a href="modivs-blogs.html">Blogs</a></li>
+     <li><a href="modivs-contact.html">Contact us</a></li>
+    </ul></li>
    </ul>
   </nav>
   <div class="acts" id="mvActs">
@@ -196,6 +215,7 @@ textarea{min-height:100px;resize:vertical}
  <div class="ac-box"><div class="ac-main">
  <div class="bd-hero"><p class="hey">Hey ! Student/Parent</p><h1>Post Your Tuition Requirement</h1><p class="sub">Free for students and parents. Just answer a few quick questions 👇</p></div>
  <div id="tutorBox" class="tutorbox hide"></div>
+ <div class="pr-prog" id="prProg" aria-live="polite"><div class="pr-prog-top"><span id="prStep">Step 1</span><span id="prTitle"></span></div><div class="pr-bar" role="progressbar" aria-valuemin="1" aria-valuemax="9" aria-valuenow="1"><i id="prFill"></i></div></div>
  <form id="form" novalidate></form>
  </div>
  <aside class="ac-side"><div class="ac-side-in"><div class="ac-photo"><img src="find-hero.jpg" alt="A student studying at his desk with notes and a laptop"></div><div class="ac-band"><p class="ac-script">Post Once.<br>Get Matched.</p><ul class="ac-checks"><li>Free tuition requirement posting</li><li>Verified home &amp; online tutors</li><li>Free demo class before you decide</li><li>Your number stays private</li></ul></div></div></aside>
@@ -226,40 +246,45 @@ if(tid){
 }
 
 f.innerHTML=
- '<div class="qs"><div class="lab">Which Category Of subject(s) do you need help with? <span class="hint">tick the categories, then choose subjects</span></div>'+ModivsSubjects.picker('subjects',[])+
+ '<div class="qs pr-step" data-t="Subjects"><div class="lab">Which Category Of subject(s) do you need help with? <span class="hint">tick the categories, then choose subjects</span></div>'+ModivsSubjects.picker('subjects',[])+
  '<label for="otherSub">Any Other Subject <span class="hint">optional</span></label><input id="otherSub" type="text" placeholder="e.g. Sanskrit grammar"></div>'+
- '<div class="qs"><div class="two"><div>'+sel('cls','Select Learning Class / Academic Level',CLASSES)+'</div><div>'+sel('board','Which board or curriculum do you follow?',BOARDS,'Select your board or curriculum')+'</div></div></div>'+
- '<div class="qs"><div class="lab">Choose Tutor Type Need</div>'+radios('ttype',['Home Tutor','Online Tutor'])+
- '<div class="lab">Do you have a tutor gender preference?</div>'+radios('tgender',['Female','Male','No Preference'])+
- '<div class="lab">Preferred Mode of Learning</div>'+boxes('modes',['Student’s Home','Tutor’s Place','Online (Skype or Zoom Class)'])+'<div class="lab">Tuition format <span class="hint">works for online and offline classes</span></div>'+boxes('formats',['1-on-1 Individual tuition','Group tuition (Small batch)'])+'<div id="addrBox" class="hide"><label for="addr">Detailed address <span class="hint">house no., street, area, landmark, pincode. Kept private, never shown publicly</span></label><textarea id="addr" style="min-height:80px"></textarea></div></div>'+
- '<div class="qs"><div class="two"><div>'+sel('days','How many days per week do you want classes?',DAYS,'Select Class Days')+'</div><div>'+sel('time','What time suits you best for classes?',TIMES,'Choose a time slot')+'</div></div>'+
- '<div class="lab">Would you like a free demo class?</div>'+radios('demo',['Yes','No'])+sel('fee','Fee Range',FEES)+'</div>'+
- '<div class="qs"><div class="lab">Are you posting this enquiry as a Student or a Parent?</div>'+radios('postRole',['Student','Parent'])+
- '<div class="two"><div><label for="name">Your Name</label><input id="name" type="text" autocomplete="name"></div><div id="childNameBox" class="hide"><label for="childName">Student / Child’s Name <span class="hint">optional</span></label><input id="childName" type="text"></div></div>'+avatarPicker()+
- '<div class="two"><div><label for="phone">Mobile / WhatsApp Number <span class="hint">kept private, never shown publicly</span></label><input id="phone" type="tel" autocomplete="tel"></div><div><label for="email">Email address</label><input id="email" type="email" autocomplete="email"></div></div>'+
-  '<label for="needs">Tell us more about your learning needs</label><textarea id="needs"></textarea>'+
-  '<div id="reqLocPicker" style="margin:14px 0 6px;"></div><input type="hidden" id="city" value=""></div>'+
- '<div class="msg" id="msg" role="alert"></div><button type="submit" class="btn">Post Requirement</button>'+
+ '<div class="qs pr-step" data-t="Class and board"><div class="two"><div>'+sel('cls','Select Learning Class / Academic Level',CLASSES)+'</div><div>'+sel('board','Which board or curriculum do you follow?',BOARDS,'Select your board or curriculum')+'</div></div></div>'+
+ '<div class="qs pr-step" data-t="Tutor type"><div class="lab">Choose Tutor Type Need</div>'+radios('ttype',['Home Tutor','Online Tutor'])+
+ '<div class="lab">Do you have a tutor gender preference?</div>'+radios('tgender',['Female','Male','No Preference'])+'</div>'+
+ '<div class="qs pr-step" data-t="Learning mode"><div class="lab">Preferred Mode of Learning</div>'+boxes('modes',['Student’s Home','Tutor’s Place','Online (Skype or Zoom Class)'])+'<div class="lab">Tuition format <span class="hint">works for online and offline classes</span></div>'+boxes('formats',['1-on-1 Individual tuition','Group tuition (Small batch)'])+'</div>'+
+ '<div class="qs pr-step" data-t="Schedule"><div class="two"><div>'+sel('days','How many days per week do you want classes?',DAYS,'Select Class Days')+'</div><div>'+sel('time','What time suits you best for classes?',TIMES,'Choose a time slot')+'</div></div></div>'+
+ '<div class="qs pr-step" data-t="Demo class and fee"><div class="lab">Would you like a free demo class?</div>'+radios('demo',['Yes','No'])+sel('fee','Fee Range',FEES)+'</div>'+
+ '<div class="qs pr-step" data-t="About you"><div class="lab">Are you posting this enquiry as a Student or a Parent?</div>'+radios('postRole',['Student','Parent'])+
+ '<div class="two"><div><label for="name">Your Name</label><input id="name" type="text" autocomplete="name"></div><div id="childNameBox" class="hide"><label for="childName">Student / Child’s Name <span class="hint">optional</span></label><input id="childName" type="text"></div></div>'+avatarPicker()+'</div>'+
+ '<div class="qs pr-step" data-t="Contact details"><div class="two"><div><label for="phone">Mobile / WhatsApp Number <span class="hint">kept private, never shown publicly</span></label><input id="phone" type="tel" autocomplete="tel"></div><div><label for="email">Email address</label><input id="email" type="email" autocomplete="email"></div></div>'+
+  '</div>'+
+  '<div class="qs pr-step" data-t="Almost done"><label for="needs">Tell us more about your learning needs</label><textarea id="needs"></textarea>'+
+  '<div class="lab">Where are you located?</div><div id="reqLocPicker"></div><div id="cityFallback" hidden><label for="city">Or choose your city</label>'+ModivsPlaces.fieldHTML({id:'city',kind:'city',val:''})+'</div>'+'<div id="addrBox" class="hide"><label for="addr">Detailed address <span class="hint">house no., street, area, landmark, pincode. Kept private, never shown publicly</span></label><textarea id="addr" style="min-height:80px"></textarea></div></div>'+
+ '<div class="msg" id="msg" role="alert"></div><div class="pr-nav"><button type="button" class="btn ghost" id="prBack">← Back</button><button type="button" class="btn" id="prNext">Next →</button><button type="submit" class="btn" id="prSubmit">Post Requirement</button></div>'+
  '<p class="sub" style="margin-top:16px;font-size:.9rem;text-align:center">Want a dashboard to track tutors? <a href="modivs-student-signup.html" style="color:var(--accent-d);font-weight:600">Sign up</a> · <a href="modivs-education.html#login" style="color:var(--accent-d);font-weight:600">Log in</a> · <a href="modivs-education.html#tutor-signup" style="color:var(--accent-d);font-weight:600">Tutor sign up</a></p>';
 
 var chosenLoc = null;
-setTimeout(function(){
-  var box = document.getElementById('reqLocPicker');
-  if(box && window.ModivsLocation){
-    ModivsLocation.attachLocationPicker(box, {
-      idPrefix: 'post_req_loc_',
-      label: 'Your Location / City',
-      placeholder: 'Search city, locality, or use current location',
-      onLocationChange: function(loc){
-        chosenLoc = loc;
-        var cityEl = document.getElementById('city');
-        if(cityEl) cityEl.value = loc.city || '';
-        var addrEl = document.getElementById('addr');
-        if(addrEl && !addrEl.value && loc.fullAddress) addrEl.value = loc.fullAddress;
-      }
-    });
-  }
-}, 50);
+
+(function(){
+ var fb=document.getElementById('cityFallback'),shown=false;
+ function showFb(){if(fb&&!shown){shown=true;fb.hidden=false}}
+ if(window.ModivsLocation&&ModivsLocation.loadGoogleMapsScript){
+  var ok=false;
+  ModivsLocation.loadGoogleMapsScript(function(){ if(window.google&&google.maps&&google.maps.places){ok=true}else showFb() });
+  setTimeout(function(){if(!ok)showFb()},8000);
+ } else showFb();
+})();
+if(window.ModivsLocation){
+  ModivsLocation.attachLocationPicker({
+    containerId: 'reqLocPicker',
+    cityInputId: 'city',
+    onLocationChange: function(loc){
+      chosenLoc = loc;
+      var addrEl = document.getElementById('addr');
+      if(addrEl && !addrEl.value && loc && loc.fullAddress) addrEl.value = loc.fullAddress;
+    }
+  });
+}
 
 function syncAddr(){var m=group('modes'),need=rad('ttype')==='Home Tutor'||m.some(function(x){return x.indexOf('Online')<0});document.getElementById('addrBox').classList.toggle('hide',!need)}
 function syncRole(){
@@ -288,10 +313,55 @@ function group(n){return [].map.call(f.querySelectorAll('input[data-group="'+n+'
 function rad(n){var e=f.querySelector('input[name="'+n+'"]:checked');return e?e.value:''}
 function fail(id,m){var e=document.getElementById(id);if(e){e.classList.add('bad');if(e.focus)e.focus()}document.getElementById('msg').textContent=m;return false}
 
+
+/* ---- step-by-step slider ---- */
+var steps=[].slice.call(f.querySelectorAll('.pr-step')),cur=0,TOTAL=steps.length;
+var elStep=document.getElementById('prStep'),elTitle=document.getElementById('prTitle'),elFill=document.getElementById('prFill'),
+    bBack=document.getElementById('prBack'),bNext=document.getElementById('prNext'),bSub=document.getElementById('prSubmit'),bar=document.querySelector('.pr-bar');
+function showStep(n,back){
+ cur=Math.max(0,Math.min(TOTAL-1,n));
+ steps.forEach(function(x,i){x.classList.remove('on','back');if(i===cur){x.classList.add('on');if(back)x.classList.add('back')}});
+ elStep.textContent='Step '+(cur+1)+' of '+TOTAL;elTitle.textContent=steps[cur].getAttribute('data-t')||'';
+ elFill.style.width=Math.round((cur+1)/TOTAL*100)+'%';bar.setAttribute('aria-valuenow',cur+1);bar.setAttribute('aria-valuemax',TOTAL);
+ bBack.hidden=cur===0;bNext.hidden=cur===TOTAL-1;bSub.hidden=cur!==TOTAL-1;
+ document.getElementById('msg').textContent='';
+ var first=steps[cur].querySelector('select,input[type=text],input[type=tel],input[type=email],textarea');
+ var top=document.getElementById('prProg');if(top&&top.scrollIntoView&&window.scrollY>top.offsetTop+120)top.scrollIntoView({behavior:'smooth',block:'start'});
+}
+/* what each step needs before "Next" works: [id-to-highlight, message] or null */
+function stepErr(i){
+ var modes=group('modes');
+ switch(i){
+  case 0:{var subs=group('subjects');if(!subs.length&&!v('otherSub'))return ['otherSub','Choose at least one subject, or type one in “Any Other Subject”.'];break}
+  case 1:if(!v('cls'))return ['cls','Select the class / academic level.'];if(!v('board'))return ['board','Select your board or curriculum.'];break;
+  case 2:if(!rad('ttype'))return ['msg','Choose the tutor type you need (Home or Online).'];if(!rad('tgender'))return ['msg','Choose a tutor gender preference.'];break;
+  case 3:{if(!modes.length)return ['msg','Choose at least one preferred mode of learning.'];if(!group('formats').length)return ['msg','Choose a tuition format (1-on-1 or group).'];
+    break}
+  case 4:if(!v('days'))return ['days','Select how many days per week you want classes.'];if(!v('time'))return ['time','Select the time that suits you best.'];break;
+  case 5:if(!rad('demo'))return ['msg','Tell us if you would like a free demo class.'];if(!v('fee'))return ['fee','Select your fee range.'];break;
+  case 6:if(!v('name'))return ['name','Enter your name.'];if(!rad('avatar'))return ['avatarBox','Choose a boy or girl avatar for your requirement.'];break;
+  case 7:if(!/^[+0-9\s-]{10,15}$/.test(v('phone')))return ['phone','Enter a valid mobile / WhatsApp number.'];if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email')))return ['email','Enter a valid email address.'];break;
+ }
+ return null;
+}
+function goNext(){
+ f.querySelectorAll('.bad').forEach(function(x){x.classList.remove('bad')});
+ var e=stepErr(cur);if(e){fail(e[0],e[1]);return}
+ showStep(cur+1,false);
+}
+bNext.addEventListener('click',goNext);
+bBack.addEventListener('click',function(){showStep(cur-1,true)});
+/* Enter key moves to the next step instead of posting early */
+f.addEventListener('keydown',function(e){if(e.key==='Enter'&&cur<TOTAL-1&&e.target.tagName!=='TEXTAREA'&&e.target.tagName!=='BUTTON'){e.preventDefault();goNext()}});
+/* any error raised for a field in another step takes the person to that step */
+var _fail=fail;
+fail=function(id,m){var e=document.getElementById(id),st=e&&e.closest?e.closest('.pr-step'):null,i=st?steps.indexOf(st):-1;if(i>=0&&i!==cur)showStep(i,i<cur);return _fail(id,m)};
+showStep(0,false);
+
 f.addEventListener('submit',function(e){
- e.preventDefault();f.querySelectorAll('.bad').forEach(function(x){x.classList.remove('bad')});
+ e.preventDefault();if(cur<TOTAL-1){goNext();return}f.querySelectorAll('.bad').forEach(function(x){x.classList.remove('bad')});
  var subs=group('subjects'),other=v('otherSub');if(other)other.split(',').forEach(function(x){x=x.trim();if(x&&subs.indexOf(x)<0)subs.push(x)});
- var modes=group('modes'),email=v('email').toLowerCase(),pass='',phone=v('phone'),city=v('city')||ModivsPlaces.canon('city',v('city'));
+ var modes=group('modes'),email=v('email').toLowerCase(),pass='',phone=v('phone'),city=ModivsPlaces.canon('city',v('city'))||v('city');
  if(!subs.length)return fail('otherSub','Choose at least one subject, or type one in “Any Other Subject”.');
  if(!v('cls'))return fail('cls','Select the class / academic level.');
  if(!v('board'))return fail('board','Select your board or curriculum.');
@@ -300,7 +370,6 @@ f.addEventListener('submit',function(e){
  if(!modes.length)return fail('msg','Choose at least one preferred mode of learning.');
  var formats=group('formats'),needAddr=rad('ttype')==='Home Tutor'||modes.some(function(m){return m.indexOf('Online')<0});
  if(!formats.length)return fail('msg','Choose a tuition format (1-on-1 or group).');
- if(needAddr&&!v('addr'))return fail('addr','Enter your detailed address for in-person classes.');
  if(!v('days'))return fail('days','Select how many days per week you want classes.');
  if(!v('time'))return fail('time','Select the time that suits you best.');
  if(!rad('demo'))return fail('msg','Tell us if you would like a free demo class.');
@@ -309,7 +378,8 @@ f.addEventListener('submit',function(e){
  if(!rad('avatar'))return fail('avatarBox','Choose a boy or girl avatar for your requirement.');
  if(!/^[+0-9\s-]{10,15}$/.test(phone))return fail('phone','Enter a valid mobile / WhatsApp number.');
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return fail('email','Enter a valid email address.');
- if(!city)return fail('city','Select where you are located.');
+ if(!city)return fail('city','Please choose your location: search and select it, or tap the map.');
+ if(needAddr&&!v('addr'))return fail('addr','Enter your detailed address for in-person classes.');
 
  var btn=f.querySelector('button[type="submit"]');if(btn)btn.disabled=true;
  function proceed(){
@@ -362,6 +432,7 @@ f.addEventListener('submit',function(e){
      created_at: stamp,
      by: postRole === 'parent' ? 'Parent' : 'Student'
    };
+   try{
     var db=jget('modivs_students_db',[]),i=email?db.findIndex(function(s){return s.email===email}):-1;
     if(i>=0)db[i]=req;else db.unshift(req);localStorage.setItem('modivs_students_db',JSON.stringify(db));
     var leads=jget('modivs_active_leads',[]),lead=Object.assign({},req,{status:'active'});leads.unshift(lead);localStorage.setItem('modivs_active_leads',JSON.stringify(leads));
@@ -435,5 +506,7 @@ f.addEventListener('submit',function(e){
 .mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
 </style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
 <script src="modivs-menu.js" defer></script>
+<script src="modivs-social.js" defer></script>
+<script src="modivs-dropdown.js" defer></script>
 </body>
 </html>
