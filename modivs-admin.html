@@ -1440,7 +1440,20 @@ function detail(){
       });
     }
 
+    act('✏️ Change / Edit Tutor Data', 'o', function(){
+      window.open('modivs-tutors.html#edit=' + encodeURIComponent(x.email || x.id), '_blank');
+    });
+
     d.appendChild(a);
+  } else {
+    var incAct = el('div', 'acts');
+    var eb = el('button', 'b o', '✏️ Change / Complete Tutor Data');
+    eb.type = 'button';
+    eb.addEventListener('click', function(){
+      window.open('modivs-tutors.html#edit=' + encodeURIComponent(x.email || x.id), '_blank');
+    });
+    incAct.appendChild(eb);
+    d.appendChild(incAct);
   }
 
   // AUDIT TRAIL / LOGS

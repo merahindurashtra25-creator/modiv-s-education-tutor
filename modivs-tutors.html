@@ -45,7 +45,9 @@ footer{background:var(--navy);color:#d8dcec;padding:28px 0;font-size:.88rem}
 
 .adm-add{display:none}.is-admin .adm-add{display:inline-block}
 .adm-del{display:none}.is-admin .adm-del{display:inline-block}
+.adm-edit{display:none}.is-admin .adm-edit{display:inline-block}
 .btn.adm-del{background:#fff;color:#b3261e;border-color:#e3b4b0}.btn.adm-del:hover{background:#b3261e;color:#fff;border-color:#b3261e}
+.btn.adm-edit{background:#fff;color:#1A2035;border-color:#1A2035}.btn.adm-edit:hover{background:#1A2035;color:#EBB92E;border-color:#1A2035}
 dialog#delT{border:0;border-radius:16px;padding:0;width:min(440px,92vw);color:var(--navy)}
 dialog#delT::backdrop{background:rgba(26,32,53,.6)}
 #delBox{padding:24px}#delBox h2{margin:0 0 8px;font-size:1.25rem}#delBox p{margin:0 0 6px;color:var(--muted);font-size:.92rem}
@@ -533,6 +535,7 @@ function card(t){
  var b=el('div','tf-stat');b.appendChild(el('b','','₹'+(t.fee||'—')));b.appendChild(el('span','','per hour'));st.appendChild(a);st.appendChild(b);c.appendChild(st);
  var bt=el('div','tf-btns'),vp=el('button','btn o','View Profile');vp.type='button';vp.addEventListener('click',function(){openProfile(t)});bt.appendChild(vp);
  var en=el('a','btn y','Enquire Now');en.href=getEnquireHref(t);bt.appendChild(en);
+ var ed=el('button','btn adm-edit','Edit profile');ed.type='button';ed.addEventListener('click',function(){openAdd(t)});bt.appendChild(ed);
  var db=el('button','btn adm-del','Delete profile');db.type='button';db.addEventListener('click',function(){askDelete(t)});bt.appendChild(db);
  c.appendChild(bt);
  return c;
@@ -594,6 +597,7 @@ function renderProfile(t){
  act.appendChild(enquireBtn('', t));
  if(window.ModivsChat&&au&&au.role==='Student / Parent'){var mb=el('button','btn','Message tutor');mb.type='button';mb.addEventListener('click',function(){ModivsChat.open({student:au,tutor:t})});act.appendChild(mb)}
  else if(!au){var lb=el('a','btn o','Log in to Chat');lb.href='modivs-education.html#student-login';act.appendChild(lb)}
+ var edx=el('button','btn adm-edit','Edit profile');edx.type='button';edx.addEventListener('click',function(){$('tDlg').close();openAdd(t)});act.appendChild(edx);
  var dx=el('button','btn adm-del','Delete profile');dx.type='button';dx.addEventListener('click',function(){askDelete(t)});act.appendChild(dx);
  pi.appendChild(act);top.appendChild(pi);
  var ci=classInfo(t),ct=ci.ranges.length?ci.ranges.join(', ').replace(/–/g,' – '):(ci.extra[0]||'—');
@@ -713,20 +717,57 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
  var BRD=['CBSE','ICSE','PSEB','IB','IGCSE','State board'];
  var LNG=['English','Hindi','Punjabi','Urdu','Other'];
  var MOD=['Online','Offline (At student’s home)','Offline (At my place / Centre)'];
- var photo='';
+ var photo='',editTutorId=null;
  function chips(id,list,name){var b=$(id);b.innerHTML='';list.forEach(function(x){var l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.name=name;i.value=x;l.appendChild(i);l.appendChild(document.createTextNode(x));b.appendChild(l)})}
  function got(n){return Array.prototype.map.call(document.querySelectorAll('#addTForm input[name='+n+']:checked'),function(i){return i.value})}
  function nc(c){return String(c||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()})}
  function ini(n){return String(n).split(' ').filter(Boolean).map(function(w){return w[0]}).slice(0,2).join('').toUpperCase()||'?'}
  function pv(){var b=$('tPv');b.textContent='';if(photo){var i=document.createElement('img');i.alt='Photo preview';i.src=photo;b.appendChild(i)}else b.textContent=ini($('tName').value)}
- function openAdd(){
-  $('addTForm').reset();photo='';$('tErr').textContent='';
+ function openAdd(existing){
+  $('addTForm').reset();editTutorId=existing?existing.id:null;photo=(existing&&existing.photo)||'';$('tErr').textContent='';
   chips('tSubs',SUBJ,'subs');chips('tLevels',LEV,'levels');chips('tBoards',BRD,'boards');chips('tLangs',LNG,'langs');chips('tModes',MOD,'modes');
   var dl=$('tCityOpts');dl.innerHTML='';Array.from(new Set(tutors.map(function(t){return t.city}).filter(Boolean))).sort().forEach(function(c){var o=document.createElement('option');o.value=c;dl.appendChild(o)});
+  if(existing){
+   $('tName').value=existing.name||'';
+   $('tEmail').value=(existing.email&&!existing.no_login&&!existing.email.endsWith('@modivs.local'))?existing.email:'';
+   $('tPhone').value=existing.phone||'';
+   if(existing.gender)$('tGender').value=existing.gender;
+   $('tCity').value=existing.city||'';
+   $('tArea').value=existing.area||'';
+   $('tTravel').value=existing.travel||'';
+   $('tYears').value=existing.years!=null?existing.years:(existing.totalYears||'');
+   $('tHead').value=existing.headline||'';
+   $('tBio').value=existing.bio||'';
+   var q=(existing.quals&&existing.quals[0])||{};
+   $('tDeg').value=q.degree||existing.qual||'';
+   $('tInst').value=q.inst||'';
+   $('tFee').value=existing.fee||'';
+   $('tGroup').value=existing.groupFee||'';
+   if(existing.trial)$('tTrial').value=existing.trial;
+   var check=function(nm,vals){var a=Array.isArray(vals)?vals:[vals];document.querySelectorAll('#addTForm input[name='+nm+']').forEach(function(i){i.checked=a.indexOf(i.value)>-1})};
+   check('subs',existing.subs||existing.subjects||[]);
+   check('levels',existing.levels||[]);
+   check('boards',existing.boards||[]);
+   check('langs',existing.langs||[]);
+   check('modes',existing.modes||[]);
+   var extra=(existing.subs||existing.subjects||[]).filter(function(s){return SUBJ.indexOf(s)===-1});
+   if(extra.length)$('tCustom').value=extra.join(', ');
+   var h=$('addT').querySelector('h2');if(h)h.textContent='Edit Tutor Profile';
+   var b=$('addTForm').querySelector('button[type=submit]');if(b)b.textContent='Save Changes';
+  }else{
+   var h=$('addT').querySelector('h2');if(h)h.textContent='Add a tutor profile';
+   var b=$('addTForm').querySelector('button[type=submit]');if(b)b.textContent='Add profile';
+  }
   pv();$('addT').showModal();$('tName').focus();
  }
  $('tName').addEventListener('input',function(){if(!photo)pv()});
  $('tCity').addEventListener('input',function(){var c=nc(this.value),dl=$('tAreaOpts');dl.innerHTML='';var seen={};tutors.forEach(function(t){if(t.city!==c)return;areasOf(t).forEach(function(a){seen[a]=1})});Object.keys(seen).sort().forEach(function(a){var o=document.createElement('option');o.value=a;dl.appendChild(o)})});
+ $('tEmail').addEventListener('change',function(){
+  var em=this.value.trim().toLowerCase();
+  if(!em||editTutorId)return;
+  var match=read('modivs_tutors_db').find(function(t){return (t.email||'').toLowerCase()===em});
+  if(match)openAdd(match);
+ });
  $('tPhotoBtn').addEventListener('click',function(){$('tPhoto').click()});
  $('tPhoto').addEventListener('change',function(){
   var f=this.files&&this.files[0];if(!f)return;
@@ -757,24 +798,31 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
   if(!modes.length)return err.textContent='Choose at least one teaching mode.';
   if(!(fee>0))return err.textContent='Enter the 1-on-1 fee.';
   var all=read('modivs_tutors_db');
-  if(email&&all.some(function(t){return (t.email||'').toLowerCase()===email}))return err.textContent='A tutor with this email already exists.';
-  var ts=Date.now(),id='t_adm_'+ts,inst=$('tInst').value.trim(),gf=+$('tGroup').value||0;
-  var t={id:id,email:email||('admin-added-'+ts+'@modivs.local'),no_login:!email,name:name,headline:head,bio:bio,city:city,area:area,travel:travel,phone:phone,gender:$('tGender').value,
+  var existingIdx=editTutorId?all.findIndex(function(t){return t.id===editTutorId}):(email?all.findIndex(function(t){return (t.email||'').toLowerCase()===email}):-1);
+  var existing=existingIdx>-1?all[existingIdx]:null;
+  var ts=Date.now(),id=existing?existing.id:('t_adm_'+ts),inst=$('tInst').value.trim(),gf=+$('tGroup').value||0;
+  var t=Object.assign({},existing||{},{
+   id:id,email:email||(existing&&existing.email)||('admin-added-'+ts+'@modivs.local'),no_login:!email&&(!existing||existing.no_login),name:name,headline:head,bio:bio,city:city,area:area,travel:travel,phone:phone,gender:$('tGender').value,
    qual:deg+(inst?', '+inst:''),quals:[{degree:deg,inst:inst,field:'',year:''}],years:+years,totalYears:+years,subs:subs,subjects:subs,levels:levels,boards:got('boards'),langs:langs,
-   modes:modes,formats:gf?['1-on-1 Individual tuition','Group tuition (Small batches)']:['1-on-1 Individual tuition'],fee:fee,groupFee:gf||'',trial:$('tTrial').value,photo:photo,
-   status:'approved',added_by_admin:true,reviewed_by:adminMail,reviewed_at:new Date().toISOString(),submitted_at:new Date().toISOString(),sent:'Added by admin'};
+   modes:modes,formats:gf?['1-on-1 Individual tuition','Group tuition (Small batches)']:['1-on-1 Individual tuition'],fee:fee,groupFee:gf||'',trial:$('tTrial').value,photo:photo||(existing&&existing.photo)||'',
+   status:(existing&&existing.status)||'approved',updated_by_admin:true,updated_at:new Date().toISOString()
+  });
+  if(!existing){
+   t.added_by_admin=true;t.reviewed_by=adminMail;t.reviewed_at=new Date().toISOString();t.submitted_at=new Date().toISOString();t.sent='Added by admin';
+  }
   var idF=$('tIdFile').files[0],cF=$('tCertFile').files[0];
   if(idF){t.idType=$('tIdType').value;t.idFile=idF.name}
   if(cF){t.cert=cF.name}
   var sb=$('addTForm').querySelector('button[type=submit]');sb.disabled=true;err.textContent='';
   function finish(){
-  if(window.ModivsFirebaseSync){
+  if(existingIdx>-1)all[existingIdx]=t;else all.unshift(t);
+  localStorage.setItem('modivs_tutors_db',JSON.stringify(all));
+  if(window.ModivsFirebaseSync&&window.ModivsFirebaseSync.saveTutor){
    window.ModivsFirebaseSync.saveTutor(t);
   } else {
-   all.unshift(t);localStorage.setItem('modivs_tutors_db',JSON.stringify(all));
    try{var fb=window.EducationBFirebase;if(fb&&fb.db)fb.db.collection('tutors').doc(id).set(t,{merge:true}).catch(function(){})}catch(x){}
   }
-  try{var lg=read('modivs_audit_logs');lg.unshift({id:id,name:name,action:'Tutor Added',admin:adminMail,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:'Profile added directly by admin and approved.'});localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,50)))}catch(x){}
+  try{var lg=read('modivs_audit_logs');lg.unshift({id:id,name:name,action:existing?'Tutor Updated':'Tutor Added',admin:adminMail,timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),note:existing?'Profile updated directly by admin.':'Profile added directly by admin and approved.'});localStorage.setItem('modivs_audit_logs',JSON.stringify(lg.slice(0,50)))}catch(x){}
   $('addT').close();
   updateTutorsFromDb(read('modivs_tutors_db'));
   }
@@ -784,7 +832,12 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
    finish();
   }).catch(function(e){err.textContent=(e&&e.userMessage)||'Could not read the document. Try another file.';sb.disabled=false});
  });
- if(location.hash==='#add')setTimeout(openAdd,0);
+ if(location.hash==='#add')setTimeout(function(){openAdd()},0);
+ else if(location.hash.indexOf('#edit=')===0){
+  var q=decodeURIComponent(location.hash.slice(6)).toLowerCase();
+  var found=read('modivs_tutors_db').find(function(t){return (t.email||'').toLowerCase()===q||t.id===q});
+  if(found)setTimeout(function(){openAdd(found)},0);
+ }
 })();
 })();
 </script>

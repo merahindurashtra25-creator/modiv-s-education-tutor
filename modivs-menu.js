@@ -6,7 +6,7 @@
   function init(){
     var hd=document.querySelector('header.mv-header');if(!hd)return;
     var b=hd.querySelector('.burger'),n=hd.querySelector('nav');
-    var KEEP={navSignup:1,navJoin:1};
+    var KEEP={navSignup:1,navJoin:1,navLoginBtn:1};
     function buildExtras(){
       var ul=n&&n.querySelector('ul');var acts=hd.querySelector('.acts');if(!ul||!acts)return;
       [].forEach.call(ul.querySelectorAll('li.mv-extra'),function(x){x.remove()});

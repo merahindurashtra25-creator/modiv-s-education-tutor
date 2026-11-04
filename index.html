@@ -115,7 +115,6 @@ nav li.nt-m{display:none}
 @media(max-width:768px){
  .hero .wrap,.two,footer .cols{grid-template-columns:1fr}
  .hero{padding:40px 0}
- .acts .o{display:none}
  .acts .btn{padding:7px 12px;font-size:.82rem}
 }
 @media(max-width:480px){
@@ -127,18 +126,17 @@ nav li.nt-m{display:none}
 .adm-pill{background:var(--navy);color:var(--cream);border-radius:99px;padding:6px 14px;font-size:.82rem;font-weight:600;white-space:nowrap}.adm-pill b{color:var(--yellow)}
 @media(max-width:1180px){.adm-pill .em{display:none}}
 
-.lgrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px;margin-bottom:36px}
-.lcard{position:relative;display:flex;flex-direction:column;gap:10px;min-height:200px;padding:22px;border-radius:18px;text-decoration:none;color:var(--cream);background:linear-gradient(135deg,#1A2035 0%,#33406f 100%);overflow:hidden;transition:transform .15s ease,box-shadow .15s ease}
-.lcard:nth-child(3n+2){background:linear-gradient(135deg,#EBB92E 0%,#f6d56b 100%);color:var(--navy)}
-.lcard:nth-child(3n){background:linear-gradient(135deg,#2a3350 0%,#4a3b7a 100%)}
-.lcard:hover{transform:translateY(-3px);box-shadow:0 14px 28px rgba(26,32,53,.18)}
-.lcard::after{content:"";position:absolute;right:-30px;top:-30px;width:120px;height:120px;border-radius:50%;background:rgba(255,255,255,.1)}
-.lcard .pin{width:34px;height:34px;border-radius:10px;background:rgba(255,255,255,.18);display:grid;place-items:center}
-.lcard .pin svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.lcard h3{margin:0;font-size:1.35rem;letter-spacing:-.01em}.lcard .st{font-size:.8rem;opacity:.8;margin-top:-6px}
-.lcard .ar{display:flex;flex-wrap:wrap;gap:6px}.lcard .ar span{background:rgba(255,255,255,.16);border-radius:99px;padding:2px 10px;font-size:.76rem;font-weight:600}
-.lcard:nth-child(3n+2) .ar span{background:rgba(26,32,53,.12)}
-.lcard .go{margin-top:auto;font-weight:700;font-size:.9rem}
+.lgrid{display:flex;flex-direction:column;gap:10px;margin-bottom:36px;overflow:hidden}
+.lgrid .course{display:flex;flex-wrap:wrap;gap:10px}
+.lgrid .course:nth-child(even){padding-left:44px}
+.brick{display:inline-flex;align-items:center;gap:8px;padding:12px 20px;border-radius:10px;text-decoration:none;font-weight:600;font-size:.95rem;line-height:1.2;white-space:nowrap;background:#fff;color:var(--navy);border:1.5px solid var(--line);box-shadow:0 3px 0 rgba(26,32,53,.08);transition:transform .15s ease,box-shadow .15s ease}
+.brick:hover{transform:translateY(-2px);box-shadow:0 6px 0 rgba(26,32,53,.12)}
+.brick.city{font-weight:800;font-size:1.05rem;padding:12px 24px;border:0;color:var(--cream);background:linear-gradient(135deg,#1A2035 0%,#33406f 100%)}
+.brick.city small{font-weight:600;font-size:.75rem;opacity:.8}
+.course:nth-child(3n+2) .brick.city{background:linear-gradient(135deg,#EBB92E 0%,#f6d56b 100%);color:var(--navy)}
+.course:nth-child(3n) .brick.city{background:linear-gradient(135deg,#2a3350 0%,#4a3b7a 100%)}
+.brick svg{width:17px;height:17px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:0 0 auto}
+@media(max-width:600px){.lgrid .course:nth-child(even){padding-left:20px}.brick{padding:10px 14px;font-size:.88rem}.brick.city{padding:10px 18px}}
 .sh{margin:8px 0 4px;font-size:1.25rem}
 .finder{display:grid;grid-template-columns:minmax(160px,220px) 1fr auto;gap:10px;margin-bottom:14px}
 .finder select,.finder input{font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy);min-width:0}
@@ -381,7 +379,7 @@ nav li.nt-m{display:none}
 
  <section id="locations">
   <div class="wrap">
-   <h2 class="t">Find a tutor in your city</h2><p class="s">Home tuition in popular localities, and online tuition from anywhere. Cities with verified tutors show a live count.</p>
+   <h2 class="t">Find a tutor in your city</h2><p class="s">Home tuition in popular localities, and online tuition from anywhere.</p>
    <div class="lgrid" id="cityCards"></div>
    <h3 class="sh">Find verified tutors by area</h3>
    <p class="s" style="margin-bottom:12px">Choose your city and then your area, for example “Sector 20”. If no verified tutor teaches there yet, you will see the nearest verified areas to pick from.</p>
@@ -438,10 +436,10 @@ nav li.nt-m{display:none}
      <ul class="clist">
       <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg></i><span><b>Call us</b><a href="tel:+919896930443">+91 98969 30443</a><br><a href="tel:+918054167008">+91 80541 67008</a></span></li>
       <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 20l1.3-4A8 8 0 1 1 8 18.7z"/><path d="M9 9.5c.5 2 2.5 4 5 5l1.5-1.2-2-1.3-.9.7c-.8-.4-1.5-1.1-1.9-1.9l.7-.9-1.3-2z"/></svg></i><span><b>WhatsApp</b><a href="https://wa.me/message/AZVJXD4HG3DOG1" target="_blank" rel="noopener">Chat with us</a></span></li>
-      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Student &amp; Parent Enquiries</b><a href="mailto:info@modivians.com">info@modivians.com</a></span></li>
-      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Student &amp; Parent Support</b><a href="mailto:support@modivians.com">support@modivians.com</a></span></li>
-      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Tutor Support</b><a href="mailto:tutors@modivians.com">tutors@modivians.com</a></span></li>
-      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Payment &amp; Refund Support</b><a href="mailto:accounts@modivians.com">accounts@modivians.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Student &amp; Parent Enquiries</b><a href="mailto:modivhometutions@gmail.com">modivhometutions@gmail.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Student &amp; Parent Support</b><a href="mailto:modivhometutions@gmail.com">modivhometutions@gmail.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Tutor Support</b><a href="mailto:modivhometutions@gmail.com">modivhometutions@gmail.com</a></span></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></i><span><b>Payment &amp; Refund Support</b><a href="mailto:modivhometutions@gmail.com">modivhometutions@gmail.com</a></span></li>
       <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></i><span><b>Visit us</b>Chandigarh, India</span></li>
      </ul>
     </div>
@@ -625,13 +623,14 @@ nav li.nt-m{display:none}
   function paintCards(counts){
    if(!cardsBox)return;cardsBox.textContent='';
    FEATURED.forEach(function(f){
-    var n=counts[(f.key||f.city).toLowerCase()]||0;
-    var a=el('a','lcard');a.href=n?'modivs-tutors.html?city='+encodeURIComponent(f.key||f.city):'modivs-student-signup.html';
-    var p=el('span','pin');p.innerHTML=PIN;a.appendChild(p);
-    a.appendChild(el('h3','',f.city));a.appendChild(el('div','st',f.st));
-    var ar=el('div','ar');f.areas.forEach(function(x){ar.appendChild(el('span','',x))});a.appendChild(ar);
-    a.appendChild(el('div','go',n?n+(n===1?' verified tutor':' verified tutors')+' →':'Request a tutor →'));
-    cardsBox.appendChild(a);
+    var key=f.key||f.city,n=counts[key.toLowerCase()]||0;
+    var href=n?'modivs-tutors.html?city='+encodeURIComponent(key):'modivs-student-signup.html';
+    var row=el('div','course');
+    var c=el('a','brick city');c.href=href;c.innerHTML=PIN;c.appendChild(document.createTextNode(f.city));c.appendChild(el('small','',f.st));row.appendChild(c);
+    f.areas.forEach(function(x){
+     var a=el('a','brick',x);a.href=n?href+'&area='+encodeURIComponent(x):href;a.title=f.city;row.appendChild(a);
+    });
+    cardsBox.appendChild(row);
    });
   }
   function paint(){

@@ -34,7 +34,6 @@ header.mv-header .adm-pill b{color:var(--mv-yellow)}
  header.mv-header nav ul{flex-direction:column;gap:8px}
 }
 @media(max-width:768px){
- header.mv-header .acts .o{display:none}
  header.mv-header .acts .btn{padding:7px 12px;font-size:.82rem}
 }
 @media(max-width:480px){
