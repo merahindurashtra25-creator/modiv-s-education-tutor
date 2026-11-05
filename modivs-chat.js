@@ -194,8 +194,15 @@
     var usersList = read('modivs_users', []);
     var uMatch = usersList.find(function(u){ return emailOf(u.email) === em; });
 
-    var mem = (match && match.membership) || (uMatch && uMatch.membership) || null;
-    if(!mem){
+    var W = window.ModivsWallet;
+    var mem;
+    if(W){
+      W.watch(em);
+      mem = W.getMembershipRaw(em) || { planName: 'None', status: 'none', validUntil: null };
+    } else {
+      mem = (match && match.membership) || (uMatch && uMatch.membership) || null;
+    }
+    if(!mem && !W){
       // Default initial membership for existing approved demo tutors: Standard Active 30 days
       var isApprovedTutor = match && match.status === 'approved';
       if(isApprovedTutor){
@@ -231,8 +238,15 @@
     };
   }
 
-  function setTutorMembership(tutorEmail, planName, durationDays, status, isExtend, price){
+  function setTutorMembership(tutorEmail, planName, durationDays, status, isExtend, price, bonusCoins, orderId){
     var em = cleanStr(tutorEmail).toLowerCase();
+    if(window.ModivsWallet){
+      // Firestore is the source of truth; returns a promise
+      return window.ModivsWallet.setMembership(em, {
+        planName: planName, days: durationDays != null ? Number(durationDays) : 30, status: status,
+        extend: !!isExtend, price: price || '', bonusCoins: bonusCoins || 0, orderId: orderId || ''
+      }).then(function(r){ notify(); return r.membership; });
+    }
     var now = new Date();
     var dur = (durationDays != null ? Number(durationDays) : 30);
     var existing = getTutorMembership(em);
@@ -306,6 +320,10 @@
 
   function getTutorCoins(tutorEmailOrId){
     var em = cleanStr(tutorEmailOrId).toLowerCase();
+    if(window.ModivsWallet){
+      window.ModivsWallet.watch(em);
+      return window.ModivsWallet.getCoins(em);
+    }
     var allTutors = read('modivs_tutors_db', []);
     var match = allTutors.find(function(t){ return emailOf(t.email) === em || t.id === em; });
     var usersList = read('modivs_users', []);
@@ -324,6 +342,12 @@
 
   function addTutorCoins(tutorEmail, amount, description){
     var em = cleanStr(tutorEmail).toLowerCase();
+    if(window.ModivsWallet){
+      var curW = window.ModivsWallet.getCoins(em);
+      var p = window.ModivsWallet.addCoins(em, amount, description).then(function(r){ notify(); return r; });
+      p.catch(function(err){ console.warn('Coin update failed:', err); });
+      return { balance: Math.max(0, curW + amount), promise: p };
+    }
     var cur = getTutorCoins(em);
     var next = Math.max(0, cur + amount);
 
@@ -668,7 +692,16 @@
     }
 
     // 3. Deduct Coins Only Once & Record Transaction
-    var newBalance = addTutorCoins(tutorEmail, -UNLOCK_COST, 'Unlocked student inquiry (' + (c.student ? c.student.name : 'Student') + ')').balance;
+    if(window.ModivsWallet){
+      return window.ModivsWallet.unlockLead(tutorEmail, 'conv_' + c.id, c.student ? c.student.name : 'Student', UNLOCK_COST).then(function(r){
+        return finishUnlock(r.balance);
+      }).catch(function(err){
+        return { success: false, reason: err.reason || 'error', message: err.message || 'Unlock failed.' };
+      });
+    }
+    return finishUnlock(addTutorCoins(tutorEmail, -UNLOCK_COST, 'Unlocked student inquiry (' + (c.student ? c.student.name : 'Student') + ')').balance);
+
+    function finishUnlock(newBalance){
 
     // 4. Mark Conversation as Unlocked
     var nowIso = new Date().toISOString();
@@ -712,7 +745,8 @@
       }
     }
 
-    return Promise.resolve({ success: true, balance: newBalance });
+    return { success: true, balance: newBalance };
+    }
   }
 
   // =========================================================================

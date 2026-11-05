@@ -185,17 +185,32 @@ service cloud.firestore {
     // ==========================================
     // 6. Coin Transactions & Audit Log
     // ==========================================
+    // NOTE: the site signs every visitor into one shared Firebase account, so rules cannot yet
+    // tell tutors apart by token email. These are signed-in checks plus data-shape checks.
+    // For real per-tutor protection, move to per-user Firebase Auth + Cloud Functions for payments.
     match /coin_transactions/{txId} {
-      allow read: if isAdmin() || (signedIn() && (
-        request.auth.uid == resource.data.tutorId ||
-        isEmail(resource.data.tutorEmail)
-      ));
+      allow read: if signedIn();
+      allow create: if signedIn()
+        && request.resource.data.tutorEmail is string
+        && request.resource.data.amount is int
+        && request.resource.data.balanceAfter is int
+        && request.resource.data.balanceAfter >= 0;
+      allow update, delete: if isAdmin();
+    }
 
-      allow create: if isAdmin() || (signedIn() && (
-        request.auth.uid == request.resource.data.tutorId ||
-        isEmail(request.resource.data.tutorEmail)
-      ));
+    // Tutor wallet: one doc per tutor email. Source of truth for coins + membership.
+    match /tutor_wallets/{walletId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn()
+        && request.resource.data.coins is int
+        && request.resource.data.coins >= 0;
+      allow delete: if isAdmin();
+    }
 
+    // Membership purchase / extension / upgrade log
+    match /membership_history/{histId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.tutorEmail is string;
       allow update, delete: if isAdmin();
     }
 
@@ -214,21 +229,9 @@ service cloud.firestore {
     // 7c. One-time tutor unlock records
     // ==========================================
     match /unlocks/{docId} {
-      // Any signed-in user can read their own unlock records
-      allow read: if signedIn() && (
-        isAdmin() ||
-        (resource.data.tutorEmail != null &&
-         request.auth.token.email != null &&
-         request.auth.token.email.lower() == resource.data.tutorEmail.lower())
-      );
-      // Tutors can only write unlock records for themselves
-      allow create, update: if signedIn() && (
-        isAdmin() ||
-        (request.resource.data.tutorEmail != null &&
-         request.auth.token.email != null &&
-         request.auth.token.email.lower() == request.resource.data.tutorEmail.lower())
-      );
-      allow delete: if isAdmin();
+      allow read: if signedIn();
+      allow create: if signedIn() && request.resource.data.tutorEmail is string;
+      allow update, delete: if isAdmin();
     }
 
     // ==========================================

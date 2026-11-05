@@ -7,7 +7,7 @@
 <title>Modiv’s Education – Meet our verified tutors</title>
 <meta name="description" content="Browse verified home tutors and online tutors by subject, class, location and fee. Compare profiles and book a demo class on Modiv’s Education.">
 <meta name="keywords" content="verified tutors, browse tutors, home tutors, online tutors, private tutor near me, tutor profiles, Maths tutor, Science tutor, English tutor, coding tutor, music teacher, tutor fees, book demo class, Modiv’s Education, Modivs Education, Modivian tutor, Chandigarh, Mohali, Panchkula, Tricity">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Caveat:wght@700&display=swap" rel="stylesheet">
 <style>
 button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
 
@@ -104,7 +104,7 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
 .ls-mode:hover{border-color:var(--navy)}
 .ls-mode[aria-checked=true]{background:var(--navy);border-color:var(--navy);color:var(--cream)}
 .ls-sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
-.tf-layout{display:grid;grid-template-columns:260px 1fr;gap:24px;align-items:start;margin-bottom:48px}
+.tf-layout{display:grid;grid-template-columns:250px minmax(0,1fr) 270px;gap:22px;align-items:start;margin-bottom:48px}
 .tf-filters{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px 18px 8px;position:sticky;top:88px;max-height:calc(100vh - 104px);overflow:auto}
 .tf-fhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
 .tf-fhead h2{margin:0;font-size:1.05rem}
@@ -125,26 +125,11 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
 .tf-sort{display:flex;align-items:center;gap:8px;font-size:.85rem;color:var(--muted)}
 .tf-sort select{font:inherit;font-size:.88rem;padding:8px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy)}
 .tf-list{display:flex;flex-direction:column;gap:14px}
-.tf-card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:16px 18px;display:grid;grid-template-columns:84px 1fr auto;grid-template-areas:"av info stats" "av btns btns";gap:6px 18px;align-items:start;transition:border-color .15s,box-shadow .15s}
-.tf-card:hover{border-color:var(--navy);box-shadow:0 6px 18px rgba(26,32,53,.08)}
-.tf-av{grid-area:av;width:84px;height:84px;border-radius:50%;background:var(--navy);color:var(--yellow);display:grid;place-items:center;font-weight:800;font-size:1.5rem;overflow:hidden;flex-shrink:0}
-.tf-av img{width:100%;height:100%;object-fit:cover;display:block}
-.tf-info{grid-area:info;min-width:0}
-.tf-name{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
-.tf-name h3{margin:0;font-size:1.08rem;line-height:1.25}
-.tf-ver{display:inline-flex;align-items:center;gap:3px;background:#e6f4ec;color:var(--ok);font-weight:700;font-size:.7rem;padding:2px 9px;border-radius:99px;white-space:nowrap}
-.tf-subs{margin:3px 0 6px;font-weight:700;font-size:.9rem}
-.tf-meta{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:3px;font-size:.84rem;color:var(--muted)}
-.tf-meta li{display:flex;align-items:center;gap:7px}
-.tf-meta svg,.tf-ico{width:15px;height:15px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.tf-stats{grid-area:stats;display:flex;gap:22px;text-align:right}
-.tf-stat b{display:block;font-size:.98rem;line-height:1.2}
-.tf-stat span{font-size:.76rem;color:var(--muted)}
-.tf-btns{grid-area:btns;display:flex;gap:10px;justify-content:flex-end;align-items:center;flex-wrap:wrap;margin-top:6px}
-.tf-btns .btn{padding:8px 16px}
-.tf-card .adm-del{width:auto}
 .empty{text-align:center;padding:48px 16px;background:var(--card);border:1.5px dashed var(--line);border-radius:14px;color:var(--muted);margin:0}
 /* profile view */
+.tf-ico{width:18px;height:18px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;display:inline-block;vertical-align:middle}
+.tf-back .tf-ico{width:20px;height:20px}
+.tf-ploc .tf-ico{width:18px;height:18px;color:#a87500}
 .tf-back{display:inline-flex;align-items:center;gap:7px;background:none;border:0;font:inherit;font-weight:600;font-size:.9rem;color:var(--muted);cursor:pointer;padding:22px 0 14px}
 .tf-back:hover{color:var(--navy)}
 .tf-prof{background:var(--card);border:1.5px solid var(--line);border-radius:20px;padding:26px;margin-bottom:48px}
@@ -180,21 +165,26 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
 .tf-modes span{display:inline-flex;align-items:center;gap:7px}
 .tf-big{width:100%;margin-top:22px;padding:13px 16px;font-size:1rem;text-align:center}
 .tf-note{margin:18px 0 0;font-size:.8rem;color:var(--muted)}
+
+.pager{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin:22px 0 48px}
+.pager:empty{display:none}
+.pager button{font:inherit;font-weight:600;font-size:.88rem;min-width:40px;height:40px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
+.pager button:hover:not([disabled]):not([aria-current]){border-color:var(--navy)}
+.pager button[aria-current]{background:var(--yellow);border-color:var(--yellow);font-weight:800;cursor:default}
+.pager button[disabled]{opacity:.45;cursor:not-allowed}
+.pager .dots{padding:0 4px;color:var(--muted)}
+.pager-info{width:100%;text-align:center;font-size:.82rem;color:var(--muted);margin-bottom:4px}
 .tf-empty{background:var(--cream);border:1.5px dashed var(--line);border-radius:14px;padding:30px 18px;text-align:center;color:var(--muted);font-size:.92rem}
 @media(max-width:1020px){.tf-ptop{grid-template-columns:200px 1fr}.tf-bigav{width:200px;height:200px}.tf-tiles{grid-column:1/-1}}
 @media(max-width:900px){
  nav{display:none}
  .tf-layout{grid-template-columns:1fr}
- .tf-filters{display:none;position:static;max-height:none}.tf-filters.open{display:block}
+ .tf-filters{display:none;position:static;max-height:none;order:-1}.tf-filters.open{display:block}
  .tf-ftoggle{display:inline-block}
  .tf-search{grid-template-columns:1fr 1fr}.tf-go{grid-column:1/-1}.ls-wrap{grid-column:1/-1}
  .tf-two{grid-template-columns:1fr;gap:6px}
 }
 @media(max-width:620px){
- .tf-card{grid-template-columns:68px 1fr;grid-template-areas:"av info" "stats stats" "btns btns";padding:14px}
- .tf-av{width:68px;height:68px;font-size:1.25rem}
- .tf-stats{justify-content:flex-start;text-align:left;border-top:1px solid var(--line);padding-top:10px;margin-top:4px}
- .tf-btns{justify-content:stretch}.tf-btns .btn{flex:1;text-align:center}
  .tf-ptop{grid-template-columns:1fr;justify-items:center;text-align:center}
  .tf-bigav{width:170px;height:170px}
  .tf-ploc,.tf-pact{justify-content:center}
@@ -202,6 +192,141 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
  .tf-prof{padding:18px 14px}
  .tf-pane{text-align:left}
 }
+/* ---- v49 redesign: hero, left filters, list/grid cards, right aside ---- */
+main.wrap.tf-page{max-width:1420px}
+.tf-hero{position:relative;padding:30px 0 22px;min-height:250px}
+.tf-htext{position:relative;z-index:2;max-width:760px}
+.tf-h1{position:relative;padding-left:22px;font-size:clamp(1.9rem,3.6vw,2.7rem);margin:0 0 6px}
+.tf-h1::before{content:"";position:absolute;left:0;top:8%;bottom:8%;width:7px;border-radius:6px;background:var(--yellow)}
+.tf-hero .tf-sub{margin:0 0 20px;padding-left:22px;font-size:1.02rem;max-width:none}
+.tf-hart{position:absolute;right:0;top:0;bottom:0;width:470px;z-index:1;pointer-events:none}
+.tf-blob{position:absolute;right:120px;top:40px;width:330px;height:220px;border-radius:220px 220px 0 0;background:#fbe7b0;opacity:.7}
+.tf-hart img{position:absolute;right:140px;top:6px;width:290px;height:250px;object-fit:cover;object-position:32% 40%;border-radius:150px 150px 22px 22px;box-shadow:0 10px 30px rgba(26,32,53,.12)}
+.tf-script{position:absolute;right:0;top:40px;font-family:"Caveat",cursive;font-size:2rem;line-height:1.05;color:var(--navy);transform:rotate(-8deg);text-align:center}
+.tf-script::after{content:"";display:block;width:110px;height:4px;margin:6px auto 0;border-radius:4px;background:var(--yellow)}
+.tf-search{position:relative;z-index:3;display:grid;grid-template-columns:1fr 1fr 1.15fr auto;gap:10px;max-width:1010px;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:10px;box-shadow:0 10px 30px rgba(26,32,53,.07)}
+.tf-fld{display:flex;align-items:center;gap:12px;border:1.5px solid var(--line);border-radius:12px;padding:7px 12px;min-width:0;background:#fff;cursor:pointer}
+.tf-fld>svg{width:24px;height:24px;flex:none;stroke:var(--navy);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tf-fl{display:flex;flex-direction:column;min-width:0;flex:1}
+.tf-fl small{font-size:.75rem;color:var(--muted);font-weight:600;line-height:1.2}
+.tf-search .tf-fl select{border:0;padding:2px 0;font-weight:700;font-size:.95rem;background:transparent;cursor:pointer}
+.tf-fld .ls-wrap{width:100%}
+.tf-fld .ls-input{border:0;padding:2px 28px 2px 0;font-weight:700;font-size:.95rem;background:transparent}
+.tf-fld .ls-clear{top:-4px;right:-6px}
+.tf-fld .ls-list{left:-48px;right:-12px;top:calc(100% + 14px)}
+.tf-go{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:12px 26px;font-size:1rem;font-weight:800;border-radius:12px}
+.tf-go svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2.2}
+.tf-search .ls-modes{padding:2px 4px 0}
+.tf-filters{padding:18px 18px 18px;box-shadow:0 4px 18px rgba(26,32,53,.05)}
+.tf-fhead h2{display:flex;align-items:center;gap:8px;font-size:1.15rem}
+.tf-fhead h2 svg,.tf-apply svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linejoin:round}
+details.tf-fg>summary{list-style:none;display:flex;justify-content:space-between;align-items:center;cursor:pointer;font-weight:700;font-size:.95rem}
+details.tf-fg>summary::-webkit-details-marker{display:none}
+details.tf-fg>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--navy);border-bottom:2px solid var(--navy);transform:rotate(45deg);margin:-4px 4px 0 0;transition:transform .15s}
+details.tf-fg[open]>summary::after{transform:rotate(-135deg);margin-top:4px}
+details.tf-fg[open]>summary{margin-bottom:10px}
+details.tf-fg>summary small{font-weight:500;color:var(--muted)}
+.tf-cnt{color:var(--muted);font-size:.84rem}
+#cityQ{margin-bottom:8px}
+details.tf-fg{min-width:0;max-width:100%}
+.tf-filters input,.tf-filters select{max-width:100%;box-sizing:border-box}
+.tf-range{position:relative;height:26px;margin:4px 4px 2px}
+.tf-range::before{content:"";position:absolute;left:0;right:0;top:11px;height:5px;border-radius:5px;background:#f0e4c7}
+.tf-range .tf-track{position:absolute;top:11px;height:5px;border-radius:5px;background:var(--yellow)}
+.tf-range input{position:absolute;left:-2px;right:-2px;width:calc(100% + 4px);top:3px;margin:0;height:20px;background:none;pointer-events:none;-webkit-appearance:none;appearance:none}
+.tf-range input::-webkit-slider-thumb{-webkit-appearance:none;pointer-events:auto;width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid var(--yellow);cursor:pointer;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.tf-range input::-moz-range-thumb{pointer-events:auto;width:14px;height:14px;border-radius:50%;background:#fff;border:4px solid var(--yellow);cursor:pointer}
+.tf-range input::-moz-range-track{background:none}
+.tf-rl{display:flex;justify-content:space-between;font-size:.82rem;color:var(--muted);margin-top:4px}
+.tf-apply{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:14px;padding:12px;font-size:.95rem;background:var(--navy);border-color:var(--navy);color:#fff;border-radius:12px}
+.tf-rhead{margin-bottom:16px}
+.tf-count{font-size:1rem;font-weight:800}
+.tf-rtools{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tf-views{display:flex;gap:6px}
+.tf-vbtn{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:.85rem;padding:8px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
+.tf-vbtn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
+.tf-vbtn[aria-pressed=true]{background:#fbe3a0;border-color:var(--yellow)}
+.tf-list{display:flex;flex-direction:column;gap:16px}
+.tf-card{position:relative;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:16px;display:grid;grid-template-columns:150px minmax(0,1fr) 210px;gap:20px;align-items:stretch;box-shadow:0 2px 12px rgba(26,32,53,.04);transition:border-color .15s,box-shadow .15s}
+.tf-card:hover{border-color:var(--navy);box-shadow:0 8px 22px rgba(26,32,53,.09)}
+.tf-photo{position:relative;width:150px;height:172px;align-self:start}
+.tf-av{width:100%;height:100%;border-radius:14px;background:var(--navy);color:var(--yellow);display:grid;place-items:center;font-weight:800;font-size:2.2rem;overflow:hidden}
+.tf-av img{width:100%;height:100%;object-fit:cover;display:block}
+.tf-vbadge{position:absolute;right:-8px;bottom:-8px;width:34px;height:34px;border-radius:50%;background:#22a35a;border:3px solid #fff;display:grid;place-items:center}
+.tf-vbadge svg{width:18px;height:18px;stroke:#fff;fill:none;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
+.tf-info{position:relative;min-width:0;padding-right:36px;display:flex;flex-direction:column;gap:6px}
+.tf-name{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.tf-name h3{margin:0;font-size:1.22rem;line-height:1.25}
+.tf-ver{display:inline-flex;align-items:center;gap:3px;background:#e6f4ec;color:var(--ok);font-weight:700;font-size:.74rem;padding:3px 10px;border-radius:7px;white-space:nowrap}
+.tf-fav{position:absolute;top:0;right:0;width:34px;height:34px;border:0;background:none;border-radius:50%;display:grid;place-items:center;color:#e5484d;cursor:pointer;padding:0}
+.tf-fav:hover{background:#fff0f2}
+.tf-fav svg{width:22px;height:22px;stroke:currentColor;fill:none;stroke-width:2}
+.tf-fav[aria-pressed=true] svg{fill:currentColor}
+.tf-rate{display:flex;align-items:center;gap:6px;font-size:.88rem;color:var(--muted)}
+.tf-rate .tf-star{width:17px;height:17px;fill:#f5b301;stroke:#f5b301;stroke-width:1}
+.tf-rate b{color:#d99a00;font-size:.95rem}
+.tf-rate.new .tf-star{fill:none}
+.tf-desc{margin:0;font-size:.92rem;line-height:1.5;color:var(--navy);display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.tf-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:2px}
+.tf-tags span{background:#fdf3dc;border:1px solid #f3e3bb;border-radius:8px;padding:3px 12px;font-size:.8rem;font-weight:600}
+.tf-facts{display:flex;gap:10px 22px;flex-wrap:wrap;margin-top:auto;padding-top:6px}
+.tf-fact{display:flex;align-items:flex-start;gap:8px;font-size:.84rem;line-height:1.3}
+.tf-fact svg{width:20px;height:20px;flex:none;stroke:var(--navy);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.tf-fact b{display:block;font-weight:600}
+.tf-fact small{display:block;color:var(--muted);font-size:.78rem}
+.tf-side{display:flex;flex-direction:column;gap:9px}
+.tf-box{display:flex;align-items:center;gap:12px;background:#fdf3dc;border-radius:12px;padding:9px 12px}
+.tf-box i{width:30px;height:30px;border-radius:50%;background:var(--yellow);display:grid;place-items:center;flex:none}
+.tf-box i svg{width:16px;height:16px;stroke:#fff;fill:none;stroke-width:2.2;stroke-linecap:round;stroke-linejoin:round}
+.tf-box b{display:block;font-size:1.05rem;line-height:1.2}
+.tf-box small{display:block;font-size:.78rem;color:var(--muted)}
+.tf-side .btn{width:100%;text-align:center;padding:9px 14px;font-weight:700;display:inline-flex;align-items:center;justify-content:center;gap:6px}
+.tf-side .btn.o{border-color:var(--navy)}
+.tf-side .btn.adm-edit,.tf-side .btn.adm-del{display:none}.is-admin .tf-side .btn.adm-edit,.is-admin .tf-side .btn.adm-del{display:inline-flex}
+.tf-side .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.2}
+.tf-list.is-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}
+.is-grid .tf-card{grid-template-columns:96px minmax(0,1fr);gap:14px}
+.is-grid .tf-photo{width:96px;height:112px}
+.is-grid .tf-av{font-size:1.5rem}
+.is-grid .tf-vbadge{width:28px;height:28px;right:-6px;bottom:-6px}
+.is-grid .tf-side{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.tf-aside{display:flex;flex-direction:column;gap:18px}
+.tf-hire{background:var(--navy);color:var(--cream);border-radius:18px;padding:26px 22px}
+.tf-hire h2{margin:0 0 4px;font-size:1.4rem;line-height:1.2;color:#fff}
+.tf-hire>p{margin:0 0 14px;color:#c9cde0;font-size:.92rem}
+.tf-hire label{display:block;font-weight:700;font-size:.85rem;margin:12px 0 5px;color:#fff}
+.tf-hire select{width:100%;padding:11px 12px;border-radius:10px;border:0;font:inherit;font-size:.95rem;background:var(--cream);color:var(--navy)}
+.tf-hire .tf-hgo{width:100%;margin-top:18px;text-align:center;cursor:pointer;font-size:.95rem}
+.tf-hire .tf-hsign{display:block;width:100%;margin-top:10px;text-align:center;font-size:.9rem;background:transparent;border-color:var(--cream);color:var(--cream)}
+.tf-hire .tf-hsign:hover{background:var(--cream);color:var(--navy)}
+.tf-trust{background:var(--navy);color:#fff;border-radius:18px;padding:28px 22px;text-align:center}
+.tf-trust .tf-seal{width:58px;height:58px;margin:0 auto 10px;display:block}
+.tf-trust h2{margin:0 0 10px;font-size:1.55rem;line-height:1.2}
+.tf-trust p{margin:0;color:#e3e6f3;font-size:1rem;line-height:1.5}
+.tf-trust::after{content:"";display:block;width:100px;height:4px;border-radius:4px;background:var(--yellow);margin:16px auto 0;transform:rotate(-3deg)}
+.tf-free{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:22px 20px}
+.tf-free .ff-badge{display:inline-block;background:var(--yellow);color:var(--navy);font-size:.7rem;font-weight:800;letter-spacing:.04em;padding:4px 10px;border-radius:7px}
+.tf-free h2{margin:10px 0 4px;font-size:1.25rem}
+.tf-free .ff-sub{margin:0 0 14px;font-size:.85rem;color:var(--muted)}
+.tf-free .ff-item{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:10px 12px;background:var(--cream);border-radius:10px;margin-bottom:8px;text-decoration:none;color:var(--navy)}
+.tf-free .ff-item:hover{outline:1.5px solid var(--navy)}
+.tf-free .ff-item b{display:block;font-size:.92rem}
+.tf-free .ff-item span{display:block;font-size:.8rem;color:var(--muted)}
+.tf-free .ff-tag{flex:none;background:var(--navy);color:var(--yellow);font-size:.68rem;font-weight:800;padding:3px 8px;border-radius:6px}
+.tf-free .ff-empty{font-size:.88rem;color:var(--muted);margin:0 0 10px}
+.tf-free .ff-btn{display:block;text-align:center;margin-top:12px}
+.tf-why{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:22px 20px}
+.tf-why h2{margin:0 0 16px;font-size:1.25rem}
+.tf-why ul{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:16px}
+.tf-why li{display:flex;gap:12px;align-items:flex-start}
+.tf-why li i{width:36px;height:36px;border-radius:50%;background:#fdf3dc;display:grid;place-items:center;flex:none}
+.tf-why li i svg{width:20px;height:20px;stroke:#e0a400;fill:none;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.tf-why b{display:block;font-size:.95rem}
+.tf-why span{display:block;font-size:.82rem;color:var(--muted)}
+@media(max-width:1240px){.tf-layout{grid-template-columns:250px minmax(0,1fr)}.tf-aside{grid-column:1/-1;position:static;display:grid;grid-template-columns:1fr 1fr}.tf-hart{width:380px}.tf-hart img{right:110px;width:240px}.tf-blob{right:90px;width:270px}.tf-script{font-size:1.7rem}}
+@media(max-width:1100px){.tf-hart{display:none}.tf-card{grid-template-columns:120px minmax(0,1fr)}.tf-photo{width:120px;height:140px}.tf-side{grid-column:1/-1;display:grid;grid-template-columns:repeat(4,1fr);gap:8px}}
+@media(max-width:900px){.tf-layout{grid-template-columns:1fr}.tf-filters{order:-1}.tf-search{grid-template-columns:1fr 1fr}.tf-search .tf-loc,.tf-go{grid-column:1/-1}.tf-aside{grid-template-columns:1fr}.tf-list.is-grid{grid-template-columns:1fr}}
+@media(max-width:620px){.tf-card{grid-template-columns:84px minmax(0,1fr);gap:12px;padding:14px}.tf-photo{width:84px;height:100px}.tf-av{font-size:1.4rem}.tf-vbadge{width:26px;height:26px;right:-6px;bottom:-6px}.tf-side{grid-template-columns:1fr 1fr}.tf-search{grid-template-columns:1fr}.tf-search>*{grid-column:1/-1}.tf-name h3{font-size:1.05rem}}
 </style>
 <script src="modivs-import-data.js" defer></script>
 <script src="modivs-docs.js"></script>
@@ -220,6 +345,7 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
 <link rel="stylesheet" href="modivs-mobile.css">
 <link rel="stylesheet" href="modivs-faq.css">
 <script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I find the best tutor near me?", "acceptedAnswer": {"@type": "Answer", "text": "Use the filters for subject, class or grade, teaching mode, tuition format and location. You can sort tutors by fee or by recently joined to compare home and online tutors in your area."}}, {"@type": "Question", "name": "Are all tutors on Modiv’s Education verified?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Every tutor uploads a photo, a government ID and a qualification certificate. Our team checks them, and only approved tutor profiles are shown here."}}, {"@type": "Question", "name": "How much does a home tutor or online tutor charge?", "acceptedAnswer": {"@type": "Answer", "text": "Each tutor sets their own hourly fee for 1-on-1 and group classes. Fees are shown on every profile, and you can sort by fee from low to high."}}, {"@type": "Question", "name": "Can I find a tutor for my class and board?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Filter by class and subject, and mention your board, such as CBSE or ICSE, when you send a request or post a requirement."}}, {"@type": "Question", "name": "Do tutors offer 1-on-1 and group tuition?", "acceptedAnswer": {"@type": "Answer", "text": "Many do. Use the tuition format filter to see tutors who teach 1-on-1, small groups or both. Group classes cost less per student."}}, {"@type": "Question", "name": "Can I take a demo class before choosing a tutor?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. You can ask a tutor for a demo class before starting. Check the tutor’s profile for their trial terms."}}, {"@type": "Question", "name": "Why can’t I see a tutor’s phone number?", "acceptedAnswer": {"@type": "Answer", "text": "Contact details stay private until a student sends a request. This keeps tutors and families safe."}}, {"@type": "Question", "name": "I can’t find a tutor for my subject or area. What should I do?", "acceptedAnswer": {"@type": "Answer", "text": "Post a requirement so tutors who teach your subject can respond, or choose online tuition to learn from a tutor in any city."}}]}</script>
+<link rel="stylesheet" href="modivs-footer.css">
 </head>
 <body>
 <header class="mv-header">
@@ -248,42 +374,95 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
  </div>
 </header>
 
-<main class="wrap">
+<main class="wrap tf-page">
  <div id="listView">
   <section class="tf-hero">
-   <h1>Find Your Perfect Tutor</h1>
-   <p class="tf-sub">Explore verified tutors based on subject, class, location and more.</p>
+   <div class="tf-htext">
+    <h1 class="tf-h1">Find Expert Tutors</h1>
+    <p class="tf-sub">Verified, experienced and student-friendly tutors for home, online and group classes.</p>
+   </div>
+   <div class="tf-hart" aria-hidden="true"><span class="tf-blob"></span><img src="hero-girl.jpg" alt=""><span class="tf-script">Learn Better<br>with<br>Trusted Tutors</span></div>
    <form class="tf-search" id="tfSearch" role="search">
-    <select id="fSub" aria-label="Subject"><option value="">Subject</option></select>
-    <select id="fLevel" aria-label="Class or grade"><option value="">Class / Grade</option></select>
-    <div class="ls-wrap" id="lsWrap">
-     <svg class="ls-pin" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg>
-     <input type="text" id="lsInput" class="ls-input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="Search location" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" maxlength="60" placeholder="Type your city, e.g. Lud…">
-     <button type="button" class="ls-clear" id="lsClear" aria-label="Clear location" hidden>&times;</button>
-     <ul class="ls-list" id="lsList" role="listbox" aria-label="Location suggestions" hidden></ul>
-     <span class="ls-sr" id="lsStatus" aria-live="polite"></span>
-     <select id="fCity" aria-label="Location" hidden><option value="">Location</option></select>
+    <label class="tf-fld"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/></svg><span class="tf-fl"><small>Subject</small><select id="fSub" aria-label="Subject"><option value="">Any subject</option></select></span></label>
+    <label class="tf-fld"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/></svg><span class="tf-fl"><small>Class / Grade</small><select id="fLevel" aria-label="Class or grade"><option value="">Any class</option></select></span></label>
+    <div class="tf-fld tf-loc"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6.2 7-11.5A7 7 0 0 0 5 9.5C5 14.8 12 21 12 21z"/><circle cx="12" cy="9.5" r="2.5"/></svg><span class="tf-fl"><small>Location</small>
+     <div class="ls-wrap" id="lsWrap">
+      <input type="text" id="lsInput" class="ls-input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-label="Search location" autocomplete="off" autocapitalize="words" spellcheck="false" enterkeyhint="search" maxlength="60" placeholder="Type your city, e.g. Lud…">
+      <button type="button" class="ls-clear" id="lsClear" aria-label="Clear location" hidden>&times;</button>
+      <ul class="ls-list" id="lsList" role="listbox" aria-label="Location suggestions" hidden></ul>
+      <span class="ls-sr" id="lsStatus" aria-live="polite"></span>
+      <select id="fCity" aria-label="Location" hidden><option value="">Location</option></select>
+     </div></span>
     </div>
-    <button type="submit" class="btn y tf-go">Search</button>
+    <button type="submit" class="btn y tf-go"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg>Search Tutors</button>
     <div class="ls-modes" role="radiogroup" aria-label="Search location by"><span>Search location by</span><button type="button" class="ls-mode" role="radio" aria-checked="true" data-mode="city">City</button><button type="button" class="ls-mode" role="radio" aria-checked="false" data-mode="area" tabindex="-1">Locality</button></div>
    </form>
   </section>
   <button type="button" class="btn o tf-ftoggle" id="ftoggle" aria-expanded="false" aria-controls="filters">Filters</button>
   <div class="tf-layout">
    <aside class="tf-filters" id="filters" aria-label="Filters">
-    <div class="tf-fhead"><h2>Filters</h2><button type="button" class="tf-link" id="clearAll">Clear All</button></div>
+    <div class="tf-fhead"><h2><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7.5V19l-4 1.5v-8z"/></svg>Filters</h2><button type="button" class="tf-link" id="clearAll">Clear All</button></div>
     <div class="tf-fg"><input type="search" id="q" placeholder="Search name, subject or area…" aria-label="Search tutors"></div>
-    <div class="tf-fg"><h3>Subject</h3><div id="gSubs"></div></div>
-    <div class="tf-fg"><h3>Class / Grade</h3><div id="gLevels"></div></div>
-    <div class="tf-fg"><h3>Teaching Mode</h3><div id="gModes"></div></div>
-    <div class="tf-fg"><h3>Tuition Format</h3><div id="gFormats"></div></div>
-    <div class="tf-fg"><h3>Location</h3><div id="gCities"></div><select id="fArea" aria-label="Area or locality"><option value="">All areas</option></select></div>
+    <details class="tf-fg" open><summary>Teaching Mode</summary><div id="gModes"></div></details>
+    <details class="tf-fg"><summary>Class / Grade</summary><div id="gLevels"></div></details>
+    <details class="tf-fg"><summary>Subject</summary><div id="gSubs"></div></details>
+    <details class="tf-fg" open><summary>Location</summary><input type="search" id="cityQ" placeholder="Search city or locality…" aria-label="Search city"><div id="gCities"></div><select id="fArea" aria-label="Area or locality"><option value="">All areas</option></select></details>
+    <details class="tf-fg"><summary>Tuition Format</summary><div id="gFormats"></div></details>
+    <details class="tf-fg" open><summary>Experience</summary>
+     <div class="tf-range" id="rExp"><span class="tf-track"></span><input type="range" id="expMin" min="0" max="15" step="1" value="0" aria-label="Minimum experience"><input type="range" id="expMax" min="0" max="15" step="1" value="15" aria-label="Maximum experience"></div>
+     <div class="tf-rl"><span id="expLo">0 Years</span><span id="expHi">15+ Years</span></div>
+    </details>
+    <details class="tf-fg" open><summary><span>Fee Range <small>(per hour)</small></span></summary>
+     <div class="tf-range" id="rFee"><span class="tf-track"></span><input type="range" id="feeMin" min="200" max="2000" step="100" value="200" aria-label="Minimum fee"><input type="range" id="feeMax" min="200" max="2000" step="100" value="2000" aria-label="Maximum fee"></div>
+     <div class="tf-rl"><span id="feeLo">₹200</span><span id="feeHi">₹2,000+</span></div>
+    </details>
+    <button type="button" class="btn tf-apply" id="applyF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7.5V19l-4 1.5v-8z"/></svg>Apply Filters</button>
    </aside>
    <section class="tf-results" aria-label="Tutors">
     <div class="tf-rhead"><p class="tf-count" id="count" aria-live="polite"></p>
-     <label class="tf-sort">Sort by <select id="fSort"><option value="exp">Most Relevant</option><option value="low">Fee: low to high</option><option value="high">Fee: high to low</option><option value="new">Recently joined</option></select></label></div>
+     <div class="tf-rtools">
+      <div class="tf-views" role="group" aria-label="Layout"><button type="button" class="tf-vbtn" id="vList" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>List View</button><button type="button" class="tf-vbtn" id="vGrid" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/></svg>Grid View</button></div>
+      <label class="tf-sort">Sort by <select id="fSort"><option value="exp">Most Relevant</option><option value="low">Fee: low to high</option><option value="high">Fee: high to low</option><option value="new">Recently joined</option></select></label>
+     </div></div>
     <div class="tf-list" id="grid"></div>
+    <nav class="pager" id="pager" aria-label="Tutor pages"></nav>
    </section>
+   <aside class="tf-aside" aria-label="Why Modiv’s">
+    <form class="tf-hire" id="hireForm" aria-label="Let’s hire an expert">
+     <h2>Let’s hire an expert</h2><p>Tell us what you need to get started.</p>
+     <label for="hqs">Subject</label>
+     <select id="hqs"><option value="">Any subject</option></select>
+     <label for="hql">Level</label>
+     <select id="hql"><option value="">Any level</option><option>Primary (1–5)</option><option>Middle (6–8)</option><option>Secondary (9–10)</option><option>Senior secondary (11–12)</option><option>College / University</option><option>Competitive exams</option></select>
+     <label for="hqm">Teaching mode</label>
+     <select id="hqm"><option value="Online">Online</option><option value="At student’s place">Offline (At my home)</option><option value="At tutor’s place">Offline (At tutor’s place)</option><option value="" selected>Both Online &amp; Offline</option></select>
+     <label for="hqt">Tuition format</label>
+     <select id="hqt"><option value="1-on-1">1-on-1 Individual tuition</option><option value="Group">Group tuition (Small batches)</option><option value="" selected>Flexible (1-on-1 or Group)</option></select>
+     <button type="submit" class="btn y tf-hgo" id="hireGo">Search tutors</button>
+     <a class="btn tf-hsign" id="hireSignup" href="modivs-student-signup.html">Sign up as a Student / Parent</a>
+    </form>
+    <div class="tf-trust">
+     <svg class="tf-seal" viewBox="0 0 24 24" aria-hidden="true"><path fill="#EBB92E" d="M12 2l2.4 2.2 3.2-.3.9 3.1 2.7 1.8-1.3 3 1.3 3-2.7 1.8-.9 3.1-3.2-.3L12 22l-2.4-2.2-3.2.3-.9-3.1L2.8 15.2l1.3-3-1.3-3 2.7-1.8.9-3.1 3.2.3z"/><path d="M8.3 12.2l2.4 2.4 5-5" fill="none" stroke="#1A2035" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+     <h2>Verified &amp; Trusted Tutors</h2>
+     <p>Learn from experienced and background-verified tutors near you.</p>
+    </div>
+    <div class="tf-why">
+     <h2>Why Choose Modiv’s?</h2>
+     <ul>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></i><div><b>Verified Tutors</b><span>Profile, ID and experience verified</span></div></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.3c1.8.8 3 2.5 3 4.7"/></svg></i><div><b>Wide Subject Range</b><span>All classes, all major subjects</span></div></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/></svg></i><div><b>Flexible Learning</b><span>Home, online or group classes</span></div></li>
+      <li><i><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13 2L4 14h7l-1 8 9-12h-7z"/></svg></i><div><b>Quick &amp; Easy</b><span>Search, compare and enquire instantly</span></div></li>
+     </ul>
+    </div>
+    <div class="tf-free" id="freeLeadsBox">
+     <span class="ff-badge">🎁 FREE TODAY</span>
+     <h2>New Free Leads Today</h2>
+     <p class="ff-sub" id="ffSub">Unlock these student requirements at no cost.</p>
+     <div id="ffList"></div>
+     <a class="btn y ff-btn" id="ffBtn" href="modivs-active-leads.html">View all free leads</a>
+    </div>
+   </aside>
   </div>
  <section class="mats" id="tutor-materials" aria-labelledby="mh">
   <h2 id="mh">Instructions for tutors: your own study materials</h2>
@@ -325,7 +504,14 @@ h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;mar
  </div>
 </section>
 
-<footer><div class="wrap"><nav aria-label="Legal and contact links" style="display:flex;flex-wrap:wrap;gap:6px 22px;margin-bottom:10px"><style>footer nav a{color:#d8dcec;text-decoration:none}footer nav a:hover{color:#EBB92E;text-decoration:underline}</style><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav>© 2026 Modiv’s Education. Contact details stay private until a student sends a request.</div></footer>
+<footer class="mv-foot">
+  <div class="cols">
+   <div><a class="brand" href="index.html" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;margin-bottom:12px;"><img src="logo.png" alt="Modiv’s Education" style="height:54px;display:block;mix-blend-mode:normal;"></a><p style="color:#c9cde0;max-width:320px;margin:0">Connecting tutors with students and parents, one class at a time.</p></div>
+   <div class="mv-foot-locs"><h4>Locations</h4><ul><li><a href="modivs-tutors.html?city=Ludhiana" title="Find tutors in Ludhiana"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Ludhiana</a></li><li><a href="modivs-tutors.html?city=Chandigarh" title="Find tutors in Chandigarh"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Chandigarh</a></li><li><a href="modivs-tutors.html?city=Mohali" title="Find tutors in Mohali"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Mohali</a></li><li><a href="modivs-tutors.html?city=Panchkula" title="Find tutors in Panchkula"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Panchkula</a></li><li><a href="modivs-tutors.html?city=Patiala" title="Find tutors in Patiala"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Patiala</a></li><li><a href="modivs-tutors.html?city=Jalandhar" title="Find tutors in Jalandhar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Jalandhar</a></li><li><a href="modivs-tutors.html?city=Amritsar" title="Find tutors in Amritsar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Amritsar</a></li><li><a href="modivs-tutors.html?city=Delhi" title="Find tutors in Delhi NCR"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Delhi NCR</a></li></ul></div>
+  </div>
+  <nav class="mv-foot-legal" aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav>
+  <p class="mv-foot-copy">© 2026 Modiv’s Education. Contact details stay private until a student sends a request.</p>
+</footer>
 
 
 <dialog id="delT" aria-labelledby="delTTitle">
@@ -400,6 +586,7 @@ function updateTutorsFromDb(freshList){
  if($('fSub')) fillSelect('fSub', subOpts.slice().sort());
  if($('fCity')) fillSelect('fCity', cityOpts.slice().sort());
  fillAreas();
+ if(window.rebuildTutorGroups)rebuildTutorGroups();
  stats();
  render();
 }
@@ -424,7 +611,7 @@ function about(t){
 }
 function MM(){return window.ModivsMap}
 function areasOf(t){return MM()?MM().areasOf(t):[]}
-var F={subs:[],levels:[],modes:[],cities:[],formats:[]};
+var F={subs:[],levels:[],modes:[],cities:[],formats:[],exp:[0,15],fee:[200,2000]};
 var MODE_OPTS=['Online','At student’s place','At tutor’s place'];
 var LV=['Primary (1–5)','Middle (6–8)','Secondary (9–10)','Senior secondary (11–12)','College / University','Competitive exams'];
 var FORMAT_OPTS=['1-on-1','Group'];
@@ -464,11 +651,11 @@ function syncTop(){setSel('fSub',F.subs.length===1?F.subs[0]:'');setSel('fLevel'
 function syncChecks(){Array.prototype.forEach.call($('filters').querySelectorAll('input[data-g]'),function(i){i.checked=F[i.getAttribute('data-g')].indexOf(i.value)>-1})}
 function countBy(list){var m={};list.forEach(function(x){if(x)m[x]=(m[x]||0)+1});return m}
 function byCount(m){return Object.keys(m).sort(function(a,b){return m[b]-m[a]||a.localeCompare(b)})}
-function buildGroup(boxId,g,opts,limit){
+function buildGroup(boxId,g,opts,limit,counts){
  var box=$(boxId),wrap=box.parentNode;box.textContent='';
  opts.forEach(function(v,i){
   var l=el('label','tf-chk'+(limit&&i>=limit?' more':'')),inp=document.createElement('input');
-  inp.type='checkbox';inp.value=v;inp.setAttribute('data-g',g);l.appendChild(inp);l.appendChild(document.createTextNode(v));box.appendChild(l);
+  inp.type='checkbox';inp.value=v;inp.setAttribute('data-g',g);l.appendChild(inp);l.appendChild(document.createTextNode(v));if(counts&&counts[v])l.appendChild(el('span','tf-cnt',' ('+counts[v]+')'));box.appendChild(l);
  });
  if(limit&&opts.length>limit){var b=el('button','tf-more','More ▾');b.type='button';b.addEventListener('click',function(){var o=wrap.classList.toggle('open');b.textContent=o?'Less ▴':'More ▾'});box.appendChild(b)}
 }
@@ -536,6 +723,10 @@ var ICO={
  home:'<path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/>',
  rupee:'<path d="M7 5h10M7 9h10M7 5c5 0 7 2 7 4s-2 4-7 4l7 7"/>',
  heart:'<path d="M12 21s-8-5.2-8-11a4.5 4.5 0 0 1 8-2.8A4.5 4.5 0 0 1 20 10c0 5.8-8 11-8 11z"/>',
+ check:'<path d="M5 12.5l4.5 4.5L19 7"/>',
+ star:'<path d="M12 3.5l2.6 5.4 5.9.8-4.3 4.1 1.1 5.9-5.3-2.8-5.3 2.8 1.1-5.9L3.5 9.7l5.9-.8z"/>',
+ brief:'<rect x="3" y="7" width="18" height="13" rx="2"/><path d="M9 7V5a2 2 0 0 1 2-2h2a2 2 0 0 1 2 2v2M3 12h18"/>',
+ arrow:'<path d="M5 12h14M13 6l6 6-6 6"/>',
  back:'<path d="M15 6l-6 6 6 6"/>'
 };
 function svg(n,cls){return '<svg class="'+(cls||'tf-ico')+'" viewBox="0 0 24 24" aria-hidden="true">'+ICO[n]+'</svg>'}
@@ -557,22 +748,39 @@ function classLabel(t){var c=classInfo(t),p=[];if(c.ranges.length)p.push('Classe
 function expOf(t){return +t.years>0?(t.years+'+ '+((+t.years)===1?'Year':'Years')):'Fresher'}
 function locLine(t){var m=normModes(t.modes).map(modeShort);return [t.city].concat(m.length?[m.join(', ')]:[]).filter(Boolean).join(' | ')}
 function moreList(list,n){list=arr(list);return list.slice(0,n).join(', ')+(list.length>n?' +'+(list.length-n):'')}
+function classRange(t){var c=classInfo(t);if(c.nums.length){var a=c.nums[0],b=c.nums[c.nums.length-1];return a===b?''+a:a+' – '+b}return c.extra[0]||''}
+function modesLabel(t){return normModes(t.modes).map(function(x){return x==='Online'?'Online':x==='At student’s place'?'Home':'Tutor’s place'}).join(', ')}
+function ratingNode(t){
+ var r=+t.rating||+t.avgRating||0,n=+t.reviews||+t.reviewCount||0,d=el('div','tf-rate');d.innerHTML=svg('star','tf-star');
+ if(r>0){d.appendChild(el('b','',r.toFixed(1)));if(n)d.appendChild(el('span','','('+n+(n===1?' review)':' reviews)')))}
+ else{d.classList.add('new');d.appendChild(el('span','','New on Modiv’s'))}
+ return d;
+}
+function fact(ic,a,b){var d=el('div','tf-fact');d.innerHTML=svg(ic);var s=el('span');s.appendChild(el('b','',a));if(b)s.appendChild(el('small','',b));d.appendChild(s);return d}
+function sbox(ic,a,b){var d=el('div','tf-box'),i=el('i');i.innerHTML=svg(ic);d.appendChild(i);var s=el('span');s.appendChild(el('b','',a));s.appendChild(el('small','',b));d.appendChild(s);return d}
 function card(t){
- var c=el('article','tf-card'),av=el('div','tf-av');avatar(t,av);c.appendChild(av);
- var inf=el('div','tf-info'),nm=el('div','tf-name');nm.appendChild(el('h3','',t.name));nm.appendChild(el('span','tf-ver','✓ Verified'));inf.appendChild(nm);
- inf.appendChild(el('p','tf-subs',arr(t.subs).join(', ')));
- var ul=el('ul','tf-meta'),cl=classLabel(t),lc=locLine(t),ar=areasOf(t);
- if(cl)ul.appendChild(iel('li','','cap',cl));
- if(lc)ul.appendChild(iel('li','','pin',lc));
- if(ar.length)ul.appendChild(iel('li','','home','Teaches in '+ar.slice(0,3).join(', ')+(ar.length>3?' +'+(ar.length-3)+' more':'')));
- inf.appendChild(ul);c.appendChild(inf);
- var st=el('div','tf-stats'),a=el('div','tf-stat');a.appendChild(el('b','',expOf(t)));a.appendChild(el('span','','Experience'));
- var b=el('div','tf-stat');b.appendChild(el('b','','₹'+(t.fee||'—')));b.appendChild(el('span','','per hour'));st.appendChild(a);st.appendChild(b);c.appendChild(st);
- var bt=el('div','tf-btns'),vp=el('button','btn o','View Profile');vp.type='button';vp.addEventListener('click',function(){openProfile(t)});bt.appendChild(vp);
- var en=el('a','btn y','Enquire Now');en.href=getEnquireHref(t);bt.appendChild(en);
- var ed=el('button','btn adm-edit','Edit profile');ed.type='button';ed.addEventListener('click',function(){openAdd(t)});bt.appendChild(ed);
- var db=el('button','btn adm-del','Delete profile');db.type='button';db.addEventListener('click',function(){askDelete(t)});bt.appendChild(db);
- c.appendChild(bt);
+ var c=el('article','tf-card');
+ var ph=el('div','tf-photo'),av=el('div','tf-av');avatar(t,av);ph.appendChild(av);
+ var vb=el('span','tf-vbadge');vb.innerHTML=svg('check');vb.title='Verified tutor';ph.appendChild(vb);c.appendChild(ph);
+ var inf=el('div','tf-info'),nm=el('div','tf-name');nm.appendChild(el('h3','',t.name));nm.appendChild(el('span','tf-ver','✓ Verified Tutor'));inf.appendChild(nm);
+ var fav=el('button','tf-fav'),on=savedList().indexOf(key(t))>-1;fav.type='button';fav.innerHTML=svg('heart');fav.setAttribute('aria-pressed',on?'true':'false');fav.setAttribute('aria-label','Save '+t.name);
+ fav.addEventListener('click',function(){fav.setAttribute('aria-pressed',toggleSaved(t)?'true':'false')});inf.appendChild(fav);
+ inf.appendChild(ratingNode(t));
+ inf.appendChild(el('p','tf-desc',t.headline||t.bio||about(t)));
+ var tg=el('div','tf-tags'),ss=arr(t.subs);ss.slice(0,4).forEach(function(x){tg.appendChild(el('span','',x))});if(ss.length>4)tg.appendChild(el('span','','+'+(ss.length-4)));inf.appendChild(tg);
+ var fx=el('div','tf-facts'),cr=classRange(t),bd=arr(t.boards).slice(0,2).join(' / '),ar=areasOf(t),ml=modesLabel(t);
+ if(cr)fx.appendChild(fact('cap','Class: '+cr,bd?'('+bd+')':''));
+ if(t.city)fx.appendChild(fact('pin',t.city,ar.length?'('+ar[0]+(ar.length>1?' +'+(ar.length-1):'')+')':''));
+ if(ml)fx.appendChild(fact('monitor','Mode:',ml));
+ inf.appendChild(fx);c.appendChild(inf);
+ var sd=el('div','tf-side');
+ sd.appendChild(sbox('rupee','₹'+(t.fee||'—'),'per hour'));
+ sd.appendChild(sbox('brief',expOf(t),'Experience'));
+ var vp=el('button','btn o','View Profile');vp.type='button';vp.addEventListener('click',function(){openProfile(t)});sd.appendChild(vp);
+ var en=el('a','btn y','Enquire Now ');en.href=getEnquireHref(t);en.insertAdjacentHTML('beforeend',svg('arrow',''));sd.appendChild(en);
+ var ed=el('button','btn adm-edit','Edit profile');ed.type='button';ed.addEventListener('click',function(){openAdd(t)});sd.appendChild(ed);
+ var db=el('button','btn adm-del','Delete profile');db.type='button';db.addEventListener('click',function(){askDelete(t)});sd.appendChild(db);
+ c.appendChild(sd);
  return c;
 }
 function chips(list,cls){var d=el('div','tf-chips');arr(list).forEach(function(x){d.appendChild(el('span',cls||'',x))});return d}
@@ -668,6 +876,32 @@ function route(){
   if(was&&lastY){window.scrollTo(0,lastY);lastY=0}
  }
 }
+
+/* ---------- pagination ---------- */
+var PG=1,PER=8,PSIG='';
+function pageList(cur,total){
+ var out=[],set={1:1,2:1};set[total]=1;set[total-1]=1;set[cur]=1;set[cur-1]=1;set[cur+1]=1;
+ var last=0;for(var i=1;i<=total;i++){if(!set[i])continue;if(last&&i-last>1)out.push('…');out.push(i);last=i}
+ return out;
+}
+function renderPager(total,onGo){
+ var p=document.getElementById('pager');p.textContent='';
+ var pages=Math.ceil(total/PER);if(pages<=1)return;
+ function btn(label,pg,opts){var b=document.createElement('button');b.type='button';b.textContent=label;opts=opts||{};
+  if(opts.aria)b.setAttribute('aria-label',opts.aria);
+  if(opts.disabled)b.disabled=true;
+  if(opts.current){b.setAttribute('aria-current','page')}
+  else if(!opts.disabled){b.addEventListener('click',function(){PG=pg;onGo()})}
+  p.appendChild(b)}
+ var info=document.createElement('div');info.className='pager-info';
+ info.textContent='Showing '+((PG-1)*PER+1)+'–'+Math.min(PG*PER,total)+' of '+total;p.appendChild(info);
+ btn('‹ Prev',PG-1,{disabled:PG===1,aria:'Previous page'});
+ pageList(PG,pages).forEach(function(x){
+  if(x==='…'){var s=document.createElement('span');s.className='dots';s.textContent='…';p.appendChild(s)}
+  else btn(String(x),x,{current:x===PG,aria:'Page '+x});
+ });
+ btn('Next ›',PG+1,{disabled:PG===pages,aria:'Next page'});
+}
 function render(){
  var q=$('q').value.toLowerCase().trim(),area=MM()?MM().normArea($('fArea').value):$('fArea').value.trim(),sort=$('fSort').value,g=$('grid');g.textContent='';
  if(window.ModivsLocSearch)ModivsLocSearch.sync();
@@ -680,6 +914,9 @@ function render(){
   if(!any(F.modes,normModes(t.modes)))return false;
   if(F.formats.length){var fm=arr(t.formats).join(' ').toLowerCase(),hasG=fm.indexOf('group')>-1,hasI=fm.indexOf('1-on-1')>-1||fm.indexOf('individual')>-1||!fm;
    if(!F.formats.some(function(f){return f==='Group'?hasG:hasI}))return false}
+  var yr=+t.years||0,fe=+t.fee||0;
+  if(F.exp[0]>0&&yr<F.exp[0])return false;if(F.exp[1]<15&&yr>F.exp[1])return false;
+  if(fe&&F.fee[0]>200&&fe<F.fee[0])return false;if(fe&&F.fee[1]<2000&&fe>F.fee[1])return false;
   var hay=[t.name,t.city,areasOf(t).join(' '),t.headline,arr(t.subs).join(' '),arr(t.boards).join(' '),arr(t.levels).join(' ')].join(' ').toLowerCase();
   return !q||hay.indexOf(q)>-1;
  });
@@ -689,13 +926,17 @@ function render(){
   if(sort==='new')return new Date(b.submitted_at||0)-new Date(a.submitted_at||0);
   return (+b.years||0)-(+a.years||0);
  });
- $('count').textContent='Showing '+rows.length+(rows.length===1?' tutor':' tutors');
- if(!rows.length){
+ var lb=[].concat(F.subs.slice(0,2),F.levels.slice(0,2),F.cities.slice(0,2),area?[area]:[]);
+ $('count').textContent='Showing '+rows.length+(rows.length===1?' Tutor':' Tutors')+(lb.length?' for “'+lb.join(' • ')+'”':'');
+ var sig=JSON.stringify([F,q,area,sort]);if(sig!==PSIG){PG=1;PSIG=sig}
+ var pages=Math.max(1,Math.ceil(rows.length/PER));if(PG>pages)PG=pages;
+ if(!rows.length){renderPager(0);
   g.appendChild(el('p','empty','No tutors match your search yet. Try removing a filter.'));
   if((area||F.cities.length===1)&&MM()){var nb=el('div','nearbox');g.appendChild(nb);MM().renderSuggest(nb,MM().suggest(MM().groups(tutors),F.cities.length===1?F.cities[0]:'',area),pickGroup)}
   return;
  }
- rows.forEach(function(t){g.appendChild(card(t))});
+ rows.slice((PG-1)*PER,PG*PER).forEach(function(t){g.appendChild(card(t))});
+ renderPager(rows.length,function(){render();var h=$('count');if(h&&h.scrollIntoView)h.scrollIntoView({behavior:'smooth',block:'start'})});
 }
 /* ---------- build filters + wire events ---------- */
 (function(){
@@ -714,7 +955,12 @@ function render(){
  if(pF){pF=fit(FORMAT_OPTS,pF);if(FORMAT_OPTS.indexOf(pF)>-1)F.formats=[pF]}
  if(pC){pC=normCity(pC);if(cityOpts.indexOf(pC)>-1)F.cities=[pC]}
  fillSelect('fSub',subOpts.slice().sort());fillSelect('fLevel',lvOpts);fillSelect('fCity',cityOpts.slice().sort());
- buildGroup('gSubs','subs',subOpts,6);buildGroup('gLevels','levels',lvOpts,6);buildGroup('gModes','modes',MODE_OPTS,0);buildGroup('gFormats','formats',FORMAT_OPTS,0);buildGroup('gCities','cities',cityOpts,5);
+ buildGroup('gSubs','subs',subOpts,6,subCount);buildGroup('gLevels','levels',lvOpts,6);buildGroup('gModes','modes',MODE_OPTS,0);buildGroup('gFormats','formats',FORMAT_OPTS,0);buildGroup('gCities','cities',cityOpts,5,cityCount);
+ window.rebuildTutorGroups=function(){
+  var sc=countBy([].concat.apply([],tutors.map(function(t){return arr(t.subs)}))),so=byCount(sc);F.subs.forEach(function(x){if(so.indexOf(x)<0)so.push(x)});
+  var cc=countBy(tutors.map(function(t){return t.city})),co=byCount(cc);placeCities.forEach(function(c){if(c&&co.indexOf(c)<0)co.push(c)});
+  buildGroup('gSubs','subs',so,6,sc);buildGroup('gCities','cities',co,5,cc);syncChecks();filterCityList();
+ };
  fillAreas(pA&&MM()?MM().normArea(pA):'');syncTop();syncChecks();
  $('filters').addEventListener('change',function(e){
   var i=e.target,g=i&&i.getAttribute&&i.getAttribute('data-g');if(!g)return;
@@ -728,11 +974,55 @@ function render(){
  ['q','fArea','fSort'].forEach(function(i){$(i).addEventListener('input',render)});
  $('tfSearch').addEventListener('submit',function(e){e.preventDefault();if(window.ModivsLocSearch)ModivsLocSearch.commit();render();$('count').scrollIntoView({behavior:'smooth',block:'start'})});
  $('clearAll').addEventListener('click',function(){
-  F.subs=[];F.levels=[];F.modes=[];F.cities=[];F.formats=[];$('q').value='';
+  F.subs=[];F.levels=[];F.modes=[];F.cities=[];F.formats=[];F.exp=[0,15];F.fee=[200,2000];$('q').value='';$('cityQ').value='';syncRanges();filterCityList();
   fillAreas();syncTop();syncChecks();history.replaceState(null,'',location.pathname);render();
  });
+ function rangeWire(lo,hi,key,minV,maxV,fmtLo,fmtHi,box){
+  function upd(src){
+   var a=+$(lo).value,b=+$(hi).value;
+   if(a>b){if(src===lo){$(lo).value=b;a=b}else{$(hi).value=a;b=a}}
+   F[key]=[a,b];$(key+'Lo').textContent=fmtLo(a);$(key+'Hi').textContent=fmtHi(b);
+   var tr=$(box).querySelector('.tf-track');tr.style.left=((a-minV)/(maxV-minV)*100)+'%';tr.style.right=(100-(b-minV)/(maxV-minV)*100)+'%';
+  }
+  [lo,hi].forEach(function(id){$(id).addEventListener('input',function(){upd(id);render()})});
+  return function(){$(lo).value=F[key][0];$(hi).value=F[key][1];upd()};
+ }
+ function inr(n){return '₹'+Number(n).toLocaleString('en-IN')}
+ var se=rangeWire('expMin','expMax','exp',0,15,function(a){return a+' Years'},function(b){return b>=15?'15+ Years':b+' Years'},'rExp');
+ var sf=rangeWire('feeMin','feeMax','fee',200,2000,function(a){return inr(a)},function(b){return b>=2000?'₹2,000+':inr(b)},'rFee');
+ window.syncRanges=function(){se();sf()};syncRanges();
+ window.filterCityList=function(){
+  var q=$('cityQ').value.trim().toLowerCase(),box=$('gCities');
+  Array.prototype.forEach.call(box.querySelectorAll('.tf-chk'),function(l){l.style.display=q?(l.textContent.toLowerCase().indexOf(q)>-1?'flex':'none'):''});
+  var mb=box.querySelector('.tf-more');if(mb)mb.style.display=q?'none':'';
+ };
+ $('cityQ').addEventListener('input',filterCityList);
+ $('applyF').addEventListener('click',function(){render();var f=$('filters');if(f.classList.contains('open')){f.classList.remove('open');$('ftoggle').setAttribute('aria-expanded','false');$('ftoggle').textContent='Filters'}$('count').scrollIntoView({behavior:'smooth',block:'start'})});
+ function setView(v){var g=v==='grid';$('grid').classList.toggle('is-grid',g);$('vGrid').setAttribute('aria-pressed',g?'true':'false');$('vList').setAttribute('aria-pressed',g?'false':'true');try{localStorage.setItem('modivs_tutor_view',v)}catch(e){}}
+ $('vList').addEventListener('click',function(){setView('list')});$('vGrid').addEventListener('click',function(){setView('grid')});
+ try{if(localStorage.getItem('modivs_tutor_view')==='grid')setView('grid')}catch(e){}
  $('ftoggle').addEventListener('click',function(){var o=$('filters').classList.toggle('open');this.setAttribute('aria-expanded',o?'true':'false');this.textContent=o?'Hide filters':'Filters'});
  window.addEventListener('popstate',route);window.addEventListener('hashchange',route);
+
+ /* "Let's hire an expert" box: fills subjects, applies the filters on this page */
+ (function(){
+  var hf=$('hireForm');if(!hf)return;
+  var hs=$('hqs');
+  if(window.ModivsSubjects&&hs){ModivsSubjects.categories().forEach(function(c){var g=document.createElement('optgroup');g.label=c;ModivsSubjects.subjectsFor(c).forEach(function(x){var o=document.createElement('option');o.textContent=x;o.value=x;g.appendChild(o)});hs.appendChild(g)})}
+  hf.addEventListener('submit',function(e){
+   e.preventDefault();
+   var sv=hs.value,lv=$('hql').value,md=$('hqm').value,fm=$('hqt').value;
+   F.subs=sv?[fit(subOpts,sv)]:[];F.levels=lv?[lv]:[];F.modes=md?[md]:[];F.formats=fm?[fm]:[];
+   if(window.rebuildTutorGroups)rebuildTutorGroups();
+   syncTop();syncChecks();render();
+   $('count').scrollIntoView({behavior:'smooth',block:'start'});
+  });
+  var su=$('hireSignup');
+  if(su&&au){
+   if(au.role==='Student / Parent'){su.href='modivs-student-dashboard.html';su.textContent='Go to my dashboard'}
+   else if(au.role==='Tutor'){su.style.display='none'}
+  }
+ })();
 })();
 stats();render();route();
 
@@ -892,6 +1182,55 @@ if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
   if(found)setTimeout(function(){openAdd(found)},0);
  }
 })();
+})();
+</script>
+<script>
+/* New Free Leads Today: same live lead feed as the Active Leads page */
+(function(){
+ var live=null;
+ function read(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return[]}}
+ function esc(x){return String(x==null?'':x).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+ function isFree(l){var f=l&&l.free;return f===true||f==='true'||f===1||f==='1'||f==='yes'}
+ function freeLeads(){
+  var tb=read('modivs_deleted_leads'),seen={},out=[];
+  (live||[]).concat(read('modivs_active_leads'),read('modivs_students_db')).forEach(function(l){
+   if(!l||!l.name||!isFree(l))return;
+   var key=String(l.id||l.email||l.name).toLowerCase();if(seen[key])return;seen[key]=1;
+   if(l.status==='closed'||l.status==='rejected')return;
+   if((l.id&&tb.indexOf(l.id)>-1)||(l.email&&tb.indexOf(String(l.email).toLowerCase())>-1))return;
+   out.push(l);
+  });
+  out.sort(function(a,b){return new Date(b.registered_at||0)-new Date(a.registered_at||0)});
+  return out;
+ }
+ function draw(){
+  var box=document.getElementById('ffList');if(!box)return;
+  var all=freeLeads(),start=new Date();start.setHours(0,0,0,0);
+  var today=all.filter(function(l){return l.registered_at&&new Date(l.registered_at)>=start});
+  var rows=(today.length?today:all).slice(0,3);
+  document.getElementById('ffSub').textContent=today.length?'Unlock these student requirements at no cost.':(rows.length?'No new free leads yet today. Here are the latest free leads.':'Unlock student requirements at no cost.');
+  if(!rows.length){box.innerHTML='<p class="ff-empty">New free leads are added daily. Check back soon!</p>';return}
+  box.innerHTML=rows.map(function(l){
+   var subs=(l.subs||[]).slice(0,2).join(', ')||'Tuition';
+   var where=[l.city].filter(Boolean).join(', ')||'Online';
+   return '<a class="ff-item" href="modivs-active-leads.html"><div><b>'+esc(subs)+(l.cls?' · '+esc(l.cls):'')+'</b><span>'+esc(where)+'</span></div><i class="ff-tag" style="font-style:normal">FREE</i></a>';
+  }).join('');
+ }
+ draw();
+ var au=null;try{au=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
+ var b=document.getElementById('ffBtn');
+ if(!(au&&au.role==='Tutor')){b.textContent='Sign up as a Tutor to unlock';b.href='modivs-signup.html'}
+ /* live updates: a lead the admin saves shows up here straight away */
+ function hook(){
+  var f=window.ModivsFirebaseSync;
+  if(f&&f.onLeads){
+   f.onLeads(function(list){if(Array.isArray(list))live=list;draw()});
+   if(f.onStudents)f.onStudents(function(list){if(Array.isArray(list)&&!live)live=list;draw()});
+  }else{setTimeout(hook,400)}
+ }
+ setTimeout(hook,300);
+ window.addEventListener('storage',function(e){if(e.key==='modivs_active_leads'||e.key==='modivs_students_db'||e.key==='modivs_deleted_leads')draw()});
+ document.addEventListener('visibilitychange',function(){if(!document.hidden)draw()});
 })();
 </script>
 <script src="modivs-avatars.js"></script>

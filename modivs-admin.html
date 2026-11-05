@@ -171,6 +171,7 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="firebase-sync.js"></script>
+<script src="modivs-wallet.js"></script>
 <script src="firebase-chat.js"></script>
 <script src="modivs-shop-data.js"></script>
 <script src="modivs-blogs.js"></script>
@@ -1159,10 +1160,11 @@ function detail(){
     pb.style.cssText = 'padding:5px 10px;font-size:0.78rem;';
     pb.addEventListener('click', function(){
       if(window.ModivsChat){
-        ModivsChat.setTutorMembership(x.email, title, days, 'active');
-        logAction(x.id, x.name, 'Admin Updated Membership', title + ' (' + days + ' days)');
-        toast('Updated ' + x.name + ' membership to ' + title);
-        detail();
+        Promise.resolve(ModivsChat.setTutorMembership(x.email, title, days, 'active')).then(function(){
+          logAction(x.id, x.name, 'Admin Updated Membership', title + ' (' + days + ' days)');
+          toast('Updated ' + x.name + ' membership to ' + title);
+          detail();
+        }).catch(function(e){ toast('Failed: ' + (e && e.message || 'try again')); });
       }
     });
     memActs.appendChild(pb);
@@ -1175,10 +1177,11 @@ function detail(){
   expBtn.style.cssText = 'padding:5px 10px;font-size:0.78rem;';
   expBtn.addEventListener('click', function(){
     if(window.ModivsChat){
-      ModivsChat.setTutorMembership(x.email, 'Expired', -1, 'expired');
-      logAction(x.id, x.name, 'Admin Expired Membership', 'Set to expired');
-      toast('Expired ' + x.name + ' membership.');
-      detail();
+      Promise.resolve(ModivsChat.setTutorMembership(x.email, 'Expired', -1, 'expired')).then(function(){
+        logAction(x.id, x.name, 'Admin Expired Membership', 'Set to expired');
+        toast('Expired ' + x.name + ' membership.');
+        detail();
+      }).catch(function(e){ toast('Failed: ' + (e && e.message || 'try again')); });
     }
   });
   memActs.appendChild(expBtn);
@@ -1201,10 +1204,11 @@ function detail(){
     if(!amt || isNaN(+amt) || +amt <= 0) return;
     var reason = prompt('Reason / audit note for credit:', 'Admin promotional adjustment') || 'Admin credit';
     if(window.ModivsChat){
-      ModivsChat.addTutorCoins(x.email, +amt, 'Admin credit: ' + reason);
-      logAction(x.id, x.name, 'Admin Credited Coins', '+' + amt + ' (' + reason + ')');
-      toast('Credited ' + amt + ' coins to ' + x.name);
-      detail();
+      Promise.resolve(ModivsChat.addTutorCoins(x.email, +amt, 'Admin credit: ' + reason).promise).then(function(){
+        logAction(x.id, x.name, 'Admin Credited Coins', '+' + amt + ' (' + reason + ')');
+        toast('Credited ' + amt + ' coins to ' + x.name);
+        detail();
+      }).catch(function(e){ toast('Failed: ' + (e && e.message || 'try again')); });
     }
   };
 
@@ -1213,10 +1217,11 @@ function detail(){
     if(!amt || isNaN(+amt) || +amt <= 0) return;
     var reason = prompt('Reason / audit note for debit:', 'Admin deduction') || 'Admin debit';
     if(window.ModivsChat){
-      ModivsChat.addTutorCoins(x.email, -amt, 'Admin debit: ' + reason);
-      logAction(x.id, x.name, 'Admin Debited Coins', '-' + amt + ' (' + reason + ')');
-      toast('Debited ' + amt + ' coins from ' + x.name);
-      detail();
+      Promise.resolve(ModivsChat.addTutorCoins(x.email, -amt, 'Admin debit: ' + reason).promise).then(function(){
+        logAction(x.id, x.name, 'Admin Debited Coins', '-' + amt + ' (' + reason + ')');
+        toast('Debited ' + amt + ' coins from ' + x.name);
+        detail();
+      }).catch(function(e){ toast('Failed: ' + (e && e.message || 'Not enough coins')); });
     }
   };
 

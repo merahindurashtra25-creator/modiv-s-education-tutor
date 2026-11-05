@@ -169,6 +169,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
+<link rel="stylesheet" href="modivs-footer.css">
 </head>
 <body>
 
@@ -205,13 +206,44 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
  </section>
 </main>
 
-<!-- TUTOR SIGN UP: the single tutor registration page (5-step wizard: account, profile, qualifications, fees, documents). Students / parents sign up on modivs-student-signup.html -->
+<!-- TUTOR SIGN UP (short): only name, email and password. The full profile is completed later from the tutor dashboard (see the #tutor-profile wizard below). -->
+<main id="tjoin" class="auth hide">
+ <section class="auth-form">
+  <div class="tsu" style="max-width:520px">
+   <a href="modivs-home.html" class="tsu-logo"><img src="logo.png" alt="Modiv’s Education"></a>
+   <h1>Become a Modivian Tutor</h1>
+   <p class="sub">Create your free account in a minute. You’ll complete your tutor profile from your dashboard.</p>
+   <div class="tsu-box">
+    <form id="tjForm" novalidate>
+     <label for="jName">Full name <span class="req" aria-hidden="true">*</span></label>
+     <input id="jName" type="text" autocomplete="name" maxlength="60" placeholder="Enter your full name">
+     <label for="jEmail">Email address <span class="req" aria-hidden="true">*</span> <span class="hint">you’ll use this to log in</span></label>
+     <input id="jEmail" type="email" autocomplete="email" placeholder="Enter your email address">
+     <div class="tsu-two">
+      <div><label for="jPass">Create password <span class="req" aria-hidden="true">*</span></label><input id="jPass" type="password" autocomplete="new-password" placeholder="At least 8 characters"></div>
+      <div><label for="jPass2">Confirm password <span class="req" aria-hidden="true">*</span></label><input id="jPass2" type="password" autocomplete="new-password" placeholder="Re-enter password"></div>
+     </div>
+     <div class="msg" id="jMsg" role="alert"></div>
+     <button class="tsu-go" type="submit" id="jGo">Create tutor account <span aria-hidden="true">→</span></button>
+     <p class="tsu-sub" style="text-align:center;margin-top:12px">By signing up you agree to our <a href="modivs-terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="modivs-privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>.</p>
+    </form>
+    <div id="jGoogle">
+     <div class="or"><span>or</span></div>
+     <button type="button" class="gbtn" id="googleJoin"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>Sign up with Google</span></button>
+    </div>
+   </div>
+   <p class="switch">Already have an account? <a data-go="login" role="button" tabindex="0">Log in</a> · <a href="modivs-signup.html">Choose a different role</a></p>
+  </div>
+ </section>
+</main>
+
+<!-- TUTOR PROFILE: 5-step wizard (reached from the tutor dashboard after sign-up). Original note: the single tutor registration page (5-step wizard: account, profile, qualifications, fees, documents). Students / parents sign up on modivs-student-signup.html -->
 <main id="signup" class="auth hide">
  <section class="auth-form">
   <div class="tsu">
    <a href="modivs-home.html" class="tsu-logo"><img src="logo.png" alt="Modiv’s Education"></a>
-   <h1>Become a Modivian Tutor</h1>
-   <p class="sub">Join thousands of tutors and start teaching with Modiv’s Education.</p>
+   <h1>Complete your tutor profile</h1>
+   <p class="sub">Add your details so our team can verify you and students can find you.</p>
    <div class="tsu-grid">
     <ol class="tsu-steps" id="tsuSteps" aria-label="Sign up progress">
      <li><i>1</i><div><b>Basic Details</b><small>Personal information</small></div></li>
@@ -228,7 +260,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
      </div>
     </div>
    </div>
-   <p class="switch">Already have an account? <a data-go="login" role="button" tabindex="0">Log in</a> · <a href="modivs-signup.html">Choose a different role</a></p>
+   <p class="switch"><a href="modivs-tutor-dashboard.html">← Back to dashboard</a> · you can finish your profile later</p>
   </div>
  </section>
 </main>
@@ -253,7 +285,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   var current = null, toastTimer;
   var loginMode = 'student'; // 'student' or 'tutor'
   var $ = function(id){ return document.getElementById(id); };
-  var views = ['login','signup','menu'];
+  var views = ['login','tjoin','signup','menu'];
 
   var MENU = {
     'Tutor': {
@@ -386,7 +418,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 
   function show(name){
     views.forEach(function(v){ if($(v)) $(v).classList.toggle('hide', v!==name); });
-    if(location.hash!=='#'+name) history.replaceState(null,'','#'+name);
+    var hh = ({tjoin:'tutor-signup', signup:'tutor-profile'})[name] || name;
+    if(location.hash!=='#'+hh) history.replaceState(null,'','#'+hh);
     window.scrollTo(0,0);
   }
 
@@ -577,8 +610,9 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           }
           var actualRole = res.role === 'tutor' ? 'Tutor' : (res.role === 'student' ? 'Student / Parent' : (res.role === 'admin' ? 'Admin' : 'General User'));
           localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: actualRole, roleKey: res.role }));
+          if(actualRole === 'Tutor' && res.isNew) ensureTutorStub(mail, name);
           toast((res.isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
-          var dest = actualRole === 'Tutor' ? (res.isNew ? 'modivs-education.html#tutor-signup' : 'modivs-tutor-dashboard.html')
+          var dest = actualRole === 'Tutor' ? 'modivs-tutor-dashboard.html'
                                             : (actualRole === 'Student / Parent' ? (res.isNew ? 'modivs-student-registration.html' : 'modivs-student-dashboard.html') : 'modivs-home.html');
           setTimeout(function(){ window.location.href = dest; }, 500);
         },
@@ -675,7 +709,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       }
       localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: actualRole }));
       toast((isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
-      var dest = actualRole === 'Tutor' ? (isNew ? 'modivs-education.html#tutor-signup' : 'modivs-tutor-dashboard.html')
+      var dest = actualRole === 'Tutor' ? 'modivs-tutor-dashboard.html'
                                         : (isNew ? 'modivs-student-registration.html' : 'modivs-student-dashboard.html');
       setTimeout(function(){ window.location.href = dest; }, 500);
     }).catch(function(err){
@@ -733,7 +767,104 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     }
   });
 
-  // ===== TUTOR SIGN UP: one 5-step wizard (account + full tutor profile + documents) =====
+  // ===== TUTOR SIGN UP (short): name + email + password, then straight to the dashboard =====
+  // Creates an "incomplete" tutor record; the tutor completes the profile from the dashboard (#tutor-profile wizard).
+  function ensureTutorStub(mail, name){
+    try{
+      var db = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
+      if(!db.some(function(t){ return String(t.email).toLowerCase() === mail; })){
+        db.push({ id: 't_user_' + mail.replace(/[^a-z0-9]/gi, '_'), name: name, email: mail, phone: '—', city: '—',
+          headline: 'Account registered. Profile setup incomplete.', qual: 'Profile setup pending', years: 0, subs: ['General'], levels: ['Secondary'],
+          fee: 0, modes: ['Online'], langs: ['English'], idType: 'Pending upload', idFile: '', cert: '', sent: 'Registration completed',
+          status: 'incomplete', submitted_at: new Date().toISOString(), is_demo: false });
+        localStorage.setItem('modivs_tutors_db', JSON.stringify(db));
+      }
+      var wm = JSON.parse(localStorage.getItem('modivs_tutor_welcome') || '{}');
+      if(!wm[mail]){ wm[mail] = { created: new Date().toISOString(), approved: null }; localStorage.setItem('modivs_tutor_welcome', JSON.stringify(wm)); }
+      try{ sessionStorage.removeItem('modivs_welcome_closed'); }catch(x){}
+    }catch(e){}
+  }
+  (function(){
+    var form = $('tjForm'); if(!form) return;
+    function jfail(id, text){ var e = $(id); if(e){ bad(e, true); try{ e.focus(); }catch(x){} } $('jMsg').textContent = text; return false; }
+    function showJoinDone(name){
+      $('jGoogle').style.display = 'none';
+      form.innerHTML = '<div class="tsu-done" style="text-align:center"><div style="font-size:3rem;margin-bottom:8px">🎉</div><h2 style="font-size:1.5rem">Account created!</h2>' +
+        '<p class="tsu-sub" style="font-size:1rem">Welcome, <b>' + esc(name.split(' ')[0]) + '</b>! Next, complete your tutor profile from your dashboard so we can verify you and students can find you.</p>' +
+        '<a href="modivs-tutor-dashboard.html" class="tsu-go" style="text-decoration:none;display:inline-flex;width:auto;padding:13px 26px">Go to my dashboard →</a></div>';
+      setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 1800);
+    }
+    form.addEventListener('input', function(e){ if(e.target && e.target.classList) e.target.classList.remove('bad'); });
+    form.addEventListener('submit', function(e){
+      e.preventDefault();
+      var msg = $('jMsg'), btn = $('jGo');
+      msg.textContent = ''; form.querySelectorAll('.bad').forEach(function(x){ x.classList.remove('bad'); });
+      var name = $('jName').value.trim().replace(/\s+/g, ' '), mail = $('jEmail').value.trim().toLowerCase(), p1 = $('jPass').value, p2 = $('jPass2').value;
+      if(name.length < 2) return jfail('jName', 'Enter your full name.');
+      if(!emailOk(mail)) return jfail('jEmail', 'Enter a valid email address.');
+      if(p1.length < 8) return jfail('jPass', 'Use at least 8 characters for your password.');
+      if(p1 !== p2) return jfail('jPass2', 'Passwords do not match.');
+      btn.disabled = true;
+      function fail(t){ btn.disabled = false; msg.textContent = t; }
+      function finish(uid){
+        function done(){
+          try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: uid || '', role: 'Tutor', roleKey: 'tutor', provider: 'password' })); }catch(x){}
+          ensureTutorStub(mail, name);
+          toast('Tutor account created!');
+          showJoinDone(name);
+        }
+        if(window.ModivsAuthUnique){
+          ModivsAuthUnique.registerAccountAtomic({ email: mail, role: 'tutor', name: name, uid: uid || '', provider: 'password' }).then(done).catch(function(err){ console.warn(err); done(); });
+        } else {
+          try{
+            if(!users.some(function(u){ return String(u.email).toLowerCase() === mail; })) users.push({ name: name, email: mail, uid: uid || '', role: 'Tutor', roleKey: 'tutor' });
+            localStorage.setItem('modivs_users', JSON.stringify(users));
+          }catch(x){}
+          done();
+        }
+      }
+      function create(){
+        var fb2 = window.EducationBFirebase;
+        if(!(fb2 && fb2.auth)){ finish(''); return; }
+        function go(){
+          fb2.auth.createUserWithEmailAndPassword(mail, p1).then(function(r){
+            try{ r.user.updateProfile({ displayName: name }); }catch(x){}
+            finish(r.user.uid);
+          }).catch(function(err){
+            var c = err && err.code;
+            if(c === 'auth/email-already-in-use'){ bad($('jEmail'), true); fail('This email already has an account. Log in instead.'); }
+            else if(c === 'auth/weak-password'){ bad($('jPass'), true); fail('Choose a stronger password (at least 8 characters).'); }
+            else fail('Account creation failed. Check your connection and try again.');
+            console.error('Firebase sign-up failed', err);
+          });
+        }
+        if(fb2.auth.currentUser){ fb2.auth.signOut().then(go, go); } else go();
+      }
+      if(window.ModivsAuthUnique){
+        ModivsAuthUnique.checkEmailExists(mail).then(function(res){
+          if(res && res.exists){ btn.disabled = false; ModivsAuthUnique.renderDuplicateNotice(msg, res.role, 'tutor'); return; }
+          create();
+        }).catch(create);
+      } else create();
+    });
+    if($('googleJoin')) $('googleJoin').addEventListener('click', function(){
+      var msg = $('jMsg'); msg.innerHTML = '';
+      if(!window.ModivsAuthUnique){ googleAuth('tutor', msg, this); return; }
+      ModivsAuthUnique.continueWithGoogle('tutor', {
+        isLogin: false, button: this, noticeContainer: msg,
+        onSuccess: function(res){
+          var u = res.user || {}, mail = String(u.email || '').toLowerCase(), name = u.displayName || mail.split('@')[0];
+          try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: 'Tutor', roleKey: 'tutor', provider: 'google' })); }catch(x){}
+          if(res.isNew) ensureTutorStub(mail, name);
+          toast((res.isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
+          setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 500);
+        },
+        onError: function(err){ if(msg && !msg.innerHTML) msg.textContent = err; }
+      });
+    });
+  })();
+
+  // ===== TUTOR PROFILE: 5-step wizard (full tutor profile + documents), opened from the tutor dashboard =====
   var LANGS = ['English','Hindi','Punjabi','Urdu','Other'];
   var BOARDS = ['CBSE','ICSE','PSEB','IB','IGCSE','State board'];
   var TSU_LEVELS = ['Primary (1–5)','Middle (6–8)','Secondary (9–10)','Senior secondary (11–12)','College / University','Competitive exams'];
@@ -886,7 +1017,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     renderSteps();
     $('signForm').innerHTML = '<p class="tsu-kicker">Step '+W.step+' of 5</p><h2>'+t[0]+'</h2><p class="tsu-sub">'+t[1]+' Fields marked <span class="req">*</span> are required.</p>' + stepBody() +
       '<div class="msg" id="sMsg" role="alert"></div>' +
-      '<button class="tsu-go" type="submit" id="tsuNext">'+(last ? 'Submit &amp; Create account' : 'Save &amp; Continue')+' <span aria-hidden="true">→</span></button>' +
+      '<button class="tsu-go" type="submit" id="tsuNext">'+(last ? 'Submit for verification' : 'Save &amp; Continue')+' <span aria-hidden="true">→</span></button>' +
       (W.step > 1 ? '<button class="tsu-back" type="button" data-act="back">← Back</button>' : '');
     $('tsuGoogle').style.display = (W.step === 1 && !existingAcct()) ? '' : 'none';
     if(W.step === 1 && window.ModivsLocation){
@@ -1090,7 +1221,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 
   function showDone(){
     W.step = 6; renderSteps(); $('tsuGoogle').style.display = 'none';
-    sf.innerHTML = '<div class="tsu-done"><div style="font-size:3rem;margin-bottom:8px">🎉</div><h2 style="font-size:1.6rem">Tutor account created!</h2>' +
+    sf.innerHTML = '<div class="tsu-done"><div style="font-size:3rem;margin-bottom:8px">🎉</div><h2 style="font-size:1.6rem">Profile submitted!</h2>' +
       '<p class="tsu-sub" style="font-size:1rem">Thanks, <b>'+esc(W.name.split(' ')[0])+'</b>! Your profile has been submitted for admin verification.</p>' +
       '<p><span class="tsu-status">Status: Pending verification</span></p>' +
       '<a href="modivs-tutor-dashboard.html" class="tsu-go" style="text-decoration:none;display:inline-flex;width:auto;padding:13px 26px">Open Tutor Dashboard →</a>' +
@@ -1133,10 +1264,10 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           phone: W.phone,
           uid: uid,
           location: locData,
-          provider: W.pass ? 'password' : 'google'
+          provider: W.pass ? 'password' : ((existingAcct() && existingAcct().provider) || 'google')
         }).catch(function(e){ console.warn(e); });
       }
-      try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: uid || '', role: 'Tutor', roleKey: 'tutor' })); }catch(err){}
+      try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: uid || '', role: 'Tutor', roleKey: 'tutor', provider: W.pass ? 'password' : ((existingAcct() && existingAcct().provider) || 'google') })); }catch(err){}
 
       // verification documents: stored apart from the public tutor record (admin + this tutor only)
       var docsSaved = true;
@@ -1187,7 +1318,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         localStorage.setItem('modivs_audit_logs', JSON.stringify(logs.slice(0, 50)));
       }catch(err){ console.error('Storage error:', err); }
 
-      toast('Tutor account created!');
+      toast('Profile submitted for verification!');
       showDone();
       setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 2200);
     }
@@ -1235,8 +1366,11 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       var t = $('loginTitle'), s = $('loginSub');
       if(t) t.textContent = 'Admin Log in';
       if(s) s.textContent = 'Log in with your administrator email or Google account.';
-    } else if(hash === '#tutor-signup'){
-      show('signup');
+    } else if(hash === '#tutor-signup' || hash === '#tjoin'){
+      show('tjoin');
+    } else if(hash === '#tutor-profile'){
+      // full profile wizard: only for a tutor who already has an account
+      if(existingAcct()) show('signup'); else show('tjoin');
     } else if(hash === '#signup'){
       // one Sign up entry point: pick student/parent or tutor there
       window.location.replace('modivs-signup.html');
@@ -1251,14 +1385,14 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 })();
 </script>
 <!-- mv-footer -->
-<footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
-.mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
-.mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
-.mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
-.mv-foot a[aria-current=page]{color:#EBB92E}
-.mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
-</style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<footer class="mv-foot">
+  <div class="cols">
+   <div><a class="brand" href="index.html" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;margin-bottom:12px;"><img src="logo.png" alt="Modiv’s Education" style="height:54px;display:block;mix-blend-mode:normal;"></a><p style="color:#c9cde0;max-width:320px;margin:0">Connecting tutors with students and parents, one class at a time.</p></div>
+   <div class="mv-foot-locs"><h4>Locations</h4><ul><li><a href="modivs-tutors.html?city=Ludhiana" title="Find tutors in Ludhiana"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Ludhiana</a></li><li><a href="modivs-tutors.html?city=Chandigarh" title="Find tutors in Chandigarh"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Chandigarh</a></li><li><a href="modivs-tutors.html?city=Mohali" title="Find tutors in Mohali"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Mohali</a></li><li><a href="modivs-tutors.html?city=Panchkula" title="Find tutors in Panchkula"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Panchkula</a></li><li><a href="modivs-tutors.html?city=Patiala" title="Find tutors in Patiala"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Patiala</a></li><li><a href="modivs-tutors.html?city=Jalandhar" title="Find tutors in Jalandhar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Jalandhar</a></li><li><a href="modivs-tutors.html?city=Amritsar" title="Find tutors in Amritsar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Amritsar</a></li><li><a href="modivs-tutors.html?city=Delhi" title="Find tutors in Delhi NCR"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Delhi NCR</a></li></ul></div>
+  </div>
+  <nav class="mv-foot-legal" aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav>
+  <p class="mv-foot-copy">© 2026 Modiv’s Education. All rights reserved.</p>
+</footer>
 <script src="modivs-menu.js" defer></script>
 <script src="modivs-avatars.js"></script>
 <script src="modivs-session-ui.js" defer></script>

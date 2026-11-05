@@ -175,11 +175,13 @@ dialog h2{margin:0 0 4px}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
 <script src="firebase-config.js"></script>
 <script src="firebase-sync.js"></script>
+<script src="modivs-wallet.js"></script>
 <script src="firebase-chat.js"></script>
 <script src="modivs-blogs.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
 <link rel="stylesheet" href="modivs-dashboard.css">
+<link rel="stylesheet" href="modivs-footer.css">
 </head>
 <body class="dash">
 <script src="modivs-dashboard.js"></script>
@@ -389,10 +391,11 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
 (function(){
 var $=function(id){return document.getElementById(id)};
 function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-var state={view:'dash',coins:30,filter:'new',q:'',tT:null};
+var state={view:'dash',coins:0,filter:'new',q:'',tT:null};
 var COST=10;
 // Set of lead IDs this tutor has already unlocked (fetched from Firestore)
 var _unlockedSet = {};
+var _unlocking = {};
 
 function loadTutorLeads(){
   var raw = [];
@@ -422,6 +425,7 @@ function loadTutorLeads(){
       email: item.email || '',
       status: st,
       unlocked: isUnlocked,
+      free: !!item.free,
       sent: item.sent || 'Recently',
       registered_at: item.registered_at || '',
       who: item.by || (item.parent_name ? 'Parent' : 'Student'),
@@ -457,7 +461,7 @@ window.addEventListener('storage', function(e){
     try { render(); } catch(err){}
   }
 });
-var hist=[{t:'Joined bonus',d:'Oct 20',a:30}];
+var hist=[];
 var classes=[];
 var PACKS=[[50,'₹500'],[120,'₹1,000'],[300,'₹2,000']];
 var MEM_PLANS=[
@@ -474,7 +478,7 @@ function currentTutorEmail(){
 function profileCompletion(t){
  function has(a){return Array.isArray(a)&&a.filter(Boolean).length>0}
  function txt(x){return typeof x==='string'&&x.trim()!==''&&x!=='—'&&x!=='Pending upload'}
- if(t.status==='incomplete')return {pct:10,missing:['Complete your tutor profile (all 7 steps)']};
+ if(t.status==='incomplete')return {pct:10,missing:['profile photo','mobile and WhatsApp numbers','city and area','teaching profile (headline, subjects, classes)','qualifications and experience','fees and availability','ID and qualification certificate']};
  var q=t.quals&&t.quals[0]||{};
  var subj=(t.subjects&&t.subjects.length?t.subjects:t.subs)||[];
  var checks=[
@@ -512,6 +516,7 @@ function toast(t){var e=$('toast');e.textContent=t;e.classList.remove('hide');cl
 function n(s){return leads.filter(function(l){return l.status===s}).length}
 function newLeads(){return leads.filter(function(l){return !l.unlocked&&l.status==='new'})}
 function pendingReq(){return leads.filter(function(l){return l.unlocked&&l.status==='new'}).length}
+function freeLeads(){return leads.filter(function(l){return l.free&&!l.unlocked&&l.status==='new'})}
 function unlockedCount(){return leads.filter(function(l){return l.unlocked}).length}
 
 function openRecharge(){$('dlg').showModal()}
@@ -614,105 +619,98 @@ function renderMembershipPacks(){
   });
 }
 
-function recharge(c,price){
+function recharge(c,price){ openCoinPayment(c,price); }
+
+function payCoins(p){
  var em = currentTutorEmail();
- if(window.ModivsChat && em){
-  var res = ModivsChat.addTutorCoins(em, c, 'Recharged ' + c + ' coins (' + price + ')');
-  state.coins = res.balance;
- } else {
-  state.coins += c;
- }
- hist.unshift({t:'Recharged '+c+' coins ('+price+')',d:'Today',a:c});
- $('dlg').close();
- toast(c+' coins added.');
- render();
+ if(!window.ModivsWallet || !em) return Promise.reject(new Error('Wallet unavailable. Please log in again.'));
+ var orderId = 'MOD_' + Date.now().toString(36).toUpperCase();
+ return ModivsWallet.purchaseCoins(em, p.coins, p.price, orderId).then(function(res){ state.coins = res.balance; return res; });
+}
+
+function openCoinPayment(coins, price){
+  currentPendingPayment = { kind:'coins', coins:coins, price:price };
+  try { $('dlg').close(); } catch(e){}
+  $('payPlanName').textContent = coins + ' Coins';
+  $('payPlanPrice').textContent = price;
+  $('payPlanValidity').textContent = 'Coins never expire · Credited instantly after payment';
+  $('payBonusCoins').textContent = '+' + coins + ' coins to your wallet';
+  $('payDateRange').textContent = 'Credited today';
+  var btn = $('payConfirmBtn');
+  btn.disabled = false;
+  btn.textContent = 'Pay ' + price + ' & Add Coins';
+  $('payStatusArea').style.display = 'none';
+  $('payDlg').showModal();
 }
 
 function activateMembership(planName, days, price, bonusCoins, isUpgrade){
  var em = currentTutorEmail();
- if(window.ModivsChat && em){
-  ModivsChat.setTutorMembership(em, planName, days, 'active', false, price);
+ if(!window.ModivsWallet || !em){toast('Wallet unavailable. Please log in again.');return Promise.reject(new Error('no wallet'))}
+ var cur = ModivsChat.getTutorMembership(em);
+ var extend = cur.isValid && cur.planName === planName;
+ var orderId = 'MOD_' + Date.now().toString(36).toUpperCase();
+ return ModivsWallet.setMembership(em, {planName:planName, days:days, price:price, bonusCoins:bonusCoins, extend:extend, orderId:orderId}).then(function(r){
+  state.coins = r.balance;
+  if(window.ModivsChat) ModivsChat.onTutorMembershipPurchased(em);
   if(window.mvPaintTier) window.mvPaintTier();
-  if(bonusCoins > 0){
-   var res = ModivsChat.addTutorCoins(em, bonusCoins, 'Bonus coins for ' + planName + ' purchase (' + price + ')');
-   state.coins = res.balance;
-  }
-  ModivsChat.onTutorMembershipPurchased(em);
- }
- hist.unshift({t:(isUpgrade ? 'Upgraded to ' : 'Activated ') + planName + ' (' + price + ')', d:'Today', a:bonusCoins});
- toast(planName + ' activated for ' + days + ' days! Sent demo class contact message to student(s).');
- render();
+  toast(planName + ' activated for ' + days + ' days!');
+  render();
+  return r;
+ });
 }
 
 function unlock(l){
  var em = currentTutorEmail();
- var lid = String(l.id || '').replace(/[\/\\#?]/g,'_').trim();
-
- // One-time unlock guard: if already in Firestore, show details without charging
+ var lid = String(l.id || l.name || '').replace(/[\/\\#?]/g,'_').trim();
  if(_unlockedSet[lid] || l.unlocked){
   l.unlocked = true;
   toast('Already unlocked: ' + l.name + '. No coins deducted.');
   render();
   return;
  }
+ if(!window.ModivsWallet || !em){toast('Wallet unavailable. Please log in again.');return}
+ if(_unlocking[lid]) return;
+ _unlocking[lid] = true;
 
- if(window.ModivsChat && em){
-  var mem = ModivsChat.getTutorMembership(em);
-  if(!mem.isValid){
-   toast('Active membership plan required to unlock leads.');
-   openMembershipModal();
-   return;
-  }
-  var curCoins = ModivsChat.getTutorCoins(em);
-  if(curCoins < COST){
-   toast('Not enough coins. Recharge to unlock this lead.');
-   openRecharge();
-   return;
-  }
-  // Deduct coins
-  var res = ModivsChat.addTutorCoins(em, -COST, 'Unlocked lead ' + l.name);
+ // Atomic Firestore transaction: checks membership + balance, deducts coins, writes unlock record + history
+ var cost = l.free ? 0 : COST;
+ (l.free ? ModivsWallet.unlockFreeLead(em, lid, l.name) : ModivsWallet.unlockLead(em, lid, l.name, COST)).then(function(res){
+  _unlocking[lid] = false;
   state.coins = res.balance;
- } else {
-  if(state.coins < COST){toast('Not enough coins. Recharge to unlock this lead.');openRecharge();return}
-  state.coins -= COST;
+  _unlockedSet[lid] = true;
+  l.unlocked = true;
+  l.status = l.status || 'new';
+  if(window.ModivsFirebaseSync){
+   // keeps the legacy relationships record in step (idempotent, no coin changes)
+   try{ window.ModivsFirebaseSync.saveUnlock(em, l.id || l.name, cost).catch(function(){}); }catch(e){}
+  }
+  syncConversationUnlock(l, em);
+  toast(res.already ? ('Already unlocked: ' + l.name + '. No coins deducted.') : (l.free ? ('Unlocked '+l.name+'. This is a free lead, no coins used.') : ('Unlocked '+l.name+'. '+COST+' coins used. Balance: '+res.balance)));
+  render();
+ }).catch(function(err){
+  _unlocking[lid] = false;
+  if(err && err.reason === 'membership_invalid'){toast('Active membership plan required to unlock leads.');gotoView('buymem');return}
+  if(err && err.reason === 'insufficient_coins'){toast('Not enough coins. Buy a coin pack to unlock this lead.');gotoView('buycoins');return}
+  console.warn(err); toast('Could not unlock right now. No coins were deducted. Please try again.');
+ });
+}
+
+function syncConversationUnlock(l, em){
+ if(!window.ModivsChat || !em) return;
+ var ownerMail = l.owner_email || l.email || l.studentEmail || '';
+ var ownerRole = l.created_by_role || (l.by && l.by.toLowerCase().indexOf('parent') >= 0 ? 'parent' : 'student');
+ var conv = ModivsChat.ensure({id: l.student_id || l.id, name: l.name, email: ownerMail, created_by_role: ownerRole}, window.MY_TUTOR || { email: em }, l);
+ if(conv && !conv.unlocked){
+  conv.unlocked = true;
+  conv.unlockedAt = new Date().toISOString();
+  conv.unlockedBy = em;
+  conv.status = 'unlocked';
+  var allConvs = ModivsChat.conversations();
+  for(var ci=0; ci<allConvs.length; ci++){
+   if(allConvs[ci].id === conv.id){ allConvs[ci] = conv; break; }
+  }
+  try { localStorage.setItem('modivs_chat_conversations', JSON.stringify(allConvs)); } catch(e){}
  }
-
- // Mark unlocked locally
- _unlockedSet[lid] = true;
- l.unlocked = true;
- l.status = 'new'; // pending response
-
- // Persist to Firestore (idempotent)
- if(window.ModivsFirebaseSync && em){
-  window.ModivsFirebaseSync.saveUnlock(em, l.id || l.name, COST).catch(function(){});
- }
-
- // Sync conversation unlock state
- if(window.ModivsChat && em){
-   var ownerMail = l.owner_email || l.email || l.studentEmail || '';
-   var ownerRole = l.created_by_role || (l.by && l.by.toLowerCase().indexOf('parent') >= 0 ? 'parent' : 'student');
-   var conv = ModivsChat.ensure({
-     id: l.student_id || l.id,
-     name: l.name,
-     email: ownerMail,
-     created_by_role: ownerRole
-   }, window.MY_TUTOR || { email: em }, l);
-   if(conv && !conv.unlocked){
-     conv.unlocked = true;
-     conv.unlockedAt = new Date().toISOString();
-     conv.unlockedBy = em;
-     conv.status = 'unlocked';
-     var allConvs = ModivsChat.conversations();
-     for(var ci=0; ci<allConvs.length; ci++){
-       if(allConvs[ci].id === conv.id){ allConvs[ci] = conv; break; }
-     }
-     try { localStorage.setItem('modivs_chat_conversations', JSON.stringify(allConvs)); } catch(e){}
-   }
- }
-
- hist.unshift({t:'Unlocked '+l.name,d:'Today',a:-COST});
- toast('Unlocked '+l.name+'. Contact details are now visible.');
- render();
 }
 
 function nav(){
@@ -720,7 +718,7 @@ function nav(){
  try { currentChatUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(e){}
  var chatUnread = window.ModivsChat ? ModivsChat.conversations().reduce(function(total,c){ return total + ModivsChat.unread(c, currentChatUser && currentChatUser.email); }, 0) : 0;
  // [view, icon, label, badge]
- var N=[['dash','dash','Dashboard'],['profile','user','My Profile'],['leads','target','Student Leads',newLeads().length],['classes','cal','My Classes'],['availability','clock','Availability'],['credits','coin','Earnings / Coins'],['chat','msg','Messages',chatUnread],['reviews','star','Reviews'],['help','help','Help & Support']];
+ var N=[['dash','dash','Dashboard'],['profile','user','My Profile'],['leads','target','Student Leads',newLeads().length],['classes','cal','My Classes'],['availability','clock','Availability'],['credits','coin','Earnings / Coins'],['buymem','crown','Buy Membership'],['buycoins','coin','Buy Coins'],['purchases','hist','Purchase History'],['chat','msg','Messages',chatUnread],['reviews','star','Reviews'],['help','help','Help & Support']];
  var M=[['requests','inbox','Requests',pendingReq()],['history','hist','History'],['membership','crown','Membership'],['blogs','edit','My Blogs'],['settings','gear','Settings']];
  var b=$('nav');b.innerHTML='';
  function add(x,small){
@@ -760,9 +758,10 @@ function leadCard(l){
  var badgeLabel=l.unlocked?(LABEL[l.status]||'Accepted'):'Locked';
  var h=el('h3','',title+' ');h.appendChild(el('span',badgeCls,badgeLabel));
  // Persistent "Unlocked" marker — visible even after refresh
+ if(l.free&&!l.unlocked){var fb=el('span','badge accepted','🎁 Free');fb.style.marginLeft='6px';h.appendChild(fb);}
  if(l.unlocked){var ub=el('span','badge accepted','✓ Unlocked');ub.style.marginLeft='6px';h.appendChild(ub);}
  L.appendChild(h);
- L.appendChild(el('p','meta',(l.unlocked?l.who+' · ':'')+l.cls+' · '+l.board+' · '+l.city+' · '+l.time));
+ L.appendChild(el('p','meta',l.cls+' · '+l.board+' · '+l.city+' · '+l.time));
  var t=el('div','tags');l.subs.concat([l.mode,'Budget '+l.budget,l.when]).forEach(function(x){t.appendChild(el('span','',x))});L.appendChild(t);
  if(l.unlocked){L.appendChild(el('p','note',l.notes||l.note));L.appendChild(el('p','contact','Contact: '+l.phone))}
  else L.appendChild(el('p','lock','Unlock to see the full name, contact number and notes.'));
@@ -774,7 +773,7 @@ function leadCard(l){
    }
    toast(m);render();
  }
- if(!l.unlocked)btn('Unlock · '+COST+' coins','y',function(){unlock(l)});
+ if(!l.unlocked)btn(l.free?'Unlock · Free':'Unlock · '+COST+' coins','y',function(){unlock(l)});
  else {
    if(l.status==='new'){btn('Accept','y',function(){set('accepted','Accepted '+l.name+'.')});btn('Offer demo','',function(){set('demo','Demo offered to '+l.name+'.')});btn('Decline','o',function(){set('declined','Declined '+l.name+'.')})}
    else if(l.status==='demo'){btn('Accept','y',function(){set('accepted','Accepted '+l.name+'.')});btn('Decline','o',function(){set('declined','Declined '+l.name+'.')})}
@@ -902,15 +901,15 @@ function vReviews(v){
  box.appendChild(el('p','empty','No reviews yet. Reviews will appear here once students rate your classes.'));v.appendChild(box);
 }
 function vLeads(v){
- v.appendChild(el('h1','','New Leads'));v.appendChild(el('p','sub','Unlock a lead for '+COST+' coins to see contact details.'));
+ v.appendChild(el('h1','','New Leads'));v.appendChild(el('p','sub','Unlock a lead for '+COST+' coins to see contact details. Free leads cost no coins.'));
  var box=el('section','box'),hd=el('div','head');hd.appendChild(el('h2','','Student leads'));
  var q=document.createElement('input');q.type='search';q.placeholder='Search name or subject';q.setAttribute('aria-label','Search leads');q.value=state.q;
  hd.appendChild(q);box.appendChild(hd);
  var tb=el('div','tools');tb.style.marginBottom='14px';
- [['new','New ('+newLeads().length+')'],['unlocked','Unlocked ('+unlockedCount()+')'],['all','All ('+leads.length+')']].forEach(function(x){var b=el('button','tab',x[1]);b.type='button';b.setAttribute('aria-pressed',state.filter===x[0]);b.addEventListener('click',function(){state.filter=x[0];render()});tb.appendChild(b)});
+ [['all','All ('+leads.length+')'],['new','New ('+newLeads().length+')'],['free','Free ('+freeLeads().length+')'],['unlocked','Unlocked ('+unlockedCount()+')']].forEach(function(x){var b=el('button','tab',x[1]);b.type='button';b.setAttribute('aria-pressed',state.filter===x[0]);b.addEventListener('click',function(){state.filter=x[0];render()});tb.appendChild(b)});
  box.appendChild(tb);var list=el('div');box.appendChild(list);v.appendChild(box);
  function fill(){list.innerHTML='';var s=state.q.toLowerCase();
-  var r=leads.filter(function(l){var ok=state.filter==='all'||(state.filter==='new'?!l.unlocked&&l.status==='new':l.unlocked);var hay=((l.unlocked?l.name:'')+' '+l.subs.join(' ')).toLowerCase();return ok&&(!s||hay.indexOf(s)>-1)});
+  var r=leads.filter(function(l){var ok=state.filter==='all'||(state.filter==='new'?!l.unlocked&&l.status==='new':(state.filter==='free'?l.free&&!l.unlocked&&l.status==='new':l.unlocked));var hay=((l.unlocked?l.name:'')+' '+l.subs.join(' ')).toLowerCase();return ok&&(!s||hay.indexOf(s)>-1)});
   if(!r.length)list.appendChild(el('p','empty','No leads match.'));r.forEach(function(l){list.appendChild(leadCard(l))})}
  q.addEventListener('input',function(e){state.q=e.target.value.trim();fill()});fill()
 }
@@ -1104,6 +1103,91 @@ function vCredits(v){
    });
  }
  v.appendChild(h);
+}
+
+function memPlanGrid(mem){
+ var g=el('div','packs');
+ MEM_PLANS.forEach(function(p){
+  var b=el('button','pack');b.type='button';b.style.textAlign='left';
+  var isCurrent=mem.isValid&&mem.planName===p[0];
+  var order=['Standard Plan','Professional Plan','Premium Plan'];
+  var isHigher=mem.isValid&&!isCurrent&&order.indexOf(p[0])>order.indexOf(mem.planName);
+  var label=isCurrent?('Extend (+'+p[1]+' days)'):(isHigher?'Upgrade plan':(mem.status==='expired'?'Re-purchase plan':'Select & pay'));
+  b.innerHTML='<b style="font-size:1.15rem">'+p[0]+'</b><span style="font-size:1.35rem;font-weight:800;color:var(--navy);display:block;margin:4px 0">'+p[2]+'</span><small>'+p[4]+'</small><div style="margin-top:12px"><span class="badge" style="background:var(--navy);color:var(--cream);padding:6px 12px;font-size:.8rem">'+label+'</span></div>';
+  b.addEventListener('click',function(){openOnlinePayment(p[0],p[1],p[2],p[3],isHigher)});
+  g.appendChild(b);
+ });
+ return g;
+}
+
+function vBuyMembership(v){
+ var em=currentTutorEmail();
+ var mem=ModivsChat.getTutorMembership(em);
+ v.appendChild(el('h1','','Buy Membership'));
+ v.appendChild(el('p','sub','A membership plan is required to unlock student leads and start chats. Pick a plan below and pay online.'));
+ var s=el('div','stats');
+ s.appendChild(stat('Current Plan',mem.isValid?mem.planName:'No active plan',mem.isValid?'':'hi'));
+ s.appendChild(stat('Days Left',mem.isValid?mem.daysLeft:0));
+ s.appendChild(stat('Valid Until',mem.validUntil&&mem.isValid?new Date(mem.validUntil).toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}):'—'));
+ v.appendChild(s);
+ var box=el('section','box');box.appendChild(el('h2','','Choose a plan'));box.appendChild(memPlanGrid(mem));
+ box.appendChild(el('small','','Plans include bonus coins that are added to your wallet right after payment. Buying the same plan again extends your validity.'));
+ v.appendChild(box);
+}
+
+function vBuyCoins(v){
+ var em=currentTutorEmail();
+ var coins=ModivsChat.getTutorCoins(em),mem=ModivsChat.getTutorMembership(em);
+ v.appendChild(el('h1','','Buy Coins'));
+ v.appendChild(el('p','sub','Each student lead costs '+COST+' coins to unlock. Your balance is saved to your account and stays the same after refresh.'));
+ var s=el('div','stats');
+ s.appendChild(stat('Available Coins',coins,'hi'));
+ s.appendChild(stat('Leads You Can Unlock',Math.floor(coins/COST)));
+ s.appendChild(stat('Membership',mem.isValid?'Active ✓':'Not active',mem.isValid?'':'hi'));
+ v.appendChild(s);
+ var box=el('section','box');box.appendChild(el('h2','','Coin packs'));
+ var g=el('div','packs');
+ PACKS.forEach(function(p){
+  var b=el('button','pack');b.type='button';
+  b.appendChild(el('b','',p[0]+' coins'));b.appendChild(el('small','',p[1]));
+  b.appendChild(el('small','','≈ '+Math.floor(p[0]/COST)+' leads'));
+  b.addEventListener('click',function(){openCoinPayment(p[0],p[1])});
+  g.appendChild(b);
+ });
+ box.appendChild(g);v.appendChild(box);
+ if(!mem.isValid){
+  var w=el('div');w.style.cssText='background:#fef2f2;border:1.5px solid #fecaca;border-radius:10px;padding:12px 14px;margin-top:14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px';
+  w.innerHTML='<div><b style="color:#b91c1c">No active membership</b><p style="margin:2px 0 0;font-size:.85rem;color:#7f1d1d">Coins alone cannot unlock leads. You also need an active plan.</p></div>';
+  var bb=el('button','b y','Buy Membership');bb.type='button';bb.addEventListener('click',function(){gotoView('buymem')});w.appendChild(bb);
+  v.appendChild(w);
+ }
+}
+
+function vPurchases(v){
+ var em=currentTutorEmail();
+ v.appendChild(el('h1','','Purchase History'));
+ v.appendChild(el('p','sub','Every membership purchase, coin purchase and lead unlock, saved to your account.'));
+ var fmt=function(d){var x=new Date(d);return x.toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'})+' '+x.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})};
+ var mbox=el('section','box');mbox.appendChild(el('h2','','Membership purchases'));
+ var mh=ModivsChat.getMembershipHistory(em);
+ if(!mh.length)mbox.appendChild(el('p','empty','No membership purchases yet.'));
+ mh.slice(0,30).forEach(function(x){
+  var r=el('div','row'),d=el('div');
+  d.appendChild(el('p','',String(x.type||'activated').replace(/^./,function(c){return c.toUpperCase()})+' · '+(x.planName||'Plan')));
+  d.appendChild(el('small','',fmt(x.createdAt)+(x.validUntil?' · valid until '+new Date(x.validUntil).toLocaleDateString([],{day:'numeric',month:'short',year:'numeric'}):'')+(x.orderId?' · '+x.orderId:'')));
+  r.appendChild(d);r.appendChild(el('span','amt',x.price||''));mbox.appendChild(r);
+ });
+ v.appendChild(mbox);
+ var cbox=el('section','box');cbox.appendChild(el('h2','','Coin transactions'));
+ var tx=ModivsChat.getCoinTransactions(em);
+ if(!tx.length)cbox.appendChild(el('p','empty','No coin activity yet.'));
+ tx.slice(0,50).forEach(function(x){
+  var r=el('div','row'),d=el('div');
+  d.appendChild(el('p','',x.description||'Coin update'));
+  d.appendChild(el('small','',fmt(x.createdAt)+' · balance '+x.balanceAfter));
+  r.appendChild(d);r.appendChild(el('span','amt '+(x.amount>0?'pos':'neg'),(x.amount>0?'+':'')+x.amount+' coins'));cbox.appendChild(r);
+ });
+ v.appendChild(cbox);
 }
 
 function vRequests(v){
@@ -1353,7 +1437,7 @@ function vBlogs(v){
   wrap.appendChild(lb);
  }
 }
-function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
+function editProfile(){var t=window.MY_TUTOR||{};window.location.href=(t.status==='incomplete')?'modivs-education.html#tutor-profile':'modivs-tutor-edit-profile.html'}
 
 // Application status and tutor profile resolution
 (function initTutorProfile(){
@@ -1383,6 +1467,7 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
     tutor = {
       name: (authUser && authUser.name) || 'Tutor',
       headline: '',
+      email: email,
       city: '',
       fee: 0,
       status: 'incomplete'
@@ -1421,9 +1506,9 @@ function editProfile(){window.location.href='modivs-tutor-edit-profile.html'}
       if(pEl){ pEl.textContent = 'Profile Incomplete'; pEl.style.background = '#ecdfc6'; pEl.style.color = 'var(--navy)'; }
       b.innerHTML = '<div style="background:#fff9e6;border:1.5px solid var(--yellow);border-radius:14px;padding:16px 20px;margin-bottom:22px;display:flex;align-items:center;gap:14px;flex-wrap:wrap;">' +
         '<span style="font-size:1.8rem;" aria-hidden="true">📝</span>' +
-        '<div style="flex:1;min-width:240px;"><h3 style="margin:0;font-size:1.05rem;color:var(--navy);">Create your tutor profile to get started.</h3>' +
-        '<p style="margin:4px 0 0;font-size:0.88rem;color:var(--muted);">Complete all steps and submit your documents. Our team will verify your profile before it goes live.</p></div>' +
-        '<a href="modivs-education.html#tutor-signup" class="b y" style="text-decoration:none;font-size:0.9rem;">Create profile &rarr;</a>' +
+        '<div style="flex:1;min-width:240px;"><h3 style="margin:0;font-size:1.05rem;color:var(--navy);">Welcome! Complete your tutor profile to get started.</h3>' +
+        '<p style="margin:4px 0 0;font-size:0.88rem;color:var(--muted);">Add your photo, contact details, subjects, qualifications, fees and documents. Our team will verify your profile before it goes live.</p></div>' +
+        '<a href="modivs-education.html#tutor-profile" class="b y" style="text-decoration:none;font-size:0.9rem;">Complete my profile &rarr;</a>' +
       '</div>';
     } else if(tutor.status === 'pending'){
       if(pEl){ pEl.textContent = 'Pending Approval'; pEl.style.background = '#ecdfc6'; pEl.style.color = 'var(--navy)'; }
@@ -1507,7 +1592,7 @@ function render(){
  if(window.ModivsChat && em){ state.coins = ModivsChat.getTutorCoins(em); }
  nav();
  var v=$('view');v.innerHTML='';
- ({dash:vDash,leads:vLeads,requests:vRequests,history:vHistory,profile:vProfile,chat:vChat,blogs:vBlogs,credits:vCredits,membership:vMembership,settings:vSettings,classes:vClasses,availability:vAvailability,reviews:vReviews})[state.view](v)
+ ({dash:vDash,leads:vLeads,requests:vRequests,history:vHistory,profile:vProfile,chat:vChat,blogs:vBlogs,credits:vCredits,membership:vMembership,buymem:vBuyMembership,buycoins:vBuyCoins,purchases:vPurchases,settings:vSettings,classes:vClasses,availability:vAvailability,reviews:vReviews})[state.view](v)
 }
 
 // Setup Packs & Modal Listeners
@@ -1554,17 +1639,24 @@ if(payConfirm){
 
     setTimeout(function(){
       var p = currentPendingPayment;
-      activateMembership(p.planName, p.days, p.price, p.bonusCoins, p.isUpgrade);
-
-      st.style.background = '#dcfce7';
-      st.style.color = '#15803d';
-      st.textContent = '✓ Payment Successful! Order ID: MOD_' + Date.now().toString(36).toUpperCase();
-
-      setTimeout(function(){
-        $('payDlg').close();
-        toast('Payment of ' + p.price + ' received! ' + p.planName + ' is now active for ' + p.days + ' days.');
-        render();
-      }, 500);
+      var job = (p.kind === 'coins') ? payCoins(p) : activateMembership(p.planName, p.days, p.price, p.bonusCoins, p.isUpgrade);
+      job.then(function(){
+        st.style.background = '#dcfce7';
+        st.style.color = '#15803d';
+        st.textContent = '✓ Payment Successful! Order ID: MOD_' + Date.now().toString(36).toUpperCase();
+        setTimeout(function(){
+          $('payDlg').close();
+          toast(p.kind === 'coins' ? ('Payment of ' + p.price + ' received! ' + p.coins + ' coins added.') : ('Payment of ' + p.price + ' received! ' + p.planName + ' is now active for ' + p.days + ' days.'));
+          render();
+        }, 500);
+      }).catch(function(err){
+        console.warn(err);
+        btn.disabled = false;
+        btn.textContent = 'Try again';
+        st.style.background = '#fef2f2';
+        st.style.color = '#b91c1c';
+        st.textContent = 'Could not save your purchase: ' + ((err && err.message) || 'please try again.');
+      });
     }, 800);
   });
 }
@@ -1598,18 +1690,30 @@ if(window.ModivsChat && window.MY_TUTOR && window.MY_TUTOR.email){
 
 try{if(window.ModivsChat) ModivsChat.subscribe(render);}catch(e){}
 initUnlockListener();
+(function(){
+ var em=currentTutorEmail();
+ if(!window.ModivsWallet||!em) return;
+ var SAFE={dash:1,leads:1,credits:1,buymem:1,buycoins:1,purchases:1,membership:1,history:1,requests:1};
+ ModivsWallet.onChange(function(){
+  state.coins=ModivsWallet.getCoins(em);
+  if(window.mvPaintTier) window.mvPaintTier();
+  var dlgOpen=($('payDlg')&&$('payDlg').open)||($('dlg')&&$('dlg').open)||($('memDlg')&&$('memDlg').open);
+  if(SAFE[state.view]&&!dlgOpen){try{render()}catch(e){}}
+ });
+ ModivsWallet.watch(em);
+})();
 render();
 })();
 </script>
 <!-- mv-footer -->
-<footer class="mv-foot"><style>
-.mv-foot{background:#1A2035;color:#d8dcec;padding:22px 16px calc(22px + env(safe-area-inset-bottom,0px));font-family:"Poppins",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:.88rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box}
-.mv-foot nav{display:flex;flex-wrap:wrap;justify-content:center;gap:6px 22px;margin:0 0 10px}
-.mv-foot a{color:#d8dcec;text-decoration:none;padding:4px 0;display:inline-block;background:none;border-radius:0}
-.mv-foot a:hover,.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
-.mv-foot a[aria-current=page]{color:#EBB92E}
-.mv-foot p{margin:0;color:#9aa1bd;font-size:.82rem}
-</style><nav aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav><p>© 2026 Modiv’s Education. All rights reserved.</p></footer>
+<footer class="mv-foot">
+  <div class="cols">
+   <div><a class="brand" href="index.html" style="background:#fff;padding:6px 12px;border-radius:10px;display:inline-block;margin-bottom:12px;"><img src="logo.png" alt="Modiv’s Education" style="height:54px;display:block;mix-blend-mode:normal;"></a><p style="color:#c9cde0;max-width:320px;margin:0">Connecting tutors with students and parents, one class at a time.</p></div>
+   <div class="mv-foot-locs"><h4>Locations</h4><ul><li><a href="modivs-tutors.html?city=Ludhiana" title="Find tutors in Ludhiana"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Ludhiana</a></li><li><a href="modivs-tutors.html?city=Chandigarh" title="Find tutors in Chandigarh"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Chandigarh</a></li><li><a href="modivs-tutors.html?city=Mohali" title="Find tutors in Mohali"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Mohali</a></li><li><a href="modivs-tutors.html?city=Panchkula" title="Find tutors in Panchkula"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Panchkula</a></li><li><a href="modivs-tutors.html?city=Patiala" title="Find tutors in Patiala"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Patiala</a></li><li><a href="modivs-tutors.html?city=Jalandhar" title="Find tutors in Jalandhar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Jalandhar</a></li><li><a href="modivs-tutors.html?city=Amritsar" title="Find tutors in Amritsar"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Amritsar</a></li><li><a href="modivs-tutors.html?city=Delhi" title="Find tutors in Delhi NCR"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Delhi NCR</a></li></ul></div>
+  </div>
+  <nav class="mv-foot-legal" aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact us</a></nav>
+  <p class="mv-foot-copy">© 2026 Modiv’s Education. All rights reserved.</p>
+</footer>
 <script>
 /* Profile photo: add or change it straight from the dashboard */
 (function(){

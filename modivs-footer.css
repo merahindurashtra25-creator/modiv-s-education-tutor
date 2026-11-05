@@ -1,0 +1,33 @@
+/* Modiv's Education - shared footer (Locations list + one-line legal links).
+   Used by every page via <footer class="mv-foot">. */
+footer.mv-foot{background:#1A2035;color:#d8dcec;padding:30px 16px calc(22px + env(safe-area-inset-bottom,0px));font-size:.9rem;line-height:1.5;text-align:center;clear:both;width:100%;box-sizing:border-box;font-family:inherit}
+footer.mv-foot>*{max-width:1100px;margin-left:auto;margin-right:auto;box-sizing:border-box}
+footer.mv-foot a{color:#d8dcec;text-decoration:none;background:none;border-radius:0}
+footer.mv-foot a:hover,footer.mv-foot a:focus-visible{color:#EBB92E;text-decoration:underline}
+footer.mv-foot a[aria-current=page]{color:#EBB92E}
+
+/* columns: brand | (Explore | Account on home) | Locations */
+footer.mv-foot .cols{display:grid;grid-template-columns:2fr 1fr;gap:32px;text-align:left;margin-bottom:26px}
+footer.mv-foot .cols.home{grid-template-columns:2fr 1fr 1fr 1fr}
+footer.mv-foot .cols h4{color:#EBB92E;margin:0 0 10px;font-size:1rem}
+footer.mv-foot .cols ul{list-style:none;padding:0;margin:0}
+footer.mv-foot .cols li{margin:6px 0}
+footer.mv-foot .mv-foot-locs a{display:inline-flex;align-items:center;gap:7px}
+footer.mv-foot .mv-foot-locs a svg{width:13px;height:13px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* legal links: one horizontal line */
+footer.mv-foot .mv-foot-legal{display:flex;flex-wrap:wrap;justify-content:center;align-items:center;gap:4px 0;margin-top:24px;padding-top:16px;border-top:1px solid #34406a}
+footer.mv-foot .mv-foot-legal a{padding:4px 0;white-space:nowrap}
+footer.mv-foot .mv-foot-legal a+a::before{content:"|";display:inline-block;margin:0 14px;color:#4a5683;text-decoration:none}
+footer.mv-foot .mv-foot-legal a+a:hover::before{text-decoration:none}
+
+footer.mv-foot .mv-foot-copy{margin-top:10px;margin-bottom:0;color:#9aa1bd;font-size:.82rem}
+
+@media(max-width:820px){footer.mv-foot .cols,footer.mv-foot .cols.home{grid-template-columns:1fr 1fr}footer.mv-foot .cols>div:first-child{grid-column:1/-1}}
+@media(max-width:520px){
+ footer.mv-foot .cols,footer.mv-foot .cols.home{grid-template-columns:1fr}
+ footer.mv-foot .mv-foot-legal{flex-wrap:nowrap}
+ footer.mv-foot .mv-foot-legal a{font-size:.8rem}
+ footer.mv-foot .mv-foot-legal a+a::before{margin:0 8px}
+}
+@media(max-width:340px){footer.mv-foot .mv-foot-legal{flex-wrap:wrap}}
