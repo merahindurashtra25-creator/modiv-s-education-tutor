@@ -174,6 +174,7 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 <script src="modivs-wallet.js"></script>
 <script src="firebase-chat.js"></script>
 <script src="modivs-shop-data.js"></script>
+<script src="modivs-stories.js"></script>
 <script src="modivs-blogs.js"></script>
 <script src="modivs-reviews.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
@@ -752,6 +753,7 @@ function tabs(){
     { key: 'students', label: 'Student Inquiries (' + students.length + ')' },
     { key: 'chat', label: 'Chat & Inquiries Monitoring (' + totalChats + ')' },
     { key: 'shop', label: 'Shop Items (' + cmsShop.length + ')' },
+    { key: 'videos', label: 'Videos (' + cmsVids.length + ')' },
     { key: 'blogs', label: 'Blogs' + (cmsBlogs ? ' (' + cmsBlogs.length + ')' : '') },
     { key: 'reviews', label: 'Reviews' + (cmsRevs ? ' (' + cmsRevs.length + (cmsRevs.filter(function(r){ return r.status === 'pending'; }).length ? ', ' + cmsRevs.filter(function(r){ return r.status === 'pending'; }).length + ' new' : '') + ')' : '') }
   ];
@@ -1597,12 +1599,14 @@ function recent(){
 // ---------- Shop & Blogs: admin adds and deletes items ----------
 var cmsShop = window.ModivsShop ? ModivsShop.cached() : [];
 var cmsBlogs = null, cmsBlogErr = '';
-function isCms(){ return currentSection === 'shop' || currentSection === 'blogs' || currentSection === 'reviews'; }
+var cmsVids = window.ModivsStories ? ModivsStories.cached() : [], editVidId = null;
+function isCms(){ return currentSection === 'videos' || currentSection === 'shop' || currentSection === 'blogs' || currentSection === 'reviews'; }
 function escH(s){ return String(s == null ? '' : s).replace(/[&<>"']/g, function(c){ return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
 function inrH(n){ return '₹' + Number(n).toLocaleString('en-IN'); }
 function fld(id, label, input, hint){ return '<div><label for="' + id + '">' + label + '</label>' + input + (hint ? '<div class="cms-hint">' + hint + '</div>' : '') + '</div>'; }
 function cmsRefresh(){ tabs(); if(isCms()) renderCms(); }
 if(window.ModivsShop) ModivsShop.load().then(function(p){ cmsShop = p; cmsRefresh(); });
+if(window.ModivsStories) ModivsStories.load().then(function(v){ cmsVids = v; cmsRefresh(); });
 function loadBlogs(){
   if(!window.ModivsBlogs){ cmsBlogs = []; cmsBlogErr = 'The blogs module did not load.'; return; }
   ModivsBlogs.list(200).then(function(r){ cmsBlogs = r; cmsBlogErr = ''; cmsRefresh(); },
@@ -1610,7 +1614,67 @@ function loadBlogs(){
 }
 loadBlogs();
 
-function renderCms(){ if(currentSection === 'shop') renderShopCms($('cms')); else if(currentSection === 'reviews') renderReviewCms($('cms')); else renderBlogCms($('cms')); }
+function renderCms(){ if(currentSection === 'shop') renderShopCms($('cms')); else if(currentSection === 'reviews') renderReviewCms($('cms')); else if(currentSection === 'videos') renderVideoCms($('cms')); else renderBlogCms($('cms')); }
+
+// ---------- Videos ("From Modiv's Education" on the home page): add, edit, re-order, delete ----------
+function saveVids(list, msg){
+  cmsVids = list; editVidId = null;
+  cmsRefresh();
+  toast(msg);
+  ModivsStories.save(list).then(function(r){
+    if(!r.cloud) toast('Saved in this browser only (Firebase: ' + r.reason + '). Publish firestore.rules and log in again as admin so every visitor sees the change.');
+  });
+}
+function renderVideoCms(box){
+  var S = window.ModivsStories, list = cmsVids || [];
+  if(!S){ box.innerHTML = '<section class="box"><p class="cms-err">The videos module did not load.</p></section>'; return; }
+  box.innerHTML =
+    '<section class="box"><h2>Add a video</h2><p class="cms-sub">Paste a YouTube link. The video plays on the home page, in the “From Modiv’s Education” section. New videos appear at the end.</p><form id="vdForm" novalidate>' +
+    fld('vUrl', 'YouTube link', '<input id="vUrl" placeholder="https://youtu.be/…" inputmode="url">', 'Any normal YouTube link works (watch, youtu.be or shorts). The video must allow embedding on YouTube.') +
+    '<div class="cms-2">' + fld('vName', 'Title <small>(optional)</small>', '<input id="vName" maxlength="100" placeholder="e.g. A message from our founder">') +
+    fld('vNote', 'Short line <small>(optional)</small>', '<input id="vNote" maxlength="160" placeholder="e.g. Watch the video">') + '</div>' +
+    '<div class="cms-err" id="vErr" role="alert"></div><button class="cbtn y" type="submit">Add video</button></form></section>' +
+    '<section class="box"><div class="cms-head"><h2>Videos (' + list.length + ')</h2><a class="cbtn sm" href="index.html#stories" target="_blank" rel="noopener">View on site</a></div>' +
+    (list.length ? list.map(function(v, i){
+      var id = S.ytId(v.url);
+      if(v.id === editVidId){
+        return '<div class="cms-row" style="display:block">' +
+          fld('eUrl', 'YouTube link', '<input id="eUrl" value="' + escH(v.url) + '">') +
+          '<div class="cms-2">' + fld('eName', 'Title', '<input id="eName" maxlength="100" value="' + escH(v.name) + '">') + fld('eNote', 'Short line', '<input id="eNote" maxlength="160" value="' + escH(v.note) + '">') + '</div>' +
+          '<div class="cms-err" id="eErr" role="alert"></div><div class="acts3" style="margin-top:8px"><button type="button" class="cbtn y sm" data-save-vid="' + escH(v.id) + '">Save changes</button><button type="button" class="cbtn sm" data-cancel-vid>Cancel</button></div></div>';
+      }
+      return '<div class="cms-row"><div style="display:flex;gap:12px;align-items:center;min-width:0"><img src="https://i.ytimg.com/vi/' + escH(id) + '/mqdefault.jpg" alt="" width="96" height="54" style="border-radius:8px;object-fit:cover;background:#1A2035;flex:none">' +
+        '<div style="min-width:0"><b>' + escH(v.name || 'Untitled video') + '</b><small>' + escH(v.note) + '</small><small style="overflow:hidden;text-overflow:ellipsis"><a style="color:inherit" href="' + escH(v.url) + '" target="_blank" rel="noopener">' + escH(v.url) + '</a></small></div></div>' +
+        '<div class="acts3"><button type="button" class="cbtn sm" data-vid-mv="-1" data-id="' + escH(v.id) + '"' + (i === 0 ? ' disabled' : '') + ' aria-label="Move up">↑</button>' +
+        '<button type="button" class="cbtn sm" data-vid-mv="1" data-id="' + escH(v.id) + '"' + (i === list.length - 1 ? ' disabled' : '') + ' aria-label="Move down">↓</button>' +
+        '<button type="button" class="cbtn sm" data-edit-vid="' + escH(v.id) + '">Edit</button><button type="button" class="cbtn sm del" data-del-vid="' + escH(v.id) + '">Delete</button></div></div>';
+    }).join('') : '<p class="cms-empty">No videos yet. Add one above.</p>') + '</section>';
+
+  $('vdForm').addEventListener('submit', function(e){
+    e.preventDefault();
+    var url = $('vUrl').value.trim(), er = $('vErr');
+    if(!S.ytId(url)){ er.textContent = 'Please paste a valid YouTube link (youtube.com or youtu.be).'; return; }
+    if(list.some(function(v){ return S.ytId(v.url) === S.ytId(url); })){ er.textContent = 'This video is already in the list.'; return; }
+    saveVids(list.concat([{ id: 'v' + Date.now().toString(36), url: url, name: $('vName').value.trim(), note: $('vNote').value.trim() }]), 'Video added.');
+  });
+  box.querySelectorAll('[data-edit-vid]').forEach(function(b){ b.addEventListener('click', function(){ editVidId = b.getAttribute('data-edit-vid'); renderCms(); }); });
+  box.querySelectorAll('[data-cancel-vid]').forEach(function(b){ b.addEventListener('click', function(){ editVidId = null; renderCms(); }); });
+  box.querySelectorAll('[data-save-vid]').forEach(function(b){ b.addEventListener('click', function(){
+    var id = b.getAttribute('data-save-vid'), url = $('eUrl').value.trim();
+    if(!S.ytId(url)){ $('eErr').textContent = 'Please paste a valid YouTube link.'; return; }
+    saveVids(list.map(function(v){ return v.id === id ? { id: id, url: url, name: $('eName').value.trim(), note: $('eNote').value.trim() } : v; }), 'Video updated.');
+  }); });
+  box.querySelectorAll('[data-vid-mv]').forEach(function(b){ b.addEventListener('click', function(){
+    var id = b.getAttribute('data-id'), d = +b.getAttribute('data-vid-mv'), i = list.findIndex(function(v){ return v.id === id; }), j = i + d;
+    if(i < 0 || j < 0 || j >= list.length) return;
+    var a = list.slice(); var t = a[i]; a[i] = a[j]; a[j] = t; saveVids(a, 'Order updated.');
+  }); });
+  box.querySelectorAll('[data-del-vid]').forEach(function(b){ b.addEventListener('click', function(){
+    var id = b.getAttribute('data-del-vid'), v = list.filter(function(x){ return x.id === id; })[0];
+    if(!v || !confirm('Delete this video' + (v.name ? ' (' + v.name + ')' : '') + ' from the home page?')) return;
+    saveVids(list.filter(function(x){ return x.id !== id; }), 'Video deleted.');
+  }); });
+}
 
 // ---------- Reviews: approve, edit, delete, add ----------
 var cmsRevs = null, cmsRevErr = '', editRevId = null;
