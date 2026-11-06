@@ -1,9 +1,14 @@
 const functions = require('firebase-functions');
 const admin = require('firebase-admin');
+const https = require('https');
+const crypto = require('crypto');
 
 admin.initializeApp();
 const db = admin.firestore();
 const auth = admin.auth();
+
+const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_TwTMFGYwNbt9BA';
+const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '7F7s9cvucQTPkIcd90QM1Q08';
 
 const MASTER_ADMIN_EMAILS = [
   'happinessaggarwal@gmail.com',
@@ -250,4 +255,103 @@ exports.secureUnlockLead = functions.https.onCall(async (data, context) => {
 
     return { success: true, already: false, balance: next };
   });
+});
+
+/**
+ * Cloud Function (Callable): createRazorpayOrder
+ * Creates an official order with Razorpay Orders API.
+ */
+exports.createRazorpayOrder = functions.https.onCall(async (data, context) => {
+  const amount = Number(data && data.amount); // in paise
+  const currency = String(data && data.currency || 'INR').toUpperCase();
+  const receipt = String(data && data.receipt || ('rcpt_' + Date.now().toString(36)));
+  const notes = (typeof data.notes === 'object' && data.notes !== null) ? data.notes : {};
+
+  if (!amount || amount <= 0) {
+    throw new functions.https.HttpsError('invalid-argument', 'Valid amount in paise is required.');
+  }
+
+  const postData = JSON.stringify({
+    amount: Math.round(amount),
+    currency,
+    receipt,
+    notes
+  });
+
+  const authHeader = 'Basic ' + Buffer.from(`${RAZORPAY_KEY_ID}:${RAZORPAY_KEY_SECRET}`).toString('base64');
+
+  return new Promise((resolve, reject) => {
+    const req = https.request({
+      hostname: 'api.razorpay.com',
+      port: 443,
+      path: '/v1/orders',
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Content-Length': Buffer.byteLength(postData),
+        'Authorization': authHeader
+      }
+    }, (res) => {
+      let body = '';
+      res.on('data', chunk => { body += chunk; });
+      res.on('end', () => {
+        try {
+          const parsed = JSON.parse(body);
+          if (res.statusCode >= 200 && res.statusCode < 300) {
+            resolve({
+              orderId: parsed.id,
+              amount: parsed.amount,
+              currency: parsed.currency,
+              receipt: parsed.receipt,
+              keyId: RAZORPAY_KEY_ID
+            });
+          } else {
+            reject(new functions.https.HttpsError('internal', (parsed.error && parsed.error.description) || 'Failed to create Razorpay order'));
+          }
+        } catch (e) {
+          reject(new functions.https.HttpsError('internal', 'Invalid response from Razorpay API'));
+        }
+      });
+    });
+
+    req.on('error', (e) => {
+      reject(new functions.https.HttpsError('internal', e.message));
+    });
+
+    req.write(postData);
+    req.end();
+  });
+});
+
+/**
+ * Cloud Function (Callable): verifyRazorpaySignature
+ * Verifies authenticity of Razorpay payment signature using HMAC SHA256.
+ */
+exports.verifyRazorpaySignature = functions.https.onCall(async (data, context) => {
+  const orderId = String(data && data.orderId || '').trim();
+  const paymentId = String(data && data.paymentId || '').trim();
+  const signature = String(data && data.signature || '').trim();
+
+  if (!orderId || !paymentId || !signature) {
+    throw new functions.https.HttpsError('invalid-argument', 'orderId, paymentId, and signature are required.');
+  }
+
+  const expectedSignature = crypto
+    .createHmac('sha256', RAZORPAY_KEY_SECRET)
+    .update(`${orderId}|${paymentId}`)
+    .digest('hex');
+
+  const isValid = expectedSignature === signature;
+
+  if (isValid) {
+    await db.collection('verified_payments').doc(paymentId).set({
+      paymentId,
+      orderId,
+      verified: true,
+      verifiedAt: admin.firestore.FieldValue.serverTimestamp(),
+      userEmail: context.auth && context.auth.token ? (context.auth.token.email || '') : ''
+    }, { merge: true });
+  }
+
+  return { verified: isValid, paymentId, orderId };
 });

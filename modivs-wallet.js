@@ -213,7 +213,8 @@
           t.set(ref, { tutorEmail: em, coins: next, membership: mem, updatedAt: ts() }, { merge: true });
           t.set(hRef, {
             tutorEmail: em, planName: mem.planName, type: type, durationDays: mem.durationDays,
-            price: plan.price || '', orderId: plan.orderId || '', bonusCoins: bonus,
+            price: plan.price || '', orderId: plan.orderId || '', paymentId: plan.paymentId || '',
+            gateway: plan.gateway || 'razorpay', bonusCoins: bonus,
             startedAt: mem.startedAt, validUntil: mem.validUntil, createdAt: ts()
           });
           if(bonus > 0){
@@ -221,7 +222,7 @@
             t.set(txRef, {
               tutorEmail: em, amount: bonus, balanceAfter: next, type: 'membership_bonus',
               description: 'Bonus coins for ' + mem.planName + (plan.price ? ' (' + plan.price + ')' : ''),
-              orderId: plan.orderId || '', createdAt: ts()
+              orderId: plan.orderId || '', paymentId: plan.paymentId || '', gateway: plan.gateway || 'razorpay', createdAt: ts()
             });
           }
           return { membership: mem, balance: next };
@@ -231,8 +232,9 @@
   }
 
   /** Buy a coin pack. */
-  function purchaseCoins(email, coins, price, orderId){
-    return addCoins(email, coins, 'Purchased ' + coins + ' coins (' + price + ')', { type: 'purchase', price: price, orderId: orderId || '' });
+  function purchaseCoins(email, coins, price, orderId, extraData){
+    var txData = Object.assign({ type: 'purchase', price: price, orderId: orderId || '', gateway: 'razorpay' }, extraData || {});
+    return addCoins(email, coins, 'Purchased ' + coins + ' coins (' + price + ')', txData);
   }
 
   /**

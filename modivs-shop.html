@@ -324,13 +324,13 @@ function renderCart(view){
    '<label class="fld" for="cMail">Email for delivery</label><input id="cMail" type="email" autocomplete="email" value="'+esc(au.email||'')+'">'+
    '<div class="err" id="cErr" role="alert"></div>'+
    '<h4 style="margin:16px 0 4px">Order summary</h4>'+cart.map(function(id){var p=byId(id);return '<div class="line" style="padding:8px 0"><div class="t"><small>'+esc(p.title)+'</small></div><div>'+inr(p.price)+'</div></div>'}).join('');
-  Fo.innerHTML='<div class="tot"><span>Total</span><span>'+inr(total())+'</span></div><button class="btn y" style="width:100%" id="place">Place order</button><button class="btn o" style="width:100%;margin-top:8px" id="back">Back to cart</button>';
+  Fo.innerHTML='<div class="tot"><span>Total</span><span>'+inr(total())+'</span></div><button class="btn y" style="width:100%;display:flex;align-items:center;justify-content:center;gap:8px;" id="place"><span>🔒 Pay with Razorpay</span></button><button class="btn o" style="width:100%;margin-top:8px" id="back">Back to cart</button>';
   $('back').onclick=function(){renderCart('cart')};
   $('place').onclick=placeOrder;
  } else if(view==='done'){
-  $('drTitle').textContent='Order placed';
+  $('drTitle').textContent='Order completed';
   var o=window.__lastOrder;
-  B.innerHTML='<div class="done"><div class="tick" aria-hidden="true">✓</div><h3 style="margin:0 0 6px">Thanks, '+esc(o.name.split(' ')[0])+'.</h3><div class="ref">Order '+esc(o.id)+'</div><p style="margin:0 0 10px">Total: <b>'+inr(o.total)+'</b></p><p class="note">'+esc(DELIVERY)+' Please keep your order number handy if you contact us.</p></div>';
+  B.innerHTML='<div class="done"><div class="tick" aria-hidden="true">✓</div><h3 style="margin:0 0 6px">Thanks, '+esc(o.name.split(' ')[0])+'.</h3><div class="ref">Order '+esc(o.id)+'</div>'+(o.paymentId ? '<div style="font-size:0.8rem;color:#16a34a;font-weight:700;margin:4px 0 10px;">✓ Razorpay ID: '+esc(o.paymentId)+'</div>' : '')+'<p style="margin:0 0 10px">Total: <b>'+inr(o.total)+'</b></p><p class="note">Your payment has been successfully confirmed. Study files and links are being dispatched to your email '+esc(o.email)+'.</p></div>';
   Fo.innerHTML='<a class="btn y" style="width:100%;display:block" target="_blank" rel="noopener" href="https://wa.me/message/AZVJXD4HG3DOG1">Message us on WhatsApp</a><button class="btn o" style="width:100%;margin-top:8px" id="fin">Continue shopping</button>';
   $('fin').onclick=closeCart;
  }
@@ -344,16 +344,41 @@ function placeOrder(){
  if(!n.value.trim())return bad(n,'Enter your name.');
  if(!/^[+0-9\s-]{10,15}$/.test(p.value.trim()))return bad(p,'Enter a valid mobile number.');
  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(m.value.trim()))return bad(m,'Enter a valid email so we can send your files.');
- var o={id:'MS-'+Date.now().toString(36).toUpperCase().slice(-6),name:n.value.trim(),phone:p.value.trim(),email:m.value.trim(),
-  items:cart.map(function(id){var q=byId(id);return {id:id,title:q.title,type:q.type,price:q.price}}),total:total(),status:'awaiting_payment',createdAt:new Date().toISOString()};
- var all=rd('modivs_shop_orders',[]);all.unshift(o);wr('modivs_shop_orders',all.slice(0,200));
- window.__lastOrder=o;cart=[];save();renderGrid();renderCart('done');
+ 
+ var btn = $('place');
+ if(btn){ btn.disabled = true; btn.textContent = 'Connecting to Razorpay...'; }
+
+ if(window.ModivsRazorpay){
+   window.ModivsRazorpay.launchPayment({
+     price: total(),
+     description: 'Study Material (' + cart.length + ' Items)',
+     userName: n.value.trim(),
+     userPhone: p.value.trim(),
+     userEmail: m.value.trim(),
+     service: 'Study Materials & Notes'
+   }).then(function(paymentResult){
+     var o={id:'MS-'+Date.now().toString(36).toUpperCase().slice(-6),name:n.value.trim(),phone:p.value.trim(),email:m.value.trim(),
+       items:cart.map(function(id){var q=byId(id);return {id:id,title:q.title,type:q.type,price:q.price}}),
+       total:total(),status:'paid',paymentId:paymentResult.paymentId,orderId:paymentResult.orderId,gateway:'razorpay',createdAt:new Date().toISOString()};
+     var all=rd('modivs_shop_orders',[]);all.unshift(o);wr('modivs_shop_orders',all.slice(0,200));
+     window.__lastOrder=o;cart=[];save();renderGrid();renderCart('done');
+   }).catch(function(err){
+     if(btn){ btn.disabled = false; btn.textContent = '🔒 Pay with Razorpay'; }
+     er.textContent = (err && err.message) ? err.message : 'Payment was not completed.';
+   });
+ } else {
+   var o={id:'MS-'+Date.now().toString(36).toUpperCase().slice(-6),name:n.value.trim(),phone:p.value.trim(),email:m.value.trim(),
+    items:cart.map(function(id){var q=byId(id);return {id:id,title:q.title,type:q.type,price:q.price}}),total:total(),status:'awaiting_payment',createdAt:new Date().toISOString()};
+   var all=rd('modivs_shop_orders',[]);all.unshift(o);wr('modivs_shop_orders',all.slice(0,200));
+   window.__lastOrder=o;cart=[];save();renderGrid();renderCart('done');
+ }
 }
 
 save();renderGrid();
 window.ModivsShop.load().then(function(p){PRODUCTS=p;fillFilters();cart=cart.filter(byId);save();renderGrid()});
 })();
 </script>
+<script src="razorpay-config.js"></script>
 <script src="modivs-avatars.js"></script>
 <script src="modivs-session-ui.js" defer></script>
 <script src="modivs-menu.js" defer></script>

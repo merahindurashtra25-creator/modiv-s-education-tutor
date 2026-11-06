@@ -176,6 +176,7 @@ dialog h2{margin:0 0 4px}
 <script src="firebase-config.js"></script>
 <script src="firebase-sync.js"></script>
 <script src="modivs-wallet.js"></script>
+<script src="razorpay-config.js"></script>
 <script src="firebase-chat.js"></script>
 <script src="modivs-blogs.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
@@ -271,14 +272,14 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
 <dialog id="payDlg" aria-labelledby="payTitle" style="max-width:520px;width:92%;padding:24px;border:none;border-radius:18px;box-shadow:0 24px 60px rgba(0,0,0,0.25);">
   <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;">
     <div>
-      <h2 id="payTitle" style="font-size:1.35rem;font-weight:800;color:var(--navy);margin:0;">Online Payment Section</h2>
-      <p style="font-size:0.82rem;color:var(--muted);margin:2px 0 0 0;">🔒 256-bit Encrypted Platform Checkout</p>
+      <h2 id="payTitle" style="font-size:1.35rem;font-weight:800;color:var(--navy);margin:0;">Razorpay Live Payment</h2>
+      <p style="font-size:0.82rem;color:var(--muted);margin:2px 0 0 0;">🔒 256-bit SSL Encrypted & PCI-DSS Compliant</p>
     </div>
-    <span class="badge" style="background:#e6f4ea;color:#137333;font-weight:700;font-size:0.75rem;">Instant Activation</span>
+    <span class="badge" style="background:#e6f4ea;color:#137333;font-weight:700;font-size:0.75rem;">⚡ Gateway Active</span>
   </div>
 
   <!-- Plan & Order Summary -->
-  <div id="payOrderSummary" style="background:#f6f8fc;border:1.5px solid #dbe2ef;border-radius:12px;padding:16px;margin-bottom:18px;">
+  <div id="payOrderSummary" style="background:#f6f8fc;border:1.5px solid #dbe2ef;border-radius:12px;padding:16px;margin-bottom:16px;">
     <div style="display:flex;justify-content:space-between;align-items:flex-start;">
       <div>
         <b id="payPlanName" style="font-size:1.15rem;color:var(--navy);display:block;">Standard Plan</b>
@@ -295,93 +296,35 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     </div>
   </div>
 
-  <!-- Payment Method Selector -->
-  <div style="margin-bottom:16px;">
-    <label style="display:block;font-size:0.88rem;font-weight:700;margin-bottom:8px;color:var(--navy);">Select Payment Method</label>
-    <div style="display:grid;grid-template-columns:repeat(3, 1fr);gap:8px;" id="payMethodTabs">
-      <button type="button" class="pay-method-btn" id="pmUpi" data-method="upi" style="padding:10px 4px;border:2px solid var(--navy);background:#eef4ff;border-radius:10px;font-weight:700;font-size:0.84rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--navy);">
-        <span>📱 UPI / QR</span>
-        <small style="font-size:0.7rem;color:#4b5563;">GPay / PhonePe</small>
-      </button>
-      <button type="button" class="pay-method-btn" id="pmCard" data-method="card" style="padding:10px 4px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:0.84rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--navy);">
-        <span>💳 Card</span>
-        <small style="font-size:0.7rem;color:#4b5563;">Debit / Credit</small>
-      </button>
-      <button type="button" class="pay-method-btn" id="pmNet" data-method="netbanking" style="padding:10px 4px;border:1.5px solid var(--line);background:#fff;border-radius:10px;font-weight:700;font-size:0.84rem;cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:3px;color:var(--navy);">
-        <span>🏦 Net Banking</span>
-        <small style="font-size:0.7rem;color:#4b5563;">All Banks</small>
-      </button>
+  <!-- Supported Payment Channels by Razorpay -->
+  <div style="background:#fff;border:1.5px solid #e2e8f0;border-radius:12px;padding:14px 16px;margin-bottom:16px;">
+    <div style="font-size:0.84rem;font-weight:700;color:var(--navy);margin-bottom:8px;display:flex;align-items:center;justify-content:space-between;">
+      <span>Accepted Payment Methods</span>
+      <span style="font-size:0.75rem;color:#1d4ed8;font-weight:600;">Razorpay Secure</span>
     </div>
-  </div>
-
-  <!-- View 1: UPI / QR -->
-  <div id="payViewUpi" style="margin-bottom:18px;text-align:center;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
-    <div style="display:inline-block;padding:8px;background:#f8fafc;border:2px dashed #94a3b8;border-radius:12px;margin-bottom:8px;">
-      <svg width="110" height="110" viewBox="0 0 100 100" style="display:block;margin:0 auto;">
-        <rect width="100" height="100" fill="#ffffff"/>
-        <rect x="8" y="8" width="26" height="26" fill="#1A2035"/>
-        <rect x="12" y="12" width="18" height="18" fill="#ffffff"/>
-        <rect x="15" y="15" width="12" height="12" fill="#1A2035"/>
-        <rect x="66" y="8" width="26" height="26" fill="#1A2035"/>
-        <rect x="70" y="12" width="18" height="18" fill="#ffffff"/>
-        <rect x="73" y="15" width="12" height="12" fill="#1A2035"/>
-        <rect x="8" y="66" width="26" height="26" fill="#1A2035"/>
-        <rect x="12" y="70" width="18" height="18" fill="#ffffff"/>
-        <rect x="15" y="73" width="12" height="12" fill="#1A2035"/>
-        <rect x="42" y="15" width="7" height="7" fill="#1A2035"/>
-        <rect x="52" y="25" width="7" height="7" fill="#1A2035"/>
-        <rect x="42" y="38" width="7" height="7" fill="#1A2035"/>
-        <rect x="15" y="45" width="7" height="7" fill="#1A2035"/>
-        <rect x="25" y="52" width="7" height="7" fill="#1A2035"/>
-        <rect x="44" y="47" width="12" height="12" fill="#F5A623"/>
-        <rect x="65" y="45" width="7" height="7" fill="#1A2035"/>
-        <rect x="78" y="52" width="7" height="7" fill="#1A2035"/>
-        <rect x="45" y="68" width="7" height="7" fill="#1A2035"/>
-        <rect x="58" y="72" width="7" height="7" fill="#1A2035"/>
-        <rect x="72" y="72" width="14" height="14" fill="#1A2035"/>
-      </svg>
-      <small style="color:#64748b;font-weight:600;display:block;margin-top:2px;">Scan with GPay / PhonePe / Paytm</small>
-    </div>
-    <div style="font-size:0.85rem;color:var(--navy);font-weight:700;">UPI ID: <span style="background:#f1f5f9;padding:3px 8px;border-radius:4px;user-select:all;">modivs.education@okaxis</span></div>
-  </div>
-
-  <!-- View 2: Card -->
-  <div id="payViewCard" style="display:none;margin-bottom:18px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
-    <div style="margin-bottom:10px;">
-      <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:#334155;">Card Number</label>
-      <input type="text" id="payCardNum" placeholder="4532 •••• •••• 8892" maxlength="19" value="4532 9012 8765 4321" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;box-sizing:border-box;">
-    </div>
-    <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;">
-      <div>
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:#334155;">Expiry (MM/YY)</label>
-        <input type="text" id="payCardExp" placeholder="12/28" maxlength="5" value="11/28" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;box-sizing:border-box;">
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;font-size:0.8rem;color:#334155;">
+      <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;padding:6px 8px;border-radius:8px;">
+        <span>📱</span> <b>UPI & QR</b> (GPay, PhonePe, Paytm)
       </div>
-      <div>
-        <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:4px;color:#334155;">CVV</label>
-        <input type="password" id="payCardCvv" data-no-eye placeholder="•••" maxlength="4" value="882" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;box-sizing:border-box;">
+      <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;padding:6px 8px;border-radius:8px;">
+        <span>💳</span> <b>Cards</b> (Debit / Credit)
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;padding:6px 8px;border-radius:8px;">
+        <span>🏦</span> <b>Net Banking</b> (All Indian Banks)
+      </div>
+      <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;padding:6px 8px;border-radius:8px;">
+        <span>👛</span> <b>Wallets</b> (Paytm, Mobikwik)
       </div>
     </div>
-  </div>
-
-  <!-- View 3: Net Banking -->
-  <div id="payViewNet" style="display:none;margin-bottom:18px;background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:16px;">
-    <label style="display:block;font-size:0.8rem;font-weight:600;margin-bottom:6px;color:#334155;">Select Bank</label>
-    <select id="payBankSelect" style="width:100%;padding:9px;border:1.5px solid var(--line);border-radius:8px;font:inherit;font-size:0.88rem;background:#fff;">
-      <option value="HDFC">HDFC Bank</option>
-      <option value="SBI">State Bank of India</option>
-      <option value="ICICI">ICICI Bank</option>
-      <option value="Axis">Axis Bank</option>
-      <option value="Kotak">Kotak Mahindra Bank</option>
-    </select>
   </div>
 
   <!-- Status / Loading Area -->
-  <div id="payStatusArea" style="display:none;margin-bottom:14px;padding:10px;border-radius:8px;text-align:center;font-weight:700;font-size:0.88rem;"></div>
+  <div id="payStatusArea" style="display:none;margin-bottom:14px;padding:12px;border-radius:10px;text-align:center;font-weight:700;font-size:0.88rem;"></div>
 
   <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;">
     <button class="b o" type="button" id="payCancelBtn" style="padding:10px 16px;">Cancel</button>
-    <button class="b y" type="button" id="payConfirmBtn" style="flex:1;padding:12px 18px;font-size:0.95rem;font-weight:800;">
-      Complete Online Payment
+    <button class="b y" type="button" id="payConfirmBtn" style="flex:1;padding:12px 18px;font-size:0.95rem;font-weight:800;display:flex;align-items:center;justify-content:center;gap:8px;">
+      <span>🔒 Pay with Razorpay</span>
     </button>
   </div>
 </dialog>
@@ -621,11 +564,11 @@ function renderMembershipPacks(){
 
 function recharge(c,price){ openCoinPayment(c,price); }
 
-function payCoins(p){
+function payCoins(p, orderId, paymentId){
  var em = currentTutorEmail();
  if(!window.ModivsWallet || !em) return Promise.reject(new Error('Wallet unavailable. Please log in again.'));
- var orderId = 'MOD_' + Date.now().toString(36).toUpperCase();
- return ModivsWallet.purchaseCoins(em, p.coins, p.price, orderId).then(function(res){ state.coins = res.balance; return res; });
+ var ordId = orderId || ('MOD_' + Date.now().toString(36).toUpperCase());
+ return ModivsWallet.purchaseCoins(em, p.coins, p.price, ordId, { paymentId: paymentId || '', gateway: 'razorpay' }).then(function(res){ state.coins = res.balance; return res; });
 }
 
 function openCoinPayment(coins, price){
@@ -638,23 +581,26 @@ function openCoinPayment(coins, price){
   $('payDateRange').textContent = 'Credited today';
   var btn = $('payConfirmBtn');
   btn.disabled = false;
-  btn.textContent = 'Pay ' + price + ' & Add Coins';
+  btn.textContent = 'Pay ' + price + ' with Razorpay';
   $('payStatusArea').style.display = 'none';
   $('payDlg').showModal();
 }
 
-function activateMembership(planName, days, price, bonusCoins, isUpgrade){
+function activateMembership(planName, days, price, bonusCoins, isUpgrade, orderId, paymentId){
  var em = currentTutorEmail();
  if(!window.ModivsWallet || !em){toast('Wallet unavailable. Please log in again.');return Promise.reject(new Error('no wallet'))}
  var cur = ModivsChat.getTutorMembership(em);
  var extend = cur.isValid && cur.planName === planName;
- var orderId = 'MOD_' + Date.now().toString(36).toUpperCase();
- return ModivsWallet.setMembership(em, {planName:planName, days:days, price:price, bonusCoins:bonusCoins, extend:extend, orderId:orderId}).then(function(r){
+ var ordId = orderId || ('MOD_' + Date.now().toString(36).toUpperCase());
+ return ModivsWallet.setMembership(em, {planName:planName, days:days, price:price, bonusCoins:bonusCoins, extend:extend, orderId:ordId, paymentId: paymentId || '', gateway: 'razorpay'}).then(function(r){
   state.coins = r.balance;
   if(window.ModivsChat) ModivsChat.onTutorMembershipPurchased(em);
   if(window.mvPaintTier) window.mvPaintTier();
   toast(planName + ' activated for ' + days + ' days!');
   render();
+  return r;
+ });
+}
   return r;
  });
 }
@@ -1620,44 +1566,73 @@ function setPayMethod(method){
     if(view) view.style.display = (m === method ? 'block' : 'none');
   });
 }
-var pmUpi = $('pmUpi'); if(pmUpi) pmUpi.addEventListener('click', function(){ setPayMethod('upi'); });
-var pmCard = $('pmCard'); if(pmCard) pmCard.addEventListener('click', function(){ setPayMethod('card'); });
-var pmNet = $('pmNet'); if(pmNet) pmNet.addEventListener('click', function(){ setPayMethod('net'); });
 var payCancel = $('payCancelBtn'); if(payCancel) payCancel.addEventListener('click', function(){ $('payDlg').close(); });
 var payConfirm = $('payConfirmBtn');
 if(payConfirm){
   payConfirm.addEventListener('click', function(){
     if(!currentPendingPayment) return;
     var btn = this;
+    var p = currentPendingPayment;
+    var em = currentTutorEmail();
+    var tutor = (typeof currentTutor === 'function' ? currentTutor() : null) || {};
+    var desc = (p.kind === 'coins') 
+      ? (p.coins + ' Modivs Tutor Coins') 
+      : ('Modivs Membership: ' + p.planName + ' (' + p.days + ' Days)');
+
     btn.disabled = true;
-    btn.textContent = 'Processing Online Payment...';
+    btn.textContent = 'Connecting to Razorpay...';
     var st = $('payStatusArea');
     st.style.display = 'block';
     st.style.background = '#eef4ff';
     st.style.color = '#1d4ed8';
-    st.textContent = 'Connecting to Payment Gateway & Authorizing...';
+    st.textContent = '🔒 Connecting to Razorpay Live Secure Gateway...';
 
-    setTimeout(function(){
-      var p = currentPendingPayment;
-      var job = (p.kind === 'coins') ? payCoins(p) : activateMembership(p.planName, p.days, p.price, p.bonusCoins, p.isUpgrade);
-      job.then(function(){
-        st.style.background = '#dcfce7';
-        st.style.color = '#15803d';
-        st.textContent = '✓ Payment Successful! Order ID: MOD_' + Date.now().toString(36).toUpperCase();
+    if(!window.ModivsRazorpay){
+      st.style.background = '#fef2f2';
+      st.style.color = '#b91c1c';
+      st.textContent = 'Razorpay payment gateway is loading. Please try again.';
+      btn.disabled = false;
+      btn.textContent = 'Pay with Razorpay';
+      return;
+    }
+
+    window.ModivsRazorpay.launchPayment({
+      price: p.price,
+      description: desc,
+      tutorName: tutor.name || tutor.fullName || (em ? em.split('@')[0] : 'Tutor'),
+      tutorEmail: em,
+      tutorPhone: tutor.phone || tutor.contact || ''
+    }).then(function(paymentResult){
+      st.style.background = '#dcfce7';
+      st.style.color = '#15803d';
+      st.textContent = '✓ Payment Successful! ID: ' + paymentResult.paymentId;
+      
+      var job = (p.kind === 'coins') 
+        ? payCoins(p, paymentResult.orderId, paymentResult.paymentId) 
+        : activateMembership(p.planName, p.days, p.price, p.bonusCoins, p.isUpgrade, paymentResult.orderId, paymentResult.paymentId);
+      
+      return job.then(function(){
         setTimeout(function(){
           $('payDlg').close();
-          toast(p.kind === 'coins' ? ('Payment of ' + p.price + ' received! ' + p.coins + ' coins added.') : ('Payment of ' + p.price + ' received! ' + p.planName + ' is now active for ' + p.days + ' days.'));
+          btn.disabled = false;
+          btn.textContent = 'Pay with Razorpay';
+          toast(p.kind === 'coins' 
+            ? ('✓ Payment received! ' + p.coins + ' coins added to your wallet.') 
+            : ('✓ Payment received! ' + p.planName + ' is now active for ' + p.days + ' days.'));
           render();
         }, 500);
-      }).catch(function(err){
-        console.warn(err);
-        btn.disabled = false;
-        btn.textContent = 'Try again';
-        st.style.background = '#fef2f2';
-        st.style.color = '#b91c1c';
-        st.textContent = 'Could not save your purchase: ' + ((err && err.message) || 'please try again.');
       });
-    }, 800);
+    }).catch(function(err){
+      console.warn('Payment failed or cancelled:', err);
+      btn.disabled = false;
+      btn.textContent = 'Pay ' + p.price + ' with Razorpay';
+      st.style.background = '#fef2f2';
+      st.style.color = '#b91c1c';
+      st.textContent = (err && err.message) ? err.message : 'Payment was not completed. Please try again.';
+      if(err && err.message && !err.message.includes('closed')){
+        toast(err.message);
+      }
+    });
   });
 }
 var memBtn = $('memBtn'); if(memBtn) memBtn.addEventListener('click', openMembershipModal);

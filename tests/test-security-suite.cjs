@@ -174,6 +174,21 @@ async function runAllSecurityTests() {
     assert(fnIndex.includes('exports.setAdminClaim'), 'Cloud Function setAdminClaim must be exported');
     assert(fnIndex.includes('exports.getAdminStatus'), 'Cloud Function getAdminStatus must be exported');
     assert(fnIndex.includes('isCallerAdmin'), 'Caller admin validation helper must be implemented');
+    assert(fnIndex.includes('exports.createRazorpayOrder'), 'Cloud Function createRazorpayOrder must be exported');
+    assert(fnIndex.includes('exports.verifyRazorpaySignature'), 'Cloud Function verifyRazorpaySignature must be exported');
+  });
+
+  test('Payment Gateway: Razorpay Live integration and CSP whitelist configured', () => {
+    const rzpConfigPath = path.join(ROOT_DIR, 'razorpay-config.js');
+    assert(fs.existsSync(rzpConfigPath), 'razorpay-config.js must exist');
+    const rzpContent = fs.readFileSync(rzpConfigPath, 'utf8');
+    assert(rzpContent.includes('rzp_live_TwTMFGYwNbt9BA'), 'Razorpay live key ID must be configured');
+    assert(rzpContent.includes('checkout.razorpay.com'), 'Razorpay checkout script must be loaded');
+
+    const vercelJson = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'vercel.json'), 'utf8'));
+    const csp = vercelJson.headers[0].headers.find(h => h.key === 'Content-Security-Policy').value;
+    assert(csp.includes('checkout.razorpay.com'), 'CSP must whitelist checkout.razorpay.com');
+    assert(csp.includes('api.razorpay.com'), 'CSP must whitelist api.razorpay.com');
   });
 
   // --- SECTION 6: RUNTIME AUTH & SCENARIO REGRESSION CHECK ---
