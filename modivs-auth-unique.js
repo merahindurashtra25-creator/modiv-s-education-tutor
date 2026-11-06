@@ -284,14 +284,113 @@
   }
 
   /*
+    Processes authenticated Google user, enforcing role integrity & global email uniqueness.
+  */
+  function processGoogleUser(user, pageRole, options){
+    options = options || {};
+    var roleKey = normalizeRoleKey(pageRole);
+    var meta = ROLE_META[roleKey];
+    var fbAuth = auth();
+    var noticeContainer = options.noticeContainer || options.msgEl;
+
+    var mail = normalizeEmail(user && user.email);
+    var name = (user && user.displayName) || (mail ? mail.split('@')[0] : 'User');
+
+    if(!mail){
+      return Promise.reject(new Error('Google account has no verified email address.'));
+    }
+
+    // Check admin
+    if(ADMIN_EMAILS.indexOf(mail) > -1){
+      if(options.onSuccess) options.onSuccess({ role: 'admin', user: user, isNew: false });
+      else window.location.href = 'modivs-admin.html';
+      return Promise.resolve({ role: 'admin', user: user });
+    }
+
+    // Check if email already exists anywhere in the platform
+    return checkEmailExists(mail).then(function(checkRes){
+      // Scenario A: Email already registered
+      if(checkRes && checkRes.exists){
+        var existingRole = checkRes.role;
+        var existingMeta = ROLE_META[existingRole] || ROLE_META['user'];
+
+        // If role matches the page or it's a login action, log in directly
+        if(options.isLogin === true || existingRole === roleKey){
+          try{
+            localStorage.setItem('modivs_auth_user', JSON.stringify({
+              name: name,
+              email: mail,
+              uid: user.uid,
+              role: existingMeta.displayRole,
+              roleKey: existingRole
+            }));
+          }catch(e){}
+
+          // Update user document
+          if(db()){
+            db().collection('users').doc(user.uid).set({
+              name: name,
+              email: mail,
+              role: existingMeta.displayRole,
+              roleKey: existingRole,
+              lastLogin: firebase.firestore.FieldValue.serverTimestamp()
+            }, { merge: true }).catch(function(){});
+          }
+
+          var resPayload = { role: existingRole, user: user, email: mail, isNew: false, isExisting: true, account: checkRes.account };
+          if(options.onSuccess){
+            options.onSuccess(resPayload);
+          } else if(!options.isLogin && existingRole === roleKey){
+            window.location.href = existingMeta.dashboardUrl;
+          }
+          return resPayload;
+        }
+
+        // Email exists with a DIFFERENT role: STOP and notify
+        try{ if(fbAuth) fbAuth.signOut(); }catch(e){}
+        if(noticeContainer){
+          renderDuplicateNotice(noticeContainer, existingRole, roleKey);
+        }
+        var errMsg = 'This email address is already registered as a ' + existingMeta.name + '. Please log in using your existing account.';
+        if(options.onError) options.onError(errMsg, existingRole);
+        var dupErr = new Error(errMsg);
+        dupErr.code = 'EMAIL_EXISTS';
+        dupErr.isExisting = true;
+        dupErr.role = existingRole;
+        dupErr.roleName = existingMeta.name;
+        return Promise.reject(dupErr);
+      }
+
+      // Scenario B: New registration
+      // Atomic account creation in accounts collection with the page role
+      return registerAccountAtomic({
+        email: mail,
+        role: roleKey,
+        name: name,
+        uid: user.uid,
+        provider: 'google',
+        location: options.location || {}
+      }).then(function(){
+        var newPayload = { role: roleKey, user: user, email: mail, isNew: true, isExisting: false };
+        if(options.onSuccess){
+          options.onSuccess(newPayload);
+        } else {
+          window.location.href = meta.dashboardUrl;
+        }
+        return newPayload;
+      });
+    });
+  }
+
+  /*
     Unified Google Sign-In / Sign-Up handler
     Enforces that Google authentication follows the selected registration page role.
     If the email already exists with ANY role, stops registration and displays clear notification.
+    Resilient: falls back to redirect when browser blocks popups or throws auth/internal-error.
   */
   function continueWithGoogle(pageRole, options){
     options = options || {};
     var roleKey = normalizeRoleKey(pageRole);
-    var meta = ROLE_META[roleKey];
     var fbAuth = auth();
     var noticeContainer = options.noticeContainer || options.msgEl;
 
@@ -300,115 +399,81 @@
       return;
     }
 
+    if(typeof location !== 'undefined' && location.protocol === 'file:'){
+      var fileMsg = 'Google Sign-In cannot run from a local file (file://). Please open through a local web server (e.g. Live Server / http://localhost) or test on your deployed website, or log in with Email & Password above.';
+      if(options.onError) options.onError(fileMsg);
+      if(options.button) options.button.disabled = false;
+      return Promise.reject(new Error(fileMsg));
+    }
+
     var provider = new firebase.auth.GoogleAuthProvider();
     provider.setCustomParameters({ prompt: 'select_account' });
 
     if(options.button) options.button.disabled = true;
 
-    return fbAuth.signInWithPopup(provider).then(function(res){
-      if(options.button) options.button.disabled = false;
-      var user = res.user || {};
-      var mail = normalizeEmail(user.email);
-      var name = user.displayName || mail.split('@')[0];
-
-      if(!mail){
-        throw new Error('Google account has no verified email address.');
-      }
-
-      // Check admin
-      if(ADMIN_EMAILS.indexOf(mail) > -1){
-        if(options.onSuccess) options.onSuccess({ role: 'admin', user: user, isNew: false });
-        else window.location.href = 'modivs-admin.html';
-        return;
-      }
-
-      // Check if email already exists anywhere in the platform
-      return checkEmailExists(mail).then(function(checkRes){
-        // Scenario A: Email already registered
-        if(checkRes && checkRes.exists){
-          var existingRole = checkRes.role;
-          var existingMeta = ROLE_META[existingRole] || ROLE_META['user'];
-
-          // If role matches the page or it's a login action, log in directly
-          if(options.isLogin === true || existingRole === roleKey){
-            try{
-              localStorage.setItem('modivs_auth_user', JSON.stringify({
-                name: name,
-                email: mail,
-                uid: user.uid,
-                role: existingMeta.displayRole,
-                roleKey: existingRole
-              }));
-            }catch(e){}
-
-            // Update user document
-            if(db()){
-              db().collection('users').doc(user.uid).set({
-                name: name,
-                email: mail,
-                role: existingMeta.displayRole,
-                roleKey: existingRole,
-                lastLogin: firebase.firestore.FieldValue.serverTimestamp()
-              }, { merge: true }).catch(function(){});
-            }
-
-            var resPayload = { role: existingRole, user: user, email: mail, isNew: false, isExisting: true, account: checkRes.account };
-            if(options.onSuccess){
-              options.onSuccess(resPayload);
-            } else if(!options.isLogin && existingRole === roleKey){
-              window.location.href = existingMeta.dashboardUrl;
-            }
-            return resPayload;
-          }
-
-          // Email exists with a DIFFERENT role: STOP and notify
-          try{ fbAuth.signOut(); }catch(e){}
-          if(noticeContainer){
-            renderDuplicateNotice(noticeContainer, existingRole, roleKey);
-          }
-          var errMsg = 'This email address is already registered as a ' + existingMeta.name + '. Please log in using your existing account.';
-          if(options.onError) options.onError(errMsg, existingRole);
-          var dupErr = new Error(errMsg);
-          dupErr.code = 'EMAIL_EXISTS';
-          dupErr.isExisting = true;
-          dupErr.role = existingRole;
-          dupErr.roleName = existingMeta.name;
-          return Promise.reject(dupErr);
-        }
-
-        // Scenario B: New registration
-        // Atomic account creation in accounts collection with the page role
-        return registerAccountAtomic({
-          email: mail,
-          role: roleKey,
-          name: name,
-          uid: user.uid,
-          provider: 'google',
-          location: options.location || {}
-        }).then(function(){
-          var newPayload = { role: roleKey, user: user, email: mail, isNew: true, isExisting: false };
-          if(options.onSuccess){
-            options.onSuccess(newPayload);
-          } else {
-            window.location.href = meta.dashboardUrl;
-          }
-          return newPayload;
-        });
-      });
-    }).catch(function(err){
+    function handleAuthError(err){
       if(options.button) options.button.disabled = false;
       var c = err && err.code;
       if(c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return;
-      var msg = 'Google authentication failed: ' + (err.message || 'Please try again.');
+
       if(c === 'EMAIL_EXISTS'){
         if(noticeContainer) renderDuplicateNotice(noticeContainer, err.role || err.existingRole, roleKey);
         return Promise.reject(err);
       }
+
+      // If popup fails with internal error or popup-blocked, fall back to redirect automatically
+      if(c === 'auth/internal-error' || c === 'auth/popup-blocked'){
+        console.warn('Google popup encountered ' + c + ', falling back to signInWithRedirect...');
+        try {
+          sessionStorage.setItem('modivs_google_pending', JSON.stringify({
+            role: roleKey,
+            isLogin: !!options.isLogin
+          }));
+          return fbAuth.signInWithRedirect(provider);
+        } catch(redirErr){
+          console.warn('Redirect fallback error:', redirErr);
+        }
+      }
+
+      var cleanMsg = (err && err.message) ? err.message.replace(/^Firebase:\s*Error\s*\(([^)]+)\)\.?/i, '$1') : 'Please try again.';
+      if(c === 'auth/internal-error'){
+        cleanMsg = 'Popup was interrupted. Please disable popup blockers, allow third-party cookies, or log in with Email & Password.';
+      } else if(c === 'auth/unauthorized-domain'){
+        var host = (typeof location !== 'undefined') ? location.hostname : 'current domain';
+        cleanMsg = 'Domain (' + host + ') is not authorized in Firebase Console yet. Please add it to Firebase Console > Authentication > Settings > Authorized Domains.';
+      }
+
+      var msg = 'Google authentication notice: ' + cleanMsg;
       if(options.onError) options.onError(msg);
       else console.error('Google auth error', err);
       return Promise.reject(err);
-    });
+    }
+
+    return fbAuth.signInWithPopup(provider).then(function(res){
+      if(options.button) options.button.disabled = false;
+      return processGoogleUser(res.user, pageRole, options);
+    }).catch(handleAuthError);
   }
+
+  // Auto-resolve Google Auth redirect results on page load
+  try {
+    var initAuth = auth();
+    if(initAuth && typeof initAuth.getRedirectResult === 'function'){
+      initAuth.getRedirectResult().then(function(res){
+        if(res && res.user){
+          var pending = null;
+          try {
+            pending = JSON.parse(sessionStorage.getItem('modivs_google_pending') || 'null');
+            sessionStorage.removeItem('modivs_google_pending');
+          } catch(e){}
+          var rk = (pending && pending.role) || 'student';
+          return processGoogleUser(res.user, rk, { isLogin: pending ? pending.isLogin : true });
+        }
+      }).catch(function(err){
+        console.warn('Redirect auth result warning:', err);
+      });
+    }
+  } catch(e){}
 
   window.ModivsAuthUnique = {
     normalizeEmail: normalizeEmail,
