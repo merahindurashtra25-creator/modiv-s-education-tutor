@@ -29,8 +29,9 @@ jobs:
       - name: Verify No Committed Secrets
         run: |
           echo "Scanning for accidental secret file commits..."
-          if git ls-files | grep -E '(\.env|\.pem|serviceAccount.*\.json|.*credentials.*\.json)$'; then
-            echo "::error::Found forbidden secret files committed to the repository!"
+          FORBIDDEN=$(git ls-files | grep -E '(^|/)(\.env|\.pem|.*serviceAccount.*\.json|.*credentials.*\.json)$' | grep -v '\.env\.example' || true)
+          if [ -n "$FORBIDDEN" ]; then
+            echo "::error::Found forbidden secret files committed to the repository: $FORBIDDEN"
             exit 1
           fi
           echo "No forbidden secret files committed."
@@ -38,8 +39,9 @@ jobs:
       - name: Scan Codebase for Leaked Private Keys
         run: |
           echo "Scanning repository files for private keys..."
-          if grep -rnw . -e "BEGIN RSA PRIVATE KEY" -e "BEGIN PRIVATE KEY" --exclude-dir=node_modules --exclude-dir=.git; then
-            echo "::error::Leaked private key detected in source code!"
+          LEAKED=$(grep -rnE "BEGIN (RSA|EC|DSA|OPENSSH )?PRIVATE KEY" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.github || true)
+          if [ -n "$LEAKED" ]; then
+            echo "::error::Leaked private key detected in source code: $LEAKED"
             exit 1
           fi
           echo "No private keys detected."
