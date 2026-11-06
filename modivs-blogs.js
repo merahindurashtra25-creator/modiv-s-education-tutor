@@ -163,7 +163,7 @@
   function session(){
     try{
       var a = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
-      var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
+      var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com'];
       if(a && a.email && adminEmails.indexOf(a.email.toLowerCase()) !== -1) return { name: a.name || 'Admin', role: 'Admin', admin: true };
     }catch(e){}
     try{

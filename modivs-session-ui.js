@@ -5,7 +5,7 @@
 (function(){
   'use strict';
   function rd(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
-  var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
+  var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com'];
   function me(){
     try{var a=rd('modivs_admin_session',null);if(a&&a.email&&adminEmails.indexOf(a.email.toLowerCase())!==-1)return null}catch(e){}
     var u=rd('modivs_auth_user',null);

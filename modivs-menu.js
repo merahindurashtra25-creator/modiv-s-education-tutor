@@ -35,7 +35,7 @@
       if(h&&h===file)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
     });
     var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com'];
-    var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','admin@gmail.com'];
+    var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com'];
     var isAdmin=false;
     var adminEmail='';
     try{

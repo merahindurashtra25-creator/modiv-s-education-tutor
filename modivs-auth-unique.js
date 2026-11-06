@@ -51,7 +51,7 @@
     }
   };
 
-  var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
+  var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com'];
 
   function normalizeRoleKey(role){
     if(!role) return 'user';

@@ -1,4 +1,11 @@
 {
+  "name": "modivs-education",
+  "version": "1.0.0",
+  "scripts": {
+    "test": "node tests/test-scenarios.js && node tests/test-security-suite.cjs",
+    "test:security": "node tests/test-security-suite.cjs",
+    "test:scenarios": "node tests/test-scenarios.js"
+  },
   "dependencies": {
     "express-rate-limit": "^8.7.2"
   }

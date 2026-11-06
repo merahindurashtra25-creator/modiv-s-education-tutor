@@ -42,7 +42,7 @@
     return u;
   }
 
-  var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
+  var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com'];
   function isAdmin(){
     var session = read('modivs_admin_session', null);
     var u = user();

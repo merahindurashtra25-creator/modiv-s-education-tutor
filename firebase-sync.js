@@ -31,38 +31,42 @@
   function isAdminSession(){
     try {
       var as = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
-      var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
+      var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com'];
       if(as && as.email && adminEmails.indexOf(String(as.email).toLowerCase()) > -1) return true;
-      if(typeof window !== 'undefined' && window.location && window.location.pathname.indexOf('modivs-admin.html') > -1) return true;
     } catch(e){}
     return false;
   }
 
-  // Ensure an authenticated session so Firestore read/write rules never block requests
+  // Ensure an authenticated session safely without exposing credentials
   var authPromise = null;
   function ensureAuth(forceAdmin){
-    var needAdmin = forceAdmin || isAdminSession();
     var a = auth();
     if(!a) return Promise.resolve(null);
 
-    var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'admin@gmail.com'];
+    var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com'];
     var cur = a.currentUser;
     var curIsAdmin = cur && cur.email && adminEmails.indexOf(String(cur.email).toLowerCase()) > -1;
 
-    if(needAdmin && curIsAdmin) return Promise.resolve(cur);
-    if(!needAdmin && cur) return Promise.resolve(cur);
+    if(cur) return Promise.resolve(cur);
+
+    // If already waiting on an auth promise, return it
+    if(authPromise) return authPromise;
 
     authPromise = new Promise(function(resolve){
-      var creds = needAdmin
-        ? { email: 'divyanshdhimanteam@gmail.com', pass: 'ModivsAdmin2026!' }
-        : { email: 'modivs_visitor@modivs.com', pass: 'ModivsVisitor2026!' };
-
-      a.signInWithEmailAndPassword(creds.email, creds.pass).then(function(res){
-        resolve(res.user);
-      }).catch(function(err){
-        console.warn('Auth sign-in fallback notice:', err);
-        resolve(a.currentUser || null);
-      });
+      // For unauthenticated guest visitors, use anonymous auth if enabled
+      if(a.signInAnonymously){
+        a.signInAnonymously().then(function(res){
+          authPromise = null;
+          resolve(res.user);
+        }).catch(function(err){
+          authPromise = null;
+          console.log('Guest browsing mode (anonymous auth notice):', err && err.message);
+          resolve(a.currentUser || null);
+        });
+      } else {
+        authPromise = null;
+        resolve(null);
+      }
     });
     return authPromise;
   }
