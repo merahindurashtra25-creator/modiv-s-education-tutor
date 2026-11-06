@@ -344,7 +344,9 @@ function persist(){
   else{full.id='t_user_'+Date.now();db.unshift(full)}
   localStorage.setItem('modivs_tutors_db',JSON.stringify(db));
 
-  if(window.EducationBFirebase && window.EducationBFirebase.db){
+  if(window.ModivsFirebaseSync && typeof ModivsFirebaseSync.saveTutor === 'function'){
+    ModivsFirebaseSync.saveTutor(full);
+  } else if(window.EducationBFirebase && window.EducationBFirebase.db){
     try{
       var fdb = window.EducationBFirebase.db;
       fdb.collection('tutors').doc(full.id).set(Object.assign({}, full, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }), { merge: true });

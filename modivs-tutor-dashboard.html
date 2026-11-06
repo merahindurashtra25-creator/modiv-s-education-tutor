@@ -3016,9 +3016,13 @@
             });
             localStorage.setItem('modivs_audit_logs', JSON.stringify(logs.slice(0, 50)));
           }
-          var fb = window.EducationBFirebase;
-          if (fb && fb.db && window.firebase && id) {
-            fb.db.collection('tutors').doc(String(id).replace(/[/]/g, '_')).set({ photo: dataUrl, status: status, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function () { });
+          if (window.ModivsFirebaseSync && typeof ModivsFirebaseSync.saveTutor === 'function') {
+            ModivsFirebaseSync.saveTutor(Object.assign({}, t, { id: id, photo: dataUrl, status: status, email: email }));
+          } else {
+            var fb = window.EducationBFirebase;
+            if (fb && fb.db && window.firebase && id) {
+              fb.db.collection('tutors').doc(String(id).replace(/[/]/g, '_')).set({ photo: dataUrl, status: status, updatedAt: firebase.firestore.FieldValue.serverTimestamp() }, { merge: true }).catch(function () { });
+            }
           }
         } catch (err) {
           console.error(err); say('Could not save the photo. Your browser storage may be full. Try a smaller photo.'); return;

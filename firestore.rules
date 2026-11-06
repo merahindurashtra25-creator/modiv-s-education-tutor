@@ -145,7 +145,7 @@ service cloud.firestore {
         signedIn() &&
         isEmail(resource.data.email) &&
         request.resource.data.email == resource.data.email &&
-        request.resource.data.status == resource.data.status
+        (request.resource.data.status == resource.data.status || request.resource.data.status == 'pending')
       );
 
       allow delete: if isAdmin();

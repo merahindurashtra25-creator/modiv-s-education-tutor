@@ -765,18 +765,27 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   // Creates an "incomplete" tutor record; the tutor completes the profile from the dashboard (#tutor-profile wizard).
   function ensureTutorStub(mail, name){
     try{
+      var stub = null;
       var db = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
-      if(!db.some(function(t){ return String(t.email).toLowerCase() === mail; })){
-        db.push({ id: 't_user_' + mail.replace(/[^a-z0-9]/gi, '_'), name: name, email: mail, phone: '—', city: '—',
+      var idx = db.findIndex(function(t){ return String(t.email).toLowerCase() === mail; });
+      if(idx < 0){
+        stub = { id: 't_user_' + mail.replace(/[^a-z0-9]/gi, '_'), name: name, email: mail, phone: '—', city: '—',
           headline: 'Account registered. Profile setup incomplete.', qual: 'Profile setup pending', years: 0, subs: ['General'], levels: ['Secondary'],
           fee: 0, modes: ['Online'], langs: ['English'], idType: 'Pending upload', idFile: '', cert: '', sent: 'Registration completed',
-          status: 'incomplete', submitted_at: new Date().toISOString(), is_demo: false });
+          status: 'pending', submitted_at: new Date().toISOString(), is_demo: false };
+        db.push(stub);
         localStorage.setItem('modivs_tutors_db', JSON.stringify(db));
+      } else {
+        stub = db[idx];
       }
       var wm = JSON.parse(localStorage.getItem('modivs_tutor_welcome') || '{}');
       if(!wm[mail]){ wm[mail] = { created: new Date().toISOString(), approved: null }; localStorage.setItem('modivs_tutor_welcome', JSON.stringify(wm)); }
       try{ sessionStorage.removeItem('modivs_welcome_closed'); }catch(x){}
-    }catch(e){}
+
+      if(stub && window.ModivsFirebaseSync && typeof ModivsFirebaseSync.saveTutor === 'function'){
+        ModivsFirebaseSync.saveTutor(stub);
+      }
+    }catch(e){ console.warn('ensureTutorStub error:', e); }
   }
   (function(){
     var form = $('tjForm'); if(!form) return;
@@ -1306,7 +1315,9 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         if(di >= 0){ entry.id = dbTutors[di].id || entry.id; dbTutors[di] = Object.assign({}, dbTutors[di], entry); } else dbTutors.unshift(entry);
         localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
 
-        if(fb && fb.db && window.firebase){
+        if(window.ModivsFirebaseSync && typeof ModivsFirebaseSync.saveTutor === 'function'){
+          ModivsFirebaseSync.saveTutor(entry);
+        } else if(fb && fb.db && window.firebase){
           fb.db.collection('tutors').doc(String(entry.id).replace(/[/]/g, '_')).set(Object.assign({}, entry, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }), { merge: true }).catch(function(){});
         }
         var logs = JSON.parse(localStorage.getItem('modivs_audit_logs') || '[]');

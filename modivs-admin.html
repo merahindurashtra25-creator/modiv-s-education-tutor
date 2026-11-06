@@ -233,7 +233,8 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
   <h1>Admin Dashboard</h1>
   <p class="sub">Review all registered tutor profiles, approve pending applications, and view registered students.</p>
   <div style="display:flex;gap:10px;margin:12px 0 16px;flex-wrap:wrap;">
-    <a href="modivs-tutors.html#add" class="btn" style="background:#0e7c66;border-color:#0e7c66;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">+ Add Tutor Profile</a>
+    <button type="button" id="adminAddTutorQuickBtn" class="btn" style="background:#0e7c66;border-color:#0e7c66;color:#fff;padding:8px 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">+ Add Tutor Account</button>
+    <a href="modivs-tutors.html#add" class="btn" style="background:#0e7c66;border-color:#0e7c66;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">+ Full Tutor Profile Form</a>
     <a href="modivs-active-leads.html#post" class="btn" style="background:#1A2035;border-color:#1A2035;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">+ Add Student Inquiry</a>
     <a href="modivs-students-corner.html#manage" class="btn" style="background:#EBB92E;border-color:#EBB92E;color:#1A2035;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">+ Students’ Corner (free notes, files, quizzes)</a>
   </div>
@@ -412,29 +413,57 @@ function syncDatabases(){
 syncDatabases();
 (function(){
   var tb=[];try{tb=JSON.parse(localStorage.getItem('modivs_deleted_leads')||'[]')||[]}catch(e){}
-  if(!tb.length)return;
-  students=students.filter(function(x){return !((x.id&&tb.indexOf(x.id)>-1)||(x.email&&tb.indexOf(String(x.email).toLowerCase())>-1))});
-  localStorage.setItem('modivs_students_db', JSON.stringify(students));
+  if(tb.length){
+    students=students.filter(function(x){return !((x.id&&tb.indexOf(x.id)>-1)||(x.email&&tb.indexOf(String(x.email).toLowerCase())>-1))});
+    localStorage.setItem('modivs_students_db', JSON.stringify(students));
+  }
+  var tt=[];try{tt=JSON.parse(localStorage.getItem('modivs_deleted_tutors')||'[]')||[]}catch(e){}
+  if(tt.length){
+    tutors=tutors.filter(function(x){return !((x.id&&tt.indexOf(x.id)>-1)||(x.email&&tt.indexOf(String(x.email).toLowerCase())>-1))});
+    localStorage.setItem('modivs_tutors_db', JSON.stringify(tutors));
+  }
 })();
 
 if(window.ModivsFirebaseSync){
   window.ModivsFirebaseSync.onTutors(function(freshTutors){
-    if(Array.isArray(freshTutors) && freshTutors.length){
-      tutors = freshTutors;
+    if(Array.isArray(freshTutors)){
+      var tt=[];try{tt=JSON.parse(localStorage.getItem('modivs_deleted_tutors')||'[]')||[]}catch(e){}
+      tutors = freshTutors.filter(function(x){
+        return !((x.id&&tt.indexOf(x.id)>-1)||(x.email&&tt.indexOf(String(x.email).toLowerCase())>-1));
+      });
       try{ render(); }catch(e){}
     }
   });
   window.ModivsFirebaseSync.onStudents(function(freshStudents){
-    if(Array.isArray(freshStudents) && freshStudents.length){
-      students = freshStudents;
+    if(Array.isArray(freshStudents)){
+      var tb=[];try{tb=JSON.parse(localStorage.getItem('modivs_deleted_leads')||'[]')||[]}catch(e){}
+      students = freshStudents.filter(function(x){
+        return !((x.id&&tb.indexOf(x.id)>-1)||(x.email&&tb.indexOf(String(x.email).toLowerCase())>-1));
+      });
       try{ render(); }catch(e){}
     }
   });
 } else {
   setTimeout(function(){
     if(window.ModivsFirebaseSync){
-      window.ModivsFirebaseSync.onTutors(function(freshTutors){ if(Array.isArray(freshTutors)&&freshTutors.length){ tutors = freshTutors; try{ render(); }catch(e){} } });
-      window.ModivsFirebaseSync.onStudents(function(freshStudents){ if(Array.isArray(freshStudents)&&freshStudents.length){ students = freshStudents; try{ render(); }catch(e){} } });
+      window.ModivsFirebaseSync.onTutors(function(freshTutors){
+        if(Array.isArray(freshTutors)){
+          var tt=[];try{tt=JSON.parse(localStorage.getItem('modivs_deleted_tutors')||'[]')||[]}catch(e){}
+          tutors = freshTutors.filter(function(x){
+            return !((x.id&&tt.indexOf(x.id)>-1)||(x.email&&tt.indexOf(String(x.email).toLowerCase())>-1));
+          });
+          try{ render(); }catch(e){}
+        }
+      });
+      window.ModivsFirebaseSync.onStudents(function(freshStudents){
+        if(Array.isArray(freshStudents)){
+          var tb=[];try{tb=JSON.parse(localStorage.getItem('modivs_deleted_leads')||'[]')||[]}catch(e){}
+          students = freshStudents.filter(function(x){
+            return !((x.id&&tb.indexOf(x.id)>-1)||(x.email&&tb.indexOf(String(x.email).toLowerCase())>-1));
+          });
+          try{ render(); }catch(e){}
+        }
+      });
     }
   }, 200);
 }
@@ -647,6 +676,117 @@ function openAdminEditStudentModal(x){
     ov.remove();
     toast('Lead updated successfully! Synchronized across Student & Tutor dashboards.');
     selId = updated.id;
+    render();
+  };
+}
+
+function openAdminAddTutorModal(){
+  var existing = document.getElementById('adminAddTutorModal');
+  if(existing) existing.remove();
+
+  var ov = el('div', 'admin-modal-overlay');
+  ov.id = 'adminAddTutorModal';
+
+  var card = el('div', 'admin-modal-card');
+  card.innerHTML =
+    '<div class="admin-modal-head">' +
+      '<h3>➕ Add New Tutor Account</h3>' +
+      '<button type="button" class="admin-modal-close" id="closeAdminAddTutor">&times;</button>' +
+    '</div>' +
+    '<form id="adminAddTutorForm">' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="addTName">Tutor Full Name *</label><input type="text" id="addTName" placeholder="e.g. Rahul Sharma" required></div>' +
+        '<div class="admin-form-group"><label for="addTEmail">Email Address *</label><input type="email" id="addTEmail" placeholder="e.g. rahul@example.com" required></div>' +
+      '</div>' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="addTPhone">Mobile Phone *</label><input type="tel" id="addTPhone" placeholder="e.g. +91 9876543210" required></div>' +
+        '<div class="admin-form-group"><label for="addTFee">Hourly Fee (₹) *</label><input type="number" id="addTFee" value="500" min="100" max="10000" required></div>' +
+      '</div>' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="addTCity">City *</label><input type="text" id="addTCity" placeholder="e.g. Mumbai" required></div>' +
+        '<div class="admin-form-group"><label for="addTArea">Area / Locality *</label><input type="text" id="addTArea" placeholder="e.g. Andheri West" required></div>' +
+      '</div>' +
+      '<div class="admin-form-group"><label for="addTSubs">Subjects Taught (comma separated) *</label><input type="text" id="addTSubs" placeholder="e.g. Mathematics, Physics, Science" required></div>' +
+      '<div class="admin-form-row">' +
+        '<div class="admin-form-group"><label for="addTQual">Highest Qualification</label><input type="text" id="addTQual" placeholder="e.g. B.Tech / M.Sc Mathematics" value="Degree in Education"></div>' +
+        '<div class="admin-form-group"><label for="addTStatus">Account Status</label><select id="addTStatus"><option value="approved" selected>Approved (Live in public search)</option><option value="pending">Pending Review</option></select></div>' +
+      '</div>' +
+      '<div style="display:flex;justify-content:flex-end;gap:10px;margin-top:16px;">' +
+        '<button type="button" class="btn" id="cancelAdminAddTutor" style="background:transparent;border:1.5px solid #1A2035;color:#1A2035;padding:9px 18px;border-radius:8px;font-weight:600;cursor:pointer;">Cancel</button>' +
+        '<button type="submit" class="btn" style="background:#0e7c66;border:1.5px solid #0e7c66;color:#fff;padding:9px 20px;border-radius:8px;font-weight:700;cursor:pointer;">Create & Sync Tutor Account</button>' +
+      '</div>' +
+    '</form>';
+
+  ov.appendChild(card);
+  document.body.appendChild(ov);
+
+  card.querySelector('#closeAdminAddTutor').onclick = function(){ ov.remove(); };
+  card.querySelector('#cancelAdminAddTutor').onclick = function(){ ov.remove(); };
+  ov.onclick = function(e){ if(e.target === ov) ov.remove(); };
+
+  card.querySelector('#adminAddTutorForm').onsubmit = function(e){
+    e.preventDefault();
+    var name = document.getElementById('addTName').value.trim();
+    var email = document.getElementById('addTEmail').value.trim().toLowerCase();
+    var phone = document.getElementById('addTPhone').value.trim();
+    var fee = Number(document.getElementById('addTFee').value) || 500;
+    var city = document.getElementById('addTCity').value.trim();
+    var area = document.getElementById('addTArea').value.trim();
+    var subs = document.getElementById('addTSubs').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
+    var qual = document.getElementById('addTQual').value.trim() || 'Degree in Education';
+    var status = document.getElementById('addTStatus').value;
+
+    if(!name || !email || !phone || !city || !subs.length){
+      toast('Please fill in all required fields.');
+      return;
+    }
+
+    var ts = Date.now();
+    var newId = 't_adm_' + ts;
+    var newTutor = {
+      id: newId,
+      name: name,
+      email: email,
+      phone: phone,
+      city: city,
+      area: area,
+      location: { city: city, area: area },
+      subs: subs,
+      subjects: subs,
+      levels: ['Secondary (9-10)', 'Senior secondary (11-12)'],
+      modes: ['Online', 'Offline (At student’s home)'],
+      fee: fee,
+      headline: 'Experienced Tutor - ' + subs.slice(0, 2).join(', '),
+      bio: 'Verified tutor teaching ' + subs.join(', ') + ' in ' + city + '.',
+      qual: qual,
+      quals: [{ degree: qual, inst: '', field: '', year: '' }],
+      years: 3,
+      totalYears: 3,
+      status: status,
+      sent: 'Added by admin',
+      submitted_at: new Date().toISOString(),
+      reviewed_at: new Date().toISOString(),
+      reviewed_by: currentAdminEmail || 'Admin',
+      added_by_admin: true
+    };
+
+    var existingIdx = tutors.findIndex(function(t){ return (t.email && t.email.toLowerCase() === email) || t.id === newId; });
+    if(existingIdx >= 0){ tutors[existingIdx] = Object.assign({}, tutors[existingIdx], newTutor); }
+    else { tutors.unshift(newTutor); }
+    saveTutorsDb();
+
+    if(window.ModivsFirebaseSync && typeof ModivsFirebaseSync.saveTutor === 'function'){
+      window.ModivsFirebaseSync.saveTutor(newTutor).then(function(){
+        toast('Tutor account synced live with Firestore database.');
+      }).catch(function(err){
+        console.warn('Firestore sync notice:', err);
+      });
+    }
+
+    logAction(newId, name, 'Tutor Account Added', 'Added directly by admin. Status: ' + status);
+    ov.remove();
+    toast('Tutor account successfully created and saved!');
+    selId = newId;
     render();
   };
 }
@@ -1480,6 +1620,19 @@ function detail(){
       window.open('modivs-tutors.html#edit=' + encodeURIComponent(x.email || x.id), '_blank');
     });
 
+    act('🗑️ Permanently Delete Account', 'd', function(){
+      if(!confirm('Permanently delete the tutor account for "' + x.name + '" (' + x.email + ')?\n\nThis will permanently delete this account from Firestore database (tutors, accounts, users, wallets, documents) and cannot be undone.')) return;
+      if(window.ModivsFirebaseSync && typeof ModivsFirebaseSync.deleteTutor === 'function'){
+        ModivsFirebaseSync.deleteTutor(x.id, x.email);
+      }
+      tutors = tutors.filter(function(t){ return t.id !== x.id && (!x.email || String(t.email).toLowerCase() !== String(x.email).toLowerCase()); });
+      saveTutorsDb();
+      logAction(x.id, x.name, 'Account Permanently Deleted', 'Deleted by admin from Firestore and system');
+      toast('Tutor account permanently removed from database.');
+      selId = tutors[0] ? tutors[0].id : null;
+      render();
+    });
+
     d.appendChild(a);
   } else {
     var incAct = el('div', 'acts');
@@ -1489,6 +1642,23 @@ function detail(){
       window.open('modivs-tutors.html#edit=' + encodeURIComponent(x.email || x.id), '_blank');
     });
     incAct.appendChild(eb);
+
+    var delIncBtn = el('button', 'b d', '🗑️ Permanently Delete Account');
+    delIncBtn.type = 'button';
+    delIncBtn.addEventListener('click', function(){
+      if(!confirm('Permanently delete the tutor account for "' + x.name + '" (' + x.email + ')?\n\nThis will permanently delete this account from Firestore database and cannot be undone.')) return;
+      if(window.ModivsFirebaseSync && typeof ModivsFirebaseSync.deleteTutor === 'function'){
+        ModivsFirebaseSync.deleteTutor(x.id, x.email);
+      }
+      tutors = tutors.filter(function(t){ return t.id !== x.id && (!x.email || String(t.email).toLowerCase() !== String(x.email).toLowerCase()); });
+      saveTutorsDb();
+      logAction(x.id, x.name, 'Account Permanently Deleted', 'Deleted by admin from Firestore and system');
+      toast('Tutor account permanently removed from database.');
+      selId = tutors[0] ? tutors[0].id : null;
+      render();
+    });
+    incAct.appendChild(delIncBtn);
+
     d.appendChild(incAct);
   }
 
@@ -1951,6 +2121,9 @@ $('navStudents').addEventListener('click', function(e){ e.preventDefault(); hist
 window.addEventListener('hashchange', applyHash);
 if(location.hash === '#students') currentSection = 'students';
 if(location.hash === '#shop' || location.hash === '#blogs' || location.hash === '#reviews') currentSection = location.hash.slice(1);
+
+var addTBtn = $('adminAddTutorQuickBtn');
+if(addTBtn) addTBtn.addEventListener('click', openAdminAddTutorModal);
 
 render();
 })();

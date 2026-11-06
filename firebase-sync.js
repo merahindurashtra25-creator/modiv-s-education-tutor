@@ -234,9 +234,10 @@
   // ==========================================
   function saveTutor(tutorData){
     if(!tutorData) return Promise.reject(new Error('No tutor data provided'));
-    var tid = sanitizeId(tutorData.id || ('t_adm_' + Date.now()));
+    var tid = sanitizeId(tutorData.id || ('t_user_' + (tutorData.email ? tutorData.email.replace(/[^a-z0-9]/gi, '_') : Date.now())));
     tutorData.id = tid;
-    if(!tutorData.status) tutorData.status = 'approved';
+    var em = String(tutorData.email || '').trim().toLowerCase();
+    if(!tutorData.status) tutorData.status = isAdminSession() ? 'approved' : 'pending';
     tutorData._optimistic = true;
     tutorData._optimisticTime = Date.now();
 
@@ -257,7 +258,36 @@
       });
       delete payload._optimistic;
       delete payload._optimisticTime;
-      return firestore.collection('tutors').doc(tid).set(payload, { merge: true }).then(function(){
+
+      var p1 = firestore.collection('tutors').doc(tid).set(payload, { merge: true });
+
+      // Live synchronize with accounts and users collections
+      if(em){
+        firestore.collection('accounts').doc(em).set({
+          email: em,
+          role: 'tutor',
+          roleName: 'Tutor',
+          name: tutorData.name || '',
+          phone: tutorData.phone || '',
+          city: tutorData.city || '',
+          area: tutorData.area || '',
+          location: tutorData.location || { city: tutorData.city || '', area: tutorData.area || '' },
+          updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+        }, { merge: true }).catch(function(){});
+
+        var uid = tutorData.uid || tid;
+        firestore.collection('users').doc(uid).set({
+          email: em,
+          role: 'Tutor',
+          roleKey: 'tutor',
+          name: tutorData.name || '',
+          phone: tutorData.phone || '',
+          location: tutorData.location || { city: tutorData.city || '', area: tutorData.area || '' },
+          updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+        }, { merge: true }).catch(function(){});
+      }
+
+      return p1.then(function(){
         return tutorData;
       }).catch(function(err){
         console.warn('Firestore tutor set error:', err);
@@ -268,7 +298,8 @@
 
   function deleteTutor(tutorId, email){
     var id = sanitizeId(tutorId);
-    var em = String(email || '').toLowerCase();
+    var em = String(email || '').trim().toLowerCase();
+    var docKey = em.replace(/[^a-z0-9_-]/g, '_');
 
     // Local cleanup
     function hit(x){ return x && ((id && String(x.id) === id) || (em && String(x.email || '').toLowerCase() === em)); }
@@ -279,14 +310,39 @@
     if(id && tb.indexOf(id) < 0) tb.push(id);
     if(em && tb.indexOf(em) < 0) tb.push(em);
     wr('modivs_deleted_tutors', tb);
+
+    // Clean from users cache
+    var uList = rd('modivs_users').filter(function(u){ return !hit(u); });
+    wr('modivs_users', uList);
+
     notifyTutors(a);
 
     return ensureAuth().then(function(){
       var firestore = db();
       if(!firestore) return;
+
+      // 1. Delete from tutors collection by ID
       if(id) firestore.collection('tutors').doc(id).delete().catch(function(){});
+
+      // 2. Permanently delete from accounts collection
+      if(em) firestore.collection('accounts').doc(em).delete().catch(function(){});
+
+      // 3. Delete from tutor_wallets
+      if(em) firestore.collection('tutor_wallets').doc(docKey).delete().catch(function(){});
+
+      // 4. Delete verification documents
+      if(em){
+        firestore.collection('tutor_documents').doc(docKey + '_id').delete().catch(function(){});
+        firestore.collection('tutor_documents').doc(docKey + '_cert').delete().catch(function(){});
+      }
+
+      // 5. Query and delete any matching tutor / user documents by email
       if(em){
         firestore.collection('tutors').where('email', '==', em).get().then(function(snap){
+          snap.forEach(function(d){ d.ref.delete().catch(function(){}); });
+        }).catch(function(){});
+
+        firestore.collection('users').where('email', '==', em).get().then(function(snap){
           snap.forEach(function(d){ d.ref.delete().catch(function(){}); });
         }).catch(function(){});
       }
