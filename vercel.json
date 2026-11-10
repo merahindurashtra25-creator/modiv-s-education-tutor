@@ -57,6 +57,7 @@
     { "src": "/privacy-policy", "dest": "/modivs-privacy-policy.html" },
     { "src": "/terms", "dest": "/modivs-terms.html" },
     { "src": "/refund-policy", "dest": "/modivs-refund-policy.html" },
+    { "src": "/sitemap", "dest": "/modivs-sitemap.html" },
     { "src": "/", "dest": "/index.html" }
   ]
 }
