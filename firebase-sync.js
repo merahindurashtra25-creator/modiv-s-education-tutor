@@ -639,12 +639,62 @@
     };
   }
 
+  /* A signed-in tutor must exist in the Firestore `tutors` collection, otherwise the admin panel never sees them
+     (Google sign-up, a different browser, or a failed first write leave the profile only in this browser). */
+  function ensureTutorProfile(authUser){
+    var em = String(authUser && authUser.email || '').trim().toLowerCase();
+    if(!em || !authUser || authUser.role !== 'Tutor') return Promise.resolve('skip');
+    var flag = 'modivs_tutor_synced_' + em;
+    try{ if(sessionStorage.getItem(flag) === '1') return Promise.resolve('done'); }catch(e){}
+    var a = auth(), firestore = db();
+    if(!a || !firestore) return Promise.resolve('offline');
+
+    function signedInUser(){
+      return new Promise(function(resolve){
+        var u = a.currentUser;
+        if(u && u.email) return resolve(u);
+        var finished = false, off = a.onAuthStateChanged(function(x){
+          if(finished) return;
+          if(x && x.email){ finished = true; try{ off(); }catch(e){} resolve(x); }
+        });
+        setTimeout(function(){ if(!finished){ finished = true; try{ off(); }catch(e){} resolve(null); } }, 4000);
+      });
+    }
+
+    return signedInUser().then(function(u){
+      // Firestore rules only let a tutor write a profile whose email matches the signed-in email
+      if(!u || String(u.email).toLowerCase() !== em) return 'not-signed-in';
+      return firestore.collection('tutors').where('email', '==', em).limit(1).get().then(function(snap){
+        if(snap && !snap.empty){ try{ sessionStorage.setItem(flag, '1'); }catch(e){} return 'exists'; }
+        var local = rd('modivs_tutors_db').filter(function(t){ return String(t && t.email || '').toLowerCase() === em; })[0];
+        var full = null; try{ full = JSON.parse(localStorage.getItem('modivs_current_tutor') || 'null'); }catch(e){}
+        if(full && String(full.email || '').toLowerCase() !== em) full = null;
+        var rec = Object.assign({}, local || {}, full || {}, local && local.status ? { status: local.status } : {});
+        rec.email = em;
+        if(!rec.name) rec.name = authUser.name || em.split('@')[0];
+        if(!rec.id) rec.id = 't_user_' + em.replace(/[^a-z0-9]/gi, '_');
+        if(!rec.uid) rec.uid = u.uid;
+        // rules reject creating an already-approved profile; the admin approves from the panel
+        if(!rec.status || rec.status === 'approved') rec.status = local ? 'pending' : 'incomplete';
+        if(!local){
+          Object.assign(rec, { phone: rec.phone || '—', city: rec.city || '—', headline: rec.headline || 'Account registered. Profile setup incomplete.',
+            qual: rec.qual || 'Profile setup pending', years: rec.years || 0, subs: rec.subs || ['General'], levels: rec.levels || ['Secondary'],
+            fee: rec.fee || 0, modes: rec.modes || ['Online'], langs: rec.langs || ['English'], idType: rec.idType || 'Pending upload',
+            idFile: rec.idFile || '', cert: rec.cert || '', sent: rec.sent || 'Registration completed',
+            submitted_at: rec.submitted_at || new Date().toISOString(), is_demo: false });
+        }
+        return saveTutor(rec).then(function(){ try{ sessionStorage.setItem(flag, '1'); }catch(e){} return 'synced'; });
+      });
+    }).catch(function(err){ console.warn('ensureTutorProfile notice:', err && err.message); return 'error'; });
+  }
+
   window.ModivsFirebaseSync = {
     ensureAuth: ensureAuth,
     onTutors: onTutors,
     onLeads: onLeads,
     onStudents: onStudents,
     saveTutor: saveTutor,
+    ensureTutorProfile: ensureTutorProfile,
     deleteTutor: deleteTutor,
     saveLead: saveLead,
     deleteLead: deleteLead,

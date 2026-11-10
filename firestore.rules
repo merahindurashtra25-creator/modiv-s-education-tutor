@@ -152,6 +152,34 @@ service cloud.firestore {
     }
 
     // ==========================================
+    // 2a. Organizations (tutor side "Tutor / Organization")
+    // Doc id = the organization's lower-case login email. Private: only the owner and the admin can read it.
+    // An organization can create its profile as 'pending' and edit its details, but only the admin can
+    // approve / reject it or write the review note. A rejected organization may re-submit (status back to 'pending').
+    // ==========================================
+    match /organizations/{orgId} {
+      allow read: if isAdmin() || isEmail(orgId);
+
+      allow create: if isAdmin() || (
+        isEmail(orgId) &&
+        orgId == orgId.lower() &&
+        request.resource.data.email == orgId &&
+        request.resource.data.status == 'pending'
+      );
+
+      allow update: if isAdmin() || (
+        isEmail(orgId) &&
+        request.resource.data.email == resource.data.email &&
+        (request.resource.data.status == resource.data.status || request.resource.data.status == 'pending') &&
+        request.resource.data.get('reviewNote', '') == resource.data.get('reviewNote', '') &&
+        request.resource.data.get('reviewedBy', '') == resource.data.get('reviewedBy', '') &&
+        request.resource.data.get('reviewedAt', '') == resource.data.get('reviewedAt', '')
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
     // 2b. Tutor verification documents (Aadhaar / ID, qualification certificate)
     // Strictly confidential: visible and editable only by the owning tutor and verified admin.
     // ==========================================

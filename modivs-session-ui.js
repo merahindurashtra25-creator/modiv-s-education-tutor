@@ -29,6 +29,8 @@
      '.mv-av{width:40px;height:40px;border-radius:50%;border:2px solid #FABD4E;padding:0;background:#14213d;color:#fff;font:700 .9rem "Plus Jakarta Sans",system-ui,sans-serif;display:flex;align-items:center;justify-content:center;overflow:hidden;cursor:pointer}'+
      '.mv-av img{width:100%;height:100%;object-fit:cover;display:block}'+
      '.mv-av:focus-visible{outline:3px solid #7fd1bd;outline-offset:2px}'+
+     '.mv-nm{max-width:150px;margin-right:8px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#14213d;font:700 .88rem "Plus Jakarta Sans",system-ui,sans-serif}'+
+     '@media(max-width:700px){.mv-nm{display:none}}'+
      '.mv-menu{position:absolute;right:0;top:calc(100% + 8px);z-index:80;min-width:210px;background:#fff;color:#14213d;border:1.5px solid #dfe5ee;border-radius:12px;box-shadow:0 12px 32px rgba(20,33,61,.18);padding:8px;font:500 .92rem "Plus Jakarta Sans",system-ui,sans-serif}'+
      '.mv-menu[hidden]{display:none}.mv-who{padding:8px 10px 10px;border-bottom:1px solid #dfe5ee;margin-bottom:6px}.mv-who b{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.mv-who small{color:#5d6b82}'+
      '.mv-menu a,.mv-menu button{display:block;width:100%;text-align:left;padding:9px 10px;border:0;border-radius:8px;background:none;color:inherit;font:inherit;text-decoration:none;cursor:pointer}'+
@@ -38,16 +40,20 @@
     try{localStorage.removeItem('modivs_auth_user')}catch(e){}
     try{var fb=window.EducationBFirebase;if(fb&&fb.auth)fb.auth.signOut()}catch(e){}
     location.href='modivs-home.html'}
+  function hideEl(b){b.style.setProperty('display','none','important');b.setAttribute('aria-hidden','true');b.tabIndex=-1}
   function hideGuestButtons(hd){
     [].forEach.call(hd.querySelectorAll('a,button'),function(b){
       var h=b.getAttribute('href')||'',t=(b.textContent||'').trim().toLowerCase();
-      if(/#login$|#tutor-signup|modivs-signup\.html/.test(h)||/^(log in|login|sign up|sign up \(student\)|sign up as a tutor|become a tutor|become a modivian tutor)$/.test(t))b.style.display='none'})}
+      if(/#login$|#student-login$|#tutor-login$|#tutor-signup|modivs-signup\.html|modivs-student-signup\.html/.test(h)&&!/^(book a demo class|enquire now)$/.test(t)||/^(log in|login|sign up|sign up \(student\)|sign up as a tutor|become a tutor|become a modivian tutor)$/.test(t))hideEl(b)});
+    ['navLoginBtn','navSignup'].forEach(function(id){var b=document.getElementById(id);if(b)hideEl(b)})}
+  function firstName(n){return String(n||'').trim().split(/\s+/)[0]||'there'}
+  function tutorDash(u){try{var o=JSON.parse(localStorage.getItem('modivs_org_profiles')||'{}');if(o&&u&&u.email&&o[String(u.email).toLowerCase()])return 'modivs-org-dashboard.html'}catch(e){}return 'modivs-tutor-dashboard.html'}
   function mount(){
     var u=me();var old=document.getElementById('mvUser');if(old)old.remove();
     if(!u)return;
     var hd=document.querySelector('header')||document.querySelector('.topl');if(!hd)return;
     css();hideGuestButtons(hd);
-    var a=avatarFor(u),dash=u.role==='Tutor'?'modivs-tutor-dashboard.html':'modivs-student-dashboard.html';
+    var a=avatarFor(u),dash=u.role==='Tutor'?tutorDash(u):'modivs-student-dashboard.html';
     var host=hd.querySelector('.acts')||hd.querySelector('.bar')||hd.querySelector('.links')||hd.querySelector('.in')||hd.querySelector('div')||hd;
     var wrap=document.createElement('div');wrap.className='mv-user';wrap.id='mvUser';
     var btn=document.createElement('button');btn.type='button';btn.className='mv-av';btn.setAttribute('aria-haspopup','true');btn.setAttribute('aria-expanded','false');btn.setAttribute('aria-label','Account menu for '+(a.name||'you'));
@@ -60,9 +66,19 @@
     btn.addEventListener('click',function(e){e.stopPropagation();var o=menu.hidden;menu.hidden=!o;btn.setAttribute('aria-expanded',String(o))});
     document.addEventListener('click',function(e){if(!wrap.contains(e.target)){menu.hidden=true;btn.setAttribute('aria-expanded','false')}});
     document.addEventListener('keydown',function(e){if(e.key==='Escape'){menu.hidden=true;btn.setAttribute('aria-expanded','false')}});
-    wrap.appendChild(btn);wrap.appendChild(menu);
+    var nm=document.createElement('span');nm.className='mv-nm';nm.textContent='Hi, '+firstName(a.name||u.name);nm.title=a.name||u.name||'';
+    wrap.appendChild(nm);wrap.appendChild(btn);wrap.appendChild(menu);
     var bur=host.querySelector('.burger');bur?host.insertBefore(wrap,bur):host.appendChild(wrap)}
+  function guard(){
+    var u=me();if(!u)return false;
+    var p=(location.pathname.split('/').pop()||'').toLowerCase(),h=location.hash||'';
+    var dash=u.role==='Tutor'?tutorDash(u):'modivs-student-dashboard.html';
+    var isLogin=p==='modivs-education.html'&&/^(|#|#login|#student-login|#tutor-login)$/.test(h);
+    var isStuSignup=p==='modivs-student-signup.html'&&u.role==='Student / Parent';
+    if(isLogin||isStuSignup){location.replace(dash);return true}
+    return false}
   function go(){
+    if(guard())return;
     if(!window.ModivsAvatars&&!go.tried){go.tried=1;var s=document.createElement('script');s.src='modivs-avatars.js';s.onload=mount;s.onerror=mount;document.head.appendChild(s);return}
     mount()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',go);else go();
