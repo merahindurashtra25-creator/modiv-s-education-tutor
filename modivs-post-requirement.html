@@ -437,6 +437,8 @@ f.addEventListener('submit',function(e){
      freeDemo: rad('demo'),
      address: needAddr?v('addr'):'',
      tutorId: tid,
+     tutorName: (tutor && tutor.name) || '',
+     tutorEmail: (tutor && tutor.email) || '',
      status: 'active',
      sent: 'Just now',
      registered_at: stamp,
@@ -447,15 +449,17 @@ f.addEventListener('submit',function(e){
     var db=jget('modivs_students_db',[]),i=email?db.findIndex(function(s){return s.email===email}):-1;
     db.unshift(req);localStorage.setItem('modivs_students_db',JSON.stringify(db));
     var leads=jget('modivs_active_leads',[]),lead=Object.assign({},req,{status:'active'});leads.unshift(lead);localStorage.setItem('modivs_active_leads',JSON.stringify(leads));
-    var dr=jget('modivs_demo_requests',[]);dr.unshift({id:req.id,tutorId:tid,student:req.name,phone:phone,email:email,subs:subs,city:city,location:locData,requested_at:stamp});localStorage.setItem('modivs_demo_requests',JSON.stringify(dr));
+    var demoRec={id:req.id,tutorId:tid,tutorName:(tutor&&tutor.name)||'',tutorEmail:(tutor&&tutor.email)||'',studentId:req.id,name:req.name,studentName:req.name,student:req.name,phone:phone,email:email,studentEmail:email,subs:subs,mode:modes,cls:req.cls,board:req.board,budget:req.budget,city:city,location:locData,note:req.notes||'',status:'pending',source:'post_requirement',requested_at:stamp};
+    var dr=jget('modivs_demo_requests',[]);dr.unshift(demoRec);localStorage.setItem('modivs_demo_requests',JSON.stringify(dr));
     if(window.ModivsFirebaseSync){
       ModivsFirebaseSync.saveLead(lead).catch(function(e){ console.warn('Sync save lead failed', e); });
+      if(tid && ModivsFirebaseSync.saveDemoRequest) ModivsFirebaseSync.saveDemoRequest(demoRec).catch(function(){});
     }
     if(window.EducationBFirebase){var A=window.EducationBFirebase.auth,F=window.EducationBFirebase.db;
      if(F){
        F.collection('students').doc(req.id).set(req,{merge:true}).catch(function(){});
        F.collection('leads').doc(req.id).set(lead,{merge:true}).catch(function(){});
-       F.collection('demoRequests').doc(req.id).set({tutorId:tid,studentId:req.id,name:req.name,phone:phone,email:email,subs:subs,city:city,location:locData,requested_at:stamp}).catch(function(){});
+       F.collection('demoRequests').doc(req.id).set(demoRec).catch(function(){});
      }}
    }catch(err){}
    var A0=window.EducationBFirebase&&window.EducationBFirebase.auth,acctState={exists:false},acctP;

@@ -76,9 +76,9 @@ input[type=search]{width:100%;padding:10px 14px;border:1.5px solid var(--line);b
 .item b{font-size:1.02rem}.item small{display:block;color:var(--muted);margin-top:2px}
 .item .top2{display:flex;justify-content:space-between;gap:10px;align-items:center}
 .badge{display:inline-block;font-size:.76rem;font-weight:700;padding:3px 10px;border-radius:99px;background:var(--yellow);white-space:nowrap}
-.badge.approved{background:#d9f0e3;color:var(--ok)}
+.badge.approved,.badge.accepted{background:#d9f0e3;color:var(--ok)}
 .badge.pending{background:#fff3cd;color:#856404}
-.badge.rejected{background:#f7dcda;color:var(--bad)}
+.badge.rejected,.badge.declined{background:#f7dcda;color:var(--bad)}
 .badge.incomplete{background:#e2e3e5;color:#495057}
 .badge.demo{background:#e8f4fd;color:#1A2035}
 .empty{color:var(--muted);text-align:center;padding:26px 0}
@@ -161,6 +161,51 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 .cbtn:disabled{opacity:.6;cursor:wait}
 @media(max-width:980px){.cms{grid-template-columns:1fr}}
 @media(max-width:520px){.cms-2{grid-template-columns:1fr}.cms-row{flex-direction:column;align-items:stretch}}
+
+/* ---- Sidebar layout (same pattern as the tutor dashboard) ---- */
+.adm-app{display:grid;grid-template-columns:272px minmax(0,1fr);gap:24px;max-width:1400px;margin:0 auto;padding:20px 20px 60px;align-items:start}
+.adm-content{min-width:0}
+.adm-side{background:var(--navy);color:var(--cream);border-radius:22px;padding:18px;position:sticky;top:calc(84px + env(safe-area-inset-top,0px));max-height:calc(100vh - 104px);overflow:auto}
+.adm-me{text-align:center;padding:6px 4px 14px;border-bottom:1px solid #3d4870}
+.adm-av{width:64px;height:64px;border-radius:50%;background:var(--yellow);color:var(--navy);display:grid;place-items:center;font-weight:800;font-size:1.3rem;margin:0 auto 8px;border:3px solid var(--cream)}
+.adm-me b{display:block;font-size:1.05rem}
+.adm-me .em{display:block;color:#aab1cc;font-size:.78rem;word-break:break-all;margin:2px 0 8px}
+.adm-role{display:inline-block;background:#d9f0e3;color:var(--ok);font-size:.74rem;font-weight:700;padding:2px 10px;border-radius:99px}
+.adm-nav{display:grid;gap:4px;margin:10px 0 2px}
+.adm-grp{font-size:.7rem;font-weight:800;letter-spacing:.08em;text-transform:uppercase;color:#8f98bb;margin:12px 8px 2px}
+.adm-nav button{display:flex;align-items:center;gap:10px;width:100%;text-align:left;padding:10px 12px;border:0;border-radius:12px;background:transparent;color:var(--cream);font-weight:600;font-size:.9rem;cursor:pointer}
+.adm-nav button:hover{background:#2a3350}
+.adm-nav button[aria-current=page]{background:var(--yellow);color:var(--navy)}
+.adm-nav .ic{width:18px;height:18px;flex:none;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.adm-nav .n{margin-left:auto;background:var(--yellow);color:var(--navy);font-size:.72rem;font-weight:800;border-radius:99px;padding:1px 8px;white-space:nowrap}
+.adm-nav button[aria-current=page] .n{background:var(--navy);color:var(--yellow)}
+@media(max-width:960px){.adm-app{grid-template-columns:1fr;padding:14px 14px 50px;gap:14px}.adm-side{position:static;max-height:none;padding:8px;border-radius:16px}.adm-me,.adm-grp{display:none}.adm-nav{display:flex;gap:6px;margin:0;overflow-x:auto;scrollbar-width:thin}.adm-nav button{width:auto;flex:none;white-space:nowrap;padding:9px 12px}}
+#lgStats{grid-template-columns:repeat(auto-fit,minmax(130px,1fr))}
+.lg-bar select{max-width:100%}
+.recent .box.wide{grid-column:1/-1}
+/* ---- Activity ledger ---- */
+.lg-bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+.lg-bar input,.lg-bar select{padding:8px 12px;border:1.5px solid var(--line);border-radius:8px;background:var(--cream);font-size:.88rem}
+.lg-bar input[type=search]{flex:1;min-width:220px}
+.lg-bar .lg-d{font-size:.82rem;color:var(--muted);display:flex;align-items:center;gap:6px}
+.lg-wrap{overflow-x:auto}
+.lg{width:100%;border-collapse:collapse;font-size:.86rem;min-width:860px}
+.lg th{text-align:left;font-size:.72rem;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);padding:8px 10px;border-bottom:2px solid var(--line);white-space:nowrap}
+.lg td{padding:10px;border-bottom:1px solid var(--line);vertical-align:top}
+.lg tbody tr:hover td{background:var(--cream)}
+.lg small{display:block;color:var(--muted);font-size:.76rem;word-break:break-word}
+.lg .idc{font-weight:800;color:var(--navy);background:var(--cream);border:1.5px solid var(--line);border-radius:6px;padding:1px 8px;cursor:pointer;font-size:.8rem}
+.lg .idc:hover{border-color:var(--navy)}
+.lg .amt{font-weight:700;white-space:nowrap}.lg .amt.neg{color:var(--bad)}.lg .amt.pos{color:var(--ok)}
+.lgb{display:inline-block;font-size:.72rem;font-weight:700;padding:2px 9px;border-radius:99px;white-space:nowrap}
+.lgb.unlock{background:#fff3cd;color:#856404}.lgb.resp{background:#e8f4fd;color:#1A2035}.lgb.coin{background:#d9f0e3;color:var(--ok)}.lgb.debit{background:#f7dcda;color:var(--bad)}.lgb.mem{background:#ece4fb;color:#4b2a91}.lgb.admin{background:#e2e3e5;color:#495057}
+.lg-more{display:block;margin:14px auto 0}
+.lg-lead{border:1.5px solid var(--line);border-radius:12px;padding:12px 14px;margin-bottom:10px;background:var(--card)}
+.lg-lead h4{margin:0 0 8px;font-size:.95rem;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.lg-chips{display:flex;gap:6px;flex-wrap:wrap}
+.lg-chip{border:1.5px solid var(--line);background:var(--cream);border-radius:99px;padding:3px 10px;font-size:.8rem;font-weight:600;cursor:pointer}
+.lg-chip:hover{border-color:var(--navy)}
+.lg-chip i{font-style:normal;color:var(--muted);font-weight:500;margin-left:4px}
 </style>
 <script src="modivs-avatars.js"></script>
 <script src="modivs-docs.js"></script>
@@ -231,9 +276,20 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
  </div>
 </header>
 
-<div class="wrap">
-  <h1>Admin Dashboard</h1>
-  <p class="sub">Review all registered tutor profiles, approve pending applications, and view registered students.</p>
+<div class="adm-app">
+ <aside class="adm-side" aria-label="Admin menu">
+  <div class="adm-me">
+   <div class="adm-av" aria-hidden="true">AD</div>
+   <b>Admin</b>
+   <span class="em" id="admMeEm"></span>
+   <span class="adm-role">Administrator</span>
+  </div>
+  <nav class="adm-nav" id="admNav" aria-label="Admin sections"></nav>
+ </aside>
+ <div class="adm-content">
+  <h1 id="admTitle">Admin Dashboard</h1>
+  <p class="sub" id="admSub">Your overview: key numbers, latest tutors and leads, and quick actions.</p>
+  <div id="ovPanel">
   <div style="display:flex;gap:10px;margin:12px 0 16px;flex-wrap:wrap;">
     <button type="button" id="adminAddTutorQuickBtn" class="btn" style="background:#0e7c66;border-color:#0e7c66;color:#fff;padding:8px 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;cursor:pointer;">+ Add Tutor Account</button>
     <a href="modivs-tutors.html#add" class="btn" style="background:#0e7c66;border-color:#0e7c66;color:#fff;text-decoration:none;padding:8px 16px;border-radius:8px;font-weight:600;display:inline-flex;align-items:center;gap:6px;">+ Full Tutor Profile Form</a>
@@ -244,10 +300,34 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
   <div class="stats" id="stats"></div>
 
   <div class="recent" id="recent" aria-label="Latest activity"></div>
+  </div>
+
+  <section class="box hide" id="ledger" aria-label="Activity ledger">
+    <div class="stats" id="lgStats"></div>
+    <div class="lg-bar">
+      <select id="lgType" aria-label="Activity type">
+        <option value="all">All activity</option>
+        <option value="unlock">Lead unlocks</option>
+        <option value="resp">Lead responses (accepted / demo / declined)</option>
+        <option value="coin">Coin purchases &amp; credits/debits</option>
+        <option value="mem">Membership</option>
+        <option value="admin">Admin actions</option>
+      </select>
+      <input type="search" id="lgQ" placeholder="Search tutor ID, name, email, lead ID or student..." aria-label="Search ledger">
+      <label class="lg-d">From <input type="date" id="lgFrom" aria-label="From date"></label>
+      <label class="lg-d">To <input type="date" id="lgTo" aria-label="To date"></label>
+      <select id="lgView" aria-label="Ledger view">
+        <option value="timeline">Timeline</option>
+        <option value="lead">By lead</option>
+      </select>
+      <button type="button" class="cbtn sm" id="lgCsv">Export CSV</button>
+    </div>
+    <p class="cms-sub" id="lgNote"></p>
+    <div class="lg-wrap" id="lgBody"></div>
+  </section>
 
   <div class="main">
     <section class="box" aria-label="Applications Queue">
-      <div class="tools" id="tabs" role="group" aria-label="Admin Navigation Tabs"></div>
       <input type="search" id="q" placeholder="Search by name, email, phone, city or subject..." aria-label="Search">
       <div id="chatFilters" class="hide" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:12px;">
         <input type="search" id="chatStudent" placeholder="Filter student" aria-label="Filter student">
@@ -263,6 +343,7 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
   </div>
 
   <div class="cms hide" id="cms"></div>
+ </div>
 </div>
 
 <div class="toast hide" id="toast" role="status"></div>
@@ -469,7 +550,7 @@ function withAccounts(list){
   });
 })();
 
-var adminUnlocks = [];
+var adminUnlocks = [], adminCoinTx = [], adminMemHist = [], adminDemoRequests = [];
 function startAdminListeners(sync){
   sync.onTutors(function(freshTutors){
     if(Array.isArray(freshTutors)){
@@ -489,13 +570,37 @@ function startAdminListeners(sync){
       try{ render(); }catch(e){}
     }
   });
+  if(sync.onAllDemoRequests){
+    sync.onAllDemoRequests(function(list){
+      adminDemoRequests = Array.isArray(list) ? list : [];
+      try{ render(); }catch(e){}
+    });
+  }
   if(sync.onAllUnlocks){
     sync.onAllUnlocks(function(list){
       adminUnlocks = Array.isArray(list) ? list : [];
       try{ detail(); }catch(e){}
+      try{ tabs(); stats(); recent(); if(currentSection === 'ledger') renderLedger(); }catch(e){}
+    });
+  }
+  if(sync.onAllCoinTransactions){
+    sync.onAllCoinTransactions(function(list){
+      adminCoinTx = Array.isArray(list) ? list : [];
+      try{ if(currentSection === 'ledger') renderLedger(); }catch(e){}
+    });
+  }
+  if(sync.onAllMembershipHistory){
+    sync.onAllMembershipHistory(function(list){
+      adminMemHist = Array.isArray(list) ? list : [];
+      try{ if(currentSection === 'ledger') renderLedger(); }catch(e){}
     });
   }
 }
+window.addEventListener('storage', function(e){
+  if(e && /^(modivs_demo_requests|modivs_student_enquiries|modivs_deleted_demo_requests)$/.test(e.key || '')){
+    try{ render(); }catch(err){}
+  }
+});
 if(window.ModivsFirebaseSync){
   startAdminListeners(window.ModivsFirebaseSync);
 } else {
@@ -504,7 +609,7 @@ if(window.ModivsFirebaseSync){
 if(window.ModivsChat){
   if(ModivsChat.listenAllConversationsForAdmin) ModivsChat.listenAllConversationsForAdmin();
   if(ModivsChat.subscribe) ModivsChat.subscribe(function(){
-    try{ tabs(); if(currentSection === 'chat' || currentSection === 'students' || (currentSection !== 'orgs' && !isCms())){ if(currentSection === 'chat') list(); detail(); } }catch(e){}
+    try{ stats(); tabs(); if(currentSection === 'overview'){ recent(); } else if(currentSection === 'chat' || currentSection === 'requests' || currentSection === 'students' || (currentSection !== 'orgs' && !isCms() && !isPanel())){ if(currentSection === 'chat' || currentSection === 'requests') list(); detail(); } }catch(e){}
   });
 }
 
@@ -837,8 +942,155 @@ var LABEL = {
   approved: 'Approved Tutors',
   rejected: 'Rejected Applications',
   students: 'Student Inquiries',
+  requests: 'Tutor Requests',
   incomplete: 'Profile Incomplete'
 };
+
+function reqStatusClass(st){
+  st = String(st || 'pending').toLowerCase();
+  if(st === 'accepted' || st === 'approved') return 'approved';
+  if(st === 'demo') return 'demo';
+  if(st === 'declined' || st === 'rejected') return 'rejected';
+  return 'pending';
+}
+function reqStatusLabel(st){
+  st = String(st || 'pending').toLowerCase();
+  return ({ accepted: 'Accepted', approved: 'Accepted', demo: 'Demo Offered', declined: 'Declined', rejected: 'Declined', pending: 'Pending' })[st] || 'Pending';
+}
+function getAllTutorRequests(){
+  var deleted = readLs('modivs_deleted_demo_requests');
+  var byId = {}, order = [];
+  function findTutor(tid, tem, tname){
+    var emLow = String(tem || '').toLowerCase();
+    var tidStr = String(tid || '');
+    return tutors.filter(function(t){
+      return (tidStr && String(t.id) === tidStr) ||
+             (emLow && String(t.email || '').toLowerCase() === emLow) ||
+             (tname && String(t.name || '').toLowerCase() === String(tname).toLowerCase());
+    })[0] || null;
+  }
+  function findStudent(sidVal, sem){
+    var emLow = String(sem || '').toLowerCase();
+    var sStr = String(sidVal || '');
+    return students.filter(function(s){
+      return (sStr && String(s.id) === sStr) || (emLow && String(s.email || s.owner_email || '').toLowerCase() === emLow);
+    })[0] || null;
+  }
+  function addRaw(r, srcFallback){
+    if(!r || !r.id) return;
+    var id = String(r.id);
+    if(deleted.indexOf(id) > -1) return;
+    var tid = r.tutorId || r.tutor_id || '';
+    var tem = String(r.tutorEmail || '').toLowerCase();
+    var tname = r.tutorName || '';
+    // Only include records that target a specific tutor
+    if(!tid && !tem && !tname) return;
+    var tObj = findTutor(tid, tem, tname);
+    var sem = String(r.studentEmail || r.email || r.owner_email || '').toLowerCase();
+    var sObj = findStudent(r.studentId || r.student_id || r.id, sem);
+    var subs = Array.isArray(r.subs) ? r.subs.join(', ') : (r.subject || r.subs || (sObj && Array.isArray(sObj.subs) ? sObj.subs.join(', ') : '') || 'General');
+    var mode = Array.isArray(r.mode) ? r.mode.join(', ') : (r.mode || 'Online');
+    var at = r.requested_at || r.sentAt || r.registered_at || r.created_at || r.createdAt || '';
+    if(at && typeof at.toDate === 'function') at = at.toDate().toISOString();
+    var norm = {
+      id: id,
+      studentId: r.studentId || r.student_id || (sObj && sObj.id) || '',
+      studentName: r.studentName || r.name || r.student || (sObj && sObj.name) || 'Student',
+      studentEmail: sem || (sObj && (sObj.email || sObj.owner_email)) || '',
+      studentPhone: r.phone || (sObj && sObj.phone) || '',
+      cls: r.cls || (sObj && sObj.cls) || '',
+      board: r.board || (sObj && sObj.board) || '',
+      city: r.city || (sObj && sObj.city) || '',
+      budget: r.budget || (sObj && sObj.budget) || '',
+      tutorId: tid || (tObj && tObj.id) || '',
+      tutorName: tname || (tObj && tObj.name) || (tid ? 'Tutor #' + tid : tem),
+      tutorEmail: tem || (tObj && String(tObj.email || '').toLowerCase()) || '',
+      subject: subs,
+      mode: mode,
+      note: r.note || r.notes || '',
+      status: r.status || 'pending',
+      source: r.source || srcFallback || 'demo_request',
+      at: at,
+      tutorObj: tObj,
+      studentObj: sObj,
+      _raw: r
+    };
+    if(!byId[id]){
+      byId[id] = norm;
+      order.push(id);
+    } else {
+      var prev = byId[id];
+      byId[id] = Object.assign({}, prev, norm, {
+        studentName: norm.studentName !== 'Student' ? norm.studentName : prev.studentName,
+        studentPhone: norm.studentPhone || prev.studentPhone,
+        tutorName: norm.tutorName || prev.tutorName,
+        tutorEmail: norm.tutorEmail || prev.tutorEmail,
+        note: norm.note || prev.note,
+        status: (norm.status && norm.status !== 'pending') ? norm.status : prev.status,
+        at: norm.at || prev.at
+      });
+    }
+  }
+  adminDemoRequests.forEach(function(r){ addRaw(r, 'firestore'); });
+  readLs('modivs_demo_requests').forEach(function(r){ addRaw(r, 'demo_request'); });
+  readLs('modivs_student_enquiries').forEach(function(r){ addRaw(r, 'student_dashboard'); });
+  students.concat(readLs('modivs_active_leads')).forEach(function(l){
+    if(l && (l.tutorId || l.tutorEmail || l.tutorName)){
+      addRaw(Object.assign({}, l, { status: (l.status === 'active' || l.status === 'new') ? 'pending' : l.status, source: 'requirement' }), 'requirement');
+    }
+  });
+  var out = order.map(function(id){ return byId[id]; });
+  // Also include student-initiated ModivsChat booking conversations that don't have a matching demoRequest yet
+  if(window.ModivsChat){
+    ModivsChat.conversations().forEach(function(c){
+      if(!c || !c.id) return;
+      var cid = 'conv_' + c.id;
+      if(deleted.indexOf(cid) > -1) return;
+      var sEm = String(c.studentEmail || c.enquiry_owner_email || (c.student && c.student.email) || '').toLowerCase();
+      var tEm = String(c.tutorEmail || (c.tutor && c.tutor.email) || '').toLowerCase();
+      var tId = String(c.tutor_id || (c.tutor && c.tutor.id) || '');
+      var msgs = Array.isArray(c.messages) ? c.messages : [];
+      var hasStuMsg = msgs.some(function(m){
+        var r = String(m.senderRole || '').toLowerCase();
+        return r === 'student' || r === 'parent' || (sEm && String(m.senderEmail || '').toLowerCase() === sEm);
+      });
+      if(!hasStuMsg) return;
+      var already = out.some(function(x){
+        return (c.enquiry_id && x.id === c.enquiry_id) ||
+               (sEm && x.studentEmail === sEm && ((tEm && x.tutorEmail === tEm) || (tId && String(x.tutorId) === tId)));
+      });
+      if(already) return;
+      var tObj = findTutor(tId, tEm, c.tutor && c.tutor.name);
+      var sObj = findStudent(c.student_id || c.studentId, sEm);
+      var lastStuMsg = msgs.filter(function(m){ return String(m.senderRole || '').toLowerCase() !== 'tutor'; }).slice(-1)[0];
+      out.push({
+        id: cid,
+        studentId: c.student_id || c.studentId || (sObj && sObj.id) || '',
+        studentName: (c.student && c.student.name) || (sObj && sObj.name) || 'Student',
+        studentEmail: sEm,
+        studentPhone: (c.student && c.student.phone) || (sObj && sObj.phone) || '',
+        cls: (c.enquiry && c.enquiry.cls) || (sObj && sObj.cls) || '',
+        board: (c.enquiry && c.enquiry.board) || (sObj && sObj.board) || '',
+        city: (c.enquiry && c.enquiry.city) || (sObj && sObj.city) || '',
+        budget: (c.enquiry && c.enquiry.budget) || (sObj && sObj.budget) || '',
+        tutorId: tId || (tObj && tObj.id) || '',
+        tutorName: (c.tutor && c.tutor.name) || (tObj && tObj.name) || tEm || 'Tutor',
+        tutorEmail: tEm || (tObj && String(tObj.email || '').toLowerCase()) || '',
+        subject: (c.enquiry && Array.isArray(c.enquiry.subs) ? c.enquiry.subs.join(', ') : (c.enquiry && c.enquiry.subs)) || 'General',
+        mode: (c.enquiry && c.enquiry.mode) || 'Online',
+        note: (lastStuMsg && lastStuMsg.text) || c.lastMessage || 'Student chat booking request',
+        status: c.status === 'demo' ? 'demo' : (c.unlocked ? 'accepted' : 'pending'),
+        source: 'chat',
+        at: (lastStuMsg && lastStuMsg.createdAt) || c.createdAt || c.updatedAt || '',
+        tutorObj: tObj,
+        studentObj: sObj,
+        _raw: c
+      });
+    });
+  }
+  out.sort(function(a, b){ return (toMs(b.at) || 0) - (toMs(a.at) || 0); });
+  return out;
+}
 
 // ---- Readable ids: STU101 (student), LD201 (lead), TUT301 (tutor) ----
 function tutKey(x){ return String(x.email || x.id || '').toLowerCase(); }
@@ -846,7 +1098,7 @@ function tutId(x){ return window.ModivsIds ? ModivsIds.peek('tut', tutKey(x)) : 
 function stuId(x){ return (window.ModivsIds && x.email) ? ModivsIds.peek('stu', x.email) : ''; }
 function ldId(x){ return (window.ModivsIds && x.id) ? ModivsIds.peek('ld', x.id) : ''; }
 function idTag(x){
-  if(currentSection === 'orgs' || currentSection === 'chat') return '';
+  if(currentSection === 'orgs' || currentSection === 'chat' || currentSection === 'requests') return '';
   if(currentSection === 'students') return [stuId(x), ldId(x)].filter(Boolean).join(' · ');
   return tutId(x);
 }
@@ -863,7 +1115,7 @@ function ensureIds(){
   if(!jobs.length) return;
   idsBusy = true;
   jobs.reduce(function(p, j){ return p.then(function(){ return ModivsIds.get(j[0], j[1]); }); }, Promise.resolve())
-    .then(function(){ idsBusy = false; try{ if(currentSection !== 'chat' && !isCms()){ list(); detail(); } }catch(e){} }, function(){ idsBusy = false; });
+    .then(function(){ idsBusy = false; try{ if(currentSection === 'ledger'){ renderLedger(); } else if(currentSection !== 'chat' && !isCms() && !isPanel()){ list(); detail(); } if(currentSection === 'overview'){ recent(); } }catch(e){} }, function(){ idsBusy = false; });
 }
 
 // ---- Organizations (approval) ----
@@ -885,7 +1137,7 @@ function loadOrgs(){
     orgsErr = (e && e.code === 'permission-denied') ? 'Firebase blocked reading organizations. Publish the latest firestore.rules, then log in again as admin.' : 'Could not load organizations from Firebase: ' + ((e && e.message) || 'unknown error');
   }).then(function(){ stats(); tabs(); if(currentSection === 'orgs'){ list(); detail(); } });
 }
-var currentSection = 'all'; // 'all' | 'pending' | 'approved' | 'rejected' | 'students' | 'chat'
+var currentSection = 'overview'; // 'overview' | 'all' | 'pending' | 'approved' | 'rejected' | 'students' | 'orgs' | 'ledger' | 'chat' | CMS sections
 var query = '';
 var selId = null;
 var currentPage = 1;
@@ -919,11 +1171,12 @@ function logAction(id, name, action, note){
     action: action,
     admin: currentAdminEmail,
     timestamp: new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'}) + ', ' + new Date().toLocaleDateString(),
+    at: new Date().toISOString(),
     note: note || ''
   };
   auditLogs.unshift(entry);
   try {
-    localStorage.setItem('modivs_audit_logs', JSON.stringify(auditLogs.slice(0, 50)));
+    localStorage.setItem('modivs_audit_logs', JSON.stringify(auditLogs.slice(0, 200)));
   } catch(e){}
 }
 
@@ -958,9 +1211,8 @@ function stats(){
   var pendingOrgs = orgs ? orgRows().filter(function(x){ return x.status === 'pending'; }).length : 0;
   var totalStudents = students.length;
 
-  var studentEnquiries = [];
-  try { studentEnquiries = JSON.parse(localStorage.getItem('modivs_student_enquiries') || '[]'); } catch(e){}
-  var totalEnquiries = Math.max(studentEnquiries.length + students.length, 6);
+  var tutorReqs = getAllTutorRequests();
+  var pendingReqs = tutorReqs.filter(function(r){ return r.status === 'pending'; }).length;
 
   var cards = [
     ['Total Registered Tutors', totalTutors, false, 'all'],
@@ -969,7 +1221,8 @@ function stats(){
     ['Rejected Applications', rejectedTutors, false, 'rejected'],
     ['Pending Organizations', pendingOrgs, pendingOrgs > 0, 'orgs'],
     ['Student Inquiries', totalStudents, false, 'students'],
-    ['Enquiries / Bookings', totalEnquiries, false, null]
+    ['Lead Unlocks', adminUnlocks.filter(function(u){ return u.unlock_status === 'unlocked' || u.unlockedAt || u.unlocked_at; }).length, false, 'ledger'],
+    ['Tutor Requests', tutorReqs.length, pendingReqs > 0, 'requests']
   ];
 
   cards.forEach(function(x){
@@ -983,8 +1236,7 @@ function stats(){
         selId = null;
         currentPage = 1;
         render();
-        var l = document.getElementById('tabs');
-        if(l && l.scrollIntoView) l.scrollIntoView({behavior:'smooth', block:'center'});
+        window.scrollTo({top:0, behavior:'smooth'});
       });
     }
     d.appendChild(el('b', '', x[1]));
@@ -993,45 +1245,87 @@ function stats(){
   });
 }
 
-// 5 Main Required Admin Sections as Tabs
+// Sidebar navigation (same pattern as the tutor dashboard)
+var NAV_ICONS = {
+  grid: '<rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/>',
+  users: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.5a3 3 0 0 1 0 5.5M18 14.5c1.8.8 3 2.6 3 5.5"/>',
+  clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  check: '<circle cx="12" cy="12" r="9"/><path d="M8 12.5l3 3 5-6"/>',
+  x: '<circle cx="12" cy="12" r="9"/><path d="M9 9l6 6M15 9l-6 6"/>',
+  cap: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/>',
+  inbox: '<polyline points="22 12 16 12 14 15 10 15 8 12 2 12"/><path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"/>',
+  building: '<rect x="5" y="3" width="14" height="18" rx="1.5"/><path d="M9 7h2M13 7h2M9 11h2M13 11h2M9 15h2M13 15h2"/>',
+  ledger: '<path d="M6 3h12a1 1 0 0 1 1 1v16a1 1 0 0 1-1 1H6a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1z"/><path d="M9 8h6M9 12h6M9 16h4"/>',
+  chat: '<path d="M4 5h16v11H9l-5 4z"/>',
+  bag: '<path d="M5 8h14l-1 12H6z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/>',
+  video: '<rect x="3" y="6" width="13" height="12" rx="2"/><path d="M16 10l5-3v10l-5-3z"/>',
+  pen: '<path d="M4 20l1-4L16.5 4.5a2.1 2.1 0 0 1 3 3L8 19z"/>',
+  star: '<path d="M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6.1L12 16.8 6.6 19.7l1.1-6.1L3.2 9.4l6.1-.8z"/>'
+};
 function tabs(){
-  var t = $('tabs');
+  var t = $('admNav'); if(!t) return;
   t.innerHTML = '';
-
+  var me = $('admMeEm'); if(me && typeof currentAdminEmail !== 'undefined') me.textContent = currentAdminEmail || '';
   var totalChats = window.ModivsChat ? ModivsChat.conversations().length : 0;
-  var sections = [
-    { key: 'all', label: 'All Tutors (' + tutors.length + ')' },
-    { key: 'pending', label: 'Pending Applications (' + cnt(tutors, 'pending') + ')' },
-    { key: 'approved', label: 'Approved Tutors (' + cnt(tutors, 'approved') + ')' },
-    { key: 'rejected', label: 'Rejected Applications (' + cnt(tutors, 'rejected') + ')' },
-    { key: 'orgs', label: 'Organizations' + (orgs ? ' (' + orgs.length + (orgRows().filter(function(x){ return x.status === 'pending'; }).length ? ', ' + orgRows().filter(function(x){ return x.status === 'pending'; }).length + ' pending' : '') + ')' : '') },
-    { key: 'students', label: 'Student Inquiries (' + students.length + ')' },
-    { key: 'chat', label: 'Chat & Inquiries Monitoring (' + totalChats + ')' },
-    { key: 'shop', label: 'Shop Items (' + cmsShop.length + ')' },
-    { key: 'videos', label: 'Videos (' + cmsVids.length + ')' },
-    { key: 'blogs', label: 'Blogs' + (cmsBlogs ? ' (' + cmsBlogs.length + ')' : '') },
-    { key: 'reviews', label: 'Reviews' + (cmsRevs ? ' (' + cmsRevs.length + (cmsRevs.filter(function(r){ return r.status === 'pending'; }).length ? ', ' + cmsRevs.filter(function(r){ return r.status === 'pending'; }).length + ' new' : '') + ')' : '') }
+  var pendOrgs = orgs ? orgRows().filter(function(x){ return x.status === 'pending'; }).length : 0;
+  var pendRevs = cmsRevs ? cmsRevs.filter(function(r){ return r.status === 'pending'; }).length : 0;
+  var unlockCount = adminUnlocks.filter(function(u){ return u.unlock_status === 'unlocked' || u.unlockedAt || u.unlocked_at; }).length;
+  var tutorReqs = getAllTutorRequests();
+  var pendReqs = tutorReqs.filter(function(r){ return r.status === 'pending'; }).length;
+  var groups = [
+    ['Overview', [
+      { key: 'overview', label: 'Dashboard', icon: 'grid' }
+    ]],
+    ['Tutors', [
+      { key: 'all', label: 'All Tutors', n: tutors.length, icon: 'users' },
+      { key: 'pending', label: 'Pending Applications', n: cnt(tutors, 'pending'), icon: 'clock' },
+      { key: 'approved', label: 'Approved Tutors', n: cnt(tutors, 'approved'), icon: 'check' },
+      { key: 'rejected', label: 'Rejected Applications', n: cnt(tutors, 'rejected'), icon: 'x' }
+    ]],
+    ['Students & Organizations', [
+      { key: 'students', label: 'Student Inquiries', n: students.length, icon: 'cap' },
+      { key: 'requests', label: 'Tutor Requests', n: pendReqs ? pendReqs + ' new' : tutorReqs.length, icon: 'inbox' },
+      { key: 'orgs', label: 'Organizations', n: orgs ? (pendOrgs ? pendOrgs + ' new' : orgs.length) : '', icon: 'building' }
+    ]],
+    ['Activity', [
+      { key: 'ledger', label: 'Activity Ledger', n: unlockCount, icon: 'ledger' },
+      { key: 'chat', label: 'Chat & Inquiries', n: totalChats, icon: 'chat' }
+    ]],
+    ['Content', [
+      { key: 'shop', label: 'Shop Items', n: cmsShop.length, icon: 'bag' },
+      { key: 'videos', label: 'Videos', n: cmsVids.length, icon: 'video' },
+      { key: 'blogs', label: 'Blogs', n: cmsBlogs ? cmsBlogs.length : '', icon: 'pen' },
+      { key: 'reviews', label: 'Reviews', n: cmsRevs ? (pendRevs ? pendRevs + ' new' : cmsRevs.length) : '', icon: 'star' }
+    ]]
   ];
-
-  sections.forEach(function(sec){
-    var b = el('button', 'tab', sec.label);
-    b.type = 'button';
-    b.setAttribute('aria-pressed', currentSection === sec.key);
-    b.addEventListener('click', function(){
-      currentSection = sec.key;
-      selId = null;
-      currentPage = 1;
-      render();
+  groups.forEach(function(g){
+    t.appendChild(el('div', 'adm-grp', g[0]));
+    g[1].forEach(function(sec){
+      var b = el('button', ''); b.type = 'button';
+      if(currentSection === sec.key) b.setAttribute('aria-current', 'page');
+      b.innerHTML = '<svg class="ic" viewBox="0 0 24 24" aria-hidden="true">' + NAV_ICONS[sec.icon] + '</svg>';
+      b.appendChild(el('span', '', sec.label));
+      if(sec.n !== undefined && sec.n !== '') b.appendChild(el('span', 'n', sec.n));
+      b.addEventListener('click', function(){
+        currentSection = sec.key;
+        selId = null;
+        currentPage = 1;
+        query = ''; var q = $('q'); if(q) q.value = '';
+        render();
+        window.scrollTo({top: 0, behavior: 'smooth'});
+      });
+      t.appendChild(b);
     });
-    t.appendChild(b);
   });
+  var act = t.querySelector('[aria-current=page]');
+  if(act && t.scrollWidth > t.clientWidth) t.scrollLeft = Math.max(0, act.offsetLeft - 24);
   syncPortalNav();
 }
 
 function syncPortalNav(){
   var st = (currentSection === 'students');
   var nt = $('navTutors'), ns = $('navStudents');
-  if(nt){ if(!st && currentSection !== 'chat' && !isCms()) nt.setAttribute('aria-current','page'); else nt.removeAttribute('aria-current'); }
+  if(nt){ if(['all','pending','approved','rejected'].indexOf(currentSection) > -1) nt.setAttribute('aria-current','page'); else nt.removeAttribute('aria-current'); }
   [['navShop','shop'],['navBlogs','blogs']].forEach(function(x){ var n = $(x[0]); if(n){ if(currentSection === x[1]) n.setAttribute('aria-current','page'); else n.removeAttribute('aria-current'); } });
   if(ns){ if(st) ns.setAttribute('aria-current','page'); else ns.removeAttribute('aria-current'); }
 }
@@ -1039,6 +1333,7 @@ function syncPortalNav(){
 // Filtered data rows
 function getActiveDataset(){
   if(currentSection === 'students') return students;
+  if(currentSection === 'requests') return getAllTutorRequests();
   if(currentSection === 'orgs') return orgRows();
   // Tutor sections
   if(currentSection === 'pending') return tutors.filter(function(x){ return x.status === 'pending'; });
@@ -1053,6 +1348,10 @@ function filteredRows(){
   if(!q) return data;
 
   return data.filter(function(x){
+    if(currentSection === 'requests'){
+      var rTxt = [x.studentName, x.studentEmail, x.studentPhone, x.tutorName, x.tutorEmail, x.tutorId, x.subject, x.mode, x.city, x.note, x.status].join(' ').toLowerCase();
+      return rTxt.indexOf(q) > -1;
+    }
     var subsStr = x.subs ? x.subs.join(' ') : '';
     var text = (x.name + ' ' + (x.email || '') + ' ' + (x.phone || '') + ' ' + (x.city || '') + ' ' + subsStr + ' ' + (x.headline || '') + ' ' + (x.id || '') + ' ' + (currentSection === 'students' ? stuId(x) + ' ' + ldId(x) : tutId(x))).toLowerCase();
     return text.indexOf(q) > -1;
@@ -1132,12 +1431,17 @@ function list(){
     var nameWithInitial = el('span', '', '');
     nameWithInitial.style.cssText = 'font-weight:700;display:inline-flex;align-items:center;gap:6px;';
     nameWithInitial.textContent = '';
-    nameWithInitial.appendChild(avatar(x, false));
-    nameWithInitial.appendChild(document.createTextNode(x.name));
+    if(currentSection === 'requests'){
+      nameWithInitial.appendChild(avatar({ name: x.studentName }, false));
+      nameWithInitial.appendChild(document.createTextNode(x.studentName + ' → ' + x.tutorName));
+    } else {
+      nameWithInitial.appendChild(avatar(x, false));
+      nameWithInitial.appendChild(document.createTextNode(x.name));
+    }
     t.appendChild(nameWithInitial);
 
-    var badgeClass = x.status || 'pending';
-    var badgeLabel = LABEL[x.status] || x.status;
+    var badgeClass = currentSection === 'requests' ? reqStatusClass(x.status) : (x.status || 'pending');
+    var badgeLabel = currentSection === 'requests' ? reqStatusLabel(x.status) : (LABEL[x.status] || x.status);
     if(x.status === 'incomplete') badgeLabel = 'Profile Incomplete';
     if(currentSection === 'orgs') badgeLabel = orgBadge(x.status);
     t.appendChild(el('span', 'badge ' + badgeClass, badgeLabel));
@@ -1145,7 +1449,10 @@ function list(){
     var idt = idTag(x);
     if(idt){ var ids = el('small', '', idt); ids.style.cssText = 'font-weight:700;letter-spacing:.02em'; b.appendChild(ids); }
 
-    if(currentSection === 'orgs'){
+    if(currentSection === 'requests'){
+      b.appendChild(el('small', '', [x.subject, x.mode, x.city].filter(Boolean).join(' · ')));
+      b.appendChild(el('small', '', (x.note ? x.note.slice(0, 75) + (x.note.length > 75 ? '…' : '') + ' · ' : '') + timeAgo(x.at)));
+    } else if(currentSection === 'orgs'){
       var miss = ModivsOrg.missing(x._o);
       b.appendChild(el('small', '', [x._o.orgType || 'Organization', x.city, x.email].filter(Boolean).join(' · ')));
       b.appendChild(el('small', '', (x.subs.length ? x.subs.slice(0, 4).join(', ') : 'No subjects yet') + ' · ' + (miss.length ? 'Profile ' + Math.round((ModivsOrg.REQ.length - miss.length) / ModivsOrg.REQ.length * 100) + '% complete' : 'Profile complete')));
@@ -1188,6 +1495,102 @@ function detail(){
   var d = $('detail');
   d.innerHTML = '';
   if(currentSection === 'orgs'){ orgDetail(d); return; }
+  if(currentSection === 'requests'){
+    var reqItem = getAllTutorRequests().filter(function(r){ return r.id === selId; })[0];
+    if(!reqItem){
+      d.appendChild(el('p', 'empty', 'Select a student request from the list to view full details.'));
+      return;
+    }
+    var rh = el('div', 'top2');
+    rh.style.cssText = 'display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;';
+    rh.appendChild(el('h2', '', reqItem.studentName + ' → ' + reqItem.tutorName));
+    rh.appendChild(el('span', 'badge ' + reqStatusClass(reqItem.status), reqStatusLabel(reqItem.status)));
+    d.appendChild(rh);
+    d.appendChild(el('p', 'sub', 'Student request to tutor · Request ID: ' + reqItem.id + (reqItem.at ? ' · ' + new Date(reqItem.at).toLocaleString() : '')));
+
+    d.appendChild(el('h3', '', 'Student & Request Details'));
+    d.appendChild(kv([
+      ['Student Name', reqItem.studentName],
+      ['Student Email', reqItem.studentEmail || '—'],
+      ['Student Phone', reqItem.studentPhone || '—'],
+      ['Class / Board', [reqItem.cls, reqItem.board].filter(Boolean).join(' · ') || '—'],
+      ['City', reqItem.city || '—'],
+      ['Subject(s)', reqItem.subject || 'General'],
+      ['Learning Mode', reqItem.mode || 'Online'],
+      ['Budget', reqItem.budget || '—'],
+      ['Source', reqItem.source || 'demo_request'],
+      ['Requested At', reqItem.at ? new Date(reqItem.at).toLocaleString() : '—']
+    ]));
+
+    if(reqItem.note){
+      d.appendChild(el('h3', '', 'Request Note / Topic & Schedule'));
+      d.appendChild(el('p', '', reqItem.note));
+    }
+
+    d.appendChild(el('h3', '', 'Requested Tutor'));
+    d.appendChild(kv([
+      ['Tutor Name', reqItem.tutorName || '—'],
+      ['Tutor ID', (reqItem.tutorObj && tutId(reqItem.tutorObj)) || reqItem.tutorId || '—'],
+      ['Tutor Email', reqItem.tutorEmail || '—'],
+      ['Tutor Phone', (reqItem.tutorObj && reqItem.tutorObj.phone) || '—']
+    ]));
+
+    var rActs = el('div', 'acts');
+    if(reqItem.tutorObj){
+      var openTutBtn = el('button', 'b o', 'Open Tutor Profile');
+      openTutBtn.type = 'button';
+      openTutBtn.addEventListener('click', function(){
+        currentSection = 'all'; selId = reqItem.tutorObj.id; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = ''; render();
+      });
+      rActs.appendChild(openTutBtn);
+    }
+    if(reqItem.studentObj){
+      var openStuBtn = el('button', 'b o', 'Open Student Inquiry');
+      openStuBtn.type = 'button';
+      openStuBtn.addEventListener('click', function(){
+        currentSection = 'students'; selId = reqItem.studentObj.id; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = ''; render();
+      });
+      rActs.appendChild(openStuBtn);
+    }
+    function setReqStatus(newSt, label){
+      if(window.ModivsFirebaseSync && ModivsFirebaseSync.updateDemoRequestStatus){
+        ModivsFirebaseSync.updateDemoRequestStatus(reqItem.id, newSt);
+      }
+      adminDemoRequests.forEach(function(x){ if(x && x.id === reqItem.id) x.status = newSt; });
+      logAction(reqItem.id, reqItem.studentName + ' → ' + reqItem.tutorName, 'Updated Tutor Request', 'Status: ' + label);
+      toast('Request marked as ' + label + '.');
+      render();
+    }
+    if(reqItem.status !== 'demo'){
+      var demoB = el('button', 'b ok', 'Mark Demo Offered'); demoB.type = 'button';
+      demoB.addEventListener('click', function(){ setReqStatus('demo', 'Demo Offered'); });
+      rActs.appendChild(demoB);
+    }
+    if(reqItem.status !== 'accepted'){
+      var accB = el('button', 'b', 'Mark Accepted'); accB.type = 'button';
+      accB.addEventListener('click', function(){ setReqStatus('accepted', 'Accepted'); });
+      rActs.appendChild(accB);
+    }
+    if(reqItem.status !== 'declined'){
+      var decB = el('button', 'b o', 'Mark Declined'); decB.type = 'button';
+      decB.addEventListener('click', function(){ setReqStatus('declined', 'Declined'); });
+      rActs.appendChild(decB);
+    }
+    var delRB = el('button', 'b d', 'Delete Request'); delRB.type = 'button';
+    delRB.addEventListener('click', function(){
+      if(!confirm('Delete request from ' + reqItem.studentName + ' to ' + reqItem.tutorName + '?')) return;
+      if(window.ModivsFirebaseSync && ModivsFirebaseSync.deleteDemoRequest){
+        ModivsFirebaseSync.deleteDemoRequest(reqItem.id);
+      }
+      adminDemoRequests = adminDemoRequests.filter(function(x){ return x.id !== reqItem.id; });
+      toast('Tutor request deleted.');
+      selId = null;
+      render();
+    });
+    rActs.appendChild(delRB);
+    d.appendChild(rActs);
+    return;
+  }
   if(currentSection === 'chat'){
     var chat = ModivsChat.conversations().filter(function(c){ return c.id === selId; })[0];
     d.appendChild(el('h2', '', 'Chat & Inquiries Monitoring'));
@@ -1361,16 +1764,21 @@ function detail(){
       d.appendChild(el('p', 'sub', 'No tutors have unlocked or messaged this lead yet.'));
     }
 
-    // Check if student has sent demo requests
-    var studentEnquiries = [];
-    try { studentEnquiries = JSON.parse(localStorage.getItem('modivs_student_enquiries') || '[]'); } catch(e){}
-    var stuReqs = studentEnquiries.filter(function(r){ return r.studentEmail === x.email; });
+    // Check if student has sent demo requests to tutors
+    var xEmLow = String(x.email || x.owner_email || '').toLowerCase();
+    var stuReqs = getAllTutorRequests().filter(function(r){
+      return (x.id && r.studentId === x.id) || (xEmLow && r.studentEmail === xEmLow);
+    });
 
     d.appendChild(el('h3', '', 'Tuition Bookings & Demo Requests (' + stuReqs.length + ')'));
     if(stuReqs.length){
       var reqList = el('div', 'log');
       stuReqs.forEach(function(r){
-        reqList.appendChild(el('p', '', '• ' + r.tutorName + ' (' + r.subject + ') — Status: ' + r.status + ' (' + r.note + ')'));
+        var p = el('p', '', '• To ' + r.tutorName + ' (' + r.subject + ') — Status: ' + reqStatusLabel(r.status) + (r.note ? ' · ' + r.note : '') + (r.at ? ' · ' + timeAgo(r.at) : ''));
+        p.style.cursor = 'pointer';
+        p.title = 'Open in Tutor Requests';
+        p.addEventListener('click', function(){ currentSection = 'requests'; selId = r.id; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = ''; render(); });
+        reqList.appendChild(p);
       });
       d.appendChild(reqList);
     } else {
@@ -1577,6 +1985,25 @@ function detail(){
       leadActBox.appendChild(el('p', '', '• ' + (s.name || lid) + ' — ' + (s.free === true ? 'Free Lead' : 'Lead') + ' · Status: ' + (s.status || 'accepted')));
     });
     d.appendChild(leadActBox);
+  }
+
+  // Direct Student Requests to This Tutor
+  var tutReqs = getAllTutorRequests().filter(function(r){
+    return (x.id && String(r.tutorId) === String(x.id)) || (tMailLow && r.tutorEmail === tMailLow);
+  });
+  d.appendChild(el('h3', '', 'Student Requests to This Tutor (' + tutReqs.length + ')'));
+  if(tutReqs.length){
+    var trBox = el('div', 'log');
+    tutReqs.forEach(function(r){
+      var p = el('p', '', '• ' + r.studentName + (r.studentEmail ? ' (' + r.studentEmail + ')' : '') + ' — ' + r.subject + ' · Status: ' + reqStatusLabel(r.status) + (r.note ? ' · ' + r.note.slice(0, 70) : '') + (r.at ? ' · ' + timeAgo(r.at) : ''));
+      p.style.cursor = 'pointer';
+      p.title = 'Open request details';
+      p.addEventListener('click', function(){ currentSection = 'requests'; selId = r.id; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = ''; render(); });
+      trBox.appendChild(p);
+    });
+    d.appendChild(trBox);
+  } else {
+    d.appendChild(el('p', 'sub', 'No direct student demo requests for this tutor yet.'));
   }
 
   // Verification Documents (ID proof + qualification certificate): admin can see and open the real files
@@ -2030,6 +2457,36 @@ function recent(){
     }));
   });
   box.appendChild(lb);
+
+  // Latest student requests to tutors
+  var reqListOv = getAllTutorRequests();
+  var rb = el('section', 'box wide'); rb.setAttribute('aria-label', 'Latest student requests to tutors');
+  var rh = el('div', 'rhead'); rh.appendChild(el('h2', '', 'Latest student requests to tutors'));
+  var rAll = el('button', '', 'View all (' + reqListOv.length + ')'); rAll.type = 'button';
+  rAll.addEventListener('click', function(){ goPortal('requests'); });
+  rh.appendChild(rAll); rb.appendChild(rh);
+  if(!reqListOv.length) rb.appendChild(el('p', 'empty', 'No student requests to tutors yet.'));
+  reqListOv.slice(0, 5).forEach(function(r){
+    var line = [r.subject, r.mode, r.city].filter(Boolean).join(' · ') || 'Demo / Tutor request';
+    rb.appendChild(recentRow('', r.studentName + ' → ' + r.tutorName, line, timeAgo(r.at), r.status, function(){
+      currentSection = 'requests'; selId = r.id; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = ''; render();
+    }));
+  });
+  box.appendChild(rb);
+
+  // Latest lead unlocks (which tutor unlocked which lead)
+  var ub = el('section', 'box wide'); ub.setAttribute('aria-label', 'Latest lead unlocks');
+  var uh = el('div', 'rhead'); uh.appendChild(el('h2', '', 'Latest lead unlocks'));
+  var uAll = el('button', '', 'Open Activity Ledger'); uAll.type = 'button';
+  uAll.addEventListener('click', function(){ goPortal('ledger'); });
+  uh.appendChild(uAll); ub.appendChild(uh);
+  var ur = ledgerRows().filter(function(r){ return r.kind === 'unlock'; }).slice(0, 5);
+  if(!ur.length) ub.appendChild(el('p', 'empty', 'No leads have been unlocked yet.'));
+  ur.forEach(function(r){
+    var line = [r.tid || r.email, 'unlocked', r.lid || r.leadRaw, r.leadName].filter(Boolean).join(' · ').replace(' · unlocked · ', ' unlocked ');
+    ub.appendChild(recentRow('', r.name || r.email, line, r.at ? timeAgo(new Date(r.at).toISOString()) : '—', '', function(){ goPortal('ledger'); }));
+  });
+  box.appendChild(ub);
 }
 
 // ---------- Shop & Blogs: admin adds and deletes items ----------
@@ -2300,14 +2757,257 @@ function renderBlogCms(box){
   });
 }
 
+// ---------- Activity Ledger ----------
+var lgType = 'all', lgQuery = '', lgFrom = '', lgTo = '', lgView = 'timeline', lgLimit = 50;
+function toMs(v){
+  if(v == null || v === '') return 0;
+  if(typeof v === 'number') return v < 1e12 ? v * 1000 : v;
+  if(typeof v.toMillis === 'function'){ try{ return v.toMillis(); }catch(e){} }
+  if(typeof v.seconds === 'number') return v.seconds * 1000 + Math.floor((v.nanoseconds || 0) / 1e6);
+  var n = Date.parse(v); return isNaN(n) ? 0 : n;
+}
+function sid(x){ return String(x == null ? '' : x).replace(/[\/\\#?]/g, '_').trim(); }
+function tutorByEmail(em){
+  em = String(em || '').toLowerCase();
+  return tutors.filter(function(t){ return String(t.email || '').toLowerCase() === em; })[0] || null;
+}
+function leadById(id){
+  var k = sid(id); if(!k) return null;
+  var hit = null;
+  students.concat(readLs('modivs_active_leads'), readLs('modivs_students_db')).some(function(l){
+    if(l && sid(l.id) === k){ hit = l; return true; } return false;
+  });
+  return hit;
+}
+function ledgerRows(){
+  var rows = [];
+  function who(em){
+    em = String(em || '').toLowerCase();
+    var t = tutorByEmail(em);
+    return { email: em, name: t ? (t.name || '') : '', tid: t ? tutId(t) : ((window.ModivsIds && em) ? ModivsIds.peek('tut', em) : ''), tutorId: t ? t.id : null };
+  }
+  function lead(id, fallback){
+    var l = id ? leadById(id) : null;
+    return { raw: id || '', lid: l ? ldId(l) : ((window.ModivsIds && id) ? ModivsIds.peek('ld', id) : ''), name: l ? (l.name || '') : (fallback || ''), inStudents: !!(l && students.some(function(x){ return x.id && x.id === l.id; })), id: l ? l.id : null };
+  }
+  function push(o){ rows.push(o); }
+  adminUnlocks.forEach(function(u){
+    var w = who(u.tutorEmail || u.tutor_id), L = lead(u.leadId || u.lead_id, u.leadName);
+    var base = { email: w.email, name: w.name, tid: w.tid, tutorId: w.tutorId, leadRaw: L.raw, lid: L.lid, leadName: L.name, leadKey: L.id || L.raw, leadInStudents: L.inStudents, leadInternal: L.id };
+    var paid = Number(u.coinsDeducted != null ? u.coinsDeducted : (u.coins_deducted != null ? u.coins_deducted : 10)) || 0;
+    var free = !!u.free || paid === 0;
+    if(u.unlock_status === 'unlocked' || u.unlockedAt || u.unlocked_at){
+      push(Object.assign({}, base, { at: toMs(u.unlockedAt || u.unlocked_at), kind: 'unlock', label: free ? 'Free lead unlocked' : 'Lead unlocked', coins: free ? 0 : -paid, detail: free ? 'Free lead, no coins used' : paid + ' coins deducted' }));
+    }
+    var st = String(u.leadStatus || (['accepted','demo','declined'].indexOf(String(u.status || '').toLowerCase()) > -1 ? u.status : '') || '').toLowerCase();
+    if(st){
+      var map = { accepted: 'Lead accepted', demo: 'Demo class set', declined: 'Lead declined' };
+      push(Object.assign({}, base, { at: toMs(u.acceptedAt || u.updatedAt), kind: 'resp', label: map[st] || ('Lead ' + st), coins: null, detail: 'Tutor responded to the lead', status: st }));
+    }
+  });
+  adminCoinTx.forEach(function(x){
+    if(x.type === 'unlock') return; // already shown from the unlock records
+    var w = who(x.tutorEmail);
+    var amt = Number(x.amount) || 0;
+    var labels = { purchase: 'Coins purchased', membership_bonus: 'Membership bonus coins', welcome: 'Welcome bonus', credit: 'Coins credited', debit: 'Coins debited' };
+    var bits = [x.description || ''];
+    if(x.price) bits.push('Paid ' + x.price);
+    if(x.balanceAfter != null) bits.push('Balance ' + x.balanceAfter);
+    push({ at: toMs(x.createdAt), kind: amt < 0 ? 'debit' : 'coin', label: labels[x.type] || (amt < 0 ? 'Coins debited' : 'Coins added'), email: w.email, name: w.name, tid: w.tid, tutorId: w.tutorId, leadRaw: '', lid: '', leadName: '', coins: amt, detail: bits.filter(Boolean).join(' · ') });
+  });
+  adminMemHist.forEach(function(x){
+    var w = who(x.tutorEmail);
+    var bits = [x.planName || ''];
+    if(x.price) bits.push(x.price);
+    if(x.bonusCoins) bits.push('+' + x.bonusCoins + ' bonus coins');
+    var vu = toMs(x.validUntil); if(vu) bits.push('valid till ' + new Date(vu).toLocaleDateString());
+    push({ at: toMs(x.createdAt), kind: 'mem', label: 'Membership ' + (x.type || 'updated'), email: w.email, name: w.name, tid: w.tid, tutorId: w.tutorId, leadRaw: '', lid: '', leadName: '', coins: null, detail: bits.filter(Boolean).join(' · ') });
+  });
+  auditLogs.forEach(function(e){
+    var t = tutors.filter(function(x){ return x.id === e.id; })[0] || null;
+    push({ at: toMs(e.at), rawTime: e.timestamp || '', kind: 'admin', label: 'Admin: ' + (e.action || 'Action'), email: t ? String(t.email || '').toLowerCase() : '', name: e.name || (t ? t.name : ''), tid: t ? tutId(t) : '', tutorId: t ? t.id : null, leadRaw: '', lid: '', leadName: '', coins: null, detail: [e.note, e.admin ? 'by ' + e.admin : ''].filter(Boolean).join(' · ') });
+  });
+  rows.sort(function(a, b){ return (b.at || 0) - (a.at || 0); });
+  return rows;
+}
+function ledgerFiltered(rows){
+  var q = lgQuery.toLowerCase();
+  var from = lgFrom ? new Date(lgFrom + 'T00:00:00').getTime() : 0;
+  var to = lgTo ? new Date(lgTo + 'T23:59:59').getTime() : 0;
+  return rows.filter(function(r){
+    if(lgType === 'unlock' && r.kind !== 'unlock') return false;
+    if(lgType === 'resp' && r.kind !== 'resp') return false;
+    if(lgType === 'coin' && r.kind !== 'coin' && r.kind !== 'debit') return false;
+    if(lgType === 'mem' && r.kind !== 'mem') return false;
+    if(lgType === 'admin' && r.kind !== 'admin') return false;
+    if((from || to) && !r.at) return false;
+    if(from && r.at < from) return false;
+    if(to && r.at > to) return false;
+    if(q){
+      var hay = [r.tid, r.name, r.email, r.lid, r.leadRaw, r.leadName, r.label, r.detail].join(' ').toLowerCase();
+      if(hay.indexOf(q) === -1) return false;
+    }
+    return true;
+  });
+}
+function fmtLedgerTime(r){
+  if(r.at) return new Date(r.at).toLocaleString([], {day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit'});
+  return r.rawTime || '—';
+}
+function openTutorFromLedger(r){
+  if(!r.tutorId) return;
+  currentSection = 'all'; selId = r.tutorId; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = '';
+  render();
+  var d = document.querySelector('.detail'); if(d && d.scrollIntoView) d.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+function openLeadFromLedger(r){
+  if(!r.leadInStudents || !r.leadInternal) return;
+  currentSection = 'students'; selId = r.leadInternal; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = '';
+  render();
+  var d = document.querySelector('.detail'); if(d && d.scrollIntoView) d.scrollIntoView({behavior: 'smooth', block: 'start'});
+}
+function renderLedger(){
+  var all = ledgerRows();
+  var unlocks = all.filter(function(r){ return r.kind === 'unlock'; });
+  var today = new Date(); today.setHours(0, 0, 0, 0);
+  var tutorsSet = {}, leadsSet = {}, spent = 0, free = 0;
+  unlocks.forEach(function(r){ tutorsSet[r.email] = 1; leadsSet[r.leadKey || r.leadRaw] = 1; if(r.coins) spent += -r.coins; else free++; });
+  var cards = [
+    ['Lead unlocks', unlocks.length], ['Coins spent on unlocks', spent], ['Free unlocks', free],
+    ['Tutors unlocking leads', Object.keys(tutorsSet).length], ['Leads unlocked', Object.keys(leadsSet).length],
+    ['Activity today', all.filter(function(r){ return r.at >= today.getTime(); }).length]
+  ];
+  var sb = $('lgStats'); sb.innerHTML = '';
+  cards.forEach(function(c){ var d = el('div', 'stat'); d.appendChild(el('b', '', c[0] === 'Coins spent on unlocks' ? String(c[1]) : c[1])); d.appendChild(el('span', '', c[0])); sb.appendChild(d); });
+
+  var rows = ledgerFiltered(all);
+  var note = $('lgNote');
+  note.textContent = rows.length + ' of ' + all.length + ' activities shown. Unlocks, coin and membership activity come from Firebase live; admin actions are saved in this browser only.';
+  var body = $('lgBody'); body.innerHTML = '';
+  if(!rows.length){ body.appendChild(el('p', 'cms-empty', all.length ? 'Nothing matches these filters.' : 'No activity yet. Unlocks, coin purchases and membership changes will appear here as they happen.')); return; }
+
+  if(lgView === 'lead'){
+    var groups = {}, order = [], resp = {};
+    all.filter(function(r){ return r.kind === 'resp'; }).forEach(function(r){ var k = r.email + '|' + (r.leadKey || r.leadRaw); if(!resp[k]) resp[k] = r.label; });
+    rows.filter(function(r){ return r.kind === 'unlock'; }).forEach(function(r){
+      var k = r.leadKey || r.leadRaw;
+      if(!groups[k]){ groups[k] = { r: r, items: [] }; order.push(k); }
+      groups[k].items.push(r);
+    });
+    if(!order.length){ body.appendChild(el('p', 'cms-empty', 'No lead unlocks match these filters.')); return; }
+    order.forEach(function(k){
+      var g = groups[k], card = el('div', 'lg-lead');
+      var h = el('h4'); 
+      var lb = el('button', 'idc', g.r.lid || (g.r.leadRaw ? g.r.leadRaw.slice(0, 14) : 'Lead')); lb.type = 'button';
+      lb.title = g.r.leadInStudents ? 'Open this student inquiry' : 'Lead ID';
+      lb.addEventListener('click', function(){ openLeadFromLedger(g.r); });
+      h.appendChild(lb);
+      h.appendChild(el('span', '', g.r.leadName || 'Student'));
+      h.appendChild(el('span', 'lgb unlock', g.items.length + (g.items.length === 1 ? ' tutor' : ' tutors') + ' unlocked'));
+      card.appendChild(h);
+      var chips = el('div', 'lg-chips');
+      g.items.forEach(function(r){
+        var c = el('button', 'lg-chip', (r.tid || r.email) + (r.name ? ' · ' + r.name : '')); c.type = 'button';
+        var rs = resp[r.email + '|' + k]; if(rs) c.appendChild(el('i', '', rs));
+        c.title = (r.at ? fmtLedgerTime(r) + ' · ' : '') + (r.coins ? -r.coins + ' coins' : 'free');
+        c.addEventListener('click', function(){ openTutorFromLedger(r); });
+        chips.appendChild(c);
+      });
+      card.appendChild(chips); body.appendChild(card);
+    });
+    return;
+  }
+
+  var table = el('table', 'lg');
+  var thead = el('thead'), hr = el('tr');
+  ['Time', 'Activity', 'Tutor ID', 'Tutor', 'Lead ID', 'Lead / Student', 'Coins', 'Details'].forEach(function(h){ hr.appendChild(el('th', '', h)); });
+  thead.appendChild(hr); table.appendChild(thead);
+  var tb = el('tbody');
+  rows.slice(0, lgLimit).forEach(function(r){
+    var tr = el('tr');
+    tr.appendChild(el('td', '', fmtLedgerTime(r)));
+    var tdA = el('td'); tdA.appendChild(el('span', 'lgb ' + (r.kind === 'debit' ? 'debit' : r.kind), r.label)); tr.appendChild(tdA);
+    var tdT = el('td');
+    if(r.tid){ var tb1 = el('button', 'idc', r.tid); tb1.type = 'button'; tb1.title = r.tutorId ? 'Open tutor profile' : 'Tutor ID'; tb1.addEventListener('click', function(){ openTutorFromLedger(r); }); tdT.appendChild(tb1); }
+    else tdT.textContent = '—';
+    tr.appendChild(tdT);
+    var tdN = el('td'); tdN.appendChild(el('span', '', r.name || '—')); if(r.email) tdN.appendChild(el('small', '', r.email)); tr.appendChild(tdN);
+    var tdL = el('td');
+    if(r.lid){ var lb2 = el('button', 'idc', r.lid); lb2.type = 'button'; lb2.title = r.leadInStudents ? 'Open student inquiry' : 'Lead ID'; lb2.addEventListener('click', function(){ openLeadFromLedger(r); }); tdL.appendChild(lb2); }
+    else if(r.leadRaw){ tdL.appendChild(el('small', '', r.leadRaw)); }
+    else tdL.textContent = '—';
+    tr.appendChild(tdL);
+    tr.appendChild(el('td', '', r.leadName || '—'));
+    var tdC = el('td');
+    if(r.coins === null || r.coins === undefined) tdC.textContent = '—';
+    else tdC.appendChild(el('span', 'amt ' + (r.coins < 0 ? 'neg' : (r.coins > 0 ? 'pos' : '')), (r.coins > 0 ? '+' : '') + r.coins));
+    tr.appendChild(tdC);
+    tr.appendChild(el('td', '', r.detail || ''));
+    tb.appendChild(tr);
+  });
+  table.appendChild(tb);
+  body.appendChild(table);
+  if(rows.length > lgLimit){
+    var more = el('button', 'cbtn lg-more', 'Show more (' + (rows.length - lgLimit) + ' left)'); more.type = 'button';
+    more.addEventListener('click', function(){ lgLimit += 50; renderLedger(); });
+    body.appendChild(more);
+  }
+}
+function exportLedgerCsv(){
+  var rows = ledgerFiltered(ledgerRows());
+  if(!rows.length){ toast('Nothing to export.'); return; }
+  function q(v){ return '"' + String(v == null ? '' : v).replace(/"/g, '""') + '"'; }
+  var lines = [['Time', 'Activity', 'Tutor ID', 'Tutor name', 'Tutor email', 'Lead ID', 'Lead / Student', 'Coins', 'Details'].map(q).join(',')];
+  rows.forEach(function(r){
+    lines.push([fmtLedgerTime(r), r.label, r.tid, r.name, r.email, r.lid || r.leadRaw, r.leadName, r.coins == null ? '' : r.coins, r.detail].map(q).join(','));
+  });
+  var blob = new Blob(['\ufeff' + lines.join('\n')], {type: 'text/csv;charset=utf-8'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'modivs-activity-ledger-' + new Date().toISOString().slice(0, 10) + '.csv';
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(function(){ URL.revokeObjectURL(a.href); }, 1000);
+  toast('Exported ' + rows.length + ' rows.');
+}
+
+var HEADINGS = {
+  overview: ['Admin Dashboard', 'Your overview: key numbers, latest tutors, leads and unlocks, and quick actions.'],
+  all: ['All Tutors', 'Review every registered tutor profile.'],
+  pending: ['Pending Applications', 'Approve or reject tutor applications waiting for review.'],
+  approved: ['Approved Tutors', 'Tutors who are live on the website.'],
+  rejected: ['Rejected Applications', 'Applications that were rejected, with the reasons given.'],
+  students: ['Student Inquiries', 'Requirements posted by students and parents.'],
+  requests: ['Student Requests to Tutors', 'Demo bookings and direct tutor requests sent by students and parents.'],
+  orgs: ['Organizations', 'Approve organizations that registered on the site.'],
+  ledger: ['Activity Ledger', 'Which tutor ID unlocked which lead, plus coin, membership and admin activity.'],
+  chat: ['Chat & Inquiries Monitoring', 'Conversations between students and tutors.'],
+  shop: ['Shop Items', 'Manage e-books and video lectures.'],
+  videos: ['Videos', 'Success story videos shown on the home page.'],
+  blogs: ['Blogs', 'Study blogs written by tutors.'],
+  reviews: ['Reviews', 'Approve reviews shown on the home page.']
+};
+function setHeading(){
+  var h = HEADINGS[currentSection] || HEADINGS.all;
+  var t = $('admTitle'), s2 = $('admSub');
+  if(t) t.textContent = h[0];
+  if(s2) s2.textContent = h[1];
+  document.title = h[0] + ' – Modiv’s Education Admin';
+}
+function isPanel(){ return currentSection === 'overview' || currentSection === 'ledger'; }
+
 function render(){
-  var cms = isCms();
-  document.querySelector('.main').classList.toggle('hide', cms);
+  var cms = isCms(), panel = isPanel();
+  document.querySelector('.main').classList.toggle('hide', cms || panel);
   $('cms').classList.toggle('hide', !cms);
+  $('ovPanel').classList.toggle('hide', currentSection !== 'overview');
+  $('ledger').classList.toggle('hide', currentSection !== 'ledger');
+  setHeading();
   stats();
   recent();
   tabs();
   if(cms){ renderCms(); return; }
+  if(currentSection === 'ledger'){ renderLedger(); ensureIds(); return; }
+  if(panel){ ensureIds(); return; }
   list();
   detail();
   ensureIds();
@@ -2348,11 +3048,14 @@ $('out').addEventListener('click', function(){
 function goPortal(key){ currentSection = key; selId = null; currentPage = 1; query = ''; var q = $('q'); if(q) q.value = ''; render(); }
 function applyHash(){
   if(location.hash === '#students') goPortal('students');
+  else if(location.hash === '#requests') goPortal('requests');
   else if(location.hash === '#tutors') goPortal('all');
   else if(location.hash === '#shop') goPortal('shop');
   else if(location.hash === '#blogs') goPortal('blogs');
   else if(location.hash === '#reviews') goPortal('reviews');
   else if(location.hash === '#orgs') goPortal('orgs');
+  else if(location.hash === '#ledger') goPortal('ledger');
+  else if(location.hash === '#overview') goPortal('overview');
 }
 [['navShop', 'shop'], ['navBlogs', 'blogs']].forEach(function(x){
   $(x[0]).addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null, '', '#' + x[1]); goPortal(x[1]); });
@@ -2361,7 +3064,9 @@ $('navTutors').addEventListener('click', function(e){ e.preventDefault(); histor
 $('navStudents').addEventListener('click', function(e){ e.preventDefault(); history.replaceState(null,'','#students'); goPortal('students'); });
 window.addEventListener('hashchange', applyHash);
 if(location.hash === '#students') currentSection = 'students';
+if(location.hash === '#requests') currentSection = 'requests';
 if(location.hash === '#orgs') currentSection = 'orgs';
+if(location.hash === '#ledger') currentSection = 'ledger';
 if(location.hash === '#shop' || location.hash === '#blogs' || location.hash === '#reviews') currentSection = location.hash.slice(1);
 
 loadOrgs();
@@ -2369,6 +3074,12 @@ if(window.EducationBFirebase && EducationBFirebase.auth){
   // the admin's Firebase session can arrive after the page loads: retry once if the first read failed
   var orgRetry = EducationBFirebase.auth.onAuthStateChanged(function(u){ if(u && orgsErr){ loadOrgs(); } if(u) orgRetry(); });
 }
+$('lgType').addEventListener('change', function(e){ lgType = e.target.value; lgLimit = 50; renderLedger(); });
+$('lgQ').addEventListener('input', function(e){ lgQuery = e.target.value.trim(); lgLimit = 50; renderLedger(); });
+$('lgFrom').addEventListener('change', function(e){ lgFrom = e.target.value; lgLimit = 50; renderLedger(); });
+$('lgTo').addEventListener('change', function(e){ lgTo = e.target.value; lgLimit = 50; renderLedger(); });
+$('lgView').addEventListener('change', function(e){ lgView = e.target.value; lgLimit = 50; renderLedger(); });
+$('lgCsv').addEventListener('click', exportLedgerCsv);
 var addTBtn = $('adminAddTutorQuickBtn');
 if(addTBtn) addTBtn.addEventListener('click', openAdminAddTutorModal);
 

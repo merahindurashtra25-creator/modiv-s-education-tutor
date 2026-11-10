@@ -443,6 +443,8 @@
       res = match ? Object.assign({}, match) : { id: String(tutor || ''), name: String(tutor || 'Tutor'), email: String(tutor && tutor.indexOf('@') > 0 ? tutor : '') };
     }
     if (match) {
+      if (!res.id && match.id) res.id = match.id;
+      if (!res.email && match.email) res.email = match.email;
       if (!res.photo && match.photo) res.photo = match.photo;
       if (!res.avatar && match.avatar) res.avatar = match.avatar;
     }
@@ -1314,6 +1316,29 @@
             }
             ta.value = '';
             render();
+
+            if (!isTutorParticipant && window.ModivsFirebaseSync && ModivsFirebaseSync.saveDemoRequest) {
+              ModivsFirebaseSync.saveDemoRequest({
+                id: 'req_' + msgId,
+                tutorId: (current.tutor && current.tutor.id) || current.tutor_id || '',
+                tutorName: (current.tutor && current.tutor.name) || 'Tutor',
+                tutorEmail: emailOf(current.tutorEmail || (current.tutor && current.tutor.email)),
+                studentId: current.student_id || current.studentId || '',
+                name: (current.student && current.student.name) || nameOf(meUser),
+                studentName: (current.student && current.student.name) || nameOf(meUser),
+                email: meEmail,
+                studentEmail: meEmail,
+                phone: (current.student && current.student.phone) || (meUser && meUser.phone) || '',
+                subs: (current.enquiry && current.enquiry.subs) || [],
+                subject: (current.enquiry && Array.isArray(current.enquiry.subs) ? current.enquiry.subs.join(', ') : (current.enquiry && current.enquiry.subs)) || 'General',
+                mode: (current.enquiry && current.enquiry.mode) || 'Online',
+                city: (current.enquiry && current.enquiry.city) || '',
+                note: text,
+                status: 'pending',
+                source: 'chat',
+                requested_at: nowIso
+              }).catch(function () { });
+            }
 
             // Encrypt and sync to Firestore
             encryptMessage(text, current.id).then(function (cipherString) {
