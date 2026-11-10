@@ -290,9 +290,9 @@
     return auth().then(function(){
       var fs = db(); if(!fs) throw fail('offline', 'Firebase is not available.');
       var uRef = fs.collection('unlocks').doc(docKey(em) + '__' + lid);
-      return uRef.get().then(function(us){
+      return uRef.get().catch(function(){ return { exists: false }; }).then(function(us){
         var bal = getCoins(em);
-        if(us.exists) return { already: true, balance: bal };
+        if(us && us.exists) return { already: true, balance: bal };
         return uRef.set({
           id: docKey(em) + '__' + lid, type: 'unlock', tutorEmail: em, tutor_id: em, leadId: lid, lead_id: lid,
           leadName: leadName || '', unlock_status: 'unlocked', coinsDeducted: 0, coins_deducted: 0,

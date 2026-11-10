@@ -1487,6 +1487,17 @@
       // Set of lead IDs this tutor has already unlocked (fetched from Firestore)
       var _unlockedSet = {};
       var _unlocking = {};
+      var _pendingOpenLead = '';
+      (function () {
+        try {
+          var qs = new URLSearchParams(location.search || '');
+          var ol = qs.get('openLead');
+          if (ol) { _pendingOpenLead = String(ol).replace(/[\/\\#?]/g, '_').trim(); state.view = 'leads'; state.filter = qs.get('free') === '1' ? 'free' : 'all'; }
+          var h = (location.hash || '').replace('#', '').toLowerCase();
+          if (h === 'free') { state.view = 'leads'; state.filter = 'free'; }
+          else if (h === 'leads' || h === 'requests' || h === 'credits' || h === 'profile' || h === 'chat') { state.view = h; }
+        } catch (e) { }
+      })();
 
       function loadTutorLeads() {
         var raw = [];
@@ -1528,6 +1539,19 @@
       }
       var leads = loadTutorLeads();
 
+      function maybeOpenRequestedLead() {
+        if (!_pendingOpenLead || !currentTutorEmail()) return;
+        var target = leads.find(function (l) {
+          var lid = String(l.id || '').replace(/[\/\\#?]/g, '_').trim();
+          return lid === _pendingOpenLead;
+        });
+        if (!target) return;
+        _pendingOpenLead = '';
+        if (target.unlocked) { state.view = 'leads'; state.filter = 'unlocked'; render(); }
+        else if (target.free) { unlock(target); }
+        else { state.view = 'leads'; state.filter = 'all'; state.q = target.subs && target.subs[0] ? target.subs[0] : ''; render(); }
+      }
+
       // Subscribe to real-time Firestore unlock records for this tutor
       function initUnlockListener() {
         var em = currentTutorEmail();
@@ -1536,6 +1560,7 @@
           _unlockedSet = {};
           unlockedLeadIds.forEach(function (lid) { _unlockedSet[lid] = true; });
           leads = loadTutorLeads();
+          maybeOpenRequestedLead();
           try { render(); } catch (e) { }
         });
       }
@@ -1543,6 +1568,7 @@
       if (window.ModivsFirebaseSync) {
         window.ModivsFirebaseSync.onLeads(function (freshList) {
           leads = loadTutorLeads();
+          maybeOpenRequestedLead();
           try { render(); } catch (e) { }
         });
       }
@@ -1776,12 +1802,14 @@
           try { window.ModivsFirebaseSync.saveUnlock(em, l.id || l.name, cost).catch(function () { }); } catch (e) { }
         }
         syncConversationUnlock(l, em);
+        if (state.view === 'leads' && (state.filter === 'new' || state.filter === 'free')) state.filter = 'unlocked';
         toast(res.already ? ('Already unlocked: ' + l.name + '. No coins deducted.') : (l.free ? ('Unlocked ' + l.name + '. This is a free lead, no coins used.') : ('Unlocked ' + l.name + '. ' + COST + ' coins used. Balance: ' + res.balance)));
         render();
       }).catch(function (err) {
         _unlocking[lid] = false;
         if (err && err.reason === 'membership_invalid') { toast('Active membership plan required to unlock leads.'); gotoView('buymem'); return }
         if (err && err.reason === 'insufficient_coins') { toast('Not enough coins. Buy a coin pack to unlock this lead.'); gotoView('buycoins'); return }
+        if (err && err.code === 'permission-denied') { toast('Please log in again to unlock this lead.'); return }
         console.warn(err); toast('Could not unlock right now. No coins were deducted. Please try again.');
       });
     }
@@ -1873,7 +1901,7 @@
         btn('Message', 'o', function () {
           var chatUser = null;
           try { chatUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch (e) { }
-          if (window.ModivsChat) ModivsChat.open({ student: { name: l.name, email: l.email || l.studentEmail || '' }, tutor: window.MY_TUTOR || chatUser });
+          if (window.ModivsChat) ModivsChat.open({ student: { id: l.student_id || l.id, name: l.name, email: l.email || l.studentEmail || '' }, tutor: window.MY_TUTOR || chatUser, enquiry: l });
         });
       }
       c.appendChild(L); c.appendChild(A); return c
@@ -2546,18 +2574,18 @@
         authUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
       } catch (e) { }
 
-      var email = (authUser && authUser.role === 'Tutor') ? authUser.email : '';
+      var email = (authUser && authUser.role === 'Tutor' && authUser.email) ? String(authUser.email).trim().toLowerCase() : '';
       var allTutors = [];
       try {
         allTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
       } catch (e) { }
 
-      var tutor = allTutors.find(function (t) { return t.email === email; });
+      var tutor = allTutors.find(function (t) { return t && String(t.email || '').trim().toLowerCase() === email; });
       var fullProfile = null;
       try {
         fullProfile = JSON.parse(localStorage.getItem('modivs_current_tutor') || 'null');
       } catch (e) { }
-      if (tutor && fullProfile && fullProfile.email === email) {
+      if (tutor && fullProfile && String(fullProfile.email || '').trim().toLowerCase() === email) {
         // merge the full profile the tutor filled in with the admin record (admin fields such as status win)
         tutor = Object.assign({}, fullProfile, tutor);
       } else if (!tutor) {
@@ -2820,6 +2848,16 @@
     }
 
     try { if (window.ModivsChat) ModivsChat.subscribe(render); } catch (e) { }
+    if (window.ModivsFirebaseSync && ModivsFirebaseSync.onTutors && currentTutorEmail()) {
+      ModivsFirebaseSync.onTutors(function (list) {
+        var em = currentTutorEmail().toLowerCase();
+        var hit = Array.isArray(list) && list.find(function (x) { return x && String(x.email || '').toLowerCase() === em; });
+        if (hit) {
+          window.MY_TUTOR = Object.assign({}, window.MY_TUTOR || {}, hit);
+          try { render(); } catch (e) { }
+        }
+      });
+    }
     initUnlockListener();
     (function () {
       var em = currentTutorEmail();
@@ -2833,7 +2871,9 @@
       });
       ModivsWallet.watch(em);
     })();
+    leads = loadTutorLeads();
     render();
+    maybeOpenRequestedLead();
 }) ();
   </script>
   <!-- mv-footer -->

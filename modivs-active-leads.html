@@ -1,817 +1,2586 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-<link rel="icon" type="image/png" href="favicon.png">
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Modiv’s Education – Active Leads</title>
-<meta name="description" content="Home tuition jobs and online tuition jobs for tutors. Browse active student requirements by city, subject and mode on Modiv’s Education.">
-<meta name="keywords" content="active leads, tuition leads, home tuition jobs, online tuition jobs, student requirements, tutor jobs near me, teaching jobs, tuition enquiries, private tutor jobs, Modiv’s Education, Modivs Education, Modivian tutor">
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
-button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
-
-:root{--navy:#1A2035;--yellow:#EBB92E;--cream:#FEF7EA;--muted:#555b78;--line:#eadfc9;--card:#fff;--ok:#1d7a4d;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
-*,*::before,*::after{box-sizing:inherit}
-body{margin:0;background:var(--cream);color:var(--navy);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.55}
-a{color:inherit}
-:is(a,button,input,select):focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
-.wrap{max-width:1220px;margin:0 auto;padding:0 24px}
-header{position:sticky;top:0;z-index:100;background:var(--cream);border-bottom:1px solid var(--line)}
-.bar{display:flex;align-items:center;justify-content:space-between;height:72px;gap:20px}
-.brand img{height:64px;width:auto;display:block;mix-blend-mode:multiply}
-nav ul{display:flex;gap:4px;list-style:none;margin:0;padding:0}
-nav a{display:block;padding:8px 14px;border-radius:8px;text-decoration:none;font-weight:600;font-size:.92rem;white-space:nowrap}
-nav a:hover,nav a[aria-current]{background:var(--yellow)}
-.btn{display:inline-block;padding:9px 16px;border-radius:10px;font-weight:600;font-size:.88rem;text-decoration:none;border:2px solid var(--yellow);background:var(--yellow);color:var(--navy);cursor:pointer;font-family:inherit}
-.btn:hover{background:#D9A41C;border-color:#D9A41C}
-.btn.o{background:transparent;border-color:var(--navy);color:var(--navy)}.btn.o:hover{background:var(--navy);color:var(--cream)}
-html{scroll-padding-top:80px}
-h1{font-size:clamp(1.8rem,4vw,2.6rem);line-height:1.12;letter-spacing:-.02em;margin:0 0 6px}
-.tf-hero{padding:34px 0 18px}
-.tf-sub{color:var(--muted);margin:0 0 20px;max-width:640px}
-.tf-search{display:grid;grid-template-columns:repeat(4,1fr) auto;gap:10px;max-width:1000px}
-.tf-search select{font:inherit;padding:12px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy);min-width:0;width:100%}
-.tf-go{padding:12px 28px;font-size:.95rem}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:20px}
-.stat{background:var(--card);border:1.5px solid var(--line);border-radius:12px;padding:14px 16px}
-.stat b{display:block;font-size:1.6rem;line-height:1.1}.stat span{color:var(--muted);font-size:.85rem}
-.tools{display:flex;gap:10px;flex-wrap:wrap;margin-bottom:20px}
-.tools input,.tools select{font:inherit;padding:10px 14px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy)}
-.tools input{flex:1;min-width:220px}
-.tf-layout{display:grid;grid-template-columns:1fr 260px;gap:24px;align-items:start;margin-bottom:48px}
-.tf-filters{order:2;background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:18px 18px 8px;position:sticky;top:88px;max-height:calc(100vh - 104px);overflow:auto}
-.tf-fhead{display:flex;justify-content:space-between;align-items:center;margin-bottom:6px}
-.tf-fhead h2{margin:0;font-size:1.05rem}
-.tf-link{background:none;border:0;color:#a87500;font:inherit;font-weight:700;font-size:.82rem;cursor:pointer;padding:4px 0}
-.tf-link:hover{text-decoration:underline}
-.tf-fg{padding:14px 0;border-top:1px solid var(--line)}
-.tf-fg h3{margin:0 0 8px;font-size:.92rem}
-.tf-fg input[type=search],.tf-fg select{width:100%;font:inherit;font-size:.9rem;padding:9px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy)}
-.tf-ftoggle{display:none;margin-bottom:12px}
-.tf-rhead{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:14px;flex-wrap:wrap}
-.tf-count{margin:0;font-weight:700;font-size:.95rem}
-.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:14px;margin-bottom:0}
-.pager{display:flex;align-items:center;justify-content:center;gap:6px;flex-wrap:wrap;margin:22px 0 0}
-.pager:empty{display:none}
-.pager button{font:inherit;font-weight:600;font-size:.88rem;min-width:40px;height:40px;padding:0 12px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
-.pager button:hover:not([disabled]):not([aria-current]){border-color:var(--navy)}
-.pager button[aria-current]{background:var(--yellow);border-color:var(--yellow);font-weight:800;cursor:default}
-.pager button[disabled]{opacity:.45;cursor:not-allowed}
-.pager .dots{padding:0 4px;color:var(--muted)}
-.pager-info{width:100%;text-align:center;font-size:.82rem;color:var(--muted);margin-bottom:4px}
-
-.card{background:var(--card);border:1.5px solid var(--line);border-radius:16px;padding:16px 18px;display:flex;flex-direction:column;gap:10px;transition:border-color .15s,box-shadow .15s}
-.card:hover{border-color:var(--navy);box-shadow:0 6px 18px rgba(26,32,53,.08)}
-.lwho{display:flex;align-items:center;gap:12px;min-width:0}.lavatar{width:46px;height:46px;border-radius:50%;flex:none;display:block;box-shadow:0 1px 4px rgba(20,33,61,.18)}
-.card .top{display:flex;justify-content:space-between;gap:10px;align-items:flex-start}
-.card h3{margin:0;font-size:1.08rem}
-.by{color:var(--muted);font-size:.84rem}
-.badge{background:#e6f4ec;color:var(--ok);font-weight:700;font-size:.7rem;padding:2px 9px;border-radius:99px;white-space:nowrap}
-.meta{display:grid;grid-template-columns:1fr 1fr;gap:6px 14px;margin:0;font-size:.86rem}
-.meta dt{color:var(--muted);font-size:.74rem;text-transform:uppercase;letter-spacing:.03em}.meta dd{margin:0;font-weight:600}
-.tags{display:flex;gap:6px;flex-wrap:wrap}.tags span{background:var(--cream);border:1px solid var(--line);border-radius:99px;padding:2px 10px;font-size:.78rem}
-.note{font-size:.86rem;color:var(--muted);margin:0}
-.foot{display:flex;justify-content:space-between;align-items:center;margin-top:auto;padding-top:10px;border-top:1px solid var(--line);font-size:.8rem;color:var(--muted)}
-.empty{grid-column:1/-1;text-align:center;padding:48px 16px;background:var(--card);border:1.5px dashed var(--line);border-radius:14px;color:var(--muted)}
-
-.stat.btn-stat{cursor:pointer;text-align:left;width:100%;font:inherit;color:inherit;transition:transform .15s ease,border-color .15s ease}
-.stat.btn-stat:hover{border-color:var(--navy);transform:translateY(-2px)}
-.stat.btn-stat[aria-pressed=true]{border-color:var(--navy);box-shadow:0 0 0 2px var(--navy);background:#fff6d6}
-.adminbar{display:none;align-items:center;gap:10px;flex-wrap:wrap;background:var(--navy);color:var(--cream);border-radius:12px;padding:12px 16px;margin-bottom:18px}
-.adminbar.on{display:flex}.adminbar b{color:var(--yellow)}.adminbar span{flex:1;min-width:200px;font-size:.9rem}
-.adminbar button{background:var(--yellow);color:var(--navy);border:0;border-radius:8px;padding:9px 16px;font-weight:700;cursor:pointer}
-.xbtn{background:#fff;color:#b3261e;border:1.5px solid #b3261e;border-radius:8px;padding:5px 12px;font-weight:600;font-size:.8rem;cursor:pointer}
-.xbtn:hover{background:#b3261e;color:#fff}
-dialog#addDlg{border:0;border-radius:16px;padding:0;width:min(640px,94vw);max-height:92vh;color:var(--navy)}
-dialog#addDlg::backdrop{background:rgba(26,32,53,.55)}
-#addForm{padding:24px;overflow:auto;max-height:92vh}
-#addForm h2{margin:0 0 4px}#addForm p.h{margin:0 0 14px;color:var(--muted);font-size:.9rem}
-#addForm label{display:block;font-weight:600;font-size:.85rem;margin:12px 0 5px}
-#addForm input[type=text],#addForm input[type=tel],#addForm input[type=number],#addForm select,#addForm textarea{width:100%;font:inherit;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;background:#fff;color:var(--navy)}
-#addForm textarea{min-height:64px}
-#addForm .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-#addForm .chips{display:flex;flex-wrap:wrap;gap:8px}
-#addForm .chips label{margin:0;font-weight:500;border:1.5px solid var(--line);border-radius:99px;padding:5px 12px;cursor:pointer;display:inline-flex;gap:6px;align-items:center}
-#addForm .chips label:has(input:checked){background:var(--yellow);border-color:var(--yellow)}
-#addForm .acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px}
-#addForm .err{color:#b3261e;font-size:.85rem;min-height:1.2em;margin-top:10px}
-@media(max-width:560px){#addForm .two{grid-template-columns:1fr}}
-@media(max-width:900px){.tf-search{grid-template-columns:1fr 1fr}.tf-go{grid-column:1/-1}.tf-layout{grid-template-columns:1fr}.tf-filters{display:none;position:static;max-height:none;order:-1}.tf-filters.open{display:block}.tf-ftoggle{display:inline-block}}
-@media(max-width:760px){nav{display:none}.grid{grid-template-columns:1fr}}
-#aSubs{display:grid!important;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:2px 12px;max-height:260px;overflow:auto;padding:6px;border:1.5px solid var(--line);border-radius:10px}#aSubs label{border:0!important;border-radius:0!important;padding:4px 2px!important;background:none!important;font-size:.9rem;display:flex!important;gap:8px;align-items:flex-start}#aSubs label input{width:17px;height:17px;flex:none;margin-top:2px}
-/* ---- v49 redesign ---- */
-main.wrap.tf-page{max-width:1420px}
-.al-hero{display:flex;justify-content:space-between;align-items:flex-end;gap:20px;flex-wrap:wrap;padding:30px 0 20px}
-.tf-h1{position:relative;padding-left:22px;font-size:clamp(1.9rem,3.6vw,2.6rem);margin:0 0 6px}
-.tf-h1::before{content:"";position:absolute;left:0;top:8%;bottom:8%;width:7px;border-radius:6px;background:var(--yellow)}
-.al-hero .tf-sub{padding-left:22px;margin:0;font-size:1.02rem}
-.al-priv{display:flex;align-items:center;gap:10px;margin:0;background:#fff8e6;border:1.5px solid #f3e0ac;border-radius:12px;padding:10px 14px;font-size:.86rem;font-weight:600;max-width:420px}
-.al-priv svg{width:26px;height:26px;flex:none;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
-.stats{grid-template-columns:repeat(5,minmax(0,1fr));gap:14px;margin-bottom:22px}
-.stat.btn-stat{display:flex;align-items:center;gap:14px;padding:16px 18px;border-radius:14px}
-.stat .al-si{width:48px;height:48px;border-radius:12px;display:grid;place-items:center;flex:none;background:#fdf3dc}
-.stat .al-si svg{width:26px;height:26px;stroke:var(--navy);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
-.stat b{font-size:1.7rem}
-.stat span{display:block;font-size:.9rem;color:var(--navy);font-weight:600}
-.stat.btn-stat:first-child{background:#fdefc4;border-color:#f1d27a}
-.stat.btn-stat[aria-pressed=true]{box-shadow:0 0 0 2px var(--yellow);border-color:var(--yellow);background:#fde9b0}
-.tf-layout{grid-template-columns:250px minmax(0,1fr) 270px;gap:22px}
-.tf-filters{order:0;padding:18px;box-shadow:0 4px 18px rgba(26,32,53,.05)}
-.tf-fhead h2{display:flex;align-items:center;gap:8px;font-size:1.15rem}
-.tf-fhead h2 svg,.tf-apply svg{width:20px;height:20px;stroke:currentColor;fill:none;stroke-width:2;stroke-linejoin:round}
-.tf-fg h3 small{font-weight:500;color:var(--muted)}
-.tf-apply{width:100%;display:flex;align-items:center;justify-content:center;gap:8px;margin-top:8px;padding:12px;font-size:.95rem;background:var(--navy);border-color:var(--navy);color:#fff;border-radius:12px}
-.tf-apply:hover{background:#2a3350;border-color:#2a3350}
-.tf-views{display:flex;gap:6px}
-.tf-vbtn{display:inline-flex;align-items:center;gap:7px;font:inherit;font-weight:700;font-size:.85rem;padding:8px 14px;border-radius:10px;border:1.5px solid var(--line);background:#fff;color:var(--navy);cursor:pointer}
-.tf-vbtn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
-.tf-vbtn[aria-pressed=true]{background:#fbe3a0;border-color:var(--yellow)}
-.grid.is-list{grid-template-columns:1fr}
-.grid.is-list .lc-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.grid.is-list .lc-ic:nth-child(odd){border-right:0}.grid.is-list .lc-ic{border-bottom:0}.grid.is-list .lc-ic:not(:nth-child(3n)){border-right:1px solid var(--line)}.grid.is-list .lc-ic:nth-child(-n+3){border-bottom:1px solid var(--line)}
-@media(max-width:700px){.grid.is-list .lc-grid{grid-template-columns:1fr 1fr}.grid.is-list .lc-ic:nth-child(n){border-right:0;border-bottom:1px solid var(--line)}.grid.is-list .lc-ic:nth-child(odd){border-right:1px solid var(--line)}.grid.is-list .lc-ic:nth-last-child(-n+2){border-bottom:0}.tf-vbtn{padding:8px 10px}}
-.al-tools{display:flex;gap:10px;align-items:center;margin-bottom:12px;flex-wrap:wrap}
-.al-q{flex:1;min-width:240px;display:flex;align-items:center;gap:10px;background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:0 14px}
-.al-q svg{width:19px;height:19px;stroke:var(--muted);fill:none;stroke-width:2;flex:none}
-.al-q input{flex:1;border:0;outline:0;font:inherit;padding:11px 0;background:transparent;color:var(--navy);min-width:0}
-.tf-sort{display:flex;align-items:center;gap:8px;font-size:.88rem;font-weight:600}
-.tf-sort select{font:inherit;font-size:.88rem;padding:10px 12px;border:1.5px solid var(--line);border-radius:12px;background:#fff;color:var(--navy)}
-.al-active{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:14px;min-height:30px}
-.al-chips{display:flex;align-items:center;gap:8px;flex-wrap:wrap;font-size:.85rem;font-weight:700}
-.al-chip{display:inline-flex;align-items:center;gap:6px;background:#fff;border:1.5px solid var(--line);border-radius:99px;padding:4px 6px 4px 12px;font-size:.8rem;font-weight:600;cursor:pointer;font-family:inherit;color:var(--navy)}
-.al-chip:hover{border-color:var(--navy)}
-.al-chip i{font-style:normal;width:18px;height:18px;border-radius:50%;display:grid;place-items:center;background:var(--cream);font-size:.9rem;line-height:1}
-.tf-count{margin:0;font-size:.88rem;font-weight:600;color:var(--muted)}
-.grid{grid-template-columns:repeat(auto-fill,minmax(270px,1fr));gap:16px}
-/* two equal columns; a lone last card on an odd page spans the row so no blank space is left */
-.grid:not(.is-list){grid-template-columns:repeat(2,minmax(0,1fr))}
-.grid:not(.is-list)>.lc:last-child:nth-child(odd){grid-column:1/-1}
-@media(max-width:760px){.grid:not(.is-list){grid-template-columns:1fr}}
-.lc{position:relative;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:16px;display:flex;flex-direction:column;gap:10px;box-shadow:0 2px 12px rgba(26,32,53,.04);transition:border-color .15s,box-shadow .15s}
-.lc:hover{border-color:var(--navy);box-shadow:0 8px 22px rgba(26,32,53,.09)}
-.lc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.lc-badge{font-size:.7rem;font-weight:800;letter-spacing:.03em;padding:4px 10px;border-radius:7px;background:var(--yellow);color:var(--navy);white-space:nowrap}
-.lc-badge.hot{background:#fde4e1;color:#c2321f}
-.lc-badge.ok{background:#d9f0e3;color:var(--ok)}
-.lc-badge.plain{background:#eef0f6;color:var(--navy)}
-.lc-id{font-size:.74rem;font-weight:600;color:var(--muted);border:1px solid var(--line);border-radius:7px;padding:3px 8px;white-space:nowrap}
-.lc h3{margin:0;font-size:1.08rem;line-height:1.3;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.lc.full h3{-webkit-line-clamp:unset}
-.lc-who{display:flex;align-items:center;gap:8px;font-size:.86rem;margin:0}
-.lc-who svg,.lc-ic svg,.lc-foot svg{width:17px;height:17px;flex:none;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
-.lc-who b{font-weight:700}
-.lc h3.open{display:block;-webkit-line-clamp:unset;overflow:visible}
-.lc.full h3{display:block;-webkit-line-clamp:unset;overflow:visible}
-.lc-tmore{align-self:flex-start;background:none;border:0;padding:0;margin:-6px 0 0;font:inherit;font-size:.82rem;font-weight:700;color:var(--navy);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
-.lc-tmore:hover{color:#b88a00}
-.lc-desc{margin:0;font-size:.86rem;color:var(--muted);line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
-.lc.full .lc-desc{-webkit-line-clamp:unset;display:block}
-.lc-desc.open{display:block;-webkit-line-clamp:unset;overflow:visible}
-.lc-more{align-self:flex-start;background:none;border:0;padding:0;margin:-4px 0 0;font:inherit;font-size:.82rem;font-weight:700;color:var(--navy);text-decoration:underline;text-underline-offset:2px;cursor:pointer}
-.lc-more:hover{color:#b88a00}
-.lc-badge.free{background:#d9f0e3;color:var(--ok)}
-.lc-grid{display:grid;grid-template-columns:1fr 1fr;border:1px solid var(--line);border-radius:12px;overflow:hidden}
-.lc-ic{display:flex;gap:9px;align-items:flex-start;padding:9px 11px;border-bottom:1px solid var(--line);min-width:0}
-.lc-ic:nth-child(odd){border-right:1px solid var(--line)}
-.lc-ic:nth-last-child(-n+2){border-bottom:0}
-.lc-ic svg{width:20px;height:20px;margin-top:2px;color:var(--navy)}
-.lc-ic div{min-width:0}
-.lc-ic small{display:block;font-size:.72rem;color:var(--muted)}
-.lc-ic b{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;font-size:.84rem;font-weight:700;overflow-wrap:anywhere}
-.lc.full .lc-ic b{-webkit-line-clamp:unset}
-.lc-ic b.pill{display:inline-block;white-space:nowrap;background:#fdeeb9;border-radius:6px;padding:1px 8px}
-.lc-contact{margin:0;font-size:.86rem;font-weight:700}
-.lc-foot{display:flex;justify-content:space-between;align-items:center;font-size:.8rem;color:var(--muted)}
-.lc-foot span{display:inline-flex;align-items:center;gap:6px}
-.lc-live{background:#e6f4ec;color:var(--ok);font-weight:700;border-radius:99px;padding:2px 10px}
-.lc-live::before{content:"";width:7px;height:7px;border-radius:50%;background:#22a35a}
-.lc-btns{display:grid;grid-template-columns:1fr 1fr;gap:10px}
-.lc-btns .btn.lc-lock{gap:8px}.lc-li{width:24px;height:24px;border-radius:50%;background:var(--yellow);display:grid;place-items:center;flex:none}.lc-li svg{width:14px!important;height:14px!important;stroke:var(--navy)!important;stroke-width:2.4!important}
-.lc-btns .btn.lc-lock.open{background:#22a35a;border-color:#22a35a}
-.lc.full .lc-btns{grid-template-columns:1fr}
-.lc-btns .btn{display:inline-flex;align-items:center;justify-content:center;gap:7px;text-align:center;font-weight:700;padding:9px 10px}
-.lc-btns .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2}
-.lc-btns .btn.nv{background:var(--navy);border-color:var(--navy);color:#fff}
-.lc-btns .btn.nv:hover{background:#2a3350}
-.lc-adm{display:flex;justify-content:flex-end;gap:6px}
-dialog#detDlg{border:0;border-radius:18px;padding:0;width:min(560px,94vw);max-height:92vh;background:transparent}
-dialog#detDlg::backdrop{background:rgba(26,32,53,.55)}
-#detDlg .lc{max-height:92vh;overflow:auto;padding:22px}
-#detDlg .lc-x{position:absolute;top:10px;right:10px;width:32px;height:32px;border-radius:50%;border:0;background:var(--cream);font-size:1.3rem;cursor:pointer;line-height:1}
-#detDlg .lc-top{padding-right:36px}
-.lc-tags{display:flex;gap:6px;flex-wrap:wrap}.lc-tags span{background:#fdf3dc;border:1px solid #f3e3bb;border-radius:8px;padding:2px 10px;font-size:.78rem;font-weight:600}
-.tf-aside{display:flex;flex-direction:column;gap:18px}
-.tf-trust{background:var(--navy);color:#fff;border-radius:18px;padding:28px 22px;text-align:center}
-.tf-trust .tf-seal{width:58px;height:58px;margin:0 auto 10px;display:block}
-.tf-trust h2{margin:0 0 10px;font-size:1.45rem;line-height:1.2}
-.tf-trust p{margin:0 0 16px;color:#e3e6f3;font-size:.98rem;line-height:1.5}
-.tf-trust .btn{display:block;width:100%;text-align:center;font-weight:700;padding:11px 14px}
-.tf-trust .btn.o{margin-top:10px;background:transparent;border-color:var(--cream);color:var(--cream)}.tf-trust .btn.o:hover{background:var(--cream);color:var(--navy)}
-.tf-trust::after{content:"";display:block;width:100px;height:4px;border-radius:4px;background:var(--yellow);margin:18px auto 0;transform:rotate(-3deg)}
-.tf-need{background:#fff;border:1.5px solid var(--line);border-radius:18px;padding:22px 20px;text-align:center}
-.tf-need h2{margin:0 0 6px;font-size:1.2rem}.tf-need p{margin:0 0 14px;color:var(--muted);font-size:.92rem}
-.tf-need .btn{display:block;text-align:center;font-weight:700;padding:11px 14px}
-@media(max-width:1240px){.tf-layout{grid-template-columns:250px minmax(0,1fr)}.tf-aside{grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr}}
-@media(max-width:900px){.tf-aside{grid-template-columns:1fr}}
-@media(max-width:1100px){.stats{grid-template-columns:repeat(2,minmax(0,1fr))}.stats .stat:last-child:nth-child(odd){grid-column:1/-1}}
-@media(max-width:900px){.tf-layout{grid-template-columns:1fr}.tf-filters{order:-1}}
-@media(max-width:560px){.stats{grid-template-columns:1fr 1fr;gap:10px}.stat.btn-stat{padding:12px;gap:10px}.stat .al-si{width:38px;height:38px}.stat b{font-size:1.3rem}.stat span{font-size:.78rem}}
-</style>
-<script src="modivs-import-data.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-<script src="firebase-config.js" defer></script>
-<script src="firebase-sync.js" defer></script>
-<script src="modivs-places.js"></script>
-<script src="modivs-subjects.js"></script>
-<script src="modivs-avatars.js"></script>
-<script src="modivs-session-ui.js" defer></script>
-<link rel="stylesheet" href="modivs-menu.css">
-<link rel="stylesheet" href="modivs-mobile.css">
-<link rel="stylesheet" href="modivs-faq.css">
-<script type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What are active tuition leads?", "acceptedAnswer": {"@type": "Answer", "text": "Every requirement posted by a student or parent appears here, with the class, subjects, city, teaching mode and budget. They are real home tuition and online tuition jobs."}}, {"@type": "Question", "name": "How do I get home tuition jobs from these leads?", "acceptedAnswer": {"@type": "Answer", "text": "Become a Modivian tutor: create your profile and get verified. Approved tutors unlock the leads they want from the tutor dashboard."}}, {"@type": "Question", "name": "Why are student contact details hidden?", "acceptedAnswer": {"@type": "Answer", "text": "Student phone numbers stay private until a verified tutor unlocks the lead. This protects students and parents from spam."}}, {"@type": "Question", "name": "How much does it cost to unlock a tuition lead?", "acceptedAnswer": {"@type": "Answer", "text": "Unlocking an inquiry uses coins (10 coins per inquiry) and needs an active membership plan. You manage both from the bar at the top of your tutor dashboard."}}, {"@type": "Question", "name": "Can I filter tuition leads by city, subject and mode?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Filter by city, teaching mode and subject, and choose leads posted in the last 24 hours, 7 days, 30 days or 90 days."}}, {"@type": "Question", "name": "Are there online tuition jobs I can do from anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose the online teaching mode in the filters to see students who want online classes, so you can teach from any city."}}, {"@type": "Question", "name": "I am a student or parent. How do I add my requirement?", "acceptedAnswer": {"@type": "Answer", "text": "Post your tuition requirement. It appears here for verified tutors, and your contact details stay private."}}]}</script>
-<link rel="stylesheet" href="modivs-footer.css">
-</head>
-<body>
-<header class="mv-header">
- <div class="mv-wrap mv-bar">
-  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
-  <nav id="mvNav" aria-label="Main menu">
-   <ul>
-    <li><a href="index.html">Home</a></li>
-    <li><a href="modivs-active-leads.html">Active leads</a></li>
-    <li><a href="modivs-tutors.html">Find a tutor</a></li>
-    <li><a href="modivs-shop.html">Shop</a></li>
-    <li class="mv-dd"><button type="button" class="mv-dd-b" aria-haspopup="true" aria-expanded="false">More <span class="car" aria-hidden="true">▾</span></button><ul class="mv-dd-m">
-     <li><a href="modivs-guide.html">Guide</a></li>
-     <li><a href="modivs-students-corner.html">Students’ Corner</a></li>
-     <li><a href="modivs-blogs.html">Blogs</a></li>
-     <li><a href="modivs-contact.html">Contact us</a></li>
-    </ul></li>
-   </ul>
-  </nav>
-  <div class="acts" id="mvActs">
-   <a class="btn" id="navTutor" href="modivs-become-tutor.html">Become a Tutor</a>
-   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
-   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
-   <a class="btn" id="postBtn" href="modivs-post-requirement.html">Post a requirement</a>
-   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
-  </div>
- </div>
-</header>
-
-<main class="wrap tf-page">
- <section class="al-hero">
-  <div><h1 class="tf-h1">Active Tuition Leads</h1><p class="tf-sub">Explore genuine tutoring requirements from students and parents.</p></div>
-  <p class="al-priv"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="#EBB92E" stroke="#EBB92E"/><path d="M8.5 12l2.5 2.5 4.5-5" stroke="#fff"/></svg>Contact details are hidden for privacy. Unlock a lead to connect directly.</p>
- </section>
- <div class="adminbar" id="adminBar"><span><b>Admin mode.</b> You can post a requirement on behalf of a student or parent, and delete any lead. No sign-up needed.</span><button type="button" id="addLeadBtn">+ Add student inquiry</button></div>
- <div class="stats" id="stats"></div>
- <button type="button" class="btn o tf-ftoggle" id="ftoggle" aria-expanded="false" aria-controls="filters">Filters</button>
- <div class="tf-layout">
-  <aside class="tf-filters" id="filters" aria-label="Filters">
-   <div class="tf-fhead"><h2><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7.5V19l-4 1.5v-8z"/></svg>Filters</h2><button type="button" class="tf-link" id="clearAll">Clear All</button></div>
-   <div class="tf-fg"><h3>City</h3><select id="fCity" aria-label="Filter by city"><option value="">All cities</option></select></div>
-   <div class="tf-fg"><h3>Class / Grade</h3><select id="fCls" aria-label="Filter by class"><option value="">All classes</option></select></div>
-   <div class="tf-fg"><h3>Subject</h3><select id="fSub" aria-label="Filter by subject"><option value="">All subjects</option></select></div>
-   <div class="tf-fg"><h3>Teaching Mode</h3><select id="fMode" aria-label="Filter by teaching mode"><option value="">All modes</option></select></div>
-   <div class="tf-fg"><h3>Budget <small>(per hour)</small></h3><select id="fBud" aria-label="Filter by budget"><option value="">Any budget</option><option value="u300">Under ₹300</option><option value="300">₹300 – ₹500</option><option value="500">₹500 – ₹800</option><option value="800">₹800 and above</option></select></div>
-   <div class="tf-fg"><h3>Lead type</h3><select id="fFree" aria-label="Filter by lead type"><option value="">All leads</option><option value="free">Free tuition leads</option></select></div>
-   <div class="tf-fg"><h3>Posted</h3><select id="fAge" aria-label="Filter by how recently posted"><option value="">Any time</option><option value="1">Last 24 hours</option><option value="7">Last 7 days</option><option value="30">Last 30 days</option><option value="90">Last 90 days</option></select></div>
-   <button type="button" class="btn tf-apply" id="applyF"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16l-6 7.5V19l-4 1.5v-8z"/></svg>Apply Filters</button>
-  </aside>
-  <section class="tf-results" aria-label="Leads">
-   <div class="al-tools">
-    <label class="al-q"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M16 16l5 5"/></svg><input type="search" id="q" placeholder="Search by subject, class, location or keyword…" aria-label="Search leads"></label>
-    <div class="tf-views" role="group" aria-label="Layout"><button type="button" class="tf-vbtn" id="vList" aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>List View</button><button type="button" class="tf-vbtn" id="vGrid" aria-pressed="true"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="4" y="4" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="4" width="6.5" height="6.5" rx="1"/><rect x="4" y="13.5" width="6.5" height="6.5" rx="1"/><rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1"/></svg>Grid View</button></div>
-    <label class="tf-sort">Sort <select id="fSort" aria-label="Sort leads"><option value="new">Newest</option><option value="old">Oldest</option><option value="bhigh">Budget: high to low</option><option value="blow">Budget: low to high</option></select></label>
-   </div>
-   <div class="al-active"><div class="al-chips" id="chips"></div><p class="tf-count" id="count" aria-live="polite"></p></div>
-   <div class="grid" id="grid" aria-live="polite"></div>
-   <nav class="pager" id="pager" aria-label="Lead pages"></nav>
-  </section>
-  <aside class="tf-aside" aria-label="For tutors">
-   <div class="tf-trust" id="tutorBox">
-    <svg class="tf-seal" viewBox="0 0 24 24" aria-hidden="true"><path fill="#EBB92E" d="M12 2l2.4 2.2 3.2-.3.9 3.1 2.7 1.8-1.3 3 1.3 3-2.7 1.8-.9 3.1-3.2-.3L12 22l-2.4-2.2-3.2.3-.9-3.1L2.8 15.2l1.3-3-1.3-3 2.7-1.8.9-3.1 3.2.3z"/><path d="M8.3 12.2l2.4 2.4 5-5" fill="none" stroke="#1A2035" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    <h2 id="tbTitle">Are you a tutor?</h2>
-    <p id="tbText">Create your profile, get verified and unlock leads from students and parents looking for your subjects.</p>
-    <a class="btn y" id="tbJoin" href="modivs-signup.html">Sign up as a Tutor</a>
-   </div>
-   <div class="tf-need" id="needBox">
-    <h2>Looking for a tutor?</h2>
-    <p>Tell us what you need and verified tutors will get in touch.</p>
-    <a class="btn" id="needBtn" href="modivs-post-requirement.html">Post a requirement</a>
-    <a class="btn o" id="needSignup" href="modivs-student-signup.html" style="margin-top:10px">Sign up as a Student / Parent</a>
-   </div>
-  </aside>
- </div>
-</main>
-<dialog id="detDlg" aria-label="Lead details"></dialog>
-
-<dialog id="addDlg" aria-labelledby="addTitle">
- <form id="addForm" novalidate>
-  <h2 id="addTitle">Add student inquiry</h2><p class="h">Posted as admin. It appears in Active leads and in the admin Student Inquiries list right away.</p>
-  <div class="two"><div><label for="aName">Student name *</label><input type="text" id="aName" maxlength="60"></div><div><label for="aParent">Parent name <small>(optional)</small></label><input type="text" id="aParent" maxlength="60"></div></div>
-  <div class="two"><div><label for="aPhone">Mobile number *</label><input type="tel" id="aPhone" placeholder="10-digit number"></div><div><label for="aCity">City *</label><input type="text" id="aCity" maxlength="40"></div></div>
-  <div class="two"><div><label for="aArea">Area / locality</label><input type="text" id="aArea" maxlength="40"></div><div><label for="aFreq">Classes per week</label><select id="aFreq"><option value="">Select</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6 or more</option></select></div></div>
-  <div class="two"><div><label for="aCls">Class / level *</label><select id="aCls"></select></div><div><label for="aBoard">Board</label><select id="aBoard"></select></div></div>
-  <label>Subjects needed *</label><div class="chips" id="aSubs"></div>
-  <label>Teaching mode *</label><div class="chips" id="aModes"></div>
-  <div class="two"><div><label for="aMin">Budget from (₹/hour)</label><input type="number" id="aMin" min="0"></div><div><label for="aMax">Budget up to (₹/hour)</label><input type="number" id="aMax" min="0"></div></div>
-  <label for="aNotes">Notes for tutors</label><textarea id="aNotes" maxlength="300"></textarea>
-  <label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-weight:700"><input type="checkbox" id="aFree"> Free tuition lead <small style="font-weight:500;color:var(--muted)">(tutors unlock it without coins)</small></label>
-  <div class="err" id="aErr" role="alert"></div>
-  <div class="acts"><button type="button" class="btn o" id="aCancel">Cancel</button><button type="submit" class="btn y">Post requirement</button></div>
- </form>
-</dialog>
-
-<script>
-ModivsPlaces.upgrade('aCity','aArea');
-(function(){
-var SEED=[];
-function read(k){try{var v=JSON.parse(localStorage.getItem(k)||'[]');return Array.isArray(v)?v:[]}catch(e){return []}}
-function el(t,c,x){var e=document.createElement(t);if(c)e.className=c;if(x!=null)e.textContent=x;return e}
-function escapeHtml(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
-function ago(l){
- if(!l.registered_at)return l.sent||'Recently';
- var m=Math.round((Date.now()-new Date(l.registered_at).getTime())/60000);
- if(isNaN(m)||m<2)return 'Just now';if(m<60)return m+' min ago';
- var h=Math.round(m/60);if(h<24)return h+' hr ago';var d=Math.round(h/24);return d+(d===1?' day':' days')+' ago';
-}
-function maskPhone(p){p=String(p||'').replace(/\D/g,'');return p.length>=4?p.slice(0,2)+'xxxxxx'+p.slice(-2):'Hidden'}
-/* a lead counts as FREE only when the admin ticked "Free tuition lead" (stored as boolean true) */
-function isFree(l){return !!l&&l.free===true}
-function load(){
- var all=read('modivs_active_leads').concat(read('modivs_students_db'));
- var seen={},out=[];
- all.forEach(function(l){
-  if(!l||!l.name)return;
-  var key=(l.email||l.id||l.name).toLowerCase();
-  if(seen[key])return;seen[key]=1;
-  if(l.status==='closed'||l.status==='rejected')return;
-  var tb=tomb();if((l.id&&tb.indexOf(l.id)>-1)||(l.email&&tb.indexOf(String(l.email).toLowerCase())>-1))return;
-  out.push(l);
- });
- out.sort(function(a,b){return (new Date(b.registered_at||0))-(new Date(a.registered_at||0))});
- return out;
-}
-var leads=load(),$=function(i){return document.getElementById(i)};
-var FIDS=['q','fCity','fCls','fMode','fSub','fBud','fAge','fFree'];
-
-if(window.ModivsFirebaseSync){
- window.ModivsFirebaseSync.onLeads(function(freshLeads){
-  reloadAll();
- });
-} else {
- setTimeout(function(){
-  if(window.ModivsFirebaseSync){
-   window.ModivsFirebaseSync.onLeads(function(freshLeads){ reloadAll(); });
-  }
- }, 200);
-}
-var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com'];
-var ADMIN=false;try{var as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');ADMIN=!!(as&&as.email&&ADMIN_EMAILS.indexOf(as.email.toLowerCase())!==-1)}catch(e){}
-function tomb(){return read('modivs_deleted_leads')}
-function fillSelect(id,vals){var s=$(id);Array.from(new Set(vals.filter(Boolean))).sort(function(a,b){return String(a).localeCompare(String(b),'en',{numeric:true})}).forEach(function(v){var o=el('option','',v);o.value=v;s.appendChild(o)})}
-fillSelect('fCity',leads.map(function(l){return l.city}));
-fillSelect('fSub',[].concat.apply([],leads.map(function(l){return l.subs||[]})));
-fillSelect('fCls',leads.map(function(l){return l.cls}));
-var MODE_OPTS=['Online','At student’s place','At tutor’s place'];
-function normMode(m){
- var s=String(m||'').toLowerCase();
- if(!s)return '';
- if(s.indexOf('online')>-1)return 'Online';
- if(/comes to|student|my home|at home/.test(s))return 'At student’s place';
- if(/tutor|my place|cent(re|er)/.test(s))return 'At tutor’s place';
- return '';
-}
-function normModes(list){var out=[];(Array.isArray(list)?list:[]).forEach(function(m){var n=normMode(m);if(n&&out.indexOf(n)<0)out.push(n)});return MODE_OPTS.filter(function(m){return out.indexOf(m)>-1})}
-function fillModes(id){var s=$(id);MODE_OPTS.forEach(function(v){var o=el('option','',v);o.value=v;s.appendChild(o)})}
-fillModes('fMode');
-
-var activeTutorUser = null;
-try {
-  activeTutorUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
-} catch(e){}
-var activeTutorEmail = (activeTutorUser && activeTutorUser.role === 'Tutor' && activeTutorUser.email) ? activeTutorUser.email.toLowerCase() : '';
-var activeUnlockedLeads = {};
-if(window.ModivsFirebaseSync && activeTutorEmail){
-  window.ModivsFirebaseSync.onUnlocks(activeTutorEmail, function(ids){
-    activeUnlockedLeads = {};
-    ids.forEach(function(id){ activeUnlockedLeads[String(id).replace(/[\/\\#?]/g,'_').trim()] = true; });
-    try { render(); } catch(e){}
-  });
-}
-
-function myCity(){
- var c=(activeTutorUser&&activeTutorUser.city)||'';
- if(!c&&activeTutorEmail){var me=read('modivs_tutors_db').filter(function(t){return String(t.email||'').toLowerCase()===activeTutorEmail})[0];if(me)c=me.city||''}
- return normCity(c);
-}
-function stats(){
- var s=$('stats');s.innerHTML='';
- var today=leads.filter(function(l){return l.registered_at&&Date.now()-new Date(l.registered_at).getTime()<864e5}).length;
- var subs={};leads.forEach(function(l){(l.subs||[]).forEach(function(x){subs[x]=1})});
- var age=$('fAge').value,sub=$('fSub').value,free=$('fFree').value==='free',city=myCity();
- var freeN=leads.filter(isFree).length;
- var near=city?leads.filter(function(l){return normCity(l.city)===city}).length:leads.filter(function(l){return normModes(l.mode).indexOf('Online')>-1}).length;
- var nearOn=city?$('fCity').value===city:$('fMode').value==='Online';
- [['Active Leads',leads.length,'all',!age&&!sub&&!nearOn&&!free,'users'],['New Today',today,'24',age==='1','cal'],['Subjects',Object.keys(subs).length,'subjects',!!sub,'layers'],[city?'Leads Near You':'Online Leads',near,'near',nearOn,city?'pin':'laptop'],['Free Leads',freeN,'free',free,'gift']].forEach(function(x){
-  var d=el('button','stat btn-stat');d.type='button';d.setAttribute('aria-pressed',x[3]);
-  var i=el('span','al-si');i.innerHTML=ic(x[4]);d.appendChild(i);
-  var w=el('div');w.appendChild(el('b','',x[1]));w.appendChild(el('span','',x[0]));d.appendChild(w);
-  d.addEventListener('click',function(){
-   if(x[2]==='all'){FIDS.forEach(function(i){$(i).value=''})}
-   else if(x[2]==='free'){$('fFree').value=free?'':'free'}
-   else if(x[2]==='24'){$('fAge').value=($('fAge').value==='1')?'':'1'}
-   else if(x[2]==='near'){if(city){var cs=$('fCity');if(!Array.prototype.some.call(cs.options,function(o){return o.value===city})){var o=el('option','',city);o.value=city;cs.appendChild(o)}cs.value=nearOn?'':city}else{$('fMode').value=nearOn?'':'Online'}}
-   else{$('fSub').focus()}
-   render();
-  });
-  s.appendChild(d)});
-}
-var LI={
- lock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
- unlock:'<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/>',
- eye:'<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
- user:'<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
- cap:'<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/>',
- book:'<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
- pin:'<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
- laptop:'<rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/>',
- coin:'<circle cx="12" cy="12" r="9"/><path d="M9 8h6M9 11h6M9 8c3 0 4.5 1 4.5 2.5S12 13 9 13l5 4"/>',
- cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
- clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
- users:'<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.3c1.8.8 3 2.5 3 4.7"/>',
- gift:'<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/><path d="M12 8c-1.5-4-6-4-5-1 .6 1.600 3 1 5 1zM12 8c1.5-4 6-4 5-1-.6 1.600-3 1-5 1z"/>',
- layers:'<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>'
-};
-function ic(n){return '<svg viewBox="0 0 24 24" aria-hidden="true">'+LI[n]+'</svg>'}
-function lhash(s){s=String(s||'');var h=0;for(var i=0;i<s.length;i++){h=(h*31+s.charCodeAt(i))>>>0}return h}
-function leadId(l){return 'MOD-LD-'+(1000+lhash(l.id||l.email||l.name)%9000)}
-function areaOf(l){return String(l.area||'').split(',')[0].trim()}
-function boardOf(l){return String(l.board||'').split(' (')[0].trim()}
-function shortSub(s){return s==='Mathematics'?'Maths':s}
-function modeName(m){return m==='Online'?'Online Classes':m==='At student’s place'?'Home Tuition':'At Tutor’s Place'}
-function budNums(l){var m=String(l.budget||'').replace(/,/g,'').match(/\d+/g);return m?m.map(Number):[]}
-function budLo(l){var n=budNums(l);return n.length?Math.min.apply(null,n):0}
-function budHi(l){var n=budNums(l);return n.length?Math.max.apply(null,n):0}
-function budMatch(l,b){
- if(!b)return true;var lo=budLo(l),hi=budHi(l);if(!hi)return false;
- if(b==='u300')return lo<300;if(b==='300')return lo<=500&&hi>=300;if(b==='500')return lo<=800&&hi>=500;return hi>=800;
-}
-function titleOf(l){
- var s=(l.subs||[]).slice(0,2).map(shortSub).join(' & ')||'Subject',ms=normModes(l.mode),loc=[areaOf(l),l.city].filter(Boolean).join(', ');
- if(ms.length===1&&ms[0]==='Online')return 'Req. Online Tutor for '+(l.cls?l.cls+' ':'')+s;
- return 'Required '+s+(ms.indexOf('At student’s place')>-1?' Home Tutor':' Tutor')+(l.cls?' for '+l.cls:'')+(loc?' in '+loc:'');
-}
-function descOf(l){
- if(l.notes)return l.notes;
- var ms=normModes(l.mode);
- return 'Looking for '+(ms.length===1&&ms[0]==='Online'?'an online':'an experienced')+' tutor for '+(l.cls||'the student')+(l.board?' ('+l.board+')':'')+' '+(l.subs||[]).join(', ')+'.';
-}
-function roleOf(l){return (/parent/i.test(l.by||'')||(l.parentName&&l.parentName!==l.name))?'Parent':'Student'}
-function demand(){var m={};leads.forEach(function(l){(l.subs||[]).forEach(function(s){m[s]=(m[s]||0)+1})});return m}
-function cell(icn,label,val,pill){var d=el('div','lc-ic');d.innerHTML=ic(icn);var w=el('div');w.appendChild(el('small','',label));w.appendChild(el('b',pill?'pill':'',val));d.appendChild(w);return d}
-function card(l,full){
- var c=el('article','lc'+(full?' full':''));
- var lid=String(l.id||'').replace(/[\/\\#?]/g,'_').trim();
- var isUnlocked=!!activeUnlockedLeads[lid]||!!l.unlocked;
- var age=l.registered_at?(Date.now()-new Date(l.registered_at).getTime()):Infinity,dm=demand();
- var hot=(l.subs||[]).some(function(s){return dm[s]>=3});
- var t=el('div','lc-top'),bd;
- if(isUnlocked)bd=el('span','lc-badge ok','✓ UNLOCKED');
- else if(isFree(l))bd=el('span','lc-badge free','🎁 FREE LEAD');
- else if(age<48*36e5)bd=el('span','lc-badge','NEW LEAD');
- else if(hot)bd=el('span','lc-badge hot','🔥 HIGH DEMAND');
- else bd=el('span','lc-badge plain','ACTIVE LEAD');
- t.appendChild(bd);t.appendChild(el('span','lc-id','Lead ID: '+leadId(l)));c.appendChild(t);
- var h3=el('h3','lc-title',titleOf(l));c.appendChild(h3);
- if(!full){var tm=el('button','lc-tmore','Read more');tm.type='button';tm.hidden=true;tm.setAttribute('aria-expanded','false');
-  tm.addEventListener('click',function(){var o=h3.classList.toggle('open');tm.textContent=o?'Read less':'Read more';tm.setAttribute('aria-expanded',o?'true':'false')});c.appendChild(tm)}
- var w=el('p','lc-who');w.innerHTML=ic('user');w.appendChild(document.createTextNode('Name: '));w.appendChild(el('b','',l.name));c.appendChild(w);
- var ds=el('p','lc-desc',descOf(l));c.appendChild(ds);
- if(!full){var rm=el('button','lc-more','Read more');rm.type='button';rm.hidden=true;rm.setAttribute('aria-expanded','false');
-  rm.addEventListener('click',function(){var o=ds.classList.toggle('open');rm.textContent=o?'Read less':'Read more';rm.setAttribute('aria-expanded',o?'true':'false')});c.appendChild(rm)}
- var g=el('div','lc-grid'),ms=normModes(l.mode);
- g.appendChild(cell('cap','Class',(l.cls||'—')+(boardOf(l)?' ('+boardOf(l)+')':'')));
- g.appendChild(cell('book','Subject',(l.subs||[]).join(', ')||'—'));
- g.appendChild(cell('pin','Location',[full?l.area:areaOf(l),l.city].filter(Boolean).join(', ')||(ms[0]==='Online'?'Online':'—')));
- g.appendChild(cell('laptop','Teaching Mode',ms.map(modeName).join(', ')||'—'));
- g.appendChild(cell('coin','Budget',l.budget||'Negotiable',true));
- g.appendChild(cell('cal','Schedule',l.freq?(/^\d+$/.test(String(l.freq))?l.freq+(+l.freq===1?' day / week':' days / week'):l.freq):'Flexible'));
- c.appendChild(g);
- if(full){
-  var ex=(l.goals||[]).concat(l.formats||[]);if(ex.length){var tg=el('div','lc-tags');ex.forEach(function(x){tg.appendChild(el('span','',x))});c.appendChild(tg)}
- }
- if(isUnlocked&&l.phone)c.appendChild(el('p','lc-contact','📞 Contact: '+l.phone+(l.email?' · ✉ '+l.email:'')));
- var f=el('div','lc-foot'),pa=el('span');pa.innerHTML=ic('clock');var ag=ago(l);pa.appendChild(document.createTextNode('Posted '+ag.charAt(0).toLowerCase()+ag.slice(1)));f.appendChild(pa);f.appendChild(el('span','lc-live','Active'));c.appendChild(f);
- var b=el('div','lc-btns'),u=el('a','btn nv');u.href='modivs-tutor-dashboard.html';u.className='btn nv lc-lock'+(isUnlocked?' open':'');u.innerHTML='<span class="lc-li">'+ic(isUnlocked?'unlock':'lock')+'</span>';u.appendChild(document.createTextNode(isUnlocked?'Open Lead':(isFree(l)?'Unlock Free Lead':'Unlock Lead')));u.setAttribute('aria-label',(isUnlocked?'Open lead for ':'Unlock lead for ')+l.name);b.appendChild(u);
- if(!full){var v=el('button','btn o','View Details');v.type='button';v.addEventListener('click',function(){showDetails(l)});b.appendChild(v)}
- c.appendChild(b);
- if(ADMIN){
-  var ad=el('div','lc-adm');
-  var eb=el('button','xbtn','Edit');eb.type='button';eb.setAttribute('aria-label','Edit lead for '+l.name);eb.style.cssText='background:#1A2035;color:#EBB92E;border:1.5px solid #1A2035;';
-  eb.addEventListener('click',function(e){e.stopPropagation();var d=$('detDlg');if(d.open)d.close();openEditLead(l)});ad.appendChild(eb);
-  var x=el('button','xbtn','Delete');x.type='button';x.setAttribute('aria-label','Delete lead for '+l.name);x.addEventListener('click',function(){var d=$('detDlg');if(d.open)d.close();removeLead(l)});ad.appendChild(x);
-  c.appendChild(ad);
- }
- return c;
-}
-function showDetails(l){
- var d=$('detDlg');d.textContent='';var c=card(l,true);var x=el('button','lc-x','×');x.type='button';x.setAttribute('aria-label','Close');x.addEventListener('click',function(){d.close()});c.appendChild(x);d.appendChild(c);d.showModal();
-}
-$('detDlg').addEventListener('click',function(e){if(e.target===this)this.close()});
-/* ---------- pagination ---------- */
-var PG=1,PER=10,PSIG='';
-function pageList(cur,total){
- var out=[],set={1:1,2:1};set[total]=1;set[total-1]=1;set[cur]=1;set[cur-1]=1;set[cur+1]=1;
- var last=0;for(var i=1;i<=total;i++){if(!set[i])continue;if(last&&i-last>1)out.push('…');out.push(i);last=i}
- return out;
-}
-function renderPager(total,onGo){
- var p=document.getElementById('pager');p.textContent='';
- var pages=Math.ceil(total/PER);if(pages<=1)return;
- function btn(label,pg,opts){var b=document.createElement('button');b.type='button';b.textContent=label;opts=opts||{};
-  if(opts.aria)b.setAttribute('aria-label',opts.aria);
-  if(opts.disabled)b.disabled=true;
-  if(opts.current){b.setAttribute('aria-current','page')}
-  else if(!opts.disabled){b.addEventListener('click',function(){PG=pg;onGo()})}
-  p.appendChild(b)}
- var info=document.createElement('div');info.className='pager-info';
- info.textContent='Showing '+((PG-1)*PER+1)+'–'+Math.min(PG*PER,total)+' of '+total;p.appendChild(info);
- btn('‹ Prev',PG-1,{disabled:PG===1,aria:'Previous page'});
- pageList(PG,pages).forEach(function(x){
-  if(x==='…'){var s=document.createElement('span');s.className='dots';s.textContent='…';p.appendChild(s)}
-  else btn(String(x),x,{current:x===PG,aria:'Page '+x});
- });
- btn('Next ›',PG+1,{disabled:PG===pages,aria:'Next page'});
-}
-function syncMore(){
- requestAnimationFrame(function(){Array.prototype.forEach.call($('grid').querySelectorAll('.lc'),function(c){
-  var t=c.querySelector('.lc-title'),tb=c.querySelector('.lc-tmore');
-  if(t&&tb)tb.hidden=!(t.classList.contains('open')||t.scrollHeight>t.clientHeight+1);
-  var d=c.querySelector('.lc-desc'),b=c.querySelector('.lc-more');if(!d||!b)return;
-  b.hidden=!(d.classList.contains('open')||d.scrollHeight>d.clientHeight+1)})});
-}
-window.addEventListener('resize',syncMore);
-function render(){
- var q=$('q').value.toLowerCase().trim(),city=$('fCity').value,cls=$('fCls').value,mode=$('fMode').value,sub=$('fSub').value,bud=$('fBud').value,age=+$('fAge').value,free=$('fFree').value,sort=$('fSort').value,g=$('grid');g.innerHTML='';stats();
- var rows=leads.filter(function(l){
-  if(city&&l.city!==city)return false;
-  if(cls&&l.cls!==cls)return false;
-  if(mode&&normModes(l.mode).indexOf(mode)<0)return false;
-  if(sub&&(l.subs||[]).indexOf(sub)<0)return false;
-  if(!budMatch(l,bud))return false;
-  if(free&&!isFree(l))return false;
-  if(age&&(!l.registered_at||(Date.now()-new Date(l.registered_at).getTime())>age*864e5))return false;
-  var hay=[l.name,l.city,l.area,l.cls,l.board,l.notes,(l.subs||[]).join(' '),(l.goals||[]).join(' '),normModes(l.mode).map(modeName).join(' ')].join(' ').toLowerCase();
-  return !q||hay.indexOf(q)>-1;
- });
- if(sort==='old')rows.reverse();
- else if(sort==='bhigh')rows.sort(function(a,b){return budHi(b)-budHi(a)});
- else if(sort==='blow')rows.sort(function(a,b){return (budLo(a)||1e9)-(budLo(b)||1e9)});
- renderChips();
- $('count').textContent='Showing '+rows.length+(rows.length===1?' lead':' leads');
- var sig=JSON.stringify([q,city,cls,mode,sub,bud,age,free,sort]);if(sig!==PSIG){PG=1;PSIG=sig}
- var pages=Math.max(1,Math.ceil(rows.length/PER));if(PG>pages)PG=pages;
- if(!rows.length){renderPager(0);g.appendChild(el('p','empty','No active leads match your search.'));return}
- rows.slice((PG-1)*PER,PG*PER).forEach(function(l){g.appendChild(card(l))});
- syncMore();
- renderPager(rows.length,function(){render();var st=$('stats');if(st&&st.scrollIntoView)st.scrollIntoView({behavior:'smooth',block:'start'})});
-}
-function renderChips(){
- var box=$('chips');box.textContent='';var on=[];
- FIDS.forEach(function(id){var e=$(id);if(!e.value)return;var txt=id==='q'?'“'+e.value+'”':(e.options?e.options[e.selectedIndex].textContent:e.value);on.push([id,txt])});
- if(!on.length)return;
- box.appendChild(el('span','','Active Filters:'));
- on.forEach(function(p){var b=el('button','al-chip',p[1]);b.type='button';b.setAttribute('aria-label','Remove filter '+p[1]);var i=el('i','','×');i.setAttribute('aria-hidden','true');b.appendChild(i);b.addEventListener('click',function(){$(p[0]).value='';render()});box.appendChild(b)});
- var c=el('button','tf-link','Clear All');c.type='button';c.addEventListener('click',function(){FIDS.forEach(function(i){$(i).value=''});render()});box.appendChild(c);
-}
-FIDS.concat(['fSort']).forEach(function(i){$(i).addEventListener('input',render)});
-$('applyF').addEventListener('click',function(){render();var f=$('filters');if(f.classList.contains('open')){f.classList.remove('open');$('ftoggle').setAttribute('aria-expanded','false');$('ftoggle').textContent='Filters'}$('count').scrollIntoView({behavior:'smooth',block:'start'})});
-$('clearAll').addEventListener('click',function(){FIDS.forEach(function(i){$(i).value=''});render()});
-/* list / grid view toggle (remembered per browser) */
-function setView(v){var l=v==='list';$('grid').classList.toggle('is-list',l);$('vList').setAttribute('aria-pressed',l?'true':'false');$('vGrid').setAttribute('aria-pressed',l?'false':'true');try{localStorage.setItem('modivs_leads_view',v)}catch(e){}}
-$('vList').addEventListener('click',function(){setView('list');syncMore()});$('vGrid').addEventListener('click',function(){setView('grid');syncMore()});
-try{if(localStorage.getItem('modivs_leads_view')==='list')setView('list')}catch(e){}
-$('ftoggle').addEventListener('click',function(){var o=$('filters').classList.toggle('open');this.setAttribute('aria-expanded',o?'true':'false');this.textContent=o?'Hide filters':'Filters'});
-
-/* ---------- admin: add / delete ---------- */
-function save(k,v){localStorage.setItem(k,JSON.stringify(v))}
-function fsDo(fn){try{var fb=window.EducationBFirebase;if(fb&&fb.db)fn(fb.db)}catch(e){}}
-function reloadAll(){
- leads=load();
- [['fCity',function(l){return l.city?[l.city]:[]}],['fSub',function(l){return l.subs||[]}],['fCls',function(l){return l.cls?[l.cls]:[]}]].forEach(function(p){
-  var sel=$(p[0]),cur=sel.value;while(sel.options.length>1)sel.remove(1);
-  fillSelect(p[0],[].concat.apply([],leads.map(p[1])));sel.value=cur;
- });
- render();
-}
-function removeLead(l){
- if(!confirm('Delete the inquiry from '+l.name+'? This removes it from Active leads and the admin Student Inquiries list.'))return;
- var id=l.id,em=(l.email||'').toLowerCase();
- if(window.ModivsFirebaseSync){
-  window.ModivsFirebaseSync.deleteLead(id, em);
- }
- function same(x){return (id&&x.id===id)||(em&&(x.email||'').toLowerCase()===em)}
- save('modivs_active_leads',read('modivs_active_leads').filter(function(x){return !same(x)}));
- save('modivs_students_db',read('modivs_students_db').filter(function(x){return !same(x)}));
- var t=tomb();if(id&&t.indexOf(id)<0)t.push(id);if(em&&t.indexOf(em)<0)t.push(em);save('modivs_deleted_leads',t);
- fsDo(function(db){if(id){db.collection('leads').doc(String(id)).delete().catch(function(){});db.collection('students').doc(String(id)).delete().catch(function(){})}});
- reloadAll();
-}
-
-function openEditLead(l){
-  var existing = document.getElementById('editLeadDlg');
-  if(existing) existing.remove();
-
-  var dlg = document.createElement('dialog');
-  dlg.id = 'editLeadDlg';
-  dlg.style.cssText = 'border:2px solid var(--yellow);border-radius:16px;max-width:540px;width:calc(100% - 24px);padding:22px;background:var(--cream);color:var(--navy);box-shadow:0 20px 50px rgba(0,0,0,0.3);';
-
-  dlg.innerHTML =
-    '<form id="editLeadForm">' +
-      '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:8px;">' +
-        '<h2 style="margin:0;font-size:1.2rem;">✏️ Edit Student Lead</h2>' +
-        '<button type="button" id="closeEditDlg" style="background:transparent;border:0;font-size:1.5rem;cursor:pointer;">&times;</button>' +
-      '</div>' +
-      '<div class="two"><div><label for="edlName">Student name *</label><input type="text" id="edlName" value="' + escapeHtml(l.name || l.student_name || '') + '" required></div><div><label for="edlParent">Parent name</label><input type="text" id="edlParent" value="' + escapeHtml(l.parentName || l.parent_name || '') + '"></div></div>' +
-      '<div class="two"><div><label for="edlPhone">Mobile number *</label><input type="tel" id="edlPhone" value="' + escapeHtml(l.phone || '') + '" required></div><div><label for="edlEmail">Email address</label><input type="email" id="edlEmail" value="' + escapeHtml(l.email || l.owner_email || '') + '"></div></div>' +
-      '<div class="two"><div><label for="edlCity">City *</label><input type="text" id="edlCity" value="' + escapeHtml(l.city || '') + '" required></div><div><label for="edlArea">Area / locality</label><input type="text" id="edlArea" value="' + escapeHtml(l.area || '') + '"></div></div>' +
-      '<div class="two"><div><label for="edlCls">Class / level *</label><input type="text" id="edlCls" value="' + escapeHtml(l.cls || '') + '" required></div><div><label for="edlBoard">Board</label><input type="text" id="edlBoard" value="' + escapeHtml(l.board || '') + '"></div></div>' +
-      '<label for="edlSubs">Subjects needed (comma-separated) *</label><input type="text" id="edlSubs" value="' + escapeHtml(Array.isArray(l.subs) ? l.subs.join(', ') : (l.subs || '')) + '" required>' +
-      '<div class="two"><div><label for="edlMode">Teaching mode</label><input type="text" id="edlMode" value="' + escapeHtml(Array.isArray(l.mode) ? l.mode.join(', ') : (l.mode || 'Online')) + '"></div><div><label for="edlBudget">Budget</label><input type="text" id="edlBudget" value="' + escapeHtml(l.budget || '') + '"></div></div>' +
-      '<div class="two"><div><label for="edlRole">Posted by</label><select id="edlRole"><option value="Student"' + ((l.created_by_role === 'student' || (l.by && l.by.toLowerCase().indexOf('student') >= 0)) ? ' selected' : '') + '>Student</option><option value="Parent"' + ((l.created_by_role === 'parent' || (l.by && l.by.toLowerCase().indexOf('parent') >= 0)) ? ' selected' : '') + '>Parent</option></select></div><div><label for="edlStatus">Status</label><select id="edlStatus"><option value="active"' + (l.status === 'active' || l.status === 'new' ? ' selected' : '') + '>Active</option><option value="accepted"' + (l.status === 'accepted' ? ' selected' : '') + '>Accepted</option><option value="demo"' + (l.status === 'demo' ? ' selected' : '') + '>Demo Offered</option></select></div></div>' +
-      '<label style="display:flex;gap:8px;align-items:center;margin:4px 0 12px;font-weight:700"><input type="checkbox" id="edlFree"' + (isFree(l) ? ' checked' : '') + '> Free tuition lead <small style="font-weight:500;color:var(--muted)">(tutors unlock it without coins)</small></label>' +
-      '<label for="edlNotes">Notes for tutors</label><textarea id="edlNotes" style="width:100%;min-height:60px;margin-bottom:12px;">' + escapeHtml(l.notes || '') + '</textarea>' +
-      '<div class="acts"><button type="button" class="btn o" id="cancelEditDlg">Cancel</button><button type="submit" class="btn y">Save Changes</button></div>' +
-    '</form>';
-
-  document.body.appendChild(dlg);
-  dlg.showModal();
-
-  dlg.querySelector('#closeEditDlg').onclick = function(){ dlg.close(); dlg.remove(); };
-  dlg.querySelector('#cancelEditDlg').onclick = function(){ dlg.close(); dlg.remove(); };
-
-  dlg.querySelector('#editLeadForm').onsubmit = function(e){
-    e.preventDefault();
-    var nameVal = dlg.querySelector('#edlName').value.trim();
-    var parentVal = dlg.querySelector('#edlParent').value.trim();
-    var phoneVal = dlg.querySelector('#edlPhone').value.trim();
-    var emailVal = dlg.querySelector('#edlEmail').value.trim();
-    var cityVal = dlg.querySelector('#edlCity').value.trim();
-    var areaVal = dlg.querySelector('#edlArea').value.trim();
-    var clsVal = dlg.querySelector('#edlCls').value.trim();
-    var boardVal = dlg.querySelector('#edlBoard').value.trim();
-    var subsVal = dlg.querySelector('#edlSubs').value.split(',').map(function(s){ return s.trim(); }).filter(Boolean);
-    var modeVal = dlg.querySelector('#edlMode').value.trim();
-    var budgetVal = dlg.querySelector('#edlBudget').value.trim();
-    var roleVal = dlg.querySelector('#edlRole').value;
-    var statusVal = dlg.querySelector('#edlStatus').value;
-    var notesVal = dlg.querySelector('#edlNotes').value.trim();
-
-    var updated = Object.assign({}, l, {
-      name: nameVal,
-      student_name: nameVal,
-      parentName: parentVal || nameVal,
-      parent_name: parentVal,
-      phone: phoneVal,
-      email: emailVal,
-      owner_email: emailVal,
-      city: cityVal,
-      area: areaVal,
-      cls: clsVal,
-      board: boardVal,
-      subs: subsVal,
-      mode: modeVal,
-      budget: budgetVal,
-      by: roleVal,
-      created_by_role: roleVal.toLowerCase(),
-      status: statusVal,
-      notes: notesVal,
-      free: dlg.querySelector('#edlFree').checked,
-      updatedAt: new Date().toISOString()
-    });
-
-    // Save to local storage
-    var activeLeads = read('modivs_active_leads');
-    var aIdx = activeLeads.findIndex(function(x){ return x.id === l.id; });
-    if(aIdx > -1) activeLeads[aIdx] = Object.assign({}, activeLeads[aIdx], updated);
-    else activeLeads.unshift(updated);
-    save('modivs_active_leads', activeLeads);
-
-    var studentsDb = read('modivs_students_db');
-    var sIdx = studentsDb.findIndex(function(x){ return x.id === l.id; });
-    if(sIdx > -1) studentsDb[sIdx] = Object.assign({}, studentsDb[sIdx], updated);
-    else studentsDb.unshift(updated);
-    save('modivs_students_db', studentsDb);
-
-    try {
-      var sReq = JSON.parse(localStorage.getItem('modivs_student_req') || 'null');
-      if(sReq && (sReq.id === l.id || (l.email && sReq.email && sReq.email.toLowerCase() === l.email.toLowerCase()))){
-        save('modivs_student_req', Object.assign({}, sReq, updated));
-      }
-    } catch(err){}
-
-    if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.saveLead){
-      window.ModivsFirebaseSync.saveLead(updated);
+  <link rel="icon" type="image/png" href="favicon.png">
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Modiv’s Education – Active Leads</title>
+  <meta name="description"
+    content="Home tuition jobs and online tuition jobs for tutors. Browse active student requirements by city, subject and mode on Modiv’s Education.">
+  <meta name="keywords"
+    content="active leads, tuition leads, home tuition jobs, online tuition jobs, student requirements, tutor jobs near me, teaching jobs, tuition enquiries, private tutor jobs, Modiv’s Education, Modivs Education, Modivian tutor">
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap"
+    rel="stylesheet">
+  <style>
+    button,
+    input,
+    select,
+    textarea {
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif
     }
 
-    dlg.close();
-    dlg.remove();
-    reloadAll();
-  };
-}
-var SUBJECTS=(window.ModivsSubjects?ModivsSubjects.all():['Mathematics','Physics','Chemistry','Biology','English']);
-var CLASSES=['Nursery–KG','Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12','College / University','Adult learner'];
-var BOARDS=['CBSE','ICSE','PSEB','IB','IGCSE','State board','Other'];
-var MODES=['Online','Offline (Tutor comes to my home)','Offline (At tutor’s place)'];
-function opts(id,list,ph){var s=$(id);s.innerHTML='';var o=document.createElement('option');o.value='';o.textContent=ph;s.appendChild(o);list.forEach(function(x){var e=document.createElement('option');e.textContent=x;s.appendChild(e)})}
-function chips(id,list,name){var b=$(id);b.innerHTML='';list.forEach(function(x){var l=document.createElement('label'),i=document.createElement('input');i.type='checkbox';i.value=x;i.name=name;l.appendChild(i);l.appendChild(document.createTextNode(x));b.appendChild(l)})}
-function normCity(c){return String(c||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()})}
-function checked(name){return Array.prototype.map.call(document.querySelectorAll('#addForm input[name='+name+']:checked'),function(i){return i.value})}
-function openAdd(){
- $('addForm').reset();$('aErr').textContent='';
- opts('aCls',CLASSES,'Select');opts('aBoard',BOARDS,'Select');chips('aSubs',SUBJECTS,'subs');chips('aModes',MODES,'modes');
- $('addDlg').showModal();$('aName').focus();
-}
-function submitAdd(e){
- e.preventDefault();
- var name=$('aName').value.trim(),phone=$('aPhone').value.trim(),city=ModivsPlaces.canon('city',$('aCity').value),cls=$('aCls').value,subs=checked('subs'),modes=checked('modes'),err=$('aErr');
- if(!name)return err.textContent='Enter the student’s name.';
- if(!/^[+0-9\s-]{10,15}$/.test(phone))return err.textContent='Enter a valid mobile number.';
- if(!city)return err.textContent='Enter the city.';
- if(!cls)return err.textContent='Choose a class or level.';
- if(!subs.length)return err.textContent='Choose at least one subject.';
- if(!modes.length)return err.textContent='Choose at least one teaching mode.';
- var mn=$('aMin').value,mx=$('aMax').value,parent=$('aParent').value.trim();
- var id='adm_'+Date.now();
- var lead={id:id,name:name,parentName:parent||name,email:'',phone:phone,city:city,area:ModivsPlaces.canon('area',$('aArea').value,city),cls:cls,board:$('aBoard').value||'',
-  subs:subs,goals:[],level:'Average',notes:$('aNotes').value.trim(),mode:modes,
-  budget:(mn||mx)?'₹'+(mn||'—')+'–'+(mx||'—')+' / hour':'',freq:$('aFreq').value||'',
-  status:'active',sent:'Just now',by:parent?'Parent: '+parent+' (posted by admin)':'Posted by admin',registered_at:new Date().toISOString(),posted_by_admin:true,free:$('aFree').checked};
- var a=read('modivs_active_leads');a.unshift(lead);save('modivs_active_leads',a);
- var st=read('modivs_students_db');st.unshift(lead);save('modivs_students_db',st);
- if(window.ModivsFirebaseSync){
-  window.ModivsFirebaseSync.saveLead(lead);
- } else {
-  fsDo(function(db){db.collection('leads').doc(id).set(lead,{merge:true}).catch(function(){});db.collection('students').doc(id).set(lead,{merge:true}).catch(function(){})});
- }
- $('addDlg').close();
- FIDS.forEach(function(i){$(i).value=''});
- reloadAll();
-}
-if(ADMIN){
- $('adminBar').classList.add('on');
- var pb=$('postBtn');pb.href='#post';pb.addEventListener('click',function(e){e.preventDefault();openAdd()});
- $('addLeadBtn').addEventListener('click',openAdd);
- $('addForm').addEventListener('submit',submitAdd);
- $('aCancel').addEventListener('click',function(){$('addDlg').close()});
- $('addDlg').addEventListener('click',function(e){if(e.target===$('addDlg'))$('addDlg').close()});
- if(location.hash==='#post')setTimeout(openAdd,0);
-}
+    :root {
+      --navy: #1A2035;
+      --yellow: #EBB92E;
+      --cream: #FEF7EA;
+      --muted: #555b78;
+      --line: #eadfc9;
+      --card: #fff;
+      --ok: #1d7a4d;
+      box-sizing: border-box;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-bottom: env(safe-area-inset-bottom, 0px)
+    }
 
-/* right-hand sign-up boxes: adapt to who is logged in */
-(function(){
- var u=null;try{u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
- var tj=$('tbJoin'),ns=$('needSignup');
- if(u&&u.role==='Tutor'){tj.href='modivs-tutor-dashboard.html';tj.textContent='Go to my dashboard';$('tbTitle').textContent='Ready to unlock leads?';$('tbText').textContent='Open your dashboard to unlock leads and message students.';$('needBox').style.display='none'}
- else if(u&&u.role==='Student / Parent'){$('tutorBox').style.display='none';ns.href='modivs-student-dashboard.html';ns.textContent='Go to my dashboard'}
- if(ADMIN){$('tutorBox').style.display='none';$('needBox').style.display='none'}
-})();
-stats();render();
-})();
-</script>
-<!-- mv-footer -->
-<section class="mvfaq" id="page-faq" aria-labelledby="mvfaqH">
- <div class="mvfaq-in">
-  <h2 id="mvfaqH">Tuition jobs FAQs: home and online tuition leads</h2><p class="mvfaq-sub">How tutors find home tuition jobs and online tuition jobs from real student requirements.</p>
-  <div class="mvfaq-list">
-   <details><summary>What are active tuition leads?</summary><div class="mvfaq-a"><p>Every requirement posted by a student or parent appears here, with the class, subjects, city, teaching mode and budget. They are real home tuition and online tuition jobs.</p></div></details>
-   <details><summary>How do I get home tuition jobs from these leads?</summary><div class="mvfaq-a"><p><a href="modivs-become-tutor.html">Become a Modivian tutor</a>: create your profile and get verified. Approved tutors unlock the leads they want from the tutor dashboard.</p></div></details>
-   <details><summary>Why are student contact details hidden?</summary><div class="mvfaq-a"><p>Student phone numbers stay private until a verified tutor unlocks the lead. This protects students and parents from spam.</p></div></details>
-   <details><summary>How much does it cost to unlock a tuition lead?</summary><div class="mvfaq-a"><p>Unlocking an inquiry uses coins (10 coins per inquiry) and needs an active membership plan. You manage both from the bar at the top of your tutor dashboard.</p></div></details>
-   <details><summary>Can I filter tuition leads by city, subject and mode?</summary><div class="mvfaq-a"><p>Yes. Filter by city, teaching mode and subject, and choose leads posted in the last 24 hours, 7 days, 30 days or 90 days.</p></div></details>
-   <details><summary>Are there online tuition jobs I can do from anywhere?</summary><div class="mvfaq-a"><p>Yes. Choose the online teaching mode in the filters to see students who want online classes, so you can teach from any city.</p></div></details>
-   <details><summary>I am a student or parent. How do I add my requirement?</summary><div class="mvfaq-a"><p><a href="modivs-post-requirement.html">Post your tuition requirement</a>. It appears here for verified tutors, and your contact details stay private.</p></div></details>
-  </div>
-  <p class="mvfaq-more">Still have a question? <a href="modivs-contact.html">Contact us</a> or read the <a href="modivs-guide.html">guide</a>.</p>
- </div>
-</section>
+    *,
+    *::before,
+    *::after {
+      box-sizing: inherit
+    }
 
-<footer class="mv-foot v2">
-  <div class="fv-grid">
-   <div class="fv-col fv-brand"><a class="fv-logo" href="modivs-home.html#top" aria-label="Modiv’s Education home"><img src="logo.png" alt="Modiv’s Education"></a><p>Connecting tutors with students and parents, one class at a time.</p><div class="fv-app"><b>Download Our App</b><div class="fv-badges"><a href="#" class="fv-badge" aria-label="Get it on Google Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#00D7FE" d="M3.6 2.2c-.3.3-.5.8-.5 1.4v16.8c0 .6.2 1.1.5 1.4l.1.1 9.4-9.4v-.2z"/><path fill="#00F076" d="M16.2 15.4l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1.1.6 1.1 1.6 0 2.2l-3.7 2z"/><path fill="#FF3A44" d="M16.3 15.3L13.1 12.2 3.6 21.8c.4.4.9.4 1.6.1z"/><path fill="#FFC900" d="M16.3 9.1L5.2 2.2c-.7-.4-1.2-.3-1.6.1l9.5 9.5z"/></svg><span><small>GET IT ON</small>Google Play</span></a><a href="#" class="fv-badge" aria-label="Download on the App Store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg><span><small>Download on the</small>App Store</span></a></div></div><div class="fv-follow"><b>Follow Us</b><div class="fv-soc"><a href="https://www.facebook.com/modivseducation/" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Modiv’s Education on Facebook" style="--c:#1877F2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a><a href="https://www.instagram.com/modivs_education/" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Modiv’s Education on Instagram" style="--c:#E4405F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a><a href="https://www.youtube.com/channel/UC1PXZRzp5Yp1kihDURNhkpg" target="_blank" rel="noopener noreferrer" title="YouTube" aria-label="Modiv’s Education on YouTube" style="--c:#FF0000"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a><a href="https://x.com/" target="_blank" rel="noopener noreferrer" title="X" aria-label="Modiv’s Education on X" style="--c:#000000"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a><a href="https://www.linkedin.com/in/modiv-education-554176143/" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="Modiv’s Education on LinkedIn" style="--c:#0A66C2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a><a href="https://wa.me/message/AZVJXD4HG3DOG1" target="_blank" rel="noopener noreferrer" title="WhatsApp" aria-label="Modiv’s Education on WhatsApp" style="--c:#25D366"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a></div></div></div>
-   <div class="fv-col"><h4>For Students &amp; Parents</h4><ul class="fv-list"><li><a href="modivs-find-tutor.html" id="footFindTutor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Find a Tutor</span></a></li><li><a href="modivs-post-requirement.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5V3.5h6v1M8.5 11l1.6 1.6L13 9.5M8.5 17h7"/></svg><span>Post a Requirement</span></a></li><li><a href="modivs-tutors.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 5.2a3 3 0 0 1 0 5.6M18 14.8c1.8.7 3 2.4 3 5.2"/></svg><span>Browse Tutors</span></a></li><li><a href="modivs-home.html#subjects"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10.3 5.2 7.8 4.6 4 4.8v13c3.8-.2 6.3.4 8 1.7 1.7-1.3 4.2-1.9 8-1.7v-13c-3.8-.2-6.3.4-8 1.7zM12 6.5v13"/></svg><span>Subjects &amp; Classes</span></a></li><li><a href="modivs-home.html#faq"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 1 1 3.8 2.3c-.8.5-1.3 1-1.3 2M12 17h.01"/></svg><span>FAQs</span></a></li></ul></div>
-   <div class="fv-col"><h4>For Tutors</h4><ul class="fv-list"><li><a href="modivs-become-tutor.html" id="footBecomeTutor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5 1.5 0 2.8.4 3.9 1.1M18 10v6M15 13h6"/></svg><span>Become a Tutor</span></a></li><li><a href="modivs-active-leads.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5zM3 12.5l9 5 9-5M3 17l9 5 9-5"/></svg><span>Active Leads</span></a></li><li><a href="modivs-guide.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10.3 5.2 7.8 4.6 4 4.8v13c3.8-.2 6.3.4 8 1.7 1.7-1.3 4.2-1.9 8-1.7v-13c-3.8-.2-6.3.4-8 1.7zM12 6.5v13"/></svg><span>Tutor Guidelines</span></a></li><li><a href="modivs-become-tutor.html#pricing"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20v-6M20 20V9"/></svg><span>Plans &amp; Pricing</span></a></li><li><a href="modivs-contact.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/><path d="M19 19c0 1.5-1.5 2.5-4 2.5"/></svg><span>Help &amp; Support</span></a></li></ul></div>
-   <div class="fv-col fv-contact"><h4>Contact &amp; Locations</h4><ul class="fv-list"><li><a href="tel:+919896930443"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span>+91 98969 30443</span></a></li><li><a href="tel:+918054167008"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span>+91 80541 67008</span></a></li><li><a href="mailto:support@modivians.com"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>support@modivians.com</span></a></li></ul><div class="fv-locs"><b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Our Service Locations</b><div class="fv-cities"><div><a href="modivs-tutors.html?city=Chandigarh" title="Find tutors in Chandigarh">Chandigarh</a><a href="modivs-tutors.html?city=Mohali" title="Find tutors in Mohali">Mohali</a><a href="modivs-tutors.html?city=Panchkula" title="Find tutors in Panchkula">Panchkula</a></div><div><a href="modivs-tutors.html?city=Ludhiana" title="Find tutors in Ludhiana">Ludhiana</a><a href="modivs-tutors.html?city=Patiala" title="Find tutors in Patiala">Patiala</a><a href="modivs-tutors.html?city=Jalandhar" title="Find tutors in Jalandhar">Jalandhar</a><a href="modivs-tutors.html?city=Amritsar" title="Find tutors in Amritsar">Amritsar</a></div></div></div></div>
-  </div>
-  <div class="fv-bottom"><div class="fv-legal" role="navigation" aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact Us</a><a href="sitemap.xml">Sitemap</a></div><p class="fv-copy">© 2026 Modiv’s Education. All rights reserved.</p></div>
-</footer>
-<script src="modivs-menu.js" defer></script>
-<script src="modivs-social.js" defer></script>
-<script src="modivs-dropdown.js" defer></script>
+    body {
+      margin: 0;
+      background: var(--cream);
+      color: var(--navy);
+      font-family: "Plus Jakarta Sans", system-ui, -apple-system, "Segoe UI", sans-serif;
+      line-height: 1.55
+    }
+
+    a {
+      color: inherit
+    }
+
+    :is(a, button, input, select):focus-visible {
+      outline: 3px solid var(--yellow);
+      outline-offset: 3px
+    }
+
+    .wrap {
+      max-width: 1220px;
+      margin: 0 auto;
+      padding: 0 24px
+    }
+
+    header {
+      position: sticky;
+      top: 0;
+      z-index: 100;
+      background: var(--cream);
+      border-bottom: 1px solid var(--line)
+    }
+
+    .bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      height: 72px;
+      gap: 20px
+    }
+
+    .brand img {
+      height: 64px;
+      width: auto;
+      display: block;
+      mix-blend-mode: multiply
+    }
+
+    nav ul {
+      display: flex;
+      gap: 4px;
+      list-style: none;
+      margin: 0;
+      padding: 0
+    }
+
+    nav a {
+      display: block;
+      padding: 8px 14px;
+      border-radius: 8px;
+      text-decoration: none;
+      font-weight: 600;
+      font-size: .92rem;
+      white-space: nowrap
+    }
+
+    nav a:hover,
+    nav a[aria-current] {
+      background: var(--yellow)
+    }
+
+    .btn {
+      display: inline-block;
+      padding: 9px 16px;
+      border-radius: 10px;
+      font-weight: 600;
+      font-size: .88rem;
+      text-decoration: none;
+      border: 2px solid var(--yellow);
+      background: var(--yellow);
+      color: var(--navy);
+      cursor: pointer;
+      font-family: inherit
+    }
+
+    .btn:hover {
+      background: #D9A41C;
+      border-color: #D9A41C
+    }
+
+    .btn.o {
+      background: transparent;
+      border-color: var(--navy);
+      color: var(--navy)
+    }
+
+    .btn.o:hover {
+      background: var(--navy);
+      color: var(--cream)
+    }
+
+    html {
+      scroll-padding-top: 80px
+    }
+
+    h1 {
+      font-size: clamp(1.8rem, 4vw, 2.6rem);
+      line-height: 1.12;
+      letter-spacing: -.02em;
+      margin: 0 0 6px
+    }
+
+    .tf-hero {
+      padding: 34px 0 18px
+    }
+
+    .tf-sub {
+      color: var(--muted);
+      margin: 0 0 20px;
+      max-width: 640px
+    }
+
+    .tf-search {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr) auto;
+      gap: 10px;
+      max-width: 1000px
+    }
+
+    .tf-search select {
+      font: inherit;
+      padding: 12px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--navy);
+      min-width: 0;
+      width: 100%
+    }
+
+    .tf-go {
+      padding: 12px 28px;
+      font-size: .95rem
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+      gap: 12px;
+      margin-bottom: 20px
+    }
+
+    .stat {
+      background: var(--card);
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 14px 16px
+    }
+
+    .stat b {
+      display: block;
+      font-size: 1.6rem;
+      line-height: 1.1
+    }
+
+    .stat span {
+      color: var(--muted);
+      font-size: .85rem
+    }
+
+    .tools {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px
+    }
+
+    .tools input,
+    .tools select {
+      font: inherit;
+      padding: 10px 14px;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--navy)
+    }
+
+    .tools input {
+      flex: 1;
+      min-width: 220px
+    }
+
+    .tf-layout {
+      display: grid;
+      grid-template-columns: 1fr 260px;
+      gap: 24px;
+      align-items: start;
+      margin-bottom: 48px
+    }
+
+    .tf-filters {
+      order: 2;
+      background: var(--card);
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      padding: 18px 18px 8px;
+      position: sticky;
+      top: 88px;
+      max-height: calc(100vh - 104px);
+      overflow: auto
+    }
+
+    .tf-fhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px
+    }
+
+    .tf-fhead h2 {
+      margin: 0;
+      font-size: 1.05rem
+    }
+
+    .tf-link {
+      background: none;
+      border: 0;
+      color: #a87500;
+      font: inherit;
+      font-weight: 700;
+      font-size: .82rem;
+      cursor: pointer;
+      padding: 4px 0
+    }
+
+    .tf-link:hover {
+      text-decoration: underline
+    }
+
+    .tf-fg {
+      padding: 14px 0;
+      border-top: 1px solid var(--line)
+    }
+
+    .tf-fg h3 {
+      margin: 0 0 8px;
+      font-size: .92rem
+    }
+
+    .tf-fg input[type=search],
+    .tf-fg select {
+      width: 100%;
+      font: inherit;
+      font-size: .9rem;
+      padding: 9px 12px;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--navy)
+    }
+
+    .tf-ftoggle {
+      display: none;
+      margin-bottom: 12px
+    }
+
+    .tf-rhead {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 14px;
+      flex-wrap: wrap
+    }
+
+    .tf-count {
+      margin: 0;
+      font-weight: 700;
+      font-size: .95rem
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+      gap: 14px;
+      margin-bottom: 0
+    }
+
+    .pager {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      flex-wrap: wrap;
+      margin: 22px 0 0
+    }
+
+    .pager:empty {
+      display: none
+    }
+
+    .pager button {
+      font: inherit;
+      font-weight: 600;
+      font-size: .88rem;
+      min-width: 40px;
+      height: 40px;
+      padding: 0 12px;
+      border-radius: 10px;
+      border: 1.5px solid var(--line);
+      background: #fff;
+      color: var(--navy);
+      cursor: pointer
+    }
+
+    .pager button:hover:not([disabled]):not([aria-current]) {
+      border-color: var(--navy)
+    }
+
+    .pager button[aria-current] {
+      background: var(--yellow);
+      border-color: var(--yellow);
+      font-weight: 800;
+      cursor: default
+    }
+
+    .pager button[disabled] {
+      opacity: .45;
+      cursor: not-allowed
+    }
+
+    .pager .dots {
+      padding: 0 4px;
+      color: var(--muted)
+    }
+
+    .pager-info {
+      width: 100%;
+      text-align: center;
+      font-size: .82rem;
+      color: var(--muted);
+      margin-bottom: 4px
+    }
+
+    .card {
+      background: var(--card);
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      padding: 16px 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      transition: border-color .15s, box-shadow .15s
+    }
+
+    .card:hover {
+      border-color: var(--navy);
+      box-shadow: 0 6px 18px rgba(26, 32, 53, .08)
+    }
+
+    .lwho {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0
+    }
+
+    .lavatar {
+      width: 46px;
+      height: 46px;
+      border-radius: 50%;
+      flex: none;
+      display: block;
+      box-shadow: 0 1px 4px rgba(20, 33, 61, .18)
+    }
+
+    .card .top {
+      display: flex;
+      justify-content: space-between;
+      gap: 10px;
+      align-items: flex-start
+    }
+
+    .card h3 {
+      margin: 0;
+      font-size: 1.08rem
+    }
+
+    .by {
+      color: var(--muted);
+      font-size: .84rem
+    }
+
+    .badge {
+      background: #e6f4ec;
+      color: var(--ok);
+      font-weight: 700;
+      font-size: .7rem;
+      padding: 2px 9px;
+      border-radius: 99px;
+      white-space: nowrap
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px 14px;
+      margin: 0;
+      font-size: .86rem
+    }
+
+    .meta dt {
+      color: var(--muted);
+      font-size: .74rem;
+      text-transform: uppercase;
+      letter-spacing: .03em
+    }
+
+    .meta dd {
+      margin: 0;
+      font-weight: 600
+    }
+
+    .tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .tags span {
+      background: var(--cream);
+      border: 1px solid var(--line);
+      border-radius: 99px;
+      padding: 2px 10px;
+      font-size: .78rem
+    }
+
+    .note {
+      font-size: .86rem;
+      color: var(--muted);
+      margin: 0
+    }
+
+    .foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-top: auto;
+      padding-top: 10px;
+      border-top: 1px solid var(--line);
+      font-size: .8rem;
+      color: var(--muted)
+    }
+
+    .empty {
+      grid-column: 1/-1;
+      text-align: center;
+      padding: 48px 16px;
+      background: var(--card);
+      border: 1.5px dashed var(--line);
+      border-radius: 14px;
+      color: var(--muted)
+    }
+
+    .stat.btn-stat {
+      cursor: pointer;
+      text-align: left;
+      width: 100%;
+      font: inherit;
+      color: inherit;
+      transition: transform .15s ease, border-color .15s ease
+    }
+
+    .stat.btn-stat:hover {
+      border-color: var(--navy);
+      transform: translateY(-2px)
+    }
+
+    .stat.btn-stat[aria-pressed=true] {
+      border-color: var(--navy);
+      box-shadow: 0 0 0 2px var(--navy);
+      background: #fff6d6
+    }
+
+    .adminbar {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      background: var(--navy);
+      color: var(--cream);
+      border-radius: 12px;
+      padding: 12px 16px;
+      margin-bottom: 18px
+    }
+
+    .adminbar.on {
+      display: flex
+    }
+
+    .adminbar b {
+      color: var(--yellow)
+    }
+
+    .adminbar span {
+      flex: 1;
+      min-width: 200px;
+      font-size: .9rem
+    }
+
+    .adminbar button {
+      background: var(--yellow);
+      color: var(--navy);
+      border: 0;
+      border-radius: 8px;
+      padding: 9px 16px;
+      font-weight: 700;
+      cursor: pointer
+    }
+
+    .xbtn {
+      background: #fff;
+      color: #b3261e;
+      border: 1.5px solid #b3261e;
+      border-radius: 8px;
+      padding: 5px 12px;
+      font-weight: 600;
+      font-size: .8rem;
+      cursor: pointer
+    }
+
+    .xbtn:hover {
+      background: #b3261e;
+      color: #fff
+    }
+
+    dialog#addDlg {
+      border: 0;
+      border-radius: 16px;
+      padding: 0;
+      width: min(640px, 94vw);
+      max-height: 92vh;
+      color: var(--navy)
+    }
+
+    dialog#addDlg::backdrop {
+      background: rgba(26, 32, 53, .55)
+    }
+
+    #addForm {
+      padding: 24px;
+      overflow: auto;
+      max-height: 92vh
+    }
+
+    #addForm h2 {
+      margin: 0 0 4px
+    }
+
+    #addForm p.h {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: .9rem
+    }
+
+    #addForm label {
+      display: block;
+      font-weight: 600;
+      font-size: .85rem;
+      margin: 12px 0 5px
+    }
+
+    #addForm input[type=text],
+    #addForm input[type=tel],
+    #addForm input[type=number],
+    #addForm select,
+    #addForm textarea {
+      width: 100%;
+      font: inherit;
+      padding: 10px 12px;
+      border: 1.5px solid var(--line);
+      border-radius: 10px;
+      background: #fff;
+      color: var(--navy)
+    }
+
+    #addForm textarea {
+      min-height: 64px
+    }
+
+    #addForm .two {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 12px
+    }
+
+    #addForm .chips {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px
+    }
+
+    #addForm .chips label {
+      margin: 0;
+      font-weight: 500;
+      border: 1.5px solid var(--line);
+      border-radius: 99px;
+      padding: 5px 12px;
+      cursor: pointer;
+      display: inline-flex;
+      gap: 6px;
+      align-items: center
+    }
+
+    #addForm .chips label:has(input:checked) {
+      background: var(--yellow);
+      border-color: var(--yellow)
+    }
+
+    #addForm .acts {
+      display: flex;
+      gap: 10px;
+      justify-content: flex-end;
+      margin-top: 20px
+    }
+
+    #addForm .err {
+      color: #b3261e;
+      font-size: .85rem;
+      min-height: 1.2em;
+      margin-top: 10px
+    }
+
+    @media(max-width:560px) {
+      #addForm .two {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media(max-width:900px) {
+      .tf-search {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .tf-go {
+        grid-column: 1/-1
+      }
+
+      .tf-layout {
+        grid-template-columns: 1fr
+      }
+
+      .tf-filters {
+        display: none;
+        position: static;
+        max-height: none;
+        order: -1
+      }
+
+      .tf-filters.open {
+        display: block
+      }
+
+      .tf-ftoggle {
+        display: inline-block
+      }
+    }
+
+    @media(max-width:760px) {
+      nav {
+        display: none
+      }
+
+      .grid {
+        grid-template-columns: 1fr
+      }
+    }
+
+    #aSubs {
+      display: grid !important;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 2px 12px;
+      max-height: 260px;
+      overflow: auto;
+      padding: 6px;
+      border: 1.5px solid var(--line);
+      border-radius: 10px
+    }
+
+    #aSubs label {
+      border: 0 !important;
+      border-radius: 0 !important;
+      padding: 4px 2px !important;
+      background: none !important;
+      font-size: .9rem;
+      display: flex !important;
+      gap: 8px;
+      align-items: flex-start
+    }
+
+    #aSubs label input {
+      width: 17px;
+      height: 17px;
+      flex: none;
+      margin-top: 2px
+    }
+
+    /* ---- v49 redesign ---- */
+    main.wrap.tf-page {
+      max-width: 1420px
+    }
+
+    .al-hero {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      gap: 20px;
+      flex-wrap: wrap;
+      padding: 30px 0 20px
+    }
+
+    .tf-h1 {
+      position: relative;
+      padding-left: 22px;
+      font-size: clamp(1.9rem, 3.6vw, 2.6rem);
+      margin: 0 0 6px
+    }
+
+    .tf-h1::before {
+      content: "";
+      position: absolute;
+      left: 0;
+      top: 8%;
+      bottom: 8%;
+      width: 7px;
+      border-radius: 6px;
+      background: var(--yellow)
+    }
+
+    .al-hero .tf-sub {
+      padding-left: 22px;
+      margin: 0;
+      font-size: 1.02rem
+    }
+
+    .al-priv {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin: 0;
+      background: #fff8e6;
+      border: 1.5px solid #f3e0ac;
+      border-radius: 12px;
+      padding: 10px 14px;
+      font-size: .86rem;
+      font-weight: 600;
+      max-width: 420px
+    }
+
+    .al-priv svg {
+      width: 26px;
+      height: 26px;
+      flex: none;
+      fill: none;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .stats {
+      grid-template-columns: repeat(5, minmax(0, 1fr));
+      gap: 14px;
+      margin-bottom: 22px
+    }
+
+    .stat.btn-stat {
+      display: flex;
+      align-items: center;
+      gap: 14px;
+      padding: 16px 18px;
+      border-radius: 14px
+    }
+
+    .stat .al-si {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      flex: none;
+      background: #fdf3dc
+    }
+
+    .stat .al-si svg {
+      width: 26px;
+      height: 26px;
+      stroke: var(--navy);
+      fill: none;
+      stroke-width: 1.7;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .stat b {
+      font-size: 1.7rem
+    }
+
+    .stat span {
+      display: block;
+      font-size: .9rem;
+      color: var(--navy);
+      font-weight: 600
+    }
+
+    .stat.btn-stat:first-child {
+      background: #fdefc4;
+      border-color: #f1d27a
+    }
+
+    .stat.btn-stat[aria-pressed=true] {
+      box-shadow: 0 0 0 2px var(--yellow);
+      border-color: var(--yellow);
+      background: #fde9b0
+    }
+
+    .tf-layout {
+      grid-template-columns: 250px minmax(0, 1fr) 270px;
+      gap: 22px
+    }
+
+    .tf-filters {
+      order: 0;
+      padding: 18px;
+      box-shadow: 0 4px 18px rgba(26, 32, 53, .05)
+    }
+
+    .tf-fhead h2 {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 1.15rem
+    }
+
+    .tf-fhead h2 svg,
+    .tf-apply svg {
+      width: 20px;
+      height: 20px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2;
+      stroke-linejoin: round
+    }
+
+    .tf-fg h3 small {
+      font-weight: 500;
+      color: var(--muted)
+    }
+
+    .tf-apply {
+      width: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      margin-top: 8px;
+      padding: 12px;
+      font-size: .95rem;
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff;
+      border-radius: 12px
+    }
+
+    .tf-apply:hover {
+      background: #2a3350;
+      border-color: #2a3350
+    }
+
+    .tf-views {
+      display: flex;
+      gap: 6px
+    }
+
+    .tf-vbtn {
+      display: inline-flex;
+      align-items: center;
+      gap: 7px;
+      font: inherit;
+      font-weight: 700;
+      font-size: .85rem;
+      padding: 8px 14px;
+      border-radius: 10px;
+      border: 1.5px solid var(--line);
+      background: #fff;
+      color: var(--navy);
+      cursor: pointer
+    }
+
+    .tf-vbtn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2
+    }
+
+    .tf-vbtn[aria-pressed=true] {
+      background: #fbe3a0;
+      border-color: var(--yellow)
+    }
+
+    .grid.is-list {
+      grid-template-columns: 1fr
+    }
+
+    .grid.is-list .lc-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr))
+    }
+
+    .grid.is-list .lc-ic:nth-child(odd) {
+      border-right: 0
+    }
+
+    .grid.is-list .lc-ic {
+      border-bottom: 0
+    }
+
+    .grid.is-list .lc-ic:not(:nth-child(3n)) {
+      border-right: 1px solid var(--line)
+    }
+
+    .grid.is-list .lc-ic:nth-child(-n+3) {
+      border-bottom: 1px solid var(--line)
+    }
+
+    @media(max-width:700px) {
+      .grid.is-list .lc-grid {
+        grid-template-columns: 1fr 1fr
+      }
+
+      .grid.is-list .lc-ic:nth-child(n) {
+        border-right: 0;
+        border-bottom: 1px solid var(--line)
+      }
+
+      .grid.is-list .lc-ic:nth-child(odd) {
+        border-right: 1px solid var(--line)
+      }
+
+      .grid.is-list .lc-ic:nth-last-child(-n+2) {
+        border-bottom: 0
+      }
+
+      .tf-vbtn {
+        padding: 8px 10px
+      }
+    }
+
+    .al-tools {
+      display: flex;
+      gap: 10px;
+      align-items: center;
+      margin-bottom: 12px;
+      flex-wrap: wrap
+    }
+
+    .al-q {
+      flex: 1;
+      min-width: 240px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      background: #fff;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      padding: 0 14px
+    }
+
+    .al-q svg {
+      width: 19px;
+      height: 19px;
+      stroke: var(--muted);
+      fill: none;
+      stroke-width: 2;
+      flex: none
+    }
+
+    .al-q input {
+      flex: 1;
+      border: 0;
+      outline: 0;
+      font: inherit;
+      padding: 11px 0;
+      background: transparent;
+      color: var(--navy);
+      min-width: 0
+    }
+
+    .tf-sort {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .88rem;
+      font-weight: 600
+    }
+
+    .tf-sort select {
+      font: inherit;
+      font-size: .88rem;
+      padding: 10px 12px;
+      border: 1.5px solid var(--line);
+      border-radius: 12px;
+      background: #fff;
+      color: var(--navy)
+    }
+
+    .al-active {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 14px;
+      min-height: 30px
+    }
+
+    .al-chips {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: .85rem;
+      font-weight: 700
+    }
+
+    .al-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      background: #fff;
+      border: 1.5px solid var(--line);
+      border-radius: 99px;
+      padding: 4px 6px 4px 12px;
+      font-size: .8rem;
+      font-weight: 600;
+      cursor: pointer;
+      font-family: inherit;
+      color: var(--navy)
+    }
+
+    .al-chip:hover {
+      border-color: var(--navy)
+    }
+
+    .al-chip i {
+      font-style: normal;
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: var(--cream);
+      font-size: .9rem;
+      line-height: 1
+    }
+
+    .tf-count {
+      margin: 0;
+      font-size: .88rem;
+      font-weight: 600;
+      color: var(--muted)
+    }
+
+    .grid {
+      grid-template-columns: repeat(auto-fill, minmax(270px, 1fr));
+      gap: 16px
+    }
+
+    /* two equal columns; a lone last card on an odd page spans the row so no blank space is left */
+    .grid:not(.is-list) {
+      grid-template-columns: repeat(2, minmax(0, 1fr))
+    }
+
+    .grid:not(.is-list)>.lc:last-child:nth-child(odd) {
+      grid-column: 1/-1
+    }
+
+    @media(max-width:760px) {
+      .grid:not(.is-list) {
+        grid-template-columns: 1fr
+      }
+    }
+
+    .lc {
+      position: relative;
+      background: #fff;
+      border: 1.5px solid var(--line);
+      border-radius: 16px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      box-shadow: 0 2px 12px rgba(26, 32, 53, .04);
+      transition: border-color .15s, box-shadow .15s
+    }
+
+    .lc:hover {
+      border-color: var(--navy);
+      box-shadow: 0 8px 22px rgba(26, 32, 53, .09)
+    }
+
+    .lc-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px
+    }
+
+    .lc-badge {
+      font-size: .7rem;
+      font-weight: 800;
+      letter-spacing: .03em;
+      padding: 4px 10px;
+      border-radius: 7px;
+      background: var(--yellow);
+      color: var(--navy);
+      white-space: nowrap
+    }
+
+    .lc-badge.hot {
+      background: #fde4e1;
+      color: #c2321f
+    }
+
+    .lc-badge.ok {
+      background: #d9f0e3;
+      color: var(--ok)
+    }
+
+    .lc-badge.plain {
+      background: #eef0f6;
+      color: var(--navy)
+    }
+
+    .lc-id {
+      font-size: .74rem;
+      font-weight: 600;
+      color: var(--muted);
+      border: 1px solid var(--line);
+      border-radius: 7px;
+      padding: 3px 8px;
+      white-space: nowrap
+    }
+
+    .lc h3 {
+      margin: 0;
+      font-size: 1.08rem;
+      line-height: 1.3;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden
+    }
+
+    .lc.full h3 {
+      -webkit-line-clamp: unset
+    }
+
+    .lc-who {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: .86rem;
+      margin: 0
+    }
+
+    .lc-who svg,
+    .lc-ic svg,
+    .lc-foot svg {
+      width: 17px;
+      height: 17px;
+      flex: none;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 1.8;
+      stroke-linecap: round;
+      stroke-linejoin: round
+    }
+
+    .lc-who b {
+      font-weight: 700
+    }
+
+    .lc h3.open {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible
+    }
+
+    .lc.full h3 {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible
+    }
+
+    .lc-tmore {
+      align-self: flex-start;
+      background: none;
+      border: 0;
+      padding: 0;
+      margin: -6px 0 0;
+      font: inherit;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer
+    }
+
+    .lc-tmore:hover {
+      color: #b88a00
+    }
+
+    .lc-desc {
+      margin: 0;
+      font-size: .86rem;
+      color: var(--muted);
+      line-height: 1.5;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden
+    }
+
+    .lc.full .lc-desc {
+      -webkit-line-clamp: unset;
+      display: block
+    }
+
+    .lc-desc.open {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible
+    }
+
+    .lc-more {
+      align-self: flex-start;
+      background: none;
+      border: 0;
+      padding: 0;
+      margin: -4px 0 0;
+      font: inherit;
+      font-size: .82rem;
+      font-weight: 700;
+      color: var(--navy);
+      text-decoration: underline;
+      text-underline-offset: 2px;
+      cursor: pointer
+    }
+
+    .lc-more:hover {
+      color: #b88a00
+    }
+
+    .lc-badge.free {
+      background: #d9f0e3;
+      color: var(--ok)
+    }
+
+    .lc-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      overflow: hidden
+    }
+
+    .lc-ic {
+      display: flex;
+      gap: 9px;
+      align-items: flex-start;
+      padding: 9px 11px;
+      border-bottom: 1px solid var(--line);
+      min-width: 0
+    }
+
+    .lc-ic:nth-child(odd) {
+      border-right: 1px solid var(--line)
+    }
+
+    .lc-ic:nth-last-child(-n+2) {
+      border-bottom: 0
+    }
+
+    .lc-ic svg {
+      width: 20px;
+      height: 20px;
+      margin-top: 2px;
+      color: var(--navy)
+    }
+
+    .lc-ic div {
+      min-width: 0
+    }
+
+    .lc-ic small {
+      display: block;
+      font-size: .72rem;
+      color: var(--muted)
+    }
+
+    .lc-ic b {
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      font-size: .84rem;
+      font-weight: 700;
+      overflow-wrap: anywhere
+    }
+
+    .lc.full .lc-ic b {
+      -webkit-line-clamp: unset
+    }
+
+    .lc-ic b.pill {
+      display: inline-block;
+      white-space: nowrap;
+      background: #fdeeb9;
+      border-radius: 6px;
+      padding: 1px 8px
+    }
+
+    .lc-contact {
+      margin: 0;
+      font-size: .86rem;
+      font-weight: 700
+    }
+
+    .lc-foot {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: .8rem;
+      color: var(--muted)
+    }
+
+    .lc-foot span {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px
+    }
+
+    .lc-live {
+      background: #e6f4ec;
+      color: var(--ok);
+      font-weight: 700;
+      border-radius: 99px;
+      padding: 2px 10px
+    }
+
+    .lc-live::before {
+      content: "";
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      background: #22a35a
+    }
+
+    .lc-btns {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px
+    }
+
+    .lc-btns .btn.lc-lock {
+      gap: 8px
+    }
+
+    .lc-li {
+      width: 24px;
+      height: 24px;
+      border-radius: 50%;
+      background: var(--yellow);
+      display: grid;
+      place-items: center;
+      flex: none
+    }
+
+    .lc-li svg {
+      width: 14px !important;
+      height: 14px !important;
+      stroke: var(--navy) !important;
+      stroke-width: 2.4 !important
+    }
+
+    .lc-btns .btn.lc-lock.open {
+      background: #22a35a;
+      border-color: #22a35a
+    }
+
+    .lc.full .lc-btns {
+      grid-template-columns: 1fr
+    }
+
+    .lc-btns .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 7px;
+      text-align: center;
+      font-weight: 700;
+      padding: 9px 10px
+    }
+
+    .lc-btns .btn svg {
+      width: 16px;
+      height: 16px;
+      stroke: currentColor;
+      fill: none;
+      stroke-width: 2
+    }
+
+    .lc-btns .btn.nv {
+      background: var(--navy);
+      border-color: var(--navy);
+      color: #fff
+    }
+
+    .lc-btns .btn.nv:hover {
+      background: #2a3350
+    }
+
+    .lc-adm {
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px
+    }
+
+    dialog#detDlg {
+      border: 0;
+      border-radius: 18px;
+      padding: 0;
+      width: min(560px, 94vw);
+      max-height: 92vh;
+      background: transparent
+    }
+
+    dialog#detDlg::backdrop {
+      background: rgba(26, 32, 53, .55)
+    }
+
+    #detDlg .lc {
+      max-height: 92vh;
+      overflow: auto;
+      padding: 22px
+    }
+
+    #detDlg .lc-x {
+      position: absolute;
+      top: 10px;
+      right: 10px;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      border: 0;
+      background: var(--cream);
+      font-size: 1.3rem;
+      cursor: pointer;
+      line-height: 1
+    }
+
+    #detDlg .lc-top {
+      padding-right: 36px
+    }
+
+    .lc-tags {
+      display: flex;
+      gap: 6px;
+      flex-wrap: wrap
+    }
+
+    .lc-tags span {
+      background: #fdf3dc;
+      border: 1px solid #f3e3bb;
+      border-radius: 8px;
+      padding: 2px 10px;
+      font-size: .78rem;
+      font-weight: 600
+    }
+
+    .tf-aside {
+      display: flex;
+      flex-direction: column;
+      gap: 18px
+    }
+
+    .tf-trust {
+      background: var(--navy);
+      color: #fff;
+      border-radius: 18px;
+      padding: 28px 22px;
+      text-align: center
+    }
+
+    .tf-trust .tf-seal {
+      width: 58px;
+      height: 58px;
+      margin: 0 auto 10px;
+      display: block
+    }
+
+    .tf-trust h2 {
+      margin: 0 0 10px;
+      font-size: 1.45rem;
+      line-height: 1.2
+    }
+
+    .tf-trust p {
+      margin: 0 0 16px;
+      color: #e3e6f3;
+      font-size: .98rem;
+      line-height: 1.5
+    }
+
+    .tf-trust .btn {
+      display: block;
+      width: 100%;
+      text-align: center;
+      font-weight: 700;
+      padding: 11px 14px
+    }
+
+    .tf-trust .btn.o {
+      margin-top: 10px;
+      background: transparent;
+      border-color: var(--cream);
+      color: var(--cream)
+    }
+
+    .tf-trust .btn.o:hover {
+      background: var(--cream);
+      color: var(--navy)
+    }
+
+    .tf-trust::after {
+      content: "";
+      display: block;
+      width: 100px;
+      height: 4px;
+      border-radius: 4px;
+      background: var(--yellow);
+      margin: 18px auto 0;
+      transform: rotate(-3deg)
+    }
+
+    .tf-need {
+      background: #fff;
+      border: 1.5px solid var(--line);
+      border-radius: 18px;
+      padding: 22px 20px;
+      text-align: center
+    }
+
+    .tf-need h2 {
+      margin: 0 0 6px;
+      font-size: 1.2rem
+    }
+
+    .tf-need p {
+      margin: 0 0 14px;
+      color: var(--muted);
+      font-size: .92rem
+    }
+
+    .tf-need .btn {
+      display: block;
+      text-align: center;
+      font-weight: 700;
+      padding: 11px 14px
+    }
+
+    @media(max-width:1240px) {
+      .tf-layout {
+        grid-template-columns: 250px minmax(0, 1fr)
+      }
+
+      .tf-aside {
+        grid-column: 1/-1;
+        display: grid;
+        grid-template-columns: 1fr 1fr
+      }
+    }
+
+    @media(max-width:900px) {
+      .tf-aside {
+        grid-template-columns: 1fr
+      }
+    }
+
+    @media(max-width:1100px) {
+      .stats {
+        grid-template-columns: repeat(2, minmax(0, 1fr))
+      }
+
+      .stats .stat:last-child:nth-child(odd) {
+        grid-column: 1/-1
+      }
+    }
+
+    @media(max-width:900px) {
+      .tf-layout {
+        grid-template-columns: 1fr
+      }
+
+      .tf-filters {
+        order: -1
+      }
+    }
+
+    @media(max-width:560px) {
+      .stats {
+        grid-template-columns: 1fr 1fr;
+        gap: 10px
+      }
+
+      .stat.btn-stat {
+        padding: 12px;
+        gap: 10px
+      }
+
+      .stat .al-si {
+        width: 38px;
+        height: 38px
+      }
+
+      .stat b {
+        font-size: 1.3rem
+      }
+
+      .stat span {
+        font-size: .78rem
+      }
+    }
+  </style>
+  <script src="modivs-import-data.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
+  <script src="firebase-config.js" defer></script>
+  <script src="firebase-sync.js" defer></script>
+  <script src="modivs-places.js"></script>
+  <script src="modivs-subjects.js"></script>
+  <script src="modivs-avatars.js"></script>
+  <script src="modivs-session-ui.js" defer></script>
+  <link rel="stylesheet" href="modivs-menu.css">
+  <link rel="stylesheet" href="modivs-mobile.css">
+  <link rel="stylesheet" href="modivs-faq.css">
+  <script
+    type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "What are active tuition leads?", "acceptedAnswer": {"@type": "Answer", "text": "Every requirement posted by a student or parent appears here, with the class, subjects, city, teaching mode and budget. They are real home tuition and online tuition jobs."}}, {"@type": "Question", "name": "How do I get home tuition jobs from these leads?", "acceptedAnswer": {"@type": "Answer", "text": "Become a Modivian tutor: create your profile and get verified. Approved tutors unlock the leads they want from the tutor dashboard."}}, {"@type": "Question", "name": "Why are student contact details hidden?", "acceptedAnswer": {"@type": "Answer", "text": "Student phone numbers stay private until a verified tutor unlocks the lead. This protects students and parents from spam."}}, {"@type": "Question", "name": "How much does it cost to unlock a tuition lead?", "acceptedAnswer": {"@type": "Answer", "text": "Unlocking an inquiry uses coins (10 coins per inquiry) and needs an active membership plan. You manage both from the bar at the top of your tutor dashboard."}}, {"@type": "Question", "name": "Can I filter tuition leads by city, subject and mode?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Filter by city, teaching mode and subject, and choose leads posted in the last 24 hours, 7 days, 30 days or 90 days."}}, {"@type": "Question", "name": "Are there online tuition jobs I can do from anywhere?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose the online teaching mode in the filters to see students who want online classes, so you can teach from any city."}}, {"@type": "Question", "name": "I am a student or parent. How do I add my requirement?", "acceptedAnswer": {"@type": "Answer", "text": "Post your tuition requirement. It appears here for verified tutors, and your contact details stay private."}}]}</script>
+  <link rel="stylesheet" href="modivs-footer.css">
+</head>
+
+<body>
+  <header class="mv-header">
+    <div class="mv-wrap mv-bar">
+      <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+      <nav id="mvNav" aria-label="Main menu">
+        <ul>
+          <li><a href="index.html">Home</a></li>
+          <li><a href="modivs-active-leads.html">Active leads</a></li>
+          <li><a href="modivs-tutors.html">Find a tutor</a></li>
+          <li><a href="modivs-shop.html">Shop</a></li>
+          <li class="mv-dd"><button type="button" class="mv-dd-b" aria-haspopup="true" aria-expanded="false">More <span
+                class="car" aria-hidden="true">▾</span></button>
+            <ul class="mv-dd-m">
+              <li><a href="modivs-guide.html">Guide</a></li>
+              <li><a href="modivs-students-corner.html">Students’ Corner</a></li>
+              <li><a href="modivs-blogs.html">Blogs</a></li>
+              <li><a href="modivs-contact.html">Contact us</a></li>
+            </ul>
+          </li>
+        </ul>
+      </nav>
+      <div class="acts" id="mvActs">
+        <a class="btn" id="navTutor" href="modivs-become-tutor.html">Become a Tutor</a>
+        <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+        <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
+        <a class="btn" id="postBtn" href="modivs-post-requirement.html">Post a requirement</a>
+        <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="wrap tf-page">
+    <section class="al-hero">
+      <div>
+        <h1 class="tf-h1">Active Tuition Leads</h1>
+        <p class="tf-sub">Explore genuine tutoring requirements from students and parents.</p>
+      </div>
+      <p class="al-priv"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z" fill="#EBB92E" stroke="#EBB92E" />
+          <path d="M8.5 12l2.5 2.5 4.5-5" stroke="#fff" />
+        </svg>Contact details are hidden for privacy. Unlock a lead to connect directly.</p>
+    </section>
+    <div class="adminbar" id="adminBar"><span><b>Admin mode.</b> You can post a requirement on behalf of a student or
+        parent, and delete any lead. No sign-up needed.</span><button type="button" id="addLeadBtn">+ Add student
+        inquiry</button></div>
+    <div class="stats" id="stats"></div>
+    <button type="button" class="btn o tf-ftoggle" id="ftoggle" aria-expanded="false"
+      aria-controls="filters">Filters</button>
+    <div class="tf-layout">
+      <aside class="tf-filters" id="filters" aria-label="Filters">
+        <div class="tf-fhead">
+          <h2><svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M4 5h16l-6 7.5V19l-4 1.5v-8z" />
+            </svg>Filters</h2><button type="button" class="tf-link" id="clearAll">Clear All</button>
+        </div>
+        <div class="tf-fg">
+          <h3>City</h3><select id="fCity" aria-label="Filter by city">
+            <option value="">All cities</option>
+          </select>
+        </div>
+        <div class="tf-fg">
+          <h3>Class / Grade</h3><select id="fCls" aria-label="Filter by class">
+            <option value="">All classes</option>
+          </select>
+        </div>
+        <div class="tf-fg">
+          <h3>Subject</h3><select id="fSub" aria-label="Filter by subject">
+            <option value="">All subjects</option>
+          </select>
+        </div>
+        <div class="tf-fg">
+          <h3>Teaching Mode</h3><select id="fMode" aria-label="Filter by teaching mode">
+            <option value="">All modes</option>
+          </select>
+        </div>
+        <div class="tf-fg">
+          <h3>Budget <small>(per hour)</small></h3><select id="fBud" aria-label="Filter by budget">
+            <option value="">Any budget</option>
+            <option value="u300">Under ₹300</option>
+            <option value="300">₹300 – ₹500</option>
+            <option value="500">₹500 – ₹800</option>
+            <option value="800">₹800 and above</option>
+          </select>
+        </div>
+        <div class="tf-fg">
+          <h3>Lead type</h3><select id="fFree" aria-label="Filter by lead type">
+            <option value="">All leads</option>
+            <option value="free">Free tuition leads</option>
+          </select>
+        </div>
+        <div class="tf-fg">
+          <h3>Posted</h3><select id="fAge" aria-label="Filter by how recently posted">
+            <option value="">Any time</option>
+            <option value="1">Last 24 hours</option>
+            <option value="7">Last 7 days</option>
+            <option value="30">Last 30 days</option>
+            <option value="90">Last 90 days</option>
+          </select>
+        </div>
+        <button type="button" class="btn tf-apply" id="applyF"><svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 5h16l-6 7.5V19l-4 1.5v-8z" />
+          </svg>Apply Filters</button>
+      </aside>
+      <section class="tf-results" aria-label="Leads">
+        <div class="al-tools">
+          <label class="al-q"><svg viewBox="0 0 24 24" aria-hidden="true">
+              <circle cx="11" cy="11" r="6.5" />
+              <path d="M16 16l5 5" />
+            </svg><input type="search" id="q" placeholder="Search by subject, class, location or keyword…"
+              aria-label="Search leads"></label>
+          <div class="tf-views" role="group" aria-label="Layout"><button type="button" class="tf-vbtn" id="vList"
+              aria-pressed="false"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01" />
+              </svg>List View</button><button type="button" class="tf-vbtn" id="vGrid" aria-pressed="true"><svg
+                viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="4" y="4" width="6.5" height="6.5" rx="1" />
+                <rect x="13.5" y="4" width="6.5" height="6.5" rx="1" />
+                <rect x="4" y="13.5" width="6.5" height="6.5" rx="1" />
+                <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1" />
+              </svg>Grid View</button></div>
+          <label class="tf-sort">Sort <select id="fSort" aria-label="Sort leads">
+              <option value="new">Newest</option>
+              <option value="old">Oldest</option>
+              <option value="bhigh">Budget: high to low</option>
+              <option value="blow">Budget: low to high</option>
+            </select></label>
+        </div>
+        <div class="al-active">
+          <div class="al-chips" id="chips"></div>
+          <p class="tf-count" id="count" aria-live="polite"></p>
+        </div>
+        <div class="grid" id="grid" aria-live="polite"></div>
+        <nav class="pager" id="pager" aria-label="Lead pages"></nav>
+      </section>
+      <aside class="tf-aside" aria-label="For tutors">
+        <div class="tf-trust" id="tutorBox">
+          <svg class="tf-seal" viewBox="0 0 24 24" aria-hidden="true">
+            <path fill="#EBB92E"
+              d="M12 2l2.4 2.2 3.2-.3.9 3.1 2.7 1.8-1.3 3 1.3 3-2.7 1.8-.9 3.1-3.2-.3L12 22l-2.4-2.2-3.2.3-.9-3.1L2.8 15.2l1.3-3-1.3-3 2.7-1.8.9-3.1 3.2.3z" />
+            <path d="M8.3 12.2l2.4 2.4 5-5" fill="none" stroke="#1A2035" stroke-width="2.2" stroke-linecap="round"
+              stroke-linejoin="round" />
+          </svg>
+          <h2 id="tbTitle">Are you a tutor?</h2>
+          <p id="tbText">Create your profile, get verified and unlock leads from students and parents looking for your
+            subjects.</p>
+          <a class="btn y" id="tbJoin" href="modivs-signup.html">Sign up as a Tutor</a>
+        </div>
+        <div class="tf-need" id="needBox">
+          <h2>Looking for a tutor?</h2>
+          <p>Tell us what you need and verified tutors will get in touch.</p>
+          <a class="btn" id="needBtn" href="modivs-post-requirement.html">Post a requirement</a>
+          <a class="btn o" id="needSignup" href="modivs-student-signup.html" style="margin-top:10px">Sign up as a
+            Student / Parent</a>
+        </div>
+      </aside>
+    </div>
+  </main>
+  <dialog id="detDlg" aria-label="Lead details"></dialog>
+
+  <dialog id="addDlg" aria-labelledby="addTitle">
+    <form id="addForm" novalidate>
+      <h2 id="addTitle">Add student inquiry</h2>
+      <p class="h">Posted as admin. It appears in Active leads and in the admin Student Inquiries list right away.</p>
+      <div class="two">
+        <div><label for="aName">Student name *</label><input type="text" id="aName" maxlength="60"></div>
+        <div><label for="aParent">Parent name <small>(optional)</small></label><input type="text" id="aParent"
+            maxlength="60"></div>
+      </div>
+      <div class="two">
+        <div><label for="aPhone">Mobile number *</label><input type="tel" id="aPhone" placeholder="10-digit number">
+        </div>
+        <div><label for="aCity">City *</label><input type="text" id="aCity" maxlength="40"></div>
+      </div>
+      <div class="two">
+        <div><label for="aArea">Area / locality</label><input type="text" id="aArea" maxlength="40"></div>
+        <div><label for="aFreq">Classes per week</label><select id="aFreq">
+            <option value="">Select</option>
+            <option>1</option>
+            <option>2</option>
+            <option>3</option>
+            <option>4</option>
+            <option>5</option>
+            <option>6 or more</option>
+          </select></div>
+      </div>
+      <div class="two">
+        <div><label for="aCls">Class / level *</label><select id="aCls"></select></div>
+        <div><label for="aBoard">Board</label><select id="aBoard"></select></div>
+      </div>
+      <label>Subjects needed *</label>
+      <div class="chips" id="aSubs"></div>
+      <label>Teaching mode *</label>
+      <div class="chips" id="aModes"></div>
+      <div class="two">
+        <div><label for="aMin">Budget from (₹/hour)</label><input type="number" id="aMin" min="0"></div>
+        <div><label for="aMax">Budget up to (₹/hour)</label><input type="number" id="aMax" min="0"></div>
+      </div>
+      <label for="aNotes">Notes for tutors</label><textarea id="aNotes" maxlength="300"></textarea>
+      <label style="display:flex;gap:8px;align-items:center;margin-top:14px;font-weight:700"><input type="checkbox"
+          id="aFree"> Free tuition lead <small style="font-weight:500;color:var(--muted)">(tutors unlock it without
+          coins)</small></label>
+      <div class="err" id="aErr" role="alert"></div>
+      <div class="acts"><button type="button" class="btn o" id="aCancel">Cancel</button><button type="submit"
+          class="btn y">Post requirement</button></div>
+    </form>
+  </dialog>
+
+  <script>
+    ModivsPlaces.upgrade('aCity', 'aArea');
+    (function () {
+      var SEED = [];
+      function read(k) { try { var v = JSON.parse(localStorage.getItem(k) || '[]'); return Array.isArray(v) ? v : [] } catch (e) { return [] } }
+      function el(t, c, x) { var e = document.createElement(t); if (c) e.className = c; if (x != null) e.textContent = x; return e }
+      function escapeHtml(s) { return String(s == null ? '' : s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] }) }
+      function ago(l) {
+        if (!l.registered_at) return l.sent || 'Recently';
+        var m = Math.round((Date.now() - new Date(l.registered_at).getTime()) / 60000);
+        if (isNaN(m) || m < 2) return 'Just now'; if (m < 60) return m + ' min ago';
+        var h = Math.round(m / 60); if (h < 24) return h + ' hr ago'; var d = Math.round(h / 24); return d + (d === 1 ? ' day' : ' days') + ' ago';
+      }
+      function maskPhone(p) { p = String(p || '').replace(/\D/g, ''); return p.length >= 4 ? p.slice(0, 2) + 'xxxxxx' + p.slice(-2) : 'Hidden' }
+      /* a lead counts as FREE only when the admin ticked "Free tuition lead" (stored as boolean true) */
+      function isFree(l) { return !!l && l.free === true }
+      function load() {
+        var all = read('modivs_active_leads').concat(read('modivs_students_db'));
+        var seen = {}, out = [];
+        all.forEach(function (l) {
+          if (!l || !l.name) return;
+          var key = (l.email || l.id || l.name).toLowerCase();
+          if (seen[key]) return; seen[key] = 1;
+          if (l.status === 'closed' || l.status === 'rejected') return;
+          var tb = tomb(); if ((l.id && tb.indexOf(l.id) > -1) || (l.email && tb.indexOf(String(l.email).toLowerCase()) > -1)) return;
+          out.push(l);
+        });
+        out.sort(function (a, b) { return (new Date(b.registered_at || 0)) - (new Date(a.registered_at || 0)) });
+        return out;
+      }
+      var leads = load(), $ = function (i) { return document.getElementById(i) };
+      var FIDS = ['q', 'fCity', 'fCls', 'fMode', 'fSub', 'fBud', 'fAge', 'fFree'];
+
+      if (window.ModivsFirebaseSync) {
+        window.ModivsFirebaseSync.onLeads(function (freshLeads) {
+          reloadAll();
+        });
+      } else {
+        setTimeout(function () {
+          if (window.ModivsFirebaseSync) {
+            window.ModivsFirebaseSync.onLeads(function (freshLeads) { reloadAll(); });
+          }
+        }, 200);
+      }
+      var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com'];
+      var ADMIN = false; try { var as = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); ADMIN = !!(as && as.email && ADMIN_EMAILS.indexOf(as.email.toLowerCase()) !== -1) } catch (e) { }
+      function tomb() { return read('modivs_deleted_leads') }
+      function fillSelect(id, vals) { var s = $(id); Array.from(new Set(vals.filter(Boolean))).sort(function (a, b) { return String(a).localeCompare(String(b), 'en', { numeric: true }) }).forEach(function (v) { var o = el('option', '', v); o.value = v; s.appendChild(o) }) }
+      fillSelect('fCity', leads.map(function (l) { return l.city }));
+      fillSelect('fSub', [].concat.apply([], leads.map(function (l) { return l.subs || [] })));
+      fillSelect('fCls', leads.map(function (l) { return l.cls }));
+      var MODE_OPTS = ['Online', 'At student’s place', 'At tutor’s place'];
+      function normMode(m) {
+        var s = String(m || '').toLowerCase();
+        if (!s) return '';
+        if (s.indexOf('online') > -1) return 'Online';
+        if (/comes to|student|my home|at home/.test(s)) return 'At student’s place';
+        if (/tutor|my place|cent(re|er)/.test(s)) return 'At tutor’s place';
+        return '';
+      }
+      function normModes(list) { var out = []; (Array.isArray(list) ? list : []).forEach(function (m) { var n = normMode(m); if (n && out.indexOf(n) < 0) out.push(n) }); return MODE_OPTS.filter(function (m) { return out.indexOf(m) > -1 }) }
+      function fillModes(id) { var s = $(id); MODE_OPTS.forEach(function (v) { var o = el('option', '', v); o.value = v; s.appendChild(o) }) }
+      fillModes('fMode');
+
+      var activeTutorUser = null;
+      try {
+        activeTutorUser = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
+      } catch (e) { }
+      var activeTutorEmail = (activeTutorUser && activeTutorUser.role === 'Tutor' && activeTutorUser.email) ? activeTutorUser.email.toLowerCase() : '';
+      var activeUnlockedLeads = {};
+      if (window.ModivsFirebaseSync && activeTutorEmail) {
+        window.ModivsFirebaseSync.onUnlocks(activeTutorEmail, function (ids) {
+          activeUnlockedLeads = {};
+          ids.forEach(function (id) { activeUnlockedLeads[String(id).replace(/[\/\\#?]/g, '_').trim()] = true; });
+          try { render(); } catch (e) { }
+        });
+      }
+
+      function myCity() {
+        var c = (activeTutorUser && activeTutorUser.city) || '';
+        if (!c && activeTutorEmail) { var me = read('modivs_tutors_db').filter(function (t) { return String(t.email || '').toLowerCase() === activeTutorEmail })[0]; if (me) c = me.city || '' }
+        return normCity(c);
+      }
+      function stats() {
+        var s = $('stats'); s.innerHTML = '';
+        var today = leads.filter(function (l) { return l.registered_at && Date.now() - new Date(l.registered_at).getTime() < 864e5 }).length;
+        var subs = {}; leads.forEach(function (l) { (l.subs || []).forEach(function (x) { subs[x] = 1 }) });
+        var age = $('fAge').value, sub = $('fSub').value, free = $('fFree').value === 'free', city = myCity();
+        var freeN = leads.filter(isFree).length;
+        var near = city ? leads.filter(function (l) { return normCity(l.city) === city }).length : leads.filter(function (l) { return normModes(l.mode).indexOf('Online') > -1 }).length;
+        var nearOn = city ? $('fCity').value === city : $('fMode').value === 'Online';
+        [['Active Leads', leads.length, 'all', !age && !sub && !nearOn && !free, 'users'], ['New Today', today, '24', age === '1', 'cal'], ['Subjects', Object.keys(subs).length, 'subjects', !!sub, 'layers'], [city ? 'Leads Near You' : 'Online Leads', near, 'near', nearOn, city ? 'pin' : 'laptop'], ['Free Leads', freeN, 'free', free, 'gift']].forEach(function (x) {
+          var d = el('button', 'stat btn-stat'); d.type = 'button'; d.setAttribute('aria-pressed', x[3]);
+          var i = el('span', 'al-si'); i.innerHTML = ic(x[4]); d.appendChild(i);
+          var w = el('div'); w.appendChild(el('b', '', x[1])); w.appendChild(el('span', '', x[0])); d.appendChild(w);
+          d.addEventListener('click', function () {
+            if (x[2] === 'all') { FIDS.forEach(function (i) { $(i).value = '' }) }
+            else if (x[2] === 'free') { $('fFree').value = free ? '' : 'free' }
+            else if (x[2] === '24') { $('fAge').value = ($('fAge').value === '1') ? '' : '1' }
+            else if (x[2] === 'near') { if (city) { var cs = $('fCity'); if (!Array.prototype.some.call(cs.options, function (o) { return o.value === city })) { var o = el('option', '', city); o.value = city; cs.appendChild(o) } cs.value = nearOn ? '' : city } else { $('fMode').value = nearOn ? '' : 'Online' } }
+            else { $('fSub').focus() }
+            render();
+          });
+          s.appendChild(d)
+        });
+      }
+      var LI = {
+        lock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/>',
+        unlock: '<rect x="5" y="11" width="14" height="10" rx="2"/><path d="M8 11V8a4 4 0 0 1 7.5-2"/>',
+        eye: '<path d="M2 12s4-7 10-7 10 7 10 7-4 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/>',
+        user: '<circle cx="12" cy="8" r="4"/><path d="M4 21c0-4.4 3.6-8 8-8s8 3.6 8 8"/>',
+        cap: '<path d="M2 9l10-5 10 5-10 5z"/><path d="M6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5"/>',
+        book: '<path d="M5 4h11a3 3 0 0 1 3 3v13H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h11"/>',
+        pin: '<path d="M12 21s-7-6.2-7-11a7 7 0 0 1 14 0c0 4.8-7 11-7 11z"/><circle cx="12" cy="10" r="2.5"/>',
+        laptop: '<rect x="4" y="5" width="16" height="11" rx="2"/><path d="M2 20h20"/>',
+        coin: '<circle cx="12" cy="12" r="9"/><path d="M9 8h6M9 11h6M9 8c3 0 4.5 1 4.5 2.5S12 13 9 13l5 4"/>',
+        cal: '<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 3v4M15 3v4"/>',
+        clock: '<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+        users: '<circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"/><path d="M16 5.2a3 3 0 0 1 0 5.6M18 14.3c1.8.8 3 2.5 3 4.7"/>',
+        gift: '<rect x="3" y="8" width="18" height="4" rx="1"/><path d="M12 8v13M5 12v8a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1v-8"/><path d="M12 8c-1.5-4-6-4-5-1 .6 1.600 3 1 5 1zM12 8c1.5-4 6-4 5-1-.6 1.600-3 1-5 1z"/>',
+        layers: '<path d="M12 3l9 5-9 5-9-5z"/><path d="M3 13l9 5 9-5"/>'
+      };
+      function ic(n) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + LI[n] + '</svg>' }
+      function lhash(s) { s = String(s || ''); var h = 0; for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0 } return h }
+      function leadId(l) { return 'MOD-LD-' + (1000 + lhash(l.id || l.email || l.name) % 9000) }
+      function areaOf(l) { return String(l.area || '').split(',')[0].trim() }
+      function boardOf(l) { return String(l.board || '').split(' (')[0].trim() }
+      function shortSub(s) { return s === 'Mathematics' ? 'Maths' : s }
+      function modeName(m) { return m === 'Online' ? 'Online Classes' : m === 'At student’s place' ? 'Home Tuition' : 'At Tutor’s Place' }
+      function budNums(l) { var m = String(l.budget || '').replace(/,/g, '').match(/\d+/g); return m ? m.map(Number) : [] }
+      function budLo(l) { var n = budNums(l); return n.length ? Math.min.apply(null, n) : 0 }
+      function budHi(l) { var n = budNums(l); return n.length ? Math.max.apply(null, n) : 0 }
+      function budMatch(l, b) {
+        if (!b) return true; var lo = budLo(l), hi = budHi(l); if (!hi) return false;
+        if (b === 'u300') return lo < 300; if (b === '300') return lo <= 500 && hi >= 300; if (b === '500') return lo <= 800 && hi >= 500; return hi >= 800;
+      }
+      function titleOf(l) {
+        var s = (l.subs || []).slice(0, 2).map(shortSub).join(' & ') || 'Subject', ms = normModes(l.mode), loc = [areaOf(l), l.city].filter(Boolean).join(', ');
+        if (ms.length === 1 && ms[0] === 'Online') return 'Req. Online Tutor for ' + (l.cls ? l.cls + ' ' : '') + s;
+        return 'Required ' + s + (ms.indexOf('At student’s place') > -1 ? ' Home Tutor' : ' Tutor') + (l.cls ? ' for ' + l.cls : '') + (loc ? ' in ' + loc : '');
+      }
+      function descOf(l) {
+        if (l.notes) return l.notes;
+        var ms = normModes(l.mode);
+        return 'Looking for ' + (ms.length === 1 && ms[0] === 'Online' ? 'an online' : 'an experienced') + ' tutor for ' + (l.cls || 'the student') + (l.board ? ' (' + l.board + ')' : '') + ' ' + (l.subs || []).join(', ') + '.';
+      }
+      function roleOf(l) { return (/parent/i.test(l.by || '') || (l.parentName && l.parentName !== l.name)) ? 'Parent' : 'Student' }
+      function demand() { var m = {}; leads.forEach(function (l) { (l.subs || []).forEach(function (s) { m[s] = (m[s] || 0) + 1 }) }); return m }
+      function cell(icn, label, val, pill) { var d = el('div', 'lc-ic'); d.innerHTML = ic(icn); var w = el('div'); w.appendChild(el('small', '', label)); w.appendChild(el('b', pill ? 'pill' : '', val)); d.appendChild(w); return d }
+      function card(l, full) {
+        var c = el('article', 'lc' + (full ? ' full' : ''));
+        var lid = String(l.id || '').replace(/[\/\\#?]/g, '_').trim();
+        var isUnlocked = !!activeUnlockedLeads[lid] || !!l.unlocked;
+        var age = l.registered_at ? (Date.now() - new Date(l.registered_at).getTime()) : Infinity, dm = demand();
+        var hot = (l.subs || []).some(function (s) { return dm[s] >= 3 });
+        var t = el('div', 'lc-top'), bd;
+        if (isUnlocked) bd = el('span', 'lc-badge ok', '✓ UNLOCKED');
+        else if (isFree(l)) bd = el('span', 'lc-badge free', '🎁 FREE LEAD');
+        else if (age < 48 * 36e5) bd = el('span', 'lc-badge', 'NEW LEAD');
+        else if (hot) bd = el('span', 'lc-badge hot', '🔥 HIGH DEMAND');
+        else bd = el('span', 'lc-badge plain', 'ACTIVE LEAD');
+        t.appendChild(bd); t.appendChild(el('span', 'lc-id', 'Lead ID: ' + leadId(l))); c.appendChild(t);
+        var h3 = el('h3', 'lc-title', titleOf(l)); c.appendChild(h3);
+        if (!full) {
+          var tm = el('button', 'lc-tmore', 'Read more'); tm.type = 'button'; tm.hidden = true; tm.setAttribute('aria-expanded', 'false');
+          tm.addEventListener('click', function () { var o = h3.classList.toggle('open'); tm.textContent = o ? 'Read less' : 'Read more'; tm.setAttribute('aria-expanded', o ? 'true' : 'false') }); c.appendChild(tm)
+        }
+        var w = el('p', 'lc-who'); w.innerHTML = ic('user'); w.appendChild(document.createTextNode('Name: ')); w.appendChild(el('b', '', l.name)); c.appendChild(w);
+        var ds = el('p', 'lc-desc', descOf(l)); c.appendChild(ds);
+        if (!full) {
+          var rm = el('button', 'lc-more', 'Read more'); rm.type = 'button'; rm.hidden = true; rm.setAttribute('aria-expanded', 'false');
+          rm.addEventListener('click', function () { var o = ds.classList.toggle('open'); rm.textContent = o ? 'Read less' : 'Read more'; rm.setAttribute('aria-expanded', o ? 'true' : 'false') }); c.appendChild(rm)
+        }
+        var g = el('div', 'lc-grid'), ms = normModes(l.mode);
+        g.appendChild(cell('cap', 'Class', (l.cls || '—') + (boardOf(l) ? ' (' + boardOf(l) + ')' : '')));
+        g.appendChild(cell('book', 'Subject', (l.subs || []).join(', ') || '—'));
+        g.appendChild(cell('pin', 'Location', [full ? l.area : areaOf(l), l.city].filter(Boolean).join(', ') || (ms[0] === 'Online' ? 'Online' : '—')));
+        g.appendChild(cell('laptop', 'Teaching Mode', ms.map(modeName).join(', ') || '—'));
+        g.appendChild(cell('coin', 'Budget', l.budget || 'Negotiable', true));
+        g.appendChild(cell('cal', 'Schedule', l.freq ? (/^\d+$/.test(String(l.freq)) ? l.freq + (+l.freq === 1 ? ' day / week' : ' days / week') : l.freq) : 'Flexible'));
+        c.appendChild(g);
+        if (full) {
+          var ex = (l.goals || []).concat(l.formats || []); if (ex.length) { var tg = el('div', 'lc-tags'); ex.forEach(function (x) { tg.appendChild(el('span', '', x)) }); c.appendChild(tg) }
+        }
+        if (isUnlocked && l.phone) c.appendChild(el('p', 'lc-contact', '📞 Contact: ' + l.phone + (l.email ? ' · ✉ ' + l.email : '')));
+        var f = el('div', 'lc-foot'), pa = el('span'); pa.innerHTML = ic('clock'); var ag = ago(l); pa.appendChild(document.createTextNode('Posted ' + ag.charAt(0).toLowerCase() + ag.slice(1))); f.appendChild(pa); f.appendChild(el('span', 'lc-live', 'Active')); c.appendChild(f);
+        var b = el('div', 'lc-btns'), u = el('a', 'btn nv'); u.href = 'modivs-tutor-dashboard.html?openLead=' + encodeURIComponent(lid) + (isFree(l) ? '&free=1' : '') + '#' + (isUnlocked ? 'requests' : 'leads'); u.className = 'btn nv lc-lock' + (isUnlocked ? ' open' : ''); u.innerHTML = '<span class="lc-li">' + ic(isUnlocked ? 'unlock' : 'lock') + '</span>'; u.appendChild(document.createTextNode(isUnlocked ? 'Open Lead' : (isFree(l) ? 'Unlock Free Lead' : 'Unlock Lead'))); u.setAttribute('aria-label', (isUnlocked ? 'Open lead for ' : 'Unlock lead for ') + l.name); b.appendChild(u);
+        if (!full) { var v = el('button', 'btn o', 'View Details'); v.type = 'button'; v.addEventListener('click', function () { showDetails(l) }); b.appendChild(v) }
+        c.appendChild(b);
+        if (ADMIN) {
+          var ad = el('div', 'lc-adm');
+          var eb = el('button', 'xbtn', 'Edit'); eb.type = 'button'; eb.setAttribute('aria-label', 'Edit lead for ' + l.name); eb.style.cssText = 'background:#1A2035;color:#EBB92E;border:1.5px solid #1A2035;';
+          eb.addEventListener('click', function (e) { e.stopPropagation(); var d = $('detDlg'); if (d.open) d.close(); openEditLead(l) }); ad.appendChild(eb);
+          var x = el('button', 'xbtn', 'Delete'); x.type = 'button'; x.setAttribute('aria-label', 'Delete lead for ' + l.name); x.addEventListener('click', function () { var d = $('detDlg'); if (d.open) d.close(); removeLead(l) }); ad.appendChild(x);
+          c.appendChild(ad);
+        }
+        return c;
+      }
+      function showDetails(l) {
+        var d = $('detDlg'); d.textContent = ''; var c = card(l, true); var x = el('button', 'lc-x', '×'); x.type = 'button'; x.setAttribute('aria-label', 'Close'); x.addEventListener('click', function () { d.close() }); c.appendChild(x); d.appendChild(c); d.showModal();
+      }
+      $('detDlg').addEventListener('click', function (e) { if (e.target === this) this.close() });
+      /* ---------- pagination ---------- */
+      var PG = 1, PER = 10, PSIG = '';
+      function pageList(cur, total) {
+        var out = [], set = { 1: 1, 2: 1 }; set[total] = 1; set[total - 1] = 1; set[cur] = 1; set[cur - 1] = 1; set[cur + 1] = 1;
+        var last = 0; for (var i = 1; i <= total; i++) { if (!set[i]) continue; if (last && i - last > 1) out.push('…'); out.push(i); last = i }
+        return out;
+      }
+      function renderPager(total, onGo) {
+        var p = document.getElementById('pager'); p.textContent = '';
+        var pages = Math.ceil(total / PER); if (pages <= 1) return;
+        function btn(label, pg, opts) {
+          var b = document.createElement('button'); b.type = 'button'; b.textContent = label; opts = opts || {};
+          if (opts.aria) b.setAttribute('aria-label', opts.aria);
+          if (opts.disabled) b.disabled = true;
+          if (opts.current) { b.setAttribute('aria-current', 'page') }
+          else if (!opts.disabled) { b.addEventListener('click', function () { PG = pg; onGo() }) }
+          p.appendChild(b)
+        }
+        var info = document.createElement('div'); info.className = 'pager-info';
+        info.textContent = 'Showing ' + ((PG - 1) * PER + 1) + '–' + Math.min(PG * PER, total) + ' of ' + total; p.appendChild(info);
+        btn('‹ Prev', PG - 1, { disabled: PG === 1, aria: 'Previous page' });
+        pageList(PG, pages).forEach(function (x) {
+          if (x === '…') { var s = document.createElement('span'); s.className = 'dots'; s.textContent = '…'; p.appendChild(s) }
+          else btn(String(x), x, { current: x === PG, aria: 'Page ' + x });
+        });
+        btn('Next ›', PG + 1, { disabled: PG === pages, aria: 'Next page' });
+      }
+      function syncMore() {
+        requestAnimationFrame(function () {
+          Array.prototype.forEach.call($('grid').querySelectorAll('.lc'), function (c) {
+            var t = c.querySelector('.lc-title'), tb = c.querySelector('.lc-tmore');
+            if (t && tb) tb.hidden = !(t.classList.contains('open') || t.scrollHeight > t.clientHeight + 1);
+            var d = c.querySelector('.lc-desc'), b = c.querySelector('.lc-more'); if (!d || !b) return;
+            b.hidden = !(d.classList.contains('open') || d.scrollHeight > d.clientHeight + 1)
+          })
+        });
+      }
+      window.addEventListener('resize', syncMore);
+      function render() {
+        var q = $('q').value.toLowerCase().trim(), city = $('fCity').value, cls = $('fCls').value, mode = $('fMode').value, sub = $('fSub').value, bud = $('fBud').value, age = +$('fAge').value, free = $('fFree').value, sort = $('fSort').value, g = $('grid'); g.innerHTML = ''; stats();
+        var rows = leads.filter(function (l) {
+          if (city && l.city !== city) return false;
+          if (cls && l.cls !== cls) return false;
+          if (mode && normModes(l.mode).indexOf(mode) < 0) return false;
+          if (sub && (l.subs || []).indexOf(sub) < 0) return false;
+          if (!budMatch(l, bud)) return false;
+          if (free && !isFree(l)) return false;
+          if (age && (!l.registered_at || (Date.now() - new Date(l.registered_at).getTime()) > age * 864e5)) return false;
+          var hay = [l.name, l.city, l.area, l.cls, l.board, l.notes, (l.subs || []).join(' '), (l.goals || []).join(' '), normModes(l.mode).map(modeName).join(' ')].join(' ').toLowerCase();
+          return !q || hay.indexOf(q) > -1;
+        });
+        if (sort === 'old') rows.reverse();
+        else if (sort === 'bhigh') rows.sort(function (a, b) { return budHi(b) - budHi(a) });
+        else if (sort === 'blow') rows.sort(function (a, b) { return (budLo(a) || 1e9) - (budLo(b) || 1e9) });
+        renderChips();
+        $('count').textContent = 'Showing ' + rows.length + (rows.length === 1 ? ' lead' : ' leads');
+        var sig = JSON.stringify([q, city, cls, mode, sub, bud, age, free, sort]); if (sig !== PSIG) { PG = 1; PSIG = sig }
+        var pages = Math.max(1, Math.ceil(rows.length / PER)); if (PG > pages) PG = pages;
+        if (!rows.length) { renderPager(0); g.appendChild(el('p', 'empty', 'No active leads match your search.')); return }
+        rows.slice((PG - 1) * PER, PG * PER).forEach(function (l) { g.appendChild(card(l)) });
+        syncMore();
+        renderPager(rows.length, function () { render(); var st = $('stats'); if (st && st.scrollIntoView) st.scrollIntoView({ behavior: 'smooth', block: 'start' }) });
+      }
+      function renderChips() {
+        var box = $('chips'); box.textContent = ''; var on = [];
+        FIDS.forEach(function (id) { var e = $(id); if (!e.value) return; var txt = id === 'q' ? '“' + e.value + '”' : (e.options ? e.options[e.selectedIndex].textContent : e.value); on.push([id, txt]) });
+        if (!on.length) return;
+        box.appendChild(el('span', '', 'Active Filters:'));
+        on.forEach(function (p) { var b = el('button', 'al-chip', p[1]); b.type = 'button'; b.setAttribute('aria-label', 'Remove filter ' + p[1]); var i = el('i', '', '×'); i.setAttribute('aria-hidden', 'true'); b.appendChild(i); b.addEventListener('click', function () { $(p[0]).value = ''; render() }); box.appendChild(b) });
+        var c = el('button', 'tf-link', 'Clear All'); c.type = 'button'; c.addEventListener('click', function () { FIDS.forEach(function (i) { $(i).value = '' }); render() }); box.appendChild(c);
+      }
+      FIDS.concat(['fSort']).forEach(function (i) { $(i).addEventListener('input', render) });
+      $('applyF').addEventListener('click', function () { render(); var f = $('filters'); if (f.classList.contains('open')) { f.classList.remove('open'); $('ftoggle').setAttribute('aria-expanded', 'false'); $('ftoggle').textContent = 'Filters' } $('count').scrollIntoView({ behavior: 'smooth', block: 'start' }) });
+      $('clearAll').addEventListener('click', function () { FIDS.forEach(function (i) { $(i).value = '' }); render() });
+      /* list / grid view toggle (remembered per browser) */
+      function setView(v) { var l = v === 'list'; $('grid').classList.toggle('is-list', l); $('vList').setAttribute('aria-pressed', l ? 'true' : 'false'); $('vGrid').setAttribute('aria-pressed', l ? 'false' : 'true'); try { localStorage.setItem('modivs_leads_view', v) } catch (e) { } }
+      $('vList').addEventListener('click', function () { setView('list'); syncMore() }); $('vGrid').addEventListener('click', function () { setView('grid'); syncMore() });
+      try { if (localStorage.getItem('modivs_leads_view') === 'list') setView('list') } catch (e) { }
+      $('ftoggle').addEventListener('click', function () { var o = $('filters').classList.toggle('open'); this.setAttribute('aria-expanded', o ? 'true' : 'false'); this.textContent = o ? 'Hide filters' : 'Filters' });
+
+      /* ---------- admin: add / delete ---------- */
+      function save(k, v) { localStorage.setItem(k, JSON.stringify(v)) }
+      function fsDo(fn) { try { var fb = window.EducationBFirebase; if (fb && fb.db) fn(fb.db) } catch (e) { } }
+      function reloadAll() {
+        leads = load();
+        [['fCity', function (l) { return l.city ? [l.city] : [] }], ['fSub', function (l) { return l.subs || [] }], ['fCls', function (l) { return l.cls ? [l.cls] : [] }]].forEach(function (p) {
+          var sel = $(p[0]), cur = sel.value; while (sel.options.length > 1) sel.remove(1);
+          fillSelect(p[0], [].concat.apply([], leads.map(p[1]))); sel.value = cur;
+        });
+        render();
+      }
+      function removeLead(l) {
+        if (!confirm('Delete the inquiry from ' + l.name + '? This removes it from Active leads and the admin Student Inquiries list.')) return;
+        var id = l.id, em = (l.email || '').toLowerCase();
+        if (window.ModivsFirebaseSync) {
+          window.ModivsFirebaseSync.deleteLead(id, em);
+        }
+        function same(x) { return (id && x.id === id) || (em && (x.email || '').toLowerCase() === em) }
+        save('modivs_active_leads', read('modivs_active_leads').filter(function (x) { return !same(x) }));
+        save('modivs_students_db', read('modivs_students_db').filter(function (x) { return !same(x) }));
+        var t = tomb(); if (id && t.indexOf(id) < 0) t.push(id); if (em && t.indexOf(em) < 0) t.push(em); save('modivs_deleted_leads', t);
+        fsDo(function (db) { if (id) { db.collection('leads').doc(String(id)).delete().catch(function () { }); db.collection('students').doc(String(id)).delete().catch(function () { }) } });
+        reloadAll();
+      }
+
+      function openEditLead(l) {
+        var existing = document.getElementById('editLeadDlg');
+        if (existing) existing.remove();
+
+        var dlg = document.createElement('dialog');
+        dlg.id = 'editLeadDlg';
+        dlg.style.cssText = 'border:2px solid var(--yellow);border-radius:16px;max-width:540px;width:calc(100% - 24px);padding:22px;background:var(--cream);color:var(--navy);box-shadow:0 20px 50px rgba(0,0,0,0.3);';
+
+        dlg.innerHTML =
+          '<form id="editLeadForm">' +
+          '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px;border-bottom:1px solid var(--line);padding-bottom:8px;">' +
+          '<h2 style="margin:0;font-size:1.2rem;">✏️ Edit Student Lead</h2>' +
+          '<button type="button" id="closeEditDlg" style="background:transparent;border:0;font-size:1.5rem;cursor:pointer;">&times;</button>' +
+          '</div>' +
+          '<div class="two"><div><label for="edlName">Student name *</label><input type="text" id="edlName" value="' + escapeHtml(l.name || l.student_name || '') + '" required></div><div><label for="edlParent">Parent name</label><input type="text" id="edlParent" value="' + escapeHtml(l.parentName || l.parent_name || '') + '"></div></div>' +
+          '<div class="two"><div><label for="edlPhone">Mobile number *</label><input type="tel" id="edlPhone" value="' + escapeHtml(l.phone || '') + '" required></div><div><label for="edlEmail">Email address</label><input type="email" id="edlEmail" value="' + escapeHtml(l.email || l.owner_email || '') + '"></div></div>' +
+          '<div class="two"><div><label for="edlCity">City *</label><input type="text" id="edlCity" value="' + escapeHtml(l.city || '') + '" required></div><div><label for="edlArea">Area / locality</label><input type="text" id="edlArea" value="' + escapeHtml(l.area || '') + '"></div></div>' +
+          '<div class="two"><div><label for="edlCls">Class / level *</label><input type="text" id="edlCls" value="' + escapeHtml(l.cls || '') + '" required></div><div><label for="edlBoard">Board</label><input type="text" id="edlBoard" value="' + escapeHtml(l.board || '') + '"></div></div>' +
+          '<label for="edlSubs">Subjects needed (comma-separated) *</label><input type="text" id="edlSubs" value="' + escapeHtml(Array.isArray(l.subs) ? l.subs.join(', ') : (l.subs || '')) + '" required>' +
+          '<div class="two"><div><label for="edlMode">Teaching mode</label><input type="text" id="edlMode" value="' + escapeHtml(Array.isArray(l.mode) ? l.mode.join(', ') : (l.mode || 'Online')) + '"></div><div><label for="edlBudget">Budget</label><input type="text" id="edlBudget" value="' + escapeHtml(l.budget || '') + '"></div></div>' +
+          '<div class="two"><div><label for="edlRole">Posted by</label><select id="edlRole"><option value="Student"' + ((l.created_by_role === 'student' || (l.by && l.by.toLowerCase().indexOf('student') >= 0)) ? ' selected' : '') + '>Student</option><option value="Parent"' + ((l.created_by_role === 'parent' || (l.by && l.by.toLowerCase().indexOf('parent') >= 0)) ? ' selected' : '') + '>Parent</option></select></div><div><label for="edlStatus">Status</label><select id="edlStatus"><option value="active"' + (l.status === 'active' || l.status === 'new' ? ' selected' : '') + '>Active</option><option value="accepted"' + (l.status === 'accepted' ? ' selected' : '') + '>Accepted</option><option value="demo"' + (l.status === 'demo' ? ' selected' : '') + '>Demo Offered</option></select></div></div>' +
+          '<label style="display:flex;gap:8px;align-items:center;margin:4px 0 12px;font-weight:700"><input type="checkbox" id="edlFree"' + (isFree(l) ? ' checked' : '') + '> Free tuition lead <small style="font-weight:500;color:var(--muted)">(tutors unlock it without coins)</small></label>' +
+          '<label for="edlNotes">Notes for tutors</label><textarea id="edlNotes" style="width:100%;min-height:60px;margin-bottom:12px;">' + escapeHtml(l.notes || '') + '</textarea>' +
+          '<div class="acts"><button type="button" class="btn o" id="cancelEditDlg">Cancel</button><button type="submit" class="btn y">Save Changes</button></div>' +
+          '</form>';
+
+        document.body.appendChild(dlg);
+        dlg.showModal();
+
+        dlg.querySelector('#closeEditDlg').onclick = function () { dlg.close(); dlg.remove(); };
+        dlg.querySelector('#cancelEditDlg').onclick = function () { dlg.close(); dlg.remove(); };
+
+        dlg.querySelector('#editLeadForm').onsubmit = function (e) {
+          e.preventDefault();
+          var nameVal = dlg.querySelector('#edlName').value.trim();
+          var parentVal = dlg.querySelector('#edlParent').value.trim();
+          var phoneVal = dlg.querySelector('#edlPhone').value.trim();
+          var emailVal = dlg.querySelector('#edlEmail').value.trim();
+          var cityVal = dlg.querySelector('#edlCity').value.trim();
+          var areaVal = dlg.querySelector('#edlArea').value.trim();
+          var clsVal = dlg.querySelector('#edlCls').value.trim();
+          var boardVal = dlg.querySelector('#edlBoard').value.trim();
+          var subsVal = dlg.querySelector('#edlSubs').value.split(',').map(function (s) { return s.trim(); }).filter(Boolean);
+          var modeVal = dlg.querySelector('#edlMode').value.trim();
+          var budgetVal = dlg.querySelector('#edlBudget').value.trim();
+          var roleVal = dlg.querySelector('#edlRole').value;
+          var statusVal = dlg.querySelector('#edlStatus').value;
+          var notesVal = dlg.querySelector('#edlNotes').value.trim();
+
+          var updated = Object.assign({}, l, {
+            name: nameVal,
+            student_name: nameVal,
+            parentName: parentVal || nameVal,
+            parent_name: parentVal,
+            phone: phoneVal,
+            email: emailVal,
+            owner_email: emailVal,
+            city: cityVal,
+            area: areaVal,
+            cls: clsVal,
+            board: boardVal,
+            subs: subsVal,
+            mode: modeVal,
+            budget: budgetVal,
+            by: roleVal,
+            created_by_role: roleVal.toLowerCase(),
+            status: statusVal,
+            notes: notesVal,
+            free: dlg.querySelector('#edlFree').checked,
+            updatedAt: new Date().toISOString()
+          });
+
+          // Save to local storage
+          var activeLeads = read('modivs_active_leads');
+          var aIdx = activeLeads.findIndex(function (x) { return x.id === l.id; });
+          if (aIdx > -1) activeLeads[aIdx] = Object.assign({}, activeLeads[aIdx], updated);
+          else activeLeads.unshift(updated);
+          save('modivs_active_leads', activeLeads);
+
+          var studentsDb = read('modivs_students_db');
+          var sIdx = studentsDb.findIndex(function (x) { return x.id === l.id; });
+          if (sIdx > -1) studentsDb[sIdx] = Object.assign({}, studentsDb[sIdx], updated);
+          else studentsDb.unshift(updated);
+          save('modivs_students_db', studentsDb);
+
+          try {
+            var sReq = JSON.parse(localStorage.getItem('modivs_student_req') || 'null');
+            if (sReq && (sReq.id === l.id || (l.email && sReq.email && sReq.email.toLowerCase() === l.email.toLowerCase()))) {
+              save('modivs_student_req', Object.assign({}, sReq, updated));
+            }
+          } catch (err) { }
+
+          if (window.ModivsFirebaseSync && window.ModivsFirebaseSync.saveLead) {
+            window.ModivsFirebaseSync.saveLead(updated);
+          }
+
+          dlg.close();
+          dlg.remove();
+          reloadAll();
+        };
+      }
+      var SUBJECTS = (window.ModivsSubjects ? ModivsSubjects.all() : ['Mathematics', 'Physics', 'Chemistry', 'Biology', 'English']);
+      var CLASSES = ['Nursery–KG', 'Class 1', 'Class 2', 'Class 3', 'Class 4', 'Class 5', 'Class 6', 'Class 7', 'Class 8', 'Class 9', 'Class 10', 'Class 11', 'Class 12', 'College / University', 'Adult learner'];
+      var BOARDS = ['CBSE', 'ICSE', 'PSEB', 'IB', 'IGCSE', 'State board', 'Other'];
+      var MODES = ['Online', 'Offline (Tutor comes to my home)', 'Offline (At tutor’s place)'];
+      function opts(id, list, ph) { var s = $(id); s.innerHTML = ''; var o = document.createElement('option'); o.value = ''; o.textContent = ph; s.appendChild(o); list.forEach(function (x) { var e = document.createElement('option'); e.textContent = x; s.appendChild(e) }) }
+      function chips(id, list, name) { var b = $(id); b.innerHTML = ''; list.forEach(function (x) { var l = document.createElement('label'), i = document.createElement('input'); i.type = 'checkbox'; i.value = x; i.name = name; l.appendChild(i); l.appendChild(document.createTextNode(x)); b.appendChild(l) }) }
+      function normCity(c) { return String(c || '').replace(/\s+/g, ' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g, function (m, a, b) { return a + b.toUpperCase() }) }
+      function checked(name) { return Array.prototype.map.call(document.querySelectorAll('#addForm input[name=' + name + ']:checked'), function (i) { return i.value }) }
+      function openAdd() {
+        $('addForm').reset(); $('aErr').textContent = '';
+        opts('aCls', CLASSES, 'Select'); opts('aBoard', BOARDS, 'Select'); chips('aSubs', SUBJECTS, 'subs'); chips('aModes', MODES, 'modes');
+        $('addDlg').showModal(); $('aName').focus();
+      }
+      function submitAdd(e) {
+        e.preventDefault();
+        var name = $('aName').value.trim(), phone = $('aPhone').value.trim(), city = ModivsPlaces.canon('city', $('aCity').value), cls = $('aCls').value, subs = checked('subs'), modes = checked('modes'), err = $('aErr');
+        if (!name) return err.textContent = 'Enter the student’s name.';
+        if (!/^[+0-9\s-]{10,15}$/.test(phone)) return err.textContent = 'Enter a valid mobile number.';
+        if (!city) return err.textContent = 'Enter the city.';
+        if (!cls) return err.textContent = 'Choose a class or level.';
+        if (!subs.length) return err.textContent = 'Choose at least one subject.';
+        if (!modes.length) return err.textContent = 'Choose at least one teaching mode.';
+        var mn = $('aMin').value, mx = $('aMax').value, parent = $('aParent').value.trim();
+        var id = 'adm_' + Date.now();
+        var lead = {
+          id: id, name: name, parentName: parent || name, email: '', phone: phone, city: city, area: ModivsPlaces.canon('area', $('aArea').value, city), cls: cls, board: $('aBoard').value || '',
+          subs: subs, goals: [], level: 'Average', notes: $('aNotes').value.trim(), mode: modes,
+          budget: (mn || mx) ? '₹' + (mn || '—') + '–' + (mx || '—') + ' / hour' : '', freq: $('aFreq').value || '',
+          status: 'active', sent: 'Just now', by: parent ? 'Parent: ' + parent + ' (posted by admin)' : 'Posted by admin', registered_at: new Date().toISOString(), posted_by_admin: true, free: $('aFree').checked
+        };
+        var a = read('modivs_active_leads'); a.unshift(lead); save('modivs_active_leads', a);
+        var st = read('modivs_students_db'); st.unshift(lead); save('modivs_students_db', st);
+        if (window.ModivsFirebaseSync) {
+          window.ModivsFirebaseSync.saveLead(lead);
+        } else {
+          fsDo(function (db) { db.collection('leads').doc(id).set(lead, { merge: true }).catch(function () { }); db.collection('students').doc(id).set(lead, { merge: true }).catch(function () { }) });
+        }
+        $('addDlg').close();
+        FIDS.forEach(function (i) { $(i).value = '' });
+        reloadAll();
+      }
+      if (ADMIN) {
+        $('adminBar').classList.add('on');
+        var pb = $('postBtn'); pb.href = '#post'; pb.addEventListener('click', function (e) { e.preventDefault(); openAdd() });
+        $('addLeadBtn').addEventListener('click', openAdd);
+        $('addForm').addEventListener('submit', submitAdd);
+        $('aCancel').addEventListener('click', function () { $('addDlg').close() });
+        $('addDlg').addEventListener('click', function (e) { if (e.target === $('addDlg')) $('addDlg').close() });
+        if (location.hash === '#post') setTimeout(openAdd, 0);
+      }
+
+      /* right-hand sign-up boxes: adapt to who is logged in */
+      (function () {
+        var u = null; try { u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null') } catch (e) { }
+        var tj = $('tbJoin'), ns = $('needSignup');
+        if (u && u.role === 'Tutor') { tj.href = 'modivs-tutor-dashboard.html'; tj.textContent = 'Go to my dashboard'; $('tbTitle').textContent = 'Ready to unlock leads?'; $('tbText').textContent = 'Open your dashboard to unlock leads and message students.'; $('needBox').style.display = 'none' }
+        else if (u && u.role === 'Student / Parent') { $('tutorBox').style.display = 'none'; ns.href = 'modivs-student-dashboard.html'; ns.textContent = 'Go to my dashboard' }
+        if (ADMIN) { $('tutorBox').style.display = 'none'; $('needBox').style.display = 'none' }
+      })();
+      stats(); render();
+    })();
+  </script>
+  <!-- mv-footer -->
+  <section class="mvfaq" id="page-faq" aria-labelledby="mvfaqH">
+    <div class="mvfaq-in">
+      <h2 id="mvfaqH">Tuition jobs FAQs: home and online tuition leads</h2>
+      <p class="mvfaq-sub">How tutors find home tuition jobs and online tuition jobs from real student requirements.</p>
+      <div class="mvfaq-list">
+        <details>
+          <summary>What are active tuition leads?</summary>
+          <div class="mvfaq-a">
+            <p>Every requirement posted by a student or parent appears here, with the class, subjects, city, teaching
+              mode and budget. They are real home tuition and online tuition jobs.</p>
+          </div>
+        </details>
+        <details>
+          <summary>How do I get home tuition jobs from these leads?</summary>
+          <div class="mvfaq-a">
+            <p><a href="modivs-become-tutor.html">Become a Modivian tutor</a>: create your profile and get verified.
+              Approved tutors unlock the leads they want from the tutor dashboard.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Why are student contact details hidden?</summary>
+          <div class="mvfaq-a">
+            <p>Student phone numbers stay private until a verified tutor unlocks the lead. This protects students and
+              parents from spam.</p>
+          </div>
+        </details>
+        <details>
+          <summary>How much does it cost to unlock a tuition lead?</summary>
+          <div class="mvfaq-a">
+            <p>Unlocking an inquiry uses coins (10 coins per inquiry) and needs an active membership plan. You manage
+              both from the bar at the top of your tutor dashboard.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Can I filter tuition leads by city, subject and mode?</summary>
+          <div class="mvfaq-a">
+            <p>Yes. Filter by city, teaching mode and subject, and choose leads posted in the last 24 hours, 7 days, 30
+              days or 90 days.</p>
+          </div>
+        </details>
+        <details>
+          <summary>Are there online tuition jobs I can do from anywhere?</summary>
+          <div class="mvfaq-a">
+            <p>Yes. Choose the online teaching mode in the filters to see students who want online classes, so you can
+              teach from any city.</p>
+          </div>
+        </details>
+        <details>
+          <summary>I am a student or parent. How do I add my requirement?</summary>
+          <div class="mvfaq-a">
+            <p><a href="modivs-post-requirement.html">Post your tuition requirement</a>. It appears here for verified
+              tutors, and your contact details stay private.</p>
+          </div>
+        </details>
+      </div>
+      <p class="mvfaq-more">Still have a question? <a href="modivs-contact.html">Contact us</a> or read the <a
+          href="modivs-guide.html">guide</a>.</p>
+    </div>
+  </section>
+
+  <footer class="mv-foot v2">
+    <div class="fv-grid">
+      <div class="fv-col fv-brand"><a class="fv-logo" href="modivs-home.html#top"
+          aria-label="Modiv’s Education home"><img src="logo.png" alt="Modiv’s Education"></a>
+        <p>Connecting tutors with students and parents, one class at a time.</p>
+        <div class="fv-app"><b>Download Our App</b>
+          <div class="fv-badges"><a href="#" class="fv-badge" aria-label="Get it on Google Play"><svg
+                viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#00D7FE" d="M3.6 2.2c-.3.3-.5.8-.5 1.4v16.8c0 .6.2 1.1.5 1.4l.1.1 9.4-9.4v-.2z" />
+                <path fill="#00F076" d="M16.2 15.4l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1.1.6 1.1 1.6 0 2.2l-3.7 2z" />
+                <path fill="#FF3A44" d="M16.3 15.3L13.1 12.2 3.6 21.8c.4.4.9.4 1.6.1z" />
+                <path fill="#FFC900" d="M16.3 9.1L5.2 2.2c-.7-.4-1.2-.3-1.6.1l9.5 9.5z" />
+              </svg><span><small>GET IT ON</small>Google Play</span></a><a href="#" class="fv-badge"
+              aria-label="Download on the App Store"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path fill="#fff"
+                  d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701" />
+              </svg><span><small>Download on the</small>App Store</span></a></div>
+        </div>
+        <div class="fv-follow"><b>Follow Us</b>
+          <div class="fv-soc"><a href="https://www.facebook.com/modivseducation/" target="_blank"
+              rel="noopener noreferrer" title="Facebook" aria-label="Modiv’s Education on Facebook"
+              style="--c:#1877F2"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z" />
+              </svg></a><a href="https://www.instagram.com/modivs_education/" target="_blank" rel="noopener noreferrer"
+              title="Instagram" aria-label="Modiv’s Education on Instagram" style="--c:#E4405F"><svg viewBox="0 0 24 24"
+                aria-hidden="true">
+                <path
+                  d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z" />
+              </svg></a><a href="https://www.youtube.com/channel/UC1PXZRzp5Yp1kihDURNhkpg" target="_blank"
+              rel="noopener noreferrer" title="YouTube" aria-label="Modiv’s Education on YouTube"
+              style="--c:#FF0000"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z" />
+              </svg></a><a href="https://x.com/" target="_blank" rel="noopener noreferrer" title="X"
+              aria-label="Modiv’s Education on X" style="--c:#000000"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z" />
+              </svg></a><a href="https://www.linkedin.com/in/modiv-education-554176143/" target="_blank"
+              rel="noopener noreferrer" title="LinkedIn" aria-label="Modiv’s Education on LinkedIn"
+              style="--c:#0A66C2"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z" />
+              </svg></a><a href="https://wa.me/message/AZVJXD4HG3DOG1" target="_blank" rel="noopener noreferrer"
+              title="WhatsApp" aria-label="Modiv’s Education on WhatsApp" style="--c:#25D366"><svg viewBox="0 0 24 24"
+                aria-hidden="true">
+                <path
+                  d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z" />
+              </svg></a></div>
+        </div>
+      </div>
+      <div class="fv-col">
+        <h4>For Students &amp; Parents</h4>
+        <ul class="fv-list">
+          <li><a href="modivs-find-tutor.html" id="footFindTutor"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="11" cy="11" r="6.5" />
+                <path d="M20 20l-4.2-4.2" />
+              </svg><span>Find a Tutor</span></a></li>
+          <li><a href="modivs-post-requirement.html"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="5" y="4.5" width="14" height="16.5" rx="2" />
+                <path d="M9 4.5V3.5h6v1M8.5 11l1.6 1.6L13 9.5M8.5 17h7" />
+              </svg><span>Post a Requirement</span></a></li>
+          <li><a href="modivs-tutors.html"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="9" cy="8" r="3.2" />
+                <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 5.2a3 3 0 0 1 0 5.6M18 14.8c1.8.7 3 2.4 3 5.2" />
+              </svg><span>Browse Tutors</span></a></li>
+          <li><a href="modivs-home.html#subjects"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 6.5C10.3 5.2 7.8 4.6 4 4.8v13c3.8-.2 6.3.4 8 1.7 1.7-1.3 4.2-1.9 8-1.7v-13c-3.8-.2-6.3.4-8 1.7zM12 6.5v13" />
+              </svg><span>Subjects &amp; Classes</span></a></li>
+          <li><a href="modivs-home.html#faq"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="12" cy="12" r="9" />
+                <path d="M9.5 9.5a2.6 2.6 0 1 1 3.8 2.3c-.8.5-1.3 1-1.3 2M12 17h.01" />
+              </svg><span>FAQs</span></a></li>
+        </ul>
+      </div>
+      <div class="fv-col">
+        <h4>For Tutors</h4>
+        <ul class="fv-list">
+          <li><a href="modivs-become-tutor.html" id="footBecomeTutor"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <circle cx="9" cy="8" r="3.2" />
+                <path d="M3 20c0-3.3 2.7-5.5 6-5.5 1.5 0 2.8.4 3.9 1.1M18 10v6M15 13h6" />
+              </svg><span>Become a Tutor</span></a></li>
+          <li><a href="modivs-active-leads.html"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M12 3l9 5-9 5-9-5zM3 12.5l9 5 9-5M3 17l9 5 9-5" />
+              </svg><span>Active Leads</span></a></li>
+          <li><a href="modivs-guide.html"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path
+                  d="M12 6.5C10.3 5.2 7.8 4.6 4 4.8v13c3.8-.2 6.3.4 8 1.7 1.7-1.3 4.2-1.9 8-1.7v-13c-3.8-.2-6.3.4-8 1.7zM12 6.5v13" />
+              </svg><span>Tutor Guidelines</span></a></li>
+          <li><a href="modivs-become-tutor.html#pricing"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 20V12M10 20V6M15 20v-6M20 20V9" />
+              </svg><span>Plans &amp; Pricing</span></a></li>
+          <li><a href="modivs-contact.html"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
+                <rect x="3" y="13" width="4" height="6" rx="1.5" />
+                <rect x="17" y="13" width="4" height="6" rx="1.5" />
+                <path d="M19 19c0 1.5-1.5 2.5-4 2.5" />
+              </svg><span>Help &amp; Support</span></a></li>
+        </ul>
+      </div>
+      <div class="fv-col fv-contact">
+        <h4>Contact &amp; Locations</h4>
+        <ul class="fv-list">
+          <li><a href="tel:+919896930443"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
+              </svg><span>+91 98969 30443</span></a></li>
+          <li><a href="tel:+918054167008"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z" />
+              </svg><span>+91 80541 67008</span></a></li>
+          <li><a href="mailto:support@modivians.com"><svg viewBox="0 0 24 24" aria-hidden="true">
+                <rect x="3" y="5" width="18" height="14" rx="2" />
+                <path d="M3 7l9 6 9-6" />
+              </svg><span>support@modivians.com</span></a></li>
+        </ul>
+        <div class="fv-locs"><b><svg viewBox="0 0 24 24" aria-hidden="true">
+              <path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z" />
+              <circle cx="12" cy="10" r="2.5" />
+            </svg>Our Service Locations</b>
+          <div class="fv-cities">
+            <div><a href="modivs-tutors.html?city=Chandigarh" title="Find tutors in Chandigarh">Chandigarh</a><a
+                href="modivs-tutors.html?city=Mohali" title="Find tutors in Mohali">Mohali</a><a
+                href="modivs-tutors.html?city=Panchkula" title="Find tutors in Panchkula">Panchkula</a></div>
+            <div><a href="modivs-tutors.html?city=Ludhiana" title="Find tutors in Ludhiana">Ludhiana</a><a
+                href="modivs-tutors.html?city=Patiala" title="Find tutors in Patiala">Patiala</a><a
+                href="modivs-tutors.html?city=Jalandhar" title="Find tutors in Jalandhar">Jalandhar</a><a
+                href="modivs-tutors.html?city=Amritsar" title="Find tutors in Amritsar">Amritsar</a></div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="fv-bottom">
+      <div class="fv-legal" role="navigation" aria-label="Legal and contact links"><a
+          href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a
+          href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact Us</a><a
+          href="sitemap.xml">Sitemap</a></div>
+      <p class="fv-copy">© 2026 Modiv’s Education. All rights reserved.</p>
+    </div>
+  </footer>
+  <script src="modivs-menu.js" defer></script>
+  <script src="modivs-social.js" defer></script>
+  <script src="modivs-dropdown.js" defer></script>
 </body>
+
 </html>

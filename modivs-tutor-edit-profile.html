@@ -165,8 +165,8 @@ function load(){
   var cur=jget('modivs_current_tutor',null);
   var auth=jget('modivs_auth_user',null);
   var db=jget('modivs_tutors_db',[]);
-  var email=(cur&&cur.email)||(auth&&auth.role==='Tutor'&&auth.email)||'';
-  var rec=db.find(function(t){return t.email===email})||null;
+  var email=String((cur&&cur.email)||(auth&&auth.role==='Tutor'&&auth.email)||'').trim().toLowerCase();
+  var rec=db.find(function(t){return t&&String(t.email||'').trim().toLowerCase()===email})||null;
   if(!cur&&!rec)return null;
   // current_tutor holds the full form data; db entry may only hold admin-summary fields
   var base={email:email,name:'',phone:'',altPhone:'',whatsapp:'',waSame:false,photo:'',photoBlur:false,city:'',area:'',gender:'',dob:'',headline:'',bio:'',langs:[],
@@ -336,16 +336,19 @@ function persist(){
   if(status==='pending'){summary.rejection_reason='';summary.rejection_reasons=[];summary.rejection_note=''}
 
   // canonical DB — merge full profile so the dashboard shows every edited field
+  var normEm=String(t.email||'').trim().toLowerCase();
   var db=jget('modivs_tutors_db',[]);
-  var i=db.findIndex(function(x){return x.email===t.email});
-  var full=Object.assign({},t,summary);
+  var i=db.findIndex(function(x){return x&&String(x.email||'').trim().toLowerCase()===normEm});
+  var full=Object.assign({},t,summary,{email:normEm});
   delete full.pass;delete full.agree;
-  if(i>=0){full.id=db[i].id||('t_user_'+Date.now());db[i]=Object.assign({},db[i],full)}
-  else{full.id='t_user_'+Date.now();db.unshift(full)}
+  var fallbackId='t_user_'+normEm.replace(/[^a-z0-9]/gi,'_');
+  if(i>=0){full.id=db[i].id||fallbackId;db[i]=Object.assign({},db[i],full)}
+  else{full.id=t.id||fallbackId;db.unshift(full)}
   localStorage.setItem('modivs_tutors_db',JSON.stringify(db));
 
+  var syncP=Promise.resolve();
   if(window.ModivsFirebaseSync && typeof ModivsFirebaseSync.saveTutor === 'function'){
-    ModivsFirebaseSync.saveTutor(full);
+    syncP=ModivsFirebaseSync.saveTutor(full);
   } else if(window.EducationBFirebase && window.EducationBFirebase.db){
     try{
       var fdb = window.EducationBFirebase.db;
@@ -382,7 +385,7 @@ function persist(){
     timestamp:new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})+', '+new Date().toLocaleDateString(),
     note:'Tutor updated their profile. Status: '+status+'.'});
   localStorage.setItem('modivs_audit_logs',JSON.stringify(logs.slice(0,50)));
-  return status;
+  return {status:status,syncP:syncP};
 }
 
 function save(){
@@ -399,18 +402,22 @@ function save(){
     document.getElementById('msg').textContent=m;toast(m)});
 }
 function finishSave(){
-  var btn=document.getElementById('saveBtn');if(btn)btn.disabled=false;
-  var status;
-  try{status=persist()}catch(err){console.error(err);document.getElementById('msg').textContent='Could not save. Your browser storage may be full (try a smaller photo).';return}
+  var btn=document.getElementById('saveBtn');
+  var res;
+  try{res=persist()}catch(err){if(btn)btn.disabled=false;console.error(err);document.getElementById('msg').textContent='Could not save. Your browser storage may be full (try a smaller photo).';return}
+  var status=res.status;
   var okDocs=true;
   if(DOCS_NEW.id)okDocs=ModivsDocs.save(D.email,'id',DOCS_NEW.id)&&okDocs;
   if(DOCS_NEW.cert)okDocs=ModivsDocs.save(D.email,'cert',DOCS_NEW.cert)&&okDocs;
   if(!okDocs)toast('Profile saved, but your browser had no room for the new documents. Free some space and upload them again.');
-  document.getElementById('savebar').classList.add('hide');
-  app.innerHTML='<div class="empty"><div style="font-size:3rem">✅</div><h1 style="color:var(--accent-d)">Profile updated</h1><p class="sub">'+
-    (status==='approved'?'Your changes are saved and now show on your profile.':'Your changes are saved and sent to admins for re-verification, because your photo, name or documents changed.')+
-    '</p><a class="btn" href="modivs-tutor-dashboard.html">Back to dashboard</a> <a class="btn ghost" href="modivs-tutor-edit-profile.html">Keep editing</a><p class="hint" style="margin-top:14px">Taking you to your dashboard in <b id="cd">3</b>s…</p></div>';
-  var n=3,iv=setInterval(function(){n--;var c=document.getElementById('cd');if(c)c.textContent=n;if(n<=0){clearInterval(iv);location.href='modivs-tutor-dashboard.html'}},1000);
+  Promise.race([res.syncP,new Promise(function(r){setTimeout(r,2500)})]).then(function(){
+    if(btn)btn.disabled=false;
+    document.getElementById('savebar').classList.add('hide');
+    app.innerHTML='<div class="empty"><div style="font-size:3rem">✅</div><h1 style="color:var(--accent-d)">Profile updated</h1><p class="sub">'+
+      (status==='approved'?'Your changes are saved and now show on your profile.':'Your changes are saved and sent to admins for re-verification, because your photo, name or documents changed.')+
+      '</p><a class="btn" href="modivs-tutor-dashboard.html">Back to dashboard</a> <a class="btn ghost" href="modivs-tutor-edit-profile.html">Keep editing</a><p class="hint" style="margin-top:14px">Taking you to your dashboard in <b id="cd">3</b>s…</p></div>';
+    var n=3,iv=setInterval(function(){n--;var c=document.getElementById('cd');if(c)c.textContent=n;if(n<=0){clearInterval(iv);location.href='modivs-tutor-dashboard.html'}},1000);
+  });
 }
 
 /* ---------- photo ---------- */

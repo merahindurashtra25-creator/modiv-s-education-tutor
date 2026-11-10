@@ -37,36 +37,56 @@
     return false;
   }
 
+  // Wait for Firebase Auth to restore any persisted session before deciding if user is signed out
+  var authReadyPromise = null;
+  function waitAuthReady(a){
+    if(!a) return Promise.resolve(null);
+    if(a.currentUser) return Promise.resolve(a.currentUser);
+    if(authReadyPromise) return authReadyPromise;
+    authReadyPromise = new Promise(function(resolve){
+      var done = false, off = null;
+      var t = setTimeout(function(){
+        if(done) return;
+        done = true; try{ off && off(); }catch(e){}
+        resolve(a.currentUser || null);
+      }, 1500);
+      if(typeof a.onAuthStateChanged === 'function'){
+        off = a.onAuthStateChanged(function(u){
+          if(done) return;
+          done = true; clearTimeout(t);
+          try{ off && off(); }catch(e){}
+          resolve(u || null);
+        });
+      } else {
+        done = true; clearTimeout(t); resolve(null);
+      }
+    });
+    return authReadyPromise;
+  }
+
   // Ensure an authenticated session safely without exposing credentials
   var authPromise = null;
   function ensureAuth(forceAdmin){
     var a = auth();
     if(!a) return Promise.resolve(null);
 
-    var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com'];
-    var cur = a.currentUser;
-    var curIsAdmin = cur && cur.email && adminEmails.indexOf(String(cur.email).toLowerCase()) > -1;
-
-    if(cur) return Promise.resolve(cur);
-
-    // If already waiting on an auth promise, return it
+    if(a.currentUser) return Promise.resolve(a.currentUser);
     if(authPromise) return authPromise;
 
-    authPromise = new Promise(function(resolve){
-      // For unauthenticated guest visitors, use anonymous auth if enabled
+    authPromise = waitAuthReady(a).then(function(u){
+      if(u){ authPromise = null; return u; }
       if(a.signInAnonymously){
-        a.signInAnonymously().then(function(res){
+        return a.signInAnonymously().then(function(res){
           authPromise = null;
-          resolve(res.user);
+          return res.user;
         }).catch(function(err){
           authPromise = null;
           console.log('Guest browsing mode (anonymous auth notice):', err && err.message);
-          resolve(a.currentUser || null);
+          return a.currentUser || null;
         });
-      } else {
-        authPromise = null;
-        resolve(null);
       }
+      authPromise = null;
+      return null;
     });
     return authPromise;
   }
@@ -102,6 +122,24 @@
   // ==========================================
   // REAL-TIME TUTORS SYNCHRONIZATION
   // ==========================================
+  var tutorsUnsub = null;
+  var myTutorUnsub = null;
+  var tutorsAuthHooked = false;
+  var myTutorDoc = null;
+
+  function currentSignedInTutorEmail(){
+    try{
+      var a = auth();
+      if(a && a.currentUser && !a.currentUser.isAnonymous && a.currentUser.email){
+        var au = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
+        if(!au || au.role === 'Tutor') return String(a.currentUser.email).trim().toLowerCase();
+      }
+      var au2 = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
+      if(au2 && au2.role === 'Tutor' && au2.email) return String(au2.email).trim().toLowerCase();
+    }catch(e){}
+    return '';
+  }
+
   function initTutorsListener(){
     if(isTutorsListening) return;
     var firestore = db();
@@ -111,61 +149,106 @@
     }
     isTutorsListening = true;
 
-    // Check if the current viewer is admin
-    var isAdmin = isAdminSession();
+    function buildOut(snapshot){
+      var deletedTutors = rd('modivs_deleted_tutors');
+      var map = {};
 
-    function attach(colRef){
-      return colRef.onSnapshot(function(snapshot){
-        var deletedTutors = rd('modivs_deleted_tutors');
-        var map = {};
-        
-        // Overlay live Firestore documents (Firestore is Single Source of Truth)
+      if(snapshot){
         snapshot.forEach(function(doc){
           var data = doc.data() || {};
           data.id = data.id || doc.id;
           var key = data.id || data.email;
-          if(key){
-            map[key] = data;
-          }
+          if(key) map[key] = data;
         });
+      }
 
-        // Retain uncommitted optimistic records created in the last 15 seconds
-        rd('modivs_tutors_db').forEach(function(t){
-          if(t && t._optimistic && (Date.now() - (t._optimisticTime || 0) < 15000)){
-            var k = t.id || t.email;
-            if(k && !map[k]) map[k] = t;
-          }
-        });
+      // Merge the signed-in tutor's own Firestore doc so pending/incomplete tutors aren't wiped from cache
+      if(myTutorDoc && (myTutorDoc.id || myTutorDoc.email)){
+        var mk = myTutorDoc.id || myTutorDoc.email;
+        if(!map[mk]) map[mk] = myTutorDoc;
+      }
 
-        var out = Object.keys(map).map(function(k){ return map[k]; }).filter(function(t){
-          if(!t || !t.name) return false;
-          var tid = String(t.id || '');
-          var tem = String(t.email || '').toLowerCase();
-          if((tid && deletedTutors.indexOf(tid) > -1) || (tem && deletedTutors.indexOf(tem) > -1)){
-            return false;
-          }
-          return true;
-        });
+      // Retain uncommitted optimistic or own-tutor local records so non-admin approved query doesn't erase them
+      var myEm = currentSignedInTutorEmail();
+      rd('modivs_tutors_db').forEach(function(t){
+        if(!t) return;
+        var k = t.id || t.email;
+        var isOpt = t._optimistic && (Date.now() - (t._optimisticTime || 0) < 15000);
+        var isMine = myEm && String(t.email || '').toLowerCase() === myEm;
+        if(k && !map[k] && (isOpt || isMine)) map[k] = t;
+      });
 
-        // Save into local cache
-        wr('modivs_tutors_db', out);
-        wr('modivs_submitted_tutors', out);
-        notifyTutors(out);
+      var out = Object.keys(map).map(function(k){ return map[k]; }).filter(function(t){
+        if(!t || !t.name) return false;
+        var tid = String(t.id || '');
+        var tem = String(t.email || '').toLowerCase();
+        if((tid && deletedTutors.indexOf(tid) > -1) || (tem && deletedTutors.indexOf(tem) > -1)) return false;
+        return true;
+      });
+
+      wr('modivs_tutors_db', out);
+      wr('modivs_submitted_tutors', out);
+      notifyTutors(out);
+    }
+
+    var lastSnap = null;
+    function attach(colRef){
+      if(tutorsUnsub){ try{ tutorsUnsub(); }catch(e){} tutorsUnsub = null; }
+      tutorsUnsub = colRef.onSnapshot(function(snapshot){
+        lastSnap = snapshot;
+        buildOut(snapshot);
       }, function(err){
         console.warn('Tutors snapshot listener notice:', err);
-        // Fallback to query with status == 'approved' if whole collection had permission notice
         if(colRef === firestore.collection('tutors')){
           attach(firestore.collection('tutors').where('status', '==', 'approved'));
         }
       });
     }
 
-    // Admins need all tutors; public pages query approved tutors
-    if(isAdmin){
-      attach(firestore.collection('tutors'));
-    } else {
-      attach(firestore.collection('tutors').where('status', '==', 'approved'));
+    function attachMine(em){
+      if(myTutorUnsub){ try{ myTutorUnsub(); }catch(e){} myTutorUnsub = null; }
+      if(!em) return;
+      myTutorUnsub = firestore.collection('tutors').where('email', '==', em).limit(1).onSnapshot(function(snap){
+        if(snap && !snap.empty){
+          var d = snap.docs[0].data() || {};
+          d.id = d.id || snap.docs[0].id;
+          myTutorDoc = d;
+          try{
+            var cur = JSON.parse(localStorage.getItem('modivs_current_tutor') || 'null');
+            if(!cur || String(cur.email || '').toLowerCase() === em){
+              localStorage.setItem('modivs_current_tutor', JSON.stringify(Object.assign({}, cur || {}, d)));
+            }
+          }catch(e){}
+          if(lastSnap) buildOut(lastSnap);
+        }
+      }, function(){});
     }
+
+    function startWithAuth(user){
+      var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com'];
+      var userEmail = user && user.email ? String(user.email).toLowerCase() : '';
+      var isAdmin = isAdminSession() || (user && !user.isAnonymous && adminEmails.indexOf(userEmail) > -1);
+      if(isAdmin){
+        attach(firestore.collection('tutors'));
+      } else {
+        attach(firestore.collection('tutors').where('status', '==', 'approved'));
+        var myEm = currentSignedInTutorEmail();
+        if(myEm && user && !user.isAnonymous) attachMine(myEm);
+      }
+    }
+
+    var a = auth();
+    waitAuthReady(a).then(function(user){
+      startWithAuth(user);
+      if(a && typeof a.onAuthStateChanged === 'function' && !tutorsAuthHooked){
+        tutorsAuthHooked = true;
+        var seenInitial = true;
+        a.onAuthStateChanged(function(u){
+          if(seenInitial){ seenInitial = false; return; }
+          if(u && !u.isAnonymous) startWithAuth(u);
+        });
+      }
+    });
   }
 
   // ==========================================
@@ -234,23 +317,24 @@
   // ==========================================
   function saveTutor(tutorData){
     if(!tutorData) return Promise.reject(new Error('No tutor data provided'));
-    var tid = sanitizeId(tutorData.id || ('t_user_' + (tutorData.email ? tutorData.email.replace(/[^a-z0-9]/gi, '_') : Date.now())));
-    tutorData.id = tid;
     var em = String(tutorData.email || '').trim().toLowerCase();
+    if(em) tutorData.email = em;
+    var tid = sanitizeId(tutorData.id || ('t_user_' + (em ? em.replace(/[^a-z0-9]/gi, '_') : Date.now())));
+    tutorData.id = tid;
     if(!tutorData.status) tutorData.status = isAdminSession() ? 'approved' : 'pending';
     tutorData._optimistic = true;
     tutorData._optimisticTime = Date.now();
 
     // Update local cache optimistically
     var tutors = rd('modivs_tutors_db');
-    var idx = tutors.findIndex(function(x){ return x.id === tid || (x.email && tutorData.email && x.email.toLowerCase() === tutorData.email.toLowerCase()); });
+    var idx = tutors.findIndex(function(x){ return x.id === tid || (x.email && em && String(x.email).toLowerCase() === em); });
     if(idx > -1) tutors[idx] = Object.assign({}, tutors[idx], tutorData);
     else tutors.unshift(tutorData);
     wr('modivs_tutors_db', tutors);
     wr('modivs_submitted_tutors', tutors);
     notifyTutors(tutors);
 
-    return ensureAuth().then(function(){
+    return ensureAuth().then(function(authU){
       var firestore = db();
       if(!firestore) return tutorData;
       var payload = Object.assign({}, tutorData, {
@@ -259,39 +343,50 @@
       delete payload._optimistic;
       delete payload._optimisticTime;
 
-      var p1 = firestore.collection('tutors').doc(tid).set(payload, { merge: true });
+      // Reuse existing Firestore doc ID for this email if one already exists (prevents duplicate tutor rows in Admin)
+      var resolveId = em
+        ? firestore.collection('tutors').where('email', '==', em).limit(1).get().then(function(snap){
+            return (snap && !snap.empty) ? snap.docs[0].id : tid;
+          }).catch(function(){ return tid; })
+        : Promise.resolve(tid);
 
-      // Live synchronize with accounts and users collections
-      if(em){
-        firestore.collection('accounts').doc(em).set({
-          email: em,
-          role: 'tutor',
-          roleName: 'Tutor',
-          name: tutorData.name || '',
-          phone: tutorData.phone || '',
-          city: tutorData.city || '',
-          area: tutorData.area || '',
-          location: tutorData.location || { city: tutorData.city || '', area: tutorData.area || '' },
-          updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
-        }, { merge: true }).catch(function(){});
+      return resolveId.then(function(targetId){
+        payload.id = targetId;
+        tutorData.id = targetId;
+        var writes = [firestore.collection('tutors').doc(targetId).set(payload, { merge: true })];
 
-        var uid = tutorData.uid || tid;
-        firestore.collection('users').doc(uid).set({
-          email: em,
-          role: 'Tutor',
-          roleKey: 'tutor',
-          name: tutorData.name || '',
-          phone: tutorData.phone || '',
-          location: tutorData.location || { city: tutorData.city || '', area: tutorData.area || '' },
-          updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
-        }, { merge: true }).catch(function(){});
-      }
+        var canWriteAccount = authU && !authU.isAnonymous && (isAdminSession() || (authU.email && String(authU.email).toLowerCase() === em));
+        if(em && canWriteAccount){
+          writes.push(firestore.collection('accounts').doc(em).set({
+            email: em,
+            role: 'tutor',
+            roleName: 'Tutor',
+            name: tutorData.name || '',
+            phone: tutorData.phone || '',
+            city: tutorData.city || '',
+            area: tutorData.area || '',
+            location: tutorData.location || { city: tutorData.city || '', area: tutorData.area || '' },
+            updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+          }, { merge: true }).catch(function(){}));
 
-      return p1.then(function(){
-        return tutorData;
-      }).catch(function(err){
-        console.warn('Firestore tutor set error:', err);
-        return tutorData;
+          var uid = tutorData.uid || (authU && authU.uid) || targetId;
+          writes.push(firestore.collection('users').doc(uid).set({
+            email: em,
+            role: 'Tutor',
+            roleKey: 'tutor',
+            name: tutorData.name || '',
+            phone: tutorData.phone || '',
+            location: tutorData.location || { city: tutorData.city || '', area: tutorData.area || '' },
+            updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+          }, { merge: true }).catch(function(){}));
+        }
+
+        return Promise.all(writes).then(function(){
+          return tutorData;
+        }).catch(function(err){
+          console.warn('Firestore tutor set error:', err);
+          return tutorData;
+        });
       });
     });
   }
@@ -532,8 +627,8 @@
         lead_id: leadId,
         leadId: leadId,
         unlock_status: 'unlocked',
-        coins_deducted: coinsDeducted || 10,
-        coinsDeducted: coinsDeducted || 10,
+        coins_deducted: coinsDeducted != null ? coinsDeducted : 10,
+        coinsDeducted: coinsDeducted != null ? coinsDeducted : 10,
         transaction_id: txId,
         unlocked_at: nowTs,
         unlockedAt: nowTs
@@ -665,18 +760,36 @@
       // Firestore rules only let a tutor write a profile whose email matches the signed-in email
       if(!u || String(u.email).toLowerCase() !== em) return 'not-signed-in';
       return firestore.collection('tutors').where('email', '==', em).limit(1).get().then(function(snap){
-        if(snap && !snap.empty){ try{ sessionStorage.setItem(flag, '1'); }catch(e){} return 'exists'; }
         var local = rd('modivs_tutors_db').filter(function(t){ return String(t && t.email || '').toLowerCase() === em; })[0];
         var full = null; try{ full = JSON.parse(localStorage.getItem('modivs_current_tutor') || 'null'); }catch(e){}
         if(full && String(full.email || '').toLowerCase() !== em) full = null;
+        if(snap && !snap.empty){
+          var doc = snap.docs[0], remote = Object.assign({ id: doc.id }, doc.data() || {});
+          // If Firestore still has an incomplete stub while this browser has a completed profile, push it up for admin review
+          if(remote.status === 'incomplete' && ((local && local.status && local.status !== 'incomplete') || (full && full.status && full.status !== 'incomplete'))){
+            var upgraded = Object.assign({}, remote, local || {}, full || {}, { id: doc.id, email: em, uid: remote.uid || u.uid });
+            if(!upgraded.status || upgraded.status === 'incomplete' || upgraded.status === 'approved') upgraded.status = 'pending';
+            return saveTutor(upgraded).then(function(){ try{ sessionStorage.setItem(flag, '1'); }catch(e){} return 'synced'; });
+          }
+          // Otherwise keep local cache and MY_TUTOR in sync with Firestore
+          myTutorDoc = remote;
+          var list = rd('modivs_tutors_db'), li = list.findIndex(function(t){ return String(t && t.email || '').toLowerCase() === em; });
+          if(li > -1) list[li] = Object.assign({}, list[li], remote); else list.unshift(remote);
+          wr('modivs_tutors_db', list);
+          wr('modivs_submitted_tutors', list);
+          try{ localStorage.setItem('modivs_current_tutor', JSON.stringify(Object.assign({}, full || {}, remote))); }catch(e){}
+          notifyTutors(list);
+          try{ sessionStorage.setItem(flag, '1'); }catch(e){}
+          return 'exists';
+        }
         var rec = Object.assign({}, local || {}, full || {}, local && local.status ? { status: local.status } : {});
         rec.email = em;
         if(!rec.name) rec.name = authUser.name || em.split('@')[0];
         if(!rec.id) rec.id = 't_user_' + em.replace(/[^a-z0-9]/gi, '_');
         if(!rec.uid) rec.uid = u.uid;
         // rules reject creating an already-approved profile; the admin approves from the panel
-        if(!rec.status || rec.status === 'approved') rec.status = local ? 'pending' : 'incomplete';
-        if(!local){
+        if(!rec.status || rec.status === 'approved') rec.status = (local || full) ? 'pending' : 'incomplete';
+        if(!local && !full){
           Object.assign(rec, { phone: rec.phone || '—', city: rec.city || '—', headline: rec.headline || 'Account registered. Profile setup incomplete.',
             qual: rec.qual || 'Profile setup pending', years: rec.years || 0, subs: rec.subs || ['General'], levels: rec.levels || ['Secondary'],
             fee: rec.fee || 0, modes: rec.modes || ['Online'], langs: rec.langs || ['English'], idType: rec.idType || 'Pending upload',

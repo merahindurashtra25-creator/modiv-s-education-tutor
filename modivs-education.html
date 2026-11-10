@@ -1332,26 +1332,27 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         // admin approval queue + canonical tutors database
         var q0 = W.quals[0] || {};
         var qualDesc = q0.degree ? (q0.degree + ', ' + (q0.inst || '') + ' (' + (q0.year || '') + ')') : 'Certificate on file';
-        var entry = { id: 't_user_' + Date.now(), name: name, headline: W.headline, city: city, area: W.area || '', location: locData, travel: W.travel || '', phone: W.phone, altPhone: W.altPhone || '',
+        var entry = { id: 't_user_' + mail.replace(/[^a-z0-9]/gi, '_'), name: name, headline: W.headline, city: city, area: W.area || '', location: locData, travel: W.travel || '', phone: W.phone, altPhone: W.altPhone || '',
           whatsapp: tutorData.whatsapp || '', photo: W.photo || '', bio: W.bio || '', boards: W.boards || [], formats: W.formats || [], groupFee: W.groupFee || '', trial: W.trial || '',
           rejection_reason: '', rejection_reasons: [], rejection_note: '', email: mail, qual: qualDesc, years: years,
           subs: W.subjects.length ? W.subjects : ['General'], levels: W.levels.length ? W.levels : ['Secondary'], fee: +W.fee || 500, modes: W.modes.length ? W.modes : ['Online'],
           langs: W.langs.length ? W.langs : ['English'], idType: W.idType || 'Government ID', idFile: W.idName || 'id_document.pdf', cert: W.certName || 'qualification_cert.pdf',
           sent: 'Just now', status: 'pending' };
         var queue = JSON.parse(localStorage.getItem('modivs_submitted_tutors') || '[]');
-        var qi = queue.findIndex(function(item){ return item.email === mail; });
+        var qi = queue.findIndex(function(item){ return String(item.email || '').toLowerCase() === mail; });
         if(qi >= 0) queue[qi] = entry; else queue.unshift(entry);
         localStorage.setItem('modivs_submitted_tutors', JSON.stringify(queue));
 
         var dbTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]');
-        var di = dbTutors.findIndex(function(item){ return String(item.email).toLowerCase() === mail; });
+        var di = dbTutors.findIndex(function(item){ return String(item.email || '').toLowerCase() === mail; });
         if(di >= 0){ entry.id = dbTutors[di].id || entry.id; dbTutors[di] = Object.assign({}, dbTutors[di], entry); } else dbTutors.unshift(entry);
         localStorage.setItem('modivs_tutors_db', JSON.stringify(dbTutors));
 
+        var syncWrite = Promise.resolve();
         if(window.ModivsFirebaseSync && typeof ModivsFirebaseSync.saveTutor === 'function'){
-          ModivsFirebaseSync.saveTutor(entry);
+          syncWrite = ModivsFirebaseSync.saveTutor(entry);
         } else if(fb && fb.db && window.firebase){
-          fb.db.collection('tutors').doc(String(entry.id).replace(/[/]/g, '_')).set(Object.assign({}, entry, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }), { merge: true }).catch(function(){});
+          syncWrite = fb.db.collection('tutors').doc(String(entry.id).replace(/[/]/g, '_')).set(Object.assign({}, entry, { updatedAt: firebase.firestore.FieldValue.serverTimestamp() }), { merge: true }).catch(function(){});
         }
         var logs = JSON.parse(localStorage.getItem('modivs_audit_logs') || '[]');
         logs.unshift({ id: entry.id, name: name, action: 'Application Submitted', admin: 'System',
@@ -1362,7 +1363,9 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 
       toast('Profile submitted for verification!');
       showDone();
-      setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 2200);
+      Promise.race([syncWrite || Promise.resolve(), new Promise(function(r){ setTimeout(r, 2000); })]).then(function(){
+        setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 1200);
+      });
     }
     var fb2 = window.EducationBFirebase;
     if(fb2 && fb2.auth && !fb2.auth.currentUser && !existingAcct()){

@@ -378,7 +378,7 @@ service cloud.firestore {
     // 7c. One-time tutor unlock records
     // ==========================================
     match /unlocks/{docId} {
-      allow read: if isAdmin() || (signedIn() && isEmail(resource.data.tutorEmail));
+      allow read: if isAdmin() || (signedIn() && (resource == null || isEmail(resource.data.tutorEmail)));
 
       allow create: if isAdmin() || (
         signedIn() &&

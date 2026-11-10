@@ -428,32 +428,43 @@ syncDatabases();
 // Registered tutor accounts (Firestore `accounts`) that never got a profile document still show up as "Profile Incomplete"
 var tutorAccounts = [];
 function withAccounts(list){
-  var out = (list || []).slice(), have = {};
-  out.forEach(function(t){ if(t && t.email) have[String(t.email).toLowerCase()] = 1; });
+  var out = (list || []).slice(), byEmail = {};
+  out.forEach(function(t){ if(t && t.email) byEmail[String(t.email).toLowerCase()] = t; });
   var tt=[];try{tt=JSON.parse(localStorage.getItem('modivs_deleted_tutors')||'[]')||[]}catch(e){}
   tutorAccounts.forEach(function(a){
     var em = String(a.email || '').toLowerCase();
-    if(!em || have[em] || tt.indexOf(em) > -1) return;
-    have[em] = 1;
-    out.push({ id: 't_user_' + em.replace(/[^a-z0-9]/gi, '_'), name: a.name || em.split('@')[0], email: em, phone: a.phone || '—', city: a.city || '—',
+    if(!em || tt.indexOf(em) > -1) return;
+    var ex = byEmail[em];
+    if(ex){
+      if(ex.status === 'incomplete'){
+        if(a.name && (!ex.name || ex.name === em.split('@')[0])) ex.name = a.name;
+        if(a.phone && (!ex.phone || ex.phone === '—')) ex.phone = a.phone;
+        if(a.city && (!ex.city || ex.city === '—')) ex.city = a.city;
+      }
+      return;
+    }
+    var stub = { id: 't_user_' + em.replace(/[^a-z0-9]/gi, '_'), name: a.name || em.split('@')[0], email: em, phone: a.phone || '—', city: a.city || '—',
       headline: 'Account registered. Profile setup incomplete.', qual: 'Profile setup pending', years: 0, subs: ['General'], levels: ['Secondary'], fee: 0,
       modes: ['Online'], langs: ['English'], idType: 'Pending upload', idFile: '', cert: '', sent: 'Registration completed', status: 'incomplete',
-      submitted_at: (a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().toISOString() : (a.createdAt || a.updatedAt && a.updatedAt.toDate && a.updatedAt.toDate().toISOString() || new Date().toISOString())), is_demo: false });
+      submitted_at: (a.createdAt && a.createdAt.toDate ? a.createdAt.toDate().toISOString() : (a.createdAt || a.updatedAt && a.updatedAt.toDate && a.updatedAt.toDate().toISOString() || new Date().toISOString())), is_demo: false };
+    byEmail[em] = stub;
+    out.push(stub);
   });
   return out;
 }
 (function loadTutorAccounts(){
   var fb = window.EducationBFirebase;
   if(!(fb && fb.auth && fb.db)) return;
-  var off = fb.auth.onAuthStateChanged(function(u){
-    if(!u) return;
-    try{ off(); }catch(e){}
-    fb.db.collection('accounts').where('role', '==', 'tutor').get().then(function(snap){
+  var acctUnsub = null;
+  fb.auth.onAuthStateChanged(function(u){
+    if(!u || u.isAnonymous) return;
+    if(acctUnsub) return;
+    acctUnsub = fb.db.collection('accounts').where('role', '==', 'tutor').onSnapshot(function(snap){
       tutorAccounts = [];
       snap.forEach(function(d){ tutorAccounts.push(d.data()); });
       tutors = withAccounts(tutors);
       try{ render(); }catch(e){}
-    }).catch(function(err){ console.warn('Tutor accounts notice:', err && err.message); });
+    }, function(err){ acctUnsub = null; console.warn('Tutor accounts notice:', err && err.message); });
   });
 })();
 
