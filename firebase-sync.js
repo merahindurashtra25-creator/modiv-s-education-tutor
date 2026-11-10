@@ -766,6 +766,123 @@
   }
   function onAllCoinTransactions(cb) { return onAllCollection('coin_transactions', cb); }
   function onAllMembershipHistory(cb) { return onAllCollection('membership_history', cb); }
+  function onAllDemoRequests(cb) { return onAllCollection('demoRequests', cb); }
+
+  function saveDemoRequest(reqData) {
+    if (!reqData) return Promise.reject(new Error('No demo request provided'));
+    var id = sanitizeId(reqData.id || ('req_' + Date.now()));
+    var em = String(reqData.email || reqData.studentEmail || '').trim().toLowerCase();
+    var tutEm = String(reqData.tutorEmail || '').trim().toLowerCase();
+    var item = Object.assign({}, reqData, {
+      id: id,
+      email: em || reqData.email || '',
+      studentEmail: em || reqData.studentEmail || '',
+      tutorEmail: tutEm || reqData.tutorEmail || '',
+      status: reqData.status || 'pending',
+      requested_at: reqData.requested_at || reqData.sentAt || new Date().toISOString()
+    });
+    var list = rd('modivs_demo_requests');
+    var idx = list.findIndex(function (x) { return x && sanitizeId(x.id) === id; });
+    if (idx > -1) list[idx] = Object.assign({}, list[idx], item);
+    else list.unshift(item);
+    wr('modivs_demo_requests', list);
+
+    return ensureAuth().then(function () {
+      var firestore = db();
+      if (!firestore) return item;
+      var payload = Object.assign({}, item, {
+        updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+      });
+      return firestore.collection('demoRequests').doc(id).set(payload, { merge: true }).then(function () {
+        return item;
+      }).catch(function (err) {
+        console.warn('Firestore demoRequest save notice:', err);
+        return item;
+      });
+    });
+  }
+
+  function updateDemoRequestStatus(reqId, status) {
+    var id = sanitizeId(reqId);
+    if (!id) return Promise.resolve();
+    var nowIso = new Date().toISOString();
+    ['modivs_demo_requests', 'modivs_student_enquiries'].forEach(function (k) {
+      var arr = rd(k), changed = false;
+      arr.forEach(function (x) {
+        if (x && sanitizeId(x.id) === id) { x.status = status; x.updatedAt = nowIso; changed = true; }
+      });
+      if (changed) wr(k, arr);
+    });
+    return ensureAuth().then(function () {
+      var firestore = db();
+      if (!firestore) return;
+      return firestore.collection('demoRequests').doc(id).set({
+        status: status,
+        updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : nowIso
+      }, { merge: true }).catch(function (e) { console.warn('Demo request update notice:', e); });
+    });
+  }
+
+  function deleteDemoRequest(reqId) {
+    var id = sanitizeId(reqId);
+    if (!id) return Promise.resolve();
+    ['modivs_demo_requests', 'modivs_student_enquiries'].forEach(function (k) {
+      var arr = rd(k).filter(function (x) { return !x || sanitizeId(x.id) !== id; });
+      wr(k, arr);
+    });
+    var tb = rd('modivs_deleted_demo_requests');
+    if (tb.indexOf(id) < 0) { tb.push(id); wr('modivs_deleted_demo_requests', tb); }
+    return ensureAuth().then(function () {
+      var firestore = db();
+      if (!firestore) return;
+      return firestore.collection('demoRequests').doc(id).delete().catch(function (e) {
+        console.warn('Demo request delete notice:', e);
+      });
+    });
+  }
+
+  function onMyDemoRequests(email, callback) {
+    if (typeof callback !== 'function') return function () { };
+    var em = String(email || '').trim().toLowerCase();
+    var a = auth(), firestore = db();
+    var cached = rd('modivs_demo_requests').filter(function (r) {
+      return r && (!em || String(r.email || r.studentEmail || '').toLowerCase() === em);
+    });
+    if (cached.length) callback(cached);
+    if (!firestore || !em) return function () { };
+    var map = {}, u1 = null, u2 = null, started = false;
+    function mergeSnap(snap) {
+      if (!snap) return;
+      snap.forEach(function (d) {
+        var data = d.data() || {};
+        data.id = data.id || d.id;
+        map[data.id] = data;
+      });
+      var out = Object.keys(map).map(function (k) { return map[k]; });
+      var cur = rd('modivs_demo_requests'), byId = {};
+      cur.forEach(function (x) { if (x && x.id) byId[x.id] = x; });
+      out.forEach(function (x) { byId[x.id] = Object.assign({}, byId[x.id] || {}, x); });
+      wr('modivs_demo_requests', Object.keys(byId).map(function (k) { return byId[k]; }));
+      try { callback(out); } catch (e) { }
+    }
+    function start() {
+      if (started) return;
+      started = true;
+      try {
+        u1 = firestore.collection('demoRequests').where('email', '==', em).onSnapshot(mergeSnap, function () { });
+        u2 = firestore.collection('demoRequests').where('studentEmail', '==', em).onSnapshot(mergeSnap, function () { });
+      } catch (e) { }
+    }
+    waitAuthReady(a).then(function (u) {
+      if (u && !u.isAnonymous) start();
+      else if (a && typeof a.onAuthStateChanged === 'function') {
+        var off = a.onAuthStateChanged(function (user) {
+          if (user && !user.isAnonymous) { try { off(); } catch (e) { } start(); }
+        });
+      }
+    });
+    return function () { try { u1 && u1(); } catch (e) { } try { u2 && u2(); } catch (e) { } };
+  }
 
   /** Real-time listener for unlocks for a specific tutor.  Calls callback(unlockedLeadIds[]) */
   function onUnlocks(tutorEmail, callback) {
@@ -926,6 +1043,11 @@
     onAllUnlocks: onAllUnlocks,
     onAllCoinTransactions: onAllCoinTransactions,
     onAllMembershipHistory: onAllMembershipHistory,
+    onAllDemoRequests: onAllDemoRequests,
+    onMyDemoRequests: onMyDemoRequests,
+    saveDemoRequest: saveDemoRequest,
+    updateDemoRequestStatus: updateDemoRequestStatus,
+    deleteDemoRequest: deleteDemoRequest,
     updateLeadStatus: updateLeadStatus
   };
 })();

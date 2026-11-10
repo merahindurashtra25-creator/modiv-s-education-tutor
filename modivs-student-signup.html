@@ -511,6 +511,7 @@ f.addEventListener('submit',function(e){
   var req={id:'stu_'+Date.now(),name:v('name'),parentName:v('name'),email:email,phone:phone,city:city,cls:v('cls'),board:v('board'),school:'',avatar:rad('avatar'),formats:formats,
    subs:subs,level:'Average',goals:['Demo class'],notes:v('needs'),mode:modes,tutorType:rad('ttype'),tutorGender:rad('tgender'),
    budget:fee,freq:v('days'),timeSlot:v('time'),timeSlots:SLOTS[v('time')]?group('slots'):[],freeDemo:rad('demo'),address:needAddr?v('addr'):'',tutorId:tid,
+   tutorName:(tutor&&tutor.name)||'',tutorEmail:(tutor&&tutor.email)||'',
    location:locDetails,
    status:'pending',sent:'Just now',registered_at:stamp,by:'Student / Parent'};
 
@@ -529,20 +530,22 @@ f.addEventListener('submit',function(e){
    var db=jget('modivs_students_db',[]),i=email?db.findIndex(function(s){return s.email===email}):-1;
    if(i>=0)db[i]=req;else db.unshift(req);localStorage.setItem('modivs_students_db',JSON.stringify(db));
    var leads=jget('modivs_active_leads',[]),lead=Object.assign({},req,{status:'active'});leads.unshift(lead);localStorage.setItem('modivs_active_leads',JSON.stringify(leads));
-   var dr=jget('modivs_demo_requests',[]);dr.unshift({id:req.id,tutorId:tid,student:req.name,phone:phone,email:email,subs:subs,city:city,requested_at:stamp});localStorage.setItem('modivs_demo_requests',JSON.stringify(dr));
+   var demoRec={id:req.id,tutorId:tid,tutorName:(tutor&&tutor.name)||'',tutorEmail:(tutor&&tutor.email)||'',studentId:req.id,name:req.name,studentName:req.name,student:req.name,phone:phone,email:email,studentEmail:email,subs:subs,mode:modes,cls:req.cls,board:req.board,budget:req.budget,city:city,location:locDetails,note:req.notes||'',status:'pending',source:'student_signup',requested_at:stamp};
+   var dr=jget('modivs_demo_requests',[]);dr.unshift(demoRec);localStorage.setItem('modivs_demo_requests',JSON.stringify(dr));
    {
     var us=jget('modivs_users',[]);if(!us.some(function(u){return u.email===email}))us.push({name:req.name,email:email,phone:phone,city:city,role:'Student / Parent',location:locDetails,created_at:stamp});localStorage.setItem('modivs_users',JSON.stringify(us));
     localStorage.setItem('modivs_auth_user',JSON.stringify({name:req.name,email:email,role:'Student / Parent'}));localStorage.setItem('modivs_student_req',JSON.stringify(req));
    }
    if(window.ModivsFirebaseSync){
      ModivsFirebaseSync.saveLead(lead).catch(function(e){ console.warn('Sync save lead failed', e); });
+     if(tid && ModivsFirebaseSync.saveDemoRequest) ModivsFirebaseSync.saveDemoRequest(demoRec).catch(function(){});
    }
    if(window.EducationBFirebase){var A=window.EducationBFirebase.auth,F=window.EducationBFirebase.db;
     if(A&&email&&pass&&pass!=='google_authenticated'&&!A.currentUser)A.createUserWithEmailAndPassword(email,pass).then(function(r){if(r&&r.user)r.user.updateProfile({displayName:req.name})}).catch(function(){});
     if(F){
       F.collection('students').doc(req.id).set(req,{merge:true}).catch(function(){});
       F.collection('leads').doc(req.id).set(lead,{merge:true}).catch(function(){});
-      F.collection('demoRequests').doc(req.id).set({tutorId:tid,studentId:req.id,name:req.name,phone:phone,email:email,subs:subs,city:city,requested_at:stamp}).catch(function(){});
+      F.collection('demoRequests').doc(req.id).set(demoRec).catch(function(){});
       F.collection('accounts').doc(email).set({
         email: email,
         role: 'student',

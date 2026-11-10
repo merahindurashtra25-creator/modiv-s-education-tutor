@@ -400,6 +400,7 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     return (list || []).filter(function(t){ return t.status === 'approved'; }).map(function(t){
       return {
         id: t.id,
+        email: t.email || '',
         name: t.name,
         qual: t.qual || 'Verified Qualifications',
         exp: (t.years || 0) + ' yrs exp',
@@ -530,7 +531,7 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
         '<p style="margin:6px 0 0;font-size:0.9rem;"><strong>Fee:</strong> ₹' + t.fee + ' / hour</p>' +
       '</div>' +
       '<div class="acts">' +
-        '<button class="b y" type="button" onclick="openDemoModal(\''+t.id+'\', \''+t.name+'\')">Book Free Demo</button>' +
+        '<button class="b y" type="button" onclick="openDemoModal(\''+t.id+'\', \''+t.name.replace(/'/g, "\\'")+'\')">Book Free Demo</button>' +
         '<button class="b o" type="button" onclick="openStudentChat(\''+t.id+'\', \''+t.name.replace(/'/g, "\\'")+'\')">Chat</button>' +
         '<button class="b o" type="button" onclick="toggleFav(\''+t.id+'\')">' + (isFav ? '★ Saved' : '☆ Save') + '</button>' +
       '</div>' +
@@ -611,8 +612,15 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
     });
     // demo-class requests and posted requirements
     liveLeads.concat(rdList('modivs_active_leads'), rdList('modivs_students_db'), rdList('modivs_demo_requests'))
-      .filter(function(r){ return isMine(r) && /^(stu|enq)_\d+$/.test(String(r && r.id || '')); })
-      .forEach(function(r){ add(fromRecord(r)); });
+      .filter(function(r){ return isMine(r) && /^(stu|enq|req)_\d+/.test(String(r && r.id || '')); })
+      .forEach(function(r){
+        if(String(r.id || '').indexOf('req_') === 0){
+          add({ id: String(r.id), kind: 'booking', tutorId: r.tutorId, tutorName: tutorNameFor(r.tutorId, r.tutorName), status: r.status || 'pending',
+                subject: r.subject || (Array.isArray(r.subs) ? r.subs.join(', ') : (r.subs || 'General')), mode: r.mode || 'Online', note: r.note || '', freeDemo: true, at: r.requested_at || r.sentAt || '' });
+        } else {
+          add(fromRecord(r));
+        }
+      });
     out.sort(function(a, b){ return (Date.parse(b.at) || 0) - (Date.parse(a.at) || 0); });
     enquiries = out;
   }
@@ -691,6 +699,7 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
         id: 'req_' + Date.now(),
         tutorId: currentBookingTutor.id,
         tutorName: currentBookingTutor.name,
+        tutorEmail: currentBookingTutor.email || '',
         subject: (currentBookingTutor.subs && currentBookingTutor.subs[0]) || 'General',
         mode: (currentBookingTutor.modes && currentBookingTutor.modes[0]) || 'Online',
         status: 'pending',
@@ -704,6 +713,38 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
         var conv = ModivsChat.ensure(user, currentBookingTutor);
         var initText = 'Demo Class Booking Request: I would like to book a free demo class on topic: "' + topic + '" on ' + date + '. Please confirm availability.';
         ModivsChat.sendMessage(conv.id, user, initText).catch(function(err){ console.warn('Booking message sync error:', err); });
+      }
+
+      var demoPayload = {
+        id: newReq.id,
+        tutorId: newReq.tutorId,
+        tutorName: newReq.tutorName,
+        tutorEmail: newReq.tutorEmail,
+        studentId: (user && (user.id || user.uid)) || '',
+        name: newReq.studentName,
+        studentName: newReq.studentName,
+        email: newReq.studentEmail,
+        studentEmail: newReq.studentEmail,
+        phone: (user && user.phone) || '',
+        subs: [newReq.subject],
+        subject: newReq.subject,
+        mode: newReq.mode,
+        city: (user && user.city) || currentBookingTutor.city || '',
+        note: newReq.note,
+        status: 'pending',
+        source: 'student_dashboard',
+        requested_at: newReq.sentAt
+      };
+      if(window.ModivsFirebaseSync && ModivsFirebaseSync.saveDemoRequest){
+        ModivsFirebaseSync.saveDemoRequest(demoPayload).catch(function(err){ console.warn('Demo request sync error:', err); });
+      } else {
+        try {
+          var drList = JSON.parse(localStorage.getItem('modivs_demo_requests') || '[]');
+          drList.unshift(demoPayload);
+          localStorage.setItem('modivs_demo_requests', JSON.stringify(drList));
+          var F = window.EducationBFirebase && window.EducationBFirebase.db;
+          if(F) F.collection('demoRequests').doc(newReq.id).set(demoPayload, { merge: true }).catch(function(){});
+        } catch(e){}
       }
 
       try {
@@ -749,6 +790,11 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
   if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.onLeads){
     window.ModivsFirebaseSync.onLeads(function(fresh){
       if(Array.isArray(fresh)) liveLeads = fresh;
+      loadEnquiries(); renderEnquiries();
+    });
+  }
+  if(window.ModivsFirebaseSync && window.ModivsFirebaseSync.onMyDemoRequests && user && user.email){
+    window.ModivsFirebaseSync.onMyDemoRequests(user.email, function(){
       loadEnquiries(); renderEnquiries();
     });
   }
