@@ -176,3 +176,16 @@
 @media(prefers-reduced-motion:no-preference){.tj-card .tj-step{animation:tjIn .5s cubic-bezier(.22,1,.36,1) both;animation-delay:calc(var(--d) * 90ms + .2s)}}
 @keyframes tjIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 @media(max-width:420px){.tj-card .tj-grid{gap:8px}.tj-card .tj-step{padding:11px 5px 9px}.tj-card .tj-lb{font-size:.72rem}.tj-card .tj-ic{width:36px;height:36px}}
+
+/* tutor wizard: grouped sections, same look as the Post a requirement page */
+.tsu-qs{border-top:1px solid var(--line,#dfe5ee);margin-top:22px;padding-top:4px}
+.tsu-qs>.lab:first-child{margin-top:14px}
+
+/* tutor wizard: profile completion line above the step */
+.tsu-pct{margin:0 0 16px}
+.tsu-pct-t{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap;font-size:.92rem;color:#14213d}
+.tsu-pct-t b{font-size:1.05rem}
+.tsu-pct-t small{color:#5d6b82;font-size:.78rem}
+.tsu-pbar{position:relative;height:8px;border-radius:99px;background:#e6ebf2;margin-top:8px;overflow:hidden}
+.tsu-pbar i{position:absolute;left:0;top:0;bottom:0;background:#0e7c66;border-radius:99px;transition:width .3s}
+.tsu-pbar u{position:absolute;left:80%;top:0;bottom:0;width:2px;background:#14213d;opacity:.45}

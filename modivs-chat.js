@@ -293,7 +293,7 @@
     if (match) {
       match.membership = mem;
     } else {
-      allTutors.push({ id: 't_' + em.replace(/[^a-z0-9]/gi, '_'), email: em, name: em.split('@')[0], status: 'approved', membership: mem, coins: 30 });
+      allTutors.push({ id: 't_' + em.replace(/[^a-z0-9]/gi, '_'), email: em, name: em.split('@')[0], status: 'pending', stub: true, membership: mem, coins: 30 });
     }
     write('modivs_tutors_db', allTutors);
 
@@ -354,7 +354,7 @@
     var allTutors = read('modivs_tutors_db', []);
     var match = allTutors.find(function (t) { return emailOf(t.email) === em; });
     if (match) { match.coins = next; }
-    else { allTutors.push({ id: 't_' + em.replace(/[^a-z0-9]/gi, '_'), email: em, name: em.split('@')[0], status: 'approved', coins: next }); }
+    else { allTutors.push({ id: 't_' + em.replace(/[^a-z0-9]/gi, '_'), email: em, name: em.split('@')[0], status: 'pending', stub: true, coins: next }); }
     write('modivs_tutors_db', allTutors);
 
     var usersList = read('modivs_users', []);

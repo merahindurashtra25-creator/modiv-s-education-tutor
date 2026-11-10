@@ -737,6 +737,36 @@
     return function () { try { u1 && u1(); } catch (e) { } try { u2 && u2(); } catch (e) { } };
   }
 
+  /** Real-time listener over a whole collection (Admin only). callback(list of {id, ...data}). */
+  function onAllCollection(name, callback) {
+    if (typeof callback !== 'function') return function () { };
+    var a = auth(), firestore = db();
+    if (!firestore) return function () { };
+    var off = null, started = false;
+    function start() {
+      if (started) return;
+      started = true;
+      try {
+        off = firestore.collection(name).onSnapshot(function (snap) {
+          if (!snap) return;
+          var list = snap.docs.map(function (d) { return Object.assign({ id: d.id }, d.data()); });
+          try { callback(list); } catch (e) { }
+        }, function () { });
+      } catch (e) { }
+    }
+    waitAuthReady(a).then(function (u) {
+      if (u && !u.isAnonymous) start();
+      else if (a && typeof a.onAuthStateChanged === 'function') {
+        var stop = a.onAuthStateChanged(function (user) {
+          if (user && !user.isAnonymous) { try { stop(); } catch (e) { } start(); }
+        });
+      }
+    });
+    return function () { try { off && off(); } catch (e) { } };
+  }
+  function onAllCoinTransactions(cb) { return onAllCollection('coin_transactions', cb); }
+  function onAllMembershipHistory(cb) { return onAllCollection('membership_history', cb); }
+
   /** Real-time listener for unlocks for a specific tutor.  Calls callback(unlockedLeadIds[]) */
   function onUnlocks(tutorEmail, callback) {
     if (typeof callback !== 'function') return function () { };
@@ -894,6 +924,8 @@
     saveUnlock: saveUnlock,
     onUnlocks: onUnlocks,
     onAllUnlocks: onAllUnlocks,
+    onAllCoinTransactions: onAllCoinTransactions,
+    onAllMembershipHistory: onAllMembershipHistory,
     updateLeadStatus: updateLeadStatus
   };
 })();

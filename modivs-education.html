@@ -18,6 +18,7 @@
 <script src="modivs-places.js"></script>
 <script src="modivs-subjects.js"></script>
 <script src="modivs-docs.js"></script>
+<script src="modivs-avail.js"></script>
 <script src="modivs-location.js"></script>
 <script src="modivs-org.js"></script>
 <script src="modivs-auth-unique.js"></script>
@@ -171,6 +172,82 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
 <link rel="stylesheet" href="modivs-footer.css">
+<style id="tp-theme">
+/* Tutor profile wizard: same cream / navy / yellow theme and card layout as the student "Post a Requirement" page */
+#signup.tp-page{--ink:#1A2035;--line:#eadfc9;--y:#EBB92E;position:relative;display:block;min-height:100vh;overflow:hidden;padding:34px 18px 56px;background:#FEF7EA;color:#1A2035}
+#signup.tp-page::before,#signup.tp-page::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+#signup.tp-page::before{width:360px;height:360px;top:-120px;left:-100px;background:radial-gradient(circle,rgba(235,185,46,.24),transparent 70%)}
+#signup.tp-page::after{width:380px;height:380px;bottom:-140px;right:-100px;background:radial-gradient(circle,rgba(26,32,53,.08),transparent 70%)}
+.tp-box{position:relative;z-index:1;width:100%;max-width:1040px;margin:0 auto;display:grid;grid-template-columns:minmax(0,1.2fr) minmax(0,.8fr);background:#fff;border:1px solid #eadfc9;border-radius:24px;overflow:hidden;box-shadow:0 18px 50px rgba(26,32,53,.12),0 2px 6px rgba(26,32,53,.04)}
+.tp-main{padding:30px 34px 32px;min-width:0}
+.tp-main .tsu-logo{display:flex;justify-content:center}
+.tp-main .tsu-logo img{height:64px}
+.tp-hero{text-align:center;margin:10px 0 0}
+.tp-hero .hey{display:inline-block;margin:0 0 8px;padding:3px 14px;border:1.5px solid #eadfc9;border-radius:99px;background:#fff4d6;color:#1A2035;font-weight:700;font-size:.85rem}
+.tp-hero h1{font-size:1.6rem;margin:0 0 4px;letter-spacing:-.02em}
+.tp-hero .sub{margin:0;color:#555b78}
+.tp-prog{margin:18px 0 6px}
+.tp-prog-top{display:flex;justify-content:space-between;gap:10px;font-size:.84rem;font-weight:700;color:#1A2035;margin-bottom:7px}
+.tp-prog-top span:last-child{font-weight:600;color:#555b78}
+.tp-bar{height:8px;border-radius:99px;background:#eadfc9;overflow:hidden}
+.tp-bar i{display:block;height:100%;width:0;background:#EBB92E;border-radius:99px;transition:width .35s ease}
+.tp-side{position:relative;background:linear-gradient(160deg,#fff4d6 0%,#FEF7EA 55%,#f6e3b4 100%);min-height:100%}
+.tp-side-in{position:sticky;top:0;height:min(100vh,780px);display:flex;flex-direction:column;overflow:hidden}
+.tp-photo{position:relative;flex:1 1 auto;min-height:0}
+.tp-photo img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;object-position:50% 25%;display:block}
+.tp-band{position:relative;margin-top:-54px;padding:70px 24px 22px;background:#1A2035;color:#fff;clip-path:polygon(0 38px,100% 0,100% 100%,0 100%);flex:none}
+.tp-script{font-family:"Caveat","Segoe Script","Bradley Hand",cursive;font-weight:700;font-size:2.15rem;line-height:1.05;color:#EBB92E;margin:0 0 14px;transform:rotate(-5deg);transform-origin:left bottom;letter-spacing:.01em}
+.tp-checks{list-style:none;margin:0;padding:0;display:grid;gap:7px;font-size:.92rem;font-weight:500}
+.tp-checks li{display:flex;gap:9px;align-items:center}
+.tp-checks li::before{content:"";width:18px;height:18px;flex:none;border-radius:50%;background:#EBB92E url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%231A2035' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E") center/12px no-repeat}
+/* form inside the card */
+#signup .tsu-box{background:transparent;border:0;box-shadow:none;padding:0}
+#signup .tsu-kicker{display:none}
+#signup .tsu-box h2{font-size:1.25rem;margin-top:14px}
+#signup .tsu-box input[type=text],#signup .tsu-box input[type=email],#signup .tsu-box input[type=password],#signup .tsu-box input[type=tel],#signup .tsu-box input[type=number],#signup .tsu-box input[type=date],#signup .tsu-box select,#signup .tsu-box textarea{border-color:#eadfc9;border-radius:10px}
+#signup .tsu-box input:focus,#signup .tsu-box select:focus,#signup .tsu-box textarea:focus{border-color:#EBB92E;box-shadow:0 0 0 4px rgba(235,185,46,.22);outline:none}
+#signup .tsu-box input.bad,#signup .tsu-box select.bad,#signup .tsu-box textarea.bad{border-color:#b3261e}
+#signup .tsu-box input[type=file]{border-color:#eadfc9;background:#fffcf5}
+#signup .tsu-qs{border-top-color:#eadfc9}
+#signup .tsu-card{background:#fffcf5;border-color:#eadfc9}
+#signup .tsu-add{border-color:#EBB92E}
+#signup .tsu-ghost{border-color:#eadfc9}#signup .tsu-ghost:hover{border-color:#EBB92E}
+#signup .tsu-dp{background:#fff4d6;border-color:#eadfc9}
+#signup .tsu-check input{accent-color:#1A2035}
+#signup .tsu-check a{color:#1A2035;text-decoration:underline;text-decoration-color:#EBB92E;text-underline-offset:3px}
+#signup .tsu-go{background:#EBB92E;color:#1A2035;border-radius:10px}
+#signup .tsu-go:hover{background:#dcaa20;box-shadow:0 8px 20px rgba(235,185,46,.4)}
+#signup .tsu-pbar{background:#eadfc9}
+#signup .tsu-pbar i{background:#EBB92E}
+#signup .tsu-pbar u{background:#1A2035}
+#signup .switch{text-align:center;margin:16px 0 0;color:#555b78;font-size:.88rem}
+/* options as boxes (same look as the post-requirement options) */
+#signup .tsu-chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}
+#signup .tsu-chip span{position:relative;display:flex;align-items:center;gap:10px;padding:12px 14px;border:1.5px solid #eadfc9;border-radius:12px;background:#fff;font-weight:500;font-size:.92rem;line-height:1.3;transition:border-color .15s,background .15s,box-shadow .15s,transform .15s}
+#signup .tsu-chip span::before{content:"";width:18px;height:18px;flex:none;border:1.5px solid #1A2035;border-radius:5px;background:#fff center/12px no-repeat}
+#signup .tsu-chip:hover span{border-color:#EBB92E;transform:translateY(-1px)}
+#signup .tsu-chip input:checked+span{border-color:#EBB92E;background:#FEF7EA;font-weight:700;box-shadow:0 0 0 3px rgba(235,185,46,.22)}
+#signup .tsu-chip input:checked+span::before{background-color:#1A2035;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23fff' stroke-width='3.4' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M6 12.5l4 4 8-9'/%3E%3C/svg%3E")}
+#signup .tsu-chip input:focus-visible+span{outline:3px solid rgba(235,185,46,.55);outline-offset:2px}
+#signup .msub-cats .msub-cb,#signup .msub-panel .msub-cb{padding:11px 12px;border:1.5px solid #eadfc9;border-radius:12px;background:#fff;align-items:center;transition:border-color .15s,background .15s,box-shadow .15s}
+#signup .msub-cb input{accent-color:#1A2035}
+#signup .msub-cb:hover{border-color:#EBB92E}
+#signup .msub-cb:has(input:checked){border-color:#EBB92E;background:#FEF7EA;box-shadow:0 0 0 3px rgba(235,185,46,.22)}
+#signup .msub-panel{border-color:#eadfc9;background:#fffcf5}
+@media(prefers-reduced-motion:reduce){.tp-bar i{transition:none}}
+@media(max-width:820px){
+ #signup.tp-page{padding:18px 12px 40px}
+ .tp-box{grid-template-columns:1fr;max-width:520px}
+ .tp-side{order:-1;min-height:0}
+ .tp-side-in{position:relative;height:auto}
+ .tp-photo{height:230px;flex:none}
+ .tp-band{margin-top:-30px;padding:46px 20px 16px;clip-path:polygon(0 24px,100% 0,100% 100%,0 100%)}
+ .tp-script{font-size:1.6rem;margin-bottom:8px}
+ .tp-checks{display:none}
+ .tp-main{padding:22px 16px 26px}
+}
+@media(max-width:420px){#signup .tsu-chips{grid-template-columns:1fr 1fr}}
+</style>
 </head>
 <body>
 
@@ -222,7 +299,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   <div class="tsu" style="max-width:520px">
    <a href="modivs-home.html" class="tsu-logo"><img src="logo.png" alt="Modiv’s Education"></a>
    <h1 id="jTitle">Become a Modivian Tutor</h1>
-   <p class="sub" id="jSub">Create your free account in a minute. You’ll complete your tutor profile from your dashboard.</p>
+   <p class="sub" id="jSub">Create your free account in a minute. Next you’ll complete your tutor profile.</p>
    <div class="tsu-box">
     <div class="jtype" role="radiogroup" aria-label="Sign up as">
      <button type="button" role="radio" aria-checked="true" data-jtype="tutor"><b>Tutor</b><small>Teach as an individual</small></button>
@@ -251,32 +328,24 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
  </section>
 </main>
 
-<!-- TUTOR PROFILE: 5-step wizard (reached from the tutor dashboard after sign-up). Original note: the single tutor registration page (5-step wizard: account, profile, qualifications, fees, documents). Students / parents sign up on modivs-student-signup.html -->
-<main id="signup" class="auth hide">
- <section class="auth-form">
-  <div class="tsu">
+<!-- TUTOR PROFILE: step-by-step wizard (reached from the tutor dashboard after sign-up). Same cream / navy / yellow theme and card layout as the student "Post a Requirement" page. -->
+<main id="signup" class="auth tp-page hide">
+ <div class="tp-box">
+  <div class="tp-main">
    <a href="modivs-home.html" class="tsu-logo"><img src="logo.png" alt="Modiv’s Education"></a>
-   <h1>Complete your tutor profile</h1>
-   <p class="sub">Add your details so our team can verify you and students can find you.</p>
-   <div class="tsu-grid">
-    <ol class="tsu-steps" id="tsuSteps" aria-label="Sign up progress">
-     <li><i>1</i><div><b>Basic Details</b><small>Personal information</small></div></li>
-     <li><i>2</i><div><b>Teaching Profile</b><small>About, subjects &amp; classes</small></div></li>
-     <li><i>3</i><div><b>Qualifications</b><small>Education &amp; Experience</small></div></li>
-     <li><i>4</i><div><b>Availability &amp; Fees</b><small>Timings &amp; preferred fees</small></div></li>
-     <li><i>5</i><div><b>Documents</b><small>Verification &amp; submit</small></div></li>
-    </ol>
-    <div class="tsu-box">
-     <form id="signForm" novalidate></form>
-     <div id="tsuGoogle">
+   <div class="tp-hero"><p class="hey">Hey ! Tutor</p><h1>Complete your tutor profile</h1><p class="sub">Add your details so our team can verify you and students can find you 👇</p></div>
+   <div class="tp-prog" id="tsuSteps" aria-live="polite"><div class="tp-prog-top"><span id="tpStep">Step 1</span><span id="tpTitle"></span></div><div class="tp-bar" role="progressbar" aria-label="Sign up progress" aria-valuemin="1" aria-valuemax="8" aria-valuenow="1"><i id="tpFill"></i></div></div>
+   <div class="tsu-box">
+    <form id="signForm" novalidate></form>
+    <div id="tsuGoogle">
       <div class="or"><span>or</span></div>
       <button type="button" class="gbtn" id="googleSignup"><svg width="18" height="18" viewBox="0 0 48 48" aria-hidden="true"><path fill="#EA4335" d="M24 9.5c3.5 0 6.6 1.2 9.1 3.6l6.8-6.8C35.8 2.4 30.3 0 24 0 14.6 0 6.5 5.4 2.6 13.2l7.9 6.1C12.4 13.6 17.7 9.5 24 9.5z"/><path fill="#4285F4" d="M46.5 24.5c0-1.6-.1-3.1-.4-4.5H24v9h12.7c-.6 3-2.3 5.5-4.8 7.2l7.5 5.8c4.4-4.1 7.1-10.1 7.1-17.5z"/><path fill="#FBBC05" d="M10.5 28.7c-.5-1.4-.8-3-.8-4.7s.3-3.2.8-4.7l-7.9-6.1C.9 16.4 0 20.1 0 24s.9 7.6 2.6 10.8l7.9-6.1z"/><path fill="#34A853" d="M24 48c6.5 0 11.9-2.1 15.9-5.8l-7.5-5.8c-2.1 1.4-4.9 2.3-8.4 2.3-6.3 0-11.6-4.1-13.5-9.8l-7.9 6.1C6.5 42.6 14.6 48 24 48z"/></svg><span>Sign up with Google</span></button>
      </div>
-    </div>
    </div>
-   <p class="switch"><a href="modivs-tutor-dashboard.html">← Back to dashboard</a> · you can finish your profile later</p>
+   <p class="switch">Complete at least 80% of your profile to open your dashboard.</p>
   </div>
- </section>
+  <aside class="tp-side"><div class="tp-side-in"><div class="tp-photo"><img src="tutor-hero.jpg" alt="A tutor teaching a student at a desk"></div><div class="tp-band"><p class="tp-script">Teach Smart.<br>Get Students.</p><ul class="tp-checks"><li>Free tutor profile</li><li>Verified students &amp; parents</li><li>Home, online &amp; group tuition</li><li>Set your own fees and timings</li></ul></div></div></aside>
+ </div>
 </main>
 
 <div id="menu" class="hide">
@@ -756,7 +825,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           var u = res.user || {};
           var mail = String(u.email || '').toLowerCase();
           var name = u.displayName || mail.split('@')[0];
-          W.name = name;
+          W.name = name; (function(){ var _s = splitName(name); W.firstName = _s.first; W.lastName = _s.last; })();
           W.email = mail;
           localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: 'Tutor', roleKey: 'tutor' }));
           toast((res.isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
@@ -775,6 +844,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     }
   });
 
+  // a new tutor is sent to the complete-your-profile page (the dashboard opens once 80% of the profile is done)
+  var TUTOR_PROFILE_URL = 'modivs-education.html?profile=1#tutor-profile';
   // ===== TUTOR SIGN UP (short): name + email + password, then straight to the dashboard =====
   // Creates an "incomplete" tutor record; the tutor completes the profile from the dashboard (#tutor-profile wizard).
   function ensureTutorStub(mail, name){
@@ -786,14 +857,14 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         stub = { id: 't_user_' + mail.replace(/[^a-z0-9]/gi, '_'), name: name, email: mail, phone: '—', city: '—',
           headline: 'Account registered. Profile setup incomplete.', qual: 'Profile setup pending', years: 0, subs: ['General'], levels: ['Secondary'],
           fee: 0, modes: ['Online'], langs: ['English'], idType: 'Pending upload', idFile: '', cert: '', sent: 'Registration completed',
-          status: 'pending', submitted_at: new Date().toISOString(), is_demo: false };
+          status: 'incomplete', submitted_at: new Date().toISOString(), is_demo: false };
         db.push(stub);
         localStorage.setItem('modivs_tutors_db', JSON.stringify(db));
       } else {
         stub = db[idx];
       }
       var wm = JSON.parse(localStorage.getItem('modivs_tutor_welcome') || '{}');
-      if(!wm[mail]){ wm[mail] = { created: new Date().toISOString(), approved: null }; localStorage.setItem('modivs_tutor_welcome', JSON.stringify(wm)); }
+      if(!wm[mail]){ wm[mail] = { created: new Date().toISOString(), approved: null, profileDone: false }; localStorage.setItem('modivs_tutor_welcome', JSON.stringify(wm)); }
       try{ sessionStorage.removeItem('modivs_welcome_closed'); }catch(x){}
 
       if(stub && window.ModivsFirebaseSync && typeof ModivsFirebaseSync.saveTutor === 'function'){
@@ -807,13 +878,13 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     // ---- Tutor / Organization switch ----
     var jType = 'tutor';
     function isOrgJoin(){ return jType === 'organization'; }
-    function joinDash(){ return isOrgJoin() ? 'modivs-org-dashboard.html' : 'modivs-tutor-dashboard.html'; }
+    function joinDash(){ return isOrgJoin() ? 'modivs-org-dashboard.html' : TUTOR_PROFILE_URL; }
     function setJoinType(t){
       jType = (t === 'organization') ? 'organization' : 'tutor';
       var org = isOrgJoin();
       Array.prototype.forEach.call(document.querySelectorAll('.jtype button'), function(b){ b.setAttribute('aria-checked', b.getAttribute('data-jtype') === jType ? 'true' : 'false'); });
       $('jTitle').textContent = org ? 'Register your Organization' : 'Become a Modivian Tutor';
-      $('jSub').textContent = org ? 'Create a free account for your institute, coaching centre or agency. You’ll add your organization details and tutors from your dashboard.' : 'Create your free account in a minute. You’ll complete your tutor profile from your dashboard.';
+      $('jSub').textContent = org ? 'Create a free account for your institute, coaching centre or agency. You’ll add your organization details and tutors from your dashboard.' : 'Create your free account in a minute. Next you’ll complete your tutor profile.';
       $('jNameLab').innerHTML = (org ? 'Organization name' : 'Full name') + ' <span class="req" aria-hidden="true">*</span>';
       $('jName').placeholder = org ? 'Enter your organization name' : 'Enter your full name';
       $('jName').setAttribute('autocomplete', org ? 'organization' : 'name');
@@ -825,8 +896,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       $('jGoogle').style.display = 'none';
       var org = isOrgJoin();
       form.innerHTML = '<div class="tsu-done" style="text-align:center"><div style="font-size:3rem;margin-bottom:8px">🎉</div><h2 style="font-size:1.5rem">Account created!</h2>' +
-        '<p class="tsu-sub" style="font-size:1rem">Welcome, <b>' + esc(org ? name : name.split(' ')[0]) + '</b>! ' + (org ? 'Next, add your organization details and your tutors from your dashboard.' : 'Next, complete your tutor profile from your dashboard so we can verify you and students can find you.') + '</p>' +
-        '<a href="' + joinDash() + '" class="tsu-go" style="text-decoration:none;display:inline-flex;width:auto;padding:13px 26px">Go to my dashboard →</a></div>';
+        '<p class="tsu-sub" style="font-size:1rem">Welcome, <b>' + esc(org ? name : name.split(' ')[0]) + '</b>! ' + (org ? 'Next, add your organization details and your tutors from your dashboard.' : 'Next, complete your tutor profile so we can verify you and students can find you. Your dashboard opens once at least 80% of your profile is complete.') + '</p>' +
+        '<a href="' + joinDash() + '" class="tsu-go" style="text-decoration:none;display:inline-flex;width:auto;padding:13px 26px">' + (org ? 'Go to my dashboard →' : 'Complete my profile →') + '</a></div>';
       setTimeout(function(){ window.location.href = joinDash(); }, 1800);
     }
     form.addEventListener('input', function(e){ if(e.target && e.target.classList) e.target.classList.remove('bad'); });
@@ -892,7 +963,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: 'Tutor', roleKey: 'tutor', provider: 'google' })); }catch(x){}
           if(res.isNew){ if(isOrgJoin() && window.ModivsOrg){ ModivsOrg.create(mail, name); } else { ensureTutorStub(mail, name); } }
           toast((res.isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
-          var gDest = (window.ModivsOrg && ModivsOrg.isOrg(mail)) ? 'modivs-org-dashboard.html' : 'modivs-tutor-dashboard.html';
+          var gDest = (window.ModivsOrg && ModivsOrg.isOrg(mail)) ? 'modivs-org-dashboard.html' : TUTOR_PROFILE_URL;
           setTimeout(function(){ window.location.href = gDest; }, 500);
         },
         onError: function(err){ if(msg && !msg.innerHTML) msg.textContent = err; }
@@ -906,19 +977,22 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   var TSU_LEVELS = ['Primary (1–5)','Middle (6–8)','Secondary (9–10)','Senior secondary (11–12)','College / University','Competitive exams'];
   var TSU_MODES = ['Online','Offline (At student’s home)','Offline (At my place / Centre)'];
   var TSU_FORMATS = ['1-on-1 Individual tuition','Group tuition (Small batches)'];
-  var TSU_DAYS = ['Mon','Tue','Wed','Thu','Fri','Sat','Sun'], TSU_SLOTS = ['Morning','Afternoon','Evening'];
   var TSU_TITLES = [
-    ['Basic Details','Let’s start with your basic information.'],
-    ['Teaching Profile','Tell us about you, what you teach and who you teach.'],
+    ['Create your account','Your name, email and password.'],
+    ['Contact & Location','How students and our team can reach you.'],
+    ['About You','A short introduction that students will read.'],
+    ['Subjects & Classes','What you teach and who you teach.'],
     ['Qualifications','Your education and teaching experience.'],
-    ['Availability & Fees','When you can teach and what you would like to charge.'],
-    ['Documents','Upload documents so we can verify your profile.']
+    ['Fees & Teaching Mode','How you teach and what you would like to charge.'],
+    ['Availability','Tell students when you can teach. This page is optional.'],
+    ['Photo & Documents','Add your photo and documents. Photo, ID and certificate are all optional.']
   ];
-  var W = { step:1, name:'', email:'', pass:'', pass2:'', photo:'', photoBlur:false, phone:'', altPhone:'', whatsapp:'', waSame:false,
+  var TP_SHORT = ['Account','Contact','About You','Subjects','Qualifications','Fees & Mode','Availability','Photo & Documents'];
+  var W = { step:1, name:'', firstName:'', lastName:'', email:'', pass:'', pass2:'', photo:'', photoBlur:false, phone:'', altPhone:'', whatsapp:'', waSame:false,
             city:'', area:'', gender:'', dob:'', headline:'', bio:'', langs:[],
             subjects:[], levels:[], boards:[],
             quals:[{degree:'',inst:'',field:'',year:''}], totalYears:'', exp:[{title:'',org:'',from:'',to:'',desc:''}],
-            modes:['Online'], formats:['1-on-1 Individual tuition'], fee:'', groupFee:'', maxBatch:'6 students', trial:'', travel:'', avail:{}, notice:'',
+            modes:['Online'], formats:['1-on-1 Individual tuition'], fee:'', groupFee:'', maxBatch:'6 students', trial:'', travel:'', avail:{}, availDays:[], availTimes:[], availSlots:[], notice:'',
             idType:'', idName:'', certName:'', agree:false };
   var PEND = { id:null, cert:null }, DOC_BUSY = 0;
   var STAR = ' <span class="req" aria-hidden="true">*</span>';
@@ -931,7 +1005,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   }
   (function prefill(){
     var au = existingAcct();
-    if(au){ W.email = String(au.email).toLowerCase(); W.name = au.name || ''; }
+    if(au){ W.email = String(au.email).toLowerCase(); W.name = au.name || ''; var _s = splitName(W.name); W.firstName = _s.first; W.lastName = _s.last; }
   })();
 
   function esc(s){ return String(s == null ? '' : s).replace(/[&<>"]/g, function(c){ return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]; }); }
@@ -977,23 +1051,32 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   function dpInner(){ return W.photo ? '<img src="'+esc(W.photo)+'" alt="Your profile photo">' : esc(initials(W.name)); }
 
   function renderSteps(){
-    [].forEach.call($('tsuSteps').children, function(li, i){
-      li.className = (i + 1 < W.step) ? 'done' : (i + 1 === W.step ? 'on' : '');
-      var ic = li.querySelector('i'); ic.textContent = (i + 1 < W.step) ? '✓' : String(i + 1);
-      if(i + 1 === W.step) li.setAttribute('aria-current', 'step'); else li.removeAttribute('aria-current');
-    });
+    var n = Math.min(W.step, TOTAL), bar = document.querySelector('#tsuSteps .tp-bar');
+    $('tpStep').textContent = 'Step ' + n + ' of ' + TOTAL;
+    $('tpTitle').textContent = TP_SHORT[n - 1] || '';
+    $('tpFill').style.width = Math.round((W.step > TOTAL ? TOTAL : n) / TOTAL * 100) + '%';
+    if(bar) bar.setAttribute('aria-valuenow', String(n));
   }
+  function splitName(full){
+    var parts = String(full || '').trim().split(/\s+/).filter(Boolean);
+    return { first: parts.shift() || '', last: parts.join(' ') };
+  }
+  function syncName(){
+    if((W.firstName || W.lastName)){ W.name = (W.firstName + ' ' + W.lastName).replace(/\s+/g, ' ').trim(); }
+    else if(W.name){ var s = splitName(W.name); W.firstName = s.first; W.lastName = s.last; }
+  }
+  var PAGES = ['account','contact','about','subjects','quals','fees','avail','docs'], TOTAL = PAGES.length;
   function stepBody(){
-    var n = W.step, hasAcct = !!existingAcct();
-    if(n === 1){
-      return '<div class="lab">Profile photo'+STAR+' <span class="hint">shown on your public profile</span></div>' +
-        '<div class="tsu-dprow"><div class="tsu-dp" id="dpBox">'+dpInner()+'</div><div class="tsu-dpside"><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="hide">' +
-        '<div class="tsu-dpbtns"><button type="button" class="tsu-ghost" data-act="pickPhoto">'+(W.photo ? 'Change photo' : 'Upload photo')+'</button>'+(W.photo ? '<button type="button" class="tsu-ghost" data-act="removePhoto">Remove</button>' : '')+'</div>' +
-        '<span class="hint">Clear, front-facing photo in good light. No group photos, sunglasses or filters. JPG, PNG or WebP, up to 500 KB.</span>' +
-        '<div class="tsu-warn" id="dpWarn" role="status">'+(W.photo && W.photoBlur ? 'This photo looks a little blurry. A sharper photo is approved faster.' : '')+'</div></div></div>' +
-        tfield('tName','Full Name'+STAR,'text',W.name,'Enter your full name','',' autocomplete="name"') +
+    syncName();
+    var pg = PAGES[W.step - 1], hasAcct = !!existingAcct();
+    if(pg === 'account'){
+      return ''+
+        '<div class="tsu-two"><div>'+tfield('tFirstName','First name'+STAR,'text',W.firstName,'Enter your first name','',' autocomplete="given-name" maxlength="40"')+'</div><div>'+tfield('tLastName','Last name'+STAR,'text',W.lastName,'Enter your last name','',' autocomplete="family-name" maxlength="40"')+'</div></div>' +
         tfield('tEmail','Email Address'+STAR,'email',W.email,'Enter your email address','',' autocomplete="email"'+(hasAcct ? ' readonly' : '')) +
-        (hasAcct ? '' : '<div class="tsu-two"><div>'+tfield('tPass','Password'+STAR,'password',W.pass,'At least 8 characters','',' autocomplete="new-password"')+'</div><div>'+tfield('tPass2','Confirm password'+STAR,'password',W.pass2,'Re-enter password','',' autocomplete="new-password"')+'</div></div>') +
+        (hasAcct ? '' : '<div class="tsu-two"><div>'+tfield('tPass','Password'+STAR,'password',W.pass,'At least 8 characters','',' autocomplete="new-password"')+'</div><div>'+tfield('tPass2','Confirm password'+STAR,'password',W.pass2,'Re-enter password','',' autocomplete="new-password"')+'</div></div>');
+    }
+    if(pg === 'contact'){
+      return ''+
         phoneField('whatsapp','WhatsApp number'+STAR, W.waSame ? W.phone : W.whatsapp, W.waSame) +
         '<label class="tsu-check" style="margin-top:8px"><input type="checkbox" id="tWaSame"'+(W.waSame ? ' checked' : '')+'><span>Same as my mobile number</span></label>' +
         phoneField('phone','Mobile Number'+STAR, W.phone) + phoneField('altPhone','Alternate phone number'+STAR, W.altPhone) +
@@ -1002,17 +1085,20 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         '<div id="tutorLocPicker"></div>' +
         '<div class="tsu-two"><div>'+tsel('gender','Gender'+STAR,['Female','Male','Other','Prefer not to say'],W.gender)+'</div><div>'+tfield('dob','Date of birth'+STAR,'date',W.dob)+'</div></div>';
     }
-    if(n === 2){
+    if(pg === 'about'){
       return tfield('headline','Profile headline'+STAR,'text',W.headline,'e.g. Maths tutor for classes 9–12 with 8 years’ experience','one line') +
         '<label for="bio">About you'+STAR+' <span class="hint">at least 80 characters</span></label><textarea id="bio">'+esc(W.bio)+'</textarea>' +
-        '<div class="lab">Languages you teach in'+STAR+'</div>' + tchips('langs', LANGS, W.langs) +
+        '<div class="lab">Languages you teach in'+STAR+'</div>' + tchips('langs', LANGS, W.langs);
+    }
+    if(pg === 'subjects'){
+      return ''+
         '<div class="lab">Subjects you teach'+STAR+' <span class="hint">tick a category, then choose subjects</span></div>' + ModivsSubjects.picker('subjects', W.subjects) +
         '<div class="lab">Add your own subject <span class="hint">not in the list? Type it and press Add</span></div>' +
         '<div class="tsu-addrow"><input id="customSubject" type="text" maxlength="40" placeholder="e.g. Robotics, IELTS, Kathak"><button type="button" class="tsu-ghost" data-act="addSubject">Add</button></div>' +
         '<div class="lab">Classes you teach'+STAR+'</div>' + tchips('levels', TSU_LEVELS, W.levels) +
         '<div class="lab">Boards'+STAR+'</div>' + tchips('boards', BOARDS, W.boards);
     }
-    if(n === 3){
+    if(pg === 'quals'){
       return '<div class="lab">Qualifications <span class="hint">add your highest qualification first</span></div><div id="quals">' + W.quals.map(function(q, i){
         return '<div class="tsu-card">'+(W.quals.length > 1 ? '<button type="button" class="tsu-rm" data-rm="quals" data-i="'+i+'">Remove</button>' : '') +
           tfield('q_degree'+i,'Degree or certificate'+STAR,'text',q.degree,'e.g. M.Sc. Mathematics') + tfield('q_inst'+i,'Institution'+STAR,'text',q.inst,'e.g. Panjab University') +
@@ -1026,41 +1112,56 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           '<label for="e_desc'+i+'">What you did</label><textarea id="e_desc'+i+'" style="min-height:70px">'+esc(x.desc)+'</textarea></div>';
       }).join('') + '</div><button type="button" class="tsu-add" data-add="exp">+ Add experience</button>';
     }
-    if(n === 4){
-      var rows = TSU_DAYS.map(function(d){
-        return '<tr><td>'+d+'</td>' + TSU_SLOTS.map(function(sl){
-          var k = d + '-' + sl;
-          return '<td><input type="checkbox" data-avail="'+k+'" aria-label="'+d+' '+sl+'"'+(W.avail[k] ? ' checked' : '')+'></td>';
-        }).join('') + '</tr>';
-      }).join('');
+    if(pg === 'fees'){
       return '<div class="lab">Teaching mode'+STAR+'</div>' + tchips('modes', TSU_MODES, W.modes) +
         '<div class="lab">Tuition format offered'+STAR+'</div>' + tchips('formats', TSU_FORMATS, W.formats) +
         '<div class="tsu-two"><div>'+tfield('fee','1-on-1 fee per hour (₹)'+STAR,'number',W.fee,'e.g. 500')+'</div><div>'+tfield('groupFee','Group fee per student/hr (₹)','number',W.groupFee,'e.g. 250','required for group tuition')+'</div></div>' +
         '<div class="tsu-two"><div>'+tsel('trial','Free demo class'+STAR,['Yes, 30 minutes','Yes, 1 class','No'],W.trial)+'</div><div>'+tsel('maxBatch','Max group batch size',['4 students','6 students','8 students','10–12 students'],W.maxBatch)+'</div></div>' +
         tfield('travel','Areas you can travel to','text',W.travel,'e.g. Model Town, Sarabha Nagar','required for offline home tuition') +
-        '<div class="lab">Weekly availability'+STAR+' <span class="hint">tick the slots you can teach</span></div>' +
-        '<table class="tsu-days"><thead><tr><th></th>' + TSU_SLOTS.map(function(sl){ return '<th>'+sl+'</th>'; }).join('') + '</tr></thead><tbody>'+rows+'</tbody></table>' +
         tsel('notice','Notice needed before a new class'+STAR,['Same day','1 day','2–3 days','1 week'],W.notice);
     }
-    return tsel('tIdType','Government ID type'+STAR,['Aadhaar','PAN','Passport','Voter ID','Driving licence'], W.idType, 'Select ID type') +
-      '<label for="tIdFile">Upload ID'+STAR+' <span class="hint">JPG, PNG or PDF, up to 500 KB</span></label><input id="tIdFile" type="file" accept=".jpg,.jpeg,.png,.pdf">' + (W.idName ? '<span class="hint">Selected: '+esc(W.idName)+'</span>' : '') +
-      '<label for="tCertFile">Highest qualification certificate'+STAR+' <span class="hint">JPG, PNG or PDF, up to 500 KB</span></label><input id="tCertFile" type="file" accept=".jpg,.jpeg,.png,.pdf">' + (W.certName ? '<span class="hint">Selected: '+esc(W.certName)+'</span>' : '') +
-      '<p class="hint" style="margin:8px 0 0">Only our verification team can see these documents. Your profile goes live after they are checked.</p>' +
+    if(pg === 'avail'){
+      return ModivsAvail.html({ days: W.availDays, times: W.availTimes, slots: W.availSlots });
+    }
+    return '<div class="tsu-qs"><div class="lab">Profile photo <span class="hint">optional, shown on your public profile</span></div>' +
+        '<div class="tsu-dprow"><div class="tsu-dp" id="dpBox">'+dpInner()+'</div><div class="tsu-dpside"><input id="photoFile" type="file" accept="image/jpeg,image/png,image/webp" class="hide">' +
+        '<div class="tsu-dpbtns"><button type="button" class="tsu-ghost" data-act="pickPhoto">'+(W.photo ? 'Change photo' : 'Upload photo')+'</button>'+(W.photo ? '<button type="button" class="tsu-ghost" data-act="removePhoto">Remove</button>' : '')+'</div>' +
+        '<span class="hint">Clear, front-facing photo in good light. No group photos, sunglasses or filters. JPG, PNG or WebP, up to 500 KB.</span>' +
+        '<div class="tsu-warn" id="dpWarn" role="status">'+(W.photo && W.photoBlur ? 'This photo looks a little blurry. A sharper photo is approved faster.' : '')+'</div></div></div></div>' +
+      '<div class="tsu-qs"><div class="lab">Verification documents <span class="hint">only our verification team can see these</span></div>' +
+      tsel('tIdType','Government ID type <span class="hint">optional</span>',['Aadhaar','PAN','Passport','Voter ID','Driving licence'], W.idType, 'Select ID type') +
+      '<label for="tIdFile">Upload ID <span class="hint">optional · JPG, PNG or PDF, up to 500 KB</span></label><input id="tIdFile" type="file" accept=".jpg,.jpeg,.png,.pdf">' + (W.idName ? '<span class="hint">Selected: '+esc(W.idName)+'</span>' : '') +
+      '<label for="tCertFile">Highest qualification certificate <span class="hint">optional · JPG, PNG or PDF, up to 500 KB</span></label><input id="tCertFile" type="file" accept=".jpg,.jpeg,.png,.pdf">' + (W.certName ? '<span class="hint">Selected: '+esc(W.certName)+'</span>' : '') +
+      '<p class="hint" style="margin:8px 0 0">Only our verification team can see these documents. Your profile goes live after our team checks it. You can add or replace any document later from Edit profile.</p>' +
+      '</div>' +
       '<a class="tsu-ig" href="https://www.instagram.com/modivs_education/" target="_blank" rel="noopener" style="display:flex;align-items:center;gap:12px;margin-top:18px;padding:12px 14px;border:1px solid #e3e6ef;border-radius:12px;text-decoration:none;color:inherit;background:#fff">'+
       '<span style="flex:none;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:#E4405F;color:#fff"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect x="3" y="3" width="18" height="18" rx="5"/><circle cx="12" cy="12" r="4"/><circle cx="17.5" cy="6.5" r="1" fill="currentColor" stroke="none"/></svg></span>'+
       '<span style="flex:1;font-size:.92rem;line-height:1.4"><b>Follow us on Instagram</b><br><span style="color:#5d6b82">Follow @modivs_education for tutor tips, updates and student stories.</span></span>'+
       '<span style="flex:none;font-weight:700;font-size:.85rem;color:#E4405F">Follow →</span></a>' +
       '<label class="tsu-check" style="margin-top:18px"><input type="checkbox" id="tAgree"'+(W.agree ? ' checked' : '')+'><span>I confirm the details are true and I agree to the <a href="modivs-terms.html" target="_blank" rel="noopener">Terms &amp; Conditions</a> and <a href="modivs-privacy-policy.html" target="_blank" rel="noopener">Privacy Policy</a>. I understand my profile is published only after verification.</span></label>';
   }
+  // profile completion %, same checks as the tutor dashboard (counts what has been entered so far)
+  function wizPct(){
+    var q = (W.quals && W.quals[0]) || {};
+    var t = function(x){ return typeof x === 'string' && x.trim() !== ''; };
+    var checks = [
+      !!W.photo, !!W.firstName || !!W.name, t(W.phone), t(W.whatsapp) || !!W.waSame, t(W.altPhone), t(W.city), t(W.gender), t(W.dob),
+      t(W.headline), t(W.bio) && W.bio.trim().length >= 80, W.langs.length > 0,
+      t(q.degree) && t(q.inst) && t(q.field) && t(q.year), W.totalYears !== '' && W.totalYears != null && +W.totalYears >= 0 && PAGES.indexOf('quals') + 1 < W.step,
+      W.subjects.length > 0, W.levels.length > 0, W.boards.length > 0, W.modes.length > 0 && PAGES.indexOf('fees') + 1 < W.step, W.formats.length > 0 && PAGES.indexOf('fees') + 1 < W.step,
+      +W.fee > 0, t(W.trial), Object.keys(W.avail || {}).length > 0, t(W.notice), !!(PEND.id || W.idName), !!(PEND.cert || W.certName)
+    ];
+    return Math.round(checks.filter(Boolean).length / checks.length * 100);
+  }
   function renderStep(){
-    var t = TSU_TITLES[W.step - 1], last = W.step === 5;
+    var t = TSU_TITLES[W.step - 1], last = W.step === TOTAL, pgk = PAGES[W.step - 1], pc = wizPct();
     renderSteps();
-    $('signForm').innerHTML = '<p class="tsu-kicker">Step '+W.step+' of 5</p><h2>'+t[0]+'</h2><p class="tsu-sub">'+t[1]+' Fields marked <span class="req">*</span> are required.</p>' + stepBody() +
+    $('signForm').innerHTML = '<div class="tsu-pct"><div class="tsu-pct-t"><span>Profile <b>'+pc+'%</b> complete</span><small>Your dashboard opens at 80%</small></div><div class="tsu-pbar" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="'+pc+'"><i style="width:'+pc+'%"></i><u></u></div></div><p class="tsu-kicker">Step '+W.step+' of '+TOTAL+'</p><h2>'+t[0]+'</h2><p class="tsu-sub">'+t[1]+' Fields marked <span class="req">*</span> are required.</p>' + stepBody() +
       '<div class="msg" id="sMsg" role="alert"></div>' +
       '<button class="tsu-go" type="submit" id="tsuNext">'+(last ? 'Submit for verification' : 'Save &amp; Continue')+' <span aria-hidden="true">→</span></button>' +
       (W.step > 1 ? '<button class="tsu-back" type="button" data-act="back">← Back</button>' : '');
-    $('tsuGoogle').style.display = (W.step === 1 && !existingAcct()) ? '' : 'none';
-    if(W.step === 1 && window.ModivsLocation){
+    $('tsuGoogle').style.display = (pgk === 'account' && !existingAcct()) ? '' : 'none';
+    if(pgk === 'contact' && window.ModivsLocation){
       setTimeout(function(){
         ModivsLocation.attachLocationPicker({
           containerId: 'tutorLocPicker',
@@ -1088,39 +1189,47 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   }
   // store the current step's inputs into W without validating
   function readStep(){
-    var n = W.step;
-    if(n === 1){
+    var pg = PAGES[W.step - 1];
+    if(pg === 'account'){
+      W.firstName = tv('tFirstName').replace(/\s+/g, ' '); W.lastName = tv('tLastName').replace(/\s+/g, ' '); W.name = (W.firstName + ' ' + W.lastName).trim(); W.email = tv('tEmail').toLowerCase(); if($('tPass')){ W.pass = $('tPass').value; W.pass2 = $('tPass2').value; }
+    }
+    if(pg === 'contact'){
       var w = $('tWaSame');
-      W.name = tv('tName'); W.email = tv('tEmail').toLowerCase(); if($('tPass')){ W.pass = $('tPass').value; W.pass2 = $('tPass2').value; }
       W.phone = getPhone('phone'); W.altPhone = getPhone('altPhone'); W.waSame = !!(w && w.checked); W.whatsapp = W.waSame ? W.phone : getPhone('whatsapp');
       W.city = ModivsPlaces.canon('city', tv('city')); W.area = ModivsPlaces.canon('area', tv('area'), W.city); W.gender = tv('gender'); W.dob = tv('dob');
     }
-    if(n === 2){ W.headline = tv('headline'); W.bio = tv('bio'); W.langs = tgroup('langs'); W.subjects = readSubjects(); W.levels = tgroup('levels'); W.boards = tgroup('boards'); }
-    if(n === 3){
+    if(pg === 'about'){ W.headline = tv('headline'); W.bio = tv('bio'); W.langs = tgroup('langs'); }
+    if(pg === 'subjects'){ W.subjects = readSubjects(); W.levels = tgroup('levels'); W.boards = tgroup('boards'); }
+    if(pg === 'quals'){
       W.quals.forEach(function(q, i){ q.degree = tv('q_degree'+i); q.inst = tv('q_inst'+i); q.field = tv('q_field'+i); q.year = tv('q_year'+i); });
       W.totalYears = tv('totalYears');
       W.exp.forEach(function(x, i){ x.title = tv('e_title'+i); x.org = tv('e_org'+i); x.from = tv('e_from'+i); x.to = tv('e_to'+i); x.desc = tv('e_desc'+i); });
     }
-    if(n === 4){
+    if(pg === 'fees'){
       W.modes = tgroup('modes'); W.formats = tgroup('formats'); W.fee = tv('fee'); W.groupFee = tv('groupFee'); W.maxBatch = tv('maxBatch'); W.trial = tv('trial'); W.travel = tv('travel'); W.notice = tv('notice');
-      W.avail = {}; $('signForm').querySelectorAll('input[data-avail]').forEach(function(c){ if(c.checked) W.avail[c.getAttribute('data-avail')] = 1; });
     }
-    if(n === 5){ W.idType = tv('tIdType'); W.agree = !!$('tAgree').checked; }
+    if(pg === 'avail'){
+      var av = ModivsAvail.read($('signForm'));
+      W.availDays = av.days; W.availTimes = av.times; W.availSlots = av.slots; W.avail = ModivsAvail.toLegacy(av);
+    }
+    if(pg === 'docs'){ W.idType = tv('tIdType'); W.agree = !!$('tAgree').checked; }
   }
   function tfail(id, text){
     var el = id ? $(id) : null; if(el){ bad(el, true); try{ el.focus(); }catch(e){} }
     $('sMsg').textContent = text; return false;
   }
   function validStep(){
-    var n = W.step;
-    if(n === 1){
-      if(!W.photo) return tfail('dpBox', 'Upload a clear profile photo of your face.');
-      if(!W.name) return tfail('tName', 'Enter your full name.');
+    var pg = PAGES[W.step - 1];
+    if(pg === 'account'){
+      if(!W.firstName) return tfail('tFirstName', 'Enter your first name.');
+      if(!W.lastName) return tfail('tLastName', 'Enter your last name.');
       if(!emailOk(W.email)) return tfail('tEmail', 'Enter a valid email address.');
       if($('tPass')){
         if(W.pass.length < 8) return tfail('tPass', 'Use at least 8 characters for your password.');
         if(W.pass !== W.pass2) return tfail('tPass2', 'Passwords do not match.');
       }
+    }
+    if(pg === 'contact'){
       if(!W.waSame && !W.whatsapp) return tfail('whatsapp', 'Enter your WhatsApp number, or tick “Same as my mobile number”.');
       if(!W.waSame && !validPhone(W.whatsapp)) return tfail('whatsapp', phoneMsg(W.whatsapp, 'WhatsApp number'));
       if(!validPhone(W.phone)) return tfail('phone', phoneMsg(W.phone, 'mobile number'));
@@ -1132,15 +1241,17 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       if(!W.gender) return tfail('gender', 'Select your gender.');
       if(!W.dob) return tfail('dob', 'Enter your date of birth.');
     }
-    if(n === 2){
+    if(pg === 'about'){
       if(!W.headline) return tfail('headline', 'Add a one-line headline.');
       if(W.bio.length < 80) return tfail('bio', 'Write at least 80 characters about yourself ('+W.bio.length+' so far).');
       if(!W.langs.length) return tfail('', 'Choose at least one language you teach in.');
+    }
+    if(pg === 'subjects'){
       if(!W.subjects.length) return tfail('customSubject', 'Choose at least one subject, or add your own.');
       if(!W.levels.length) return tfail('', 'Choose at least one class level.');
       if(!W.boards.length) return tfail('', 'Choose at least one board.');
     }
-    if(n === 3){
+    if(pg === 'quals'){
       for(var i = 0; i < W.quals.length; i++){
         var q = W.quals[i];
         if(!q.degree) return tfail('q_degree'+i, 'Enter the degree or certificate.');
@@ -1150,7 +1261,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       }
       if(W.totalYears === '' || +W.totalYears < 0) return tfail('totalYears', 'Enter your total years of teaching (0 if none).');
     }
-    if(n === 4){
+    if(pg === 'fees'){
       var grp = W.formats.indexOf('Group tuition (Small batches)') > -1;
       if(!W.modes.length) return tfail('', 'Choose at least one teaching mode.');
       if(!W.formats.length) return tfail('', 'Choose at least one tuition format (1-on-1 or Group).');
@@ -1159,14 +1270,15 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       if(!W.trial) return tfail('trial', 'Choose your free demo class option.');
       if(grp && !W.maxBatch) return tfail('maxBatch', 'Choose a max group batch size.');
       if(W.modes.indexOf('Offline (At student’s home)') > -1 && !W.travel) return tfail('travel', 'Add the areas you can travel to for offline home tuition.');
-      if(!Object.keys(W.avail).length) return tfail('', 'Tick at least one available slot.');
       if(!W.notice) return tfail('notice', 'Choose how much notice you need.');
     }
-    if(n === 5){
+    if(pg === 'avail'){
+      var avErr = ModivsAvail.check({ days: W.availDays, times: W.availTimes, slots: W.availSlots });
+      if(avErr){ var avBox = $('mvAvSlots'); if(avBox){ try{ avBox.scrollIntoView({block:'nearest'}); }catch(e){} } return tfail('', avErr); }
+    }
+    if(pg === 'docs'){
       if(DOC_BUSY) return tfail('', 'Please wait a moment, your document is still being processed.');
-      if(!W.idType) return tfail('tIdType', 'Choose a government ID type.');
-      if(!PEND.id) return tfail('tIdFile', 'Upload your ID (JPG, PNG or PDF up to 500 KB).');
-      if(!PEND.cert) return tfail('tCertFile', 'Upload your qualification certificate (JPG, PNG or PDF up to 500 KB).');
+      if(PEND.id && !W.idType) return tfail('tIdType', 'Choose the type of ID you uploaded.');
       if(!W.agree) return tfail('tAgree', 'Please accept the Terms & Conditions to continue.');
     }
     return true;
@@ -1214,6 +1326,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     if(t.id === 'tCertFile') handleDoc(t, 'cert');
     if(t.id === 'photoFile') handlePhoto(t.files[0]);
     if(t.id === 'tWaSame' || t.id === 'phone_cc') syncWa();
+    if(window.ModivsAvail && ModivsAvail.handle(t)) $('sMsg').textContent = '';
   });
   sf.addEventListener('input', function(e){
     if(e.target && e.target.classList) e.target.classList.remove('bad');
@@ -1237,7 +1350,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     sf.querySelectorAll('.bad').forEach(function(x){ x.classList.remove('bad'); });
     readStep();
     if(!validStep()) return;
-    if(W.step === 1 && !existingAcct()){
+    if(PAGES[W.step - 1] === 'account' && !existingAcct()){
       var btn = $('tsuNext');
       btn.disabled = true;
       if(window.ModivsAuthUnique){
@@ -1255,14 +1368,14 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         return;
       }
     }
-    if(W.step < 5){ W.step++; renderStep(); window.scrollTo(0, 0); return; }
+    if(W.step < TOTAL){ W.step++; renderStep(); window.scrollTo(0, 0); return; }
     createTutorAccount();
   });
 
   function showDone(){
-    W.step = 6; renderSteps(); $('tsuGoogle').style.display = 'none';
+    W.step = TOTAL + 1; renderSteps(); $('tsuGoogle').style.display = 'none';
     sf.innerHTML = '<div class="tsu-done"><div style="font-size:3rem;margin-bottom:8px">🎉</div><h2 style="font-size:1.6rem">Profile submitted!</h2>' +
-      '<p class="tsu-sub" style="font-size:1rem">Thanks, <b>'+esc(W.name.split(' ')[0])+'</b>! Your profile has been submitted for admin verification.</p>' +
+      '<p class="tsu-sub" style="font-size:1rem">Thanks, <b>'+esc(W.firstName || W.name.split(' ')[0])+'</b>! Your profile has been submitted for admin verification.</p>' +
       '<p><span class="tsu-status">Status: Pending verification</span></p>' +
       '<a href="modivs-tutor-dashboard.html" class="tsu-go" style="text-decoration:none;display:inline-flex;width:auto;padding:13px 26px">Open Tutor Dashboard →</a>' +
       '<p class="hint" style="margin-top:14px">Redirecting to your dashboard…</p></div>';
@@ -1317,27 +1430,28 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       }catch(err){ docsSaved = false; }
       if(!docsSaved) toast('Documents could not be stored in this browser. Free some space and re-upload them from Edit Profile.');
 
-      var tutorData = { email: mail, pass: '', role: 'Tutor', name: name, phone: W.phone, altPhone: W.altPhone, whatsapp: W.waSame ? W.phone : W.whatsapp, waSame: W.waSame,
+      var tutorData = { email: mail, pass: '', role: 'Tutor', name: name, firstName: W.firstName, lastName: W.lastName, phone: W.phone, altPhone: W.altPhone, whatsapp: W.waSame ? W.phone : W.whatsapp, waSame: W.waSame,
         photo: W.photo, photoBlur: W.photoBlur, city: city, area: W.area, location: locData, gender: W.gender, dob: W.dob, headline: W.headline, bio: W.bio, langs: W.langs,
         quals: W.quals, exp: W.exp.filter(function(x){ return x.title || x.org || x.desc; }), totalYears: W.totalYears,
         subjects: W.subjects, levels: W.levels, boards: W.boards, modes: W.modes, formats: W.formats, groupFee: W.groupFee, maxBatch: W.maxBatch,
-        travel: W.travel, fee: W.fee, trial: W.trial, avail: W.avail, notice: W.notice,
+        travel: W.travel, fee: W.fee, trial: W.trial, avail: W.avail, availDays: W.availDays, availTimes: W.availTimes, availSlots: W.availSlots, notice: W.notice,
         idType: W.idType, idName: W.idName, certName: W.certName, agree: true,
         status: 'pending', submittedAt: nowIso, rejection_reason: '', rejection_reasons: [], rejection_note: '' };
       try{
         localStorage.setItem('modivs_current_tutor', JSON.stringify(tutorData));
-        var wm = JSON.parse(localStorage.getItem('modivs_tutor_welcome') || '{}'); wm[mail] = { created: nowIso, approved: null }; localStorage.setItem('modivs_tutor_welcome', JSON.stringify(wm));
+        var wm = JSON.parse(localStorage.getItem('modivs_tutor_welcome') || '{}'); wm[mail] = { created: nowIso, approved: null, profileDone: true }; localStorage.setItem('modivs_tutor_welcome', JSON.stringify(wm));
         try{ sessionStorage.removeItem('modivs_welcome_closed'); }catch(x){}
 
         // admin approval queue + canonical tutors database
         var q0 = W.quals[0] || {};
         var qualDesc = q0.degree ? (q0.degree + ', ' + (q0.inst || '') + ' (' + (q0.year || '') + ')') : 'Certificate on file';
-        var entry = { id: 't_user_' + mail.replace(/[^a-z0-9]/gi, '_'), name: name, headline: W.headline, city: city, area: W.area || '', location: locData, travel: W.travel || '', phone: W.phone, altPhone: W.altPhone || '',
+        var entry = { id: 't_user_' + mail.replace(/[^a-z0-9]/gi, '_'), name: name, firstName: W.firstName, lastName: W.lastName, headline: W.headline, city: city, area: W.area || '', location: locData, travel: W.travel || '', phone: W.phone, altPhone: W.altPhone || '',
           whatsapp: tutorData.whatsapp || '', photo: W.photo || '', bio: W.bio || '', boards: W.boards || [], formats: W.formats || [], groupFee: W.groupFee || '', trial: W.trial || '',
+          avail: W.avail || {}, availDays: W.availDays || [], availTimes: W.availTimes || [], availSlots: W.availSlots || [], notice: W.notice || '',
           rejection_reason: '', rejection_reasons: [], rejection_note: '', email: mail, qual: qualDesc, years: years,
           subs: W.subjects.length ? W.subjects : ['General'], levels: W.levels.length ? W.levels : ['Secondary'], fee: +W.fee || 500, modes: W.modes.length ? W.modes : ['Online'],
-          langs: W.langs.length ? W.langs : ['English'], idType: W.idType || 'Government ID', idFile: W.idName || 'id_document.pdf', cert: W.certName || 'qualification_cert.pdf',
-          sent: 'Just now', status: 'pending' };
+          langs: W.langs.length ? W.langs : ['English'], idType: W.idType || '', idFile: W.idName || '', cert: W.certName || '',
+          sent: 'Just now', sent_at: nowIso, submitted_at: nowIso, status: 'pending' };
         var queue = JSON.parse(localStorage.getItem('modivs_submitted_tutors') || '[]');
         var qi = queue.findIndex(function(item){ return String(item.email || '').toLowerCase() === mail; });
         if(qi >= 0) queue[qi] = entry; else queue.unshift(entry);

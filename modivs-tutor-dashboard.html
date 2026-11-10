@@ -2,6 +2,7 @@
 <html lang="en">
 
 <head>
+<script>(function(){try{var u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null');if(u&&u.role==='Tutor'){var h=document.documentElement;h.style.visibility='hidden';window.__mvShow=function(){h.style.visibility=''};setTimeout(window.__mvShow,2500)}}catch(e){}})();</script>
   <link rel="icon" type="image/png" href="favicon.png">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -1596,7 +1597,7 @@
       function profileCompletion(t) {
         function has(a) { return Array.isArray(a) && a.filter(Boolean).length > 0 }
         function txt(x) { return typeof x === 'string' && x.trim() !== '' && x !== '—' && x !== 'Pending upload' }
-        if (t.status === 'incomplete') return { pct: 10, missing: ['profile photo', 'mobile and WhatsApp numbers', 'city and area', 'teaching profile (headline, subjects, classes)', 'qualifications and experience', 'fees and availability', 'ID and qualification certificate'] };
+        if (t.status === 'incomplete') return { pct: 10, missing: ['profile photo', 'mobile and WhatsApp numbers', 'city and area', 'teaching profile (headline, subjects, classes)', 'qualifications and experience', 'fees and availability', 'ID and qualification certificate (optional)'] };
         var q = t.quals && t.quals[0] || {};
         var subj = (t.subjects && t.subjects.length ? t.subjects : t.subs) || [];
         var checks = [
@@ -1622,8 +1623,8 @@
           ['free demo class option', txt(t.trial)],
           ['weekly availability', !!t.avail && Object.keys(t.avail).length > 0],
           ['notice period', txt(t.notice)],
-          ['ID document', txt(t.idName) || txt(t.idFile)],
-          ['qualification certificate', txt(t.certName) || txt(t.cert)]
+          ['ID document (optional)', txt(t.idName) || txt(t.idFile)],
+          ['qualification certificate (optional)', txt(t.certName) || txt(t.cert)]
         ];
         var done = checks.filter(function (c) { return c[1] }).length;
         return { pct: Math.round(done / checks.length * 100), missing: checks.filter(function (c) { return !c[1] }).map(function (c) { return c[0] }) };
@@ -1946,7 +1947,17 @@
     }
     function vDash(v) {
       var t = window.MY_TUTOR || {};
-      var h = el('h1', '', 'Welcome back, ' + ModivsDash.firstName(t.name, 'Tutor') + '! ');
+      if (window.__mvFirstWelcome === undefined) {
+        window.__mvFirstWelcome = false;
+        try {
+          var _wm = JSON.parse(localStorage.getItem('modivs_tutor_welcome') || '{}'), _em = String(t.email || '').toLowerCase(), _rec = _wm[t.email] || _wm[_em];
+          if (_rec && _rec.profileDone === true && !_rec.dashSeen) {
+            window.__mvFirstWelcome = true; _rec.dashSeen = true; _wm[_wm[t.email] ? t.email : _em] = _rec;
+            localStorage.setItem('modivs_tutor_welcome', JSON.stringify(_wm));
+          }
+        } catch (x) { }
+      }
+      var h = el('h1', '', 'Welcome, Modivian Tutor! ');
       var w = el('span', 'wave', '\ud83d\udc4b'); w.setAttribute('aria-hidden', 'true'); h.appendChild(w); v.appendChild(h);
       v.appendChild(el('p', 'sub', 'Here\u2019s what\u2019s happening with your tutoring.'));
 
@@ -2618,6 +2629,20 @@
       }
 
       window.MY_TUTOR = tutor;
+      // The dashboard opens only once at least 80% of the tutor profile is complete.
+      try {
+        var isOrgAcct = !!(window.ModivsOrg && ModivsOrg.isOrg && email && ModivsOrg.isOrg(email));
+        if (email && !isOrgAcct) {
+          var gate = profileCompletion(tutor);
+          var neverSubmitted = tutor.status === 'incomplete' || /^Profile setup pending/.test(tutor.qual || '') || /^Account registered/.test(tutor.headline || '');
+          if (gate.pct < 80) {
+            try { sessionStorage.setItem('modivs_profile_pct', String(gate.pct)) } catch (x) { }
+            window.location.replace(neverSubmitted ? 'modivs-education.html?profile=1#tutor-profile' : 'modivs-tutor-edit-profile.html');
+            return;
+          }
+        }
+      } catch (e) { }
+      if (window.__mvShow) window.__mvShow();
       // make sure this tutor's profile exists in Firestore so the admin panel can see it
       try { if (email && window.ModivsFirebaseSync && ModivsFirebaseSync.ensureTutorProfile) ModivsFirebaseSync.ensureTutorProfile(authUser); } catch (e) { }
       function escH(t) { return String(t == null ? '' : t).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c] }) }
@@ -2709,7 +2734,7 @@
       // ---- Welcome pop-up: shown for 72 hours after a new tutor profile is created ----
       try {
         var WIN = 72 * 3600 * 1000, wmap = JSON.parse(localStorage.getItem('modivs_tutor_welcome') || '{}'), rec = wmap[tutor.email];
-        if (rec && (tutor.status === 'pending' || tutor.status === 'approved')) {
+        if (rec && rec.profileDone !== false && (tutor.status === 'pending' || tutor.status === 'approved')) {
           var verified = tutor.status === 'approved';
           if (verified && !rec.approved) { rec.approved = new Date().toISOString(); wmap[tutor.email] = rec; localStorage.setItem('modivs_tutor_welcome', JSON.stringify(wmap)); }
           var wStart = new Date(verified ? rec.approved : rec.created).getTime(), wLeft = wStart + WIN - Date.now();
