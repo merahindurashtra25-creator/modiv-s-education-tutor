@@ -93,6 +93,7 @@ dialog h2{margin:0 0 4px}
 @media(max-width:760px){.tutor-top-nav{display:none}}
 </style>
 <script src="modivs-import-data.js"></script>
+<script src="modivs-ids.js"></script>
 <script src="modivs-chat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
@@ -351,7 +352,12 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
       var isParent = (user && (user.role === 'Parent' || user.roleKey === 'parent' || (user.by && user.by.toLowerCase().indexOf('parent') >= 0) || (sr && sr.created_by_role === 'parent')));
       var roleTitle = isParent ? 'Parent' : 'Student';
       setT('stuGrade', [sr.cls, sr.board ? '(' + sr.board + ')' : ''].filter(Boolean).join(' ') + ' · ' + roleTitle);
-      if(sr.id) setT('sideId', (isParent ? 'Enquiry ID: ' : 'Student ID: ') + (sr.enquiry_id || sr.id));
+      var stuKey = (user && user.email) || sr.email || '';
+      if(stuKey && window.ModivsIds){
+        var cachedSid = ModivsIds.peek('stu', stuKey);
+        if(cachedSid) setT('sideId', 'Student ID: ' + cachedSid);
+        ModivsIds.get('stu', stuKey).then(function(sid){ if(sid) setT('sideId', 'Student ID: ' + sid); });
+      } else if(sr.id) setT('sideId', 'Student ID: ' + (sr.enquiry_id || sr.id));
       setT('stuCity', sr.city ? (sr.city + (sr.area ? ' (' + sr.area + ')' : '')) : '—');
       setT('stuSubs', sr.subs ? (Array.isArray(sr.subs) ? sr.subs.join(', ') : sr.subs) : '—');
       if(sr.mode){

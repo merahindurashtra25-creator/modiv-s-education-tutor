@@ -1201,6 +1201,7 @@
     })();
   </script>
   <script src="modivs-chat.js"></script>
+  <script src="modivs-ids.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -2629,7 +2630,12 @@
       D.paintAvatar($('dhAva'), tutor.photo || '', D.initials(tutor.name) || 'TR');
       D.paintAvatar($('sideAva'), tutor.photo || '', D.initials(tutor.name) || 'TR');
       if ($('sideName')) $('sideName').textContent = tutor.name || 'Tutor';
-      if ($('sideId')) $('sideId').textContent = 'Tutor ID: ' + (tutor.id || 'pending');
+      if ($('sideId')) {
+        var tutKey = email || tutor.email || '';
+        var cachedTid = (window.ModivsIds && tutKey) ? ModivsIds.peek('tut', tutKey) : '';
+        $('sideId').textContent = 'Tutor ID: ' + (cachedTid || 'pending');
+        if (window.ModivsIds && tutKey) ModivsIds.get('tut', tutKey).then(function (tid) { if (tid && $('sideId')) $('sideId').textContent = 'Tutor ID: ' + tid; });
+      }
       // membership tier shown under the DP: no active plan = Bronze, Standard = Silver, Professional = Gold, Premium = Platinum
       window.mvPaintTier = function () {
         var tEl = $('sideTier'); if (!tEl) return;

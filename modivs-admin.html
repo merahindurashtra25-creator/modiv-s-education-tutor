@@ -167,6 +167,7 @@ textarea{width:100%;min-height:72px;padding:10px 12px;border:1.5px solid var(--l
 <script src="modivs-import-data.js"></script>
 <script src="modivs-chat.js"></script>
 <script src="modivs-org.js"></script>
+<script src="modivs-ids.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
@@ -839,6 +840,32 @@ var LABEL = {
   incomplete: 'Profile Incomplete'
 };
 
+// ---- Readable ids: STU101 (student), LD201 (lead), TUT301 (tutor) ----
+function tutKey(x){ return String(x.email || x.id || '').toLowerCase(); }
+function tutId(x){ return window.ModivsIds ? ModivsIds.peek('tut', tutKey(x)) : ''; }
+function stuId(x){ return (window.ModivsIds && x.email) ? ModivsIds.peek('stu', x.email) : ''; }
+function ldId(x){ return (window.ModivsIds && x.id) ? ModivsIds.peek('ld', x.id) : ''; }
+function idTag(x){
+  if(currentSection === 'orgs' || currentSection === 'chat') return '';
+  if(currentSection === 'students') return [stuId(x), ldId(x)].filter(Boolean).join(' · ');
+  return tutId(x);
+}
+var idsBusy = false;
+function ensureIds(){
+  if(!window.ModivsIds || idsBusy) return;
+  function age(a, b){ return new Date(whenOf(a) || 0) - new Date(whenOf(b) || 0); }
+  var jobs = [];
+  tutors.slice().sort(age).forEach(function(x){ var k = tutKey(x); if(k && !ModivsIds.peek('tut', k)) jobs.push(['tut', k]); });
+  students.slice().sort(age).forEach(function(x){
+    if(x.email && !ModivsIds.peek('stu', x.email)) jobs.push(['stu', x.email]);
+    if(x.id && !ModivsIds.peek('ld', x.id)) jobs.push(['ld', x.id]);
+  });
+  if(!jobs.length) return;
+  idsBusy = true;
+  jobs.reduce(function(p, j){ return p.then(function(){ return ModivsIds.get(j[0], j[1]); }); }, Promise.resolve())
+    .then(function(){ idsBusy = false; try{ if(currentSection !== 'chat' && !isCms()){ list(); detail(); } }catch(e){} }, function(){ idsBusy = false; });
+}
+
 // ---- Organizations (approval) ----
 var orgs = null, orgsErr = '';
 function orgRows(){
@@ -1027,7 +1054,7 @@ function filteredRows(){
 
   return data.filter(function(x){
     var subsStr = x.subs ? x.subs.join(' ') : '';
-    var text = (x.name + ' ' + (x.email || '') + ' ' + (x.phone || '') + ' ' + (x.city || '') + ' ' + subsStr + ' ' + (x.headline || '') + ' ' + (x.id || '')).toLowerCase();
+    var text = (x.name + ' ' + (x.email || '') + ' ' + (x.phone || '') + ' ' + (x.city || '') + ' ' + subsStr + ' ' + (x.headline || '') + ' ' + (x.id || '') + ' ' + (currentSection === 'students' ? stuId(x) + ' ' + ldId(x) : tutId(x))).toLowerCase();
     return text.indexOf(q) > -1;
   });
 }
@@ -1115,6 +1142,8 @@ function list(){
     if(currentSection === 'orgs') badgeLabel = orgBadge(x.status);
     t.appendChild(el('span', 'badge ' + badgeClass, badgeLabel));
     b.appendChild(t);
+    var idt = idTag(x);
+    if(idt){ var ids = el('small', '', idt); ids.style.cssText = 'font-weight:700;letter-spacing:.02em'; b.appendChild(ids); }
 
     if(currentSection === 'orgs'){
       var miss = ModivsOrg.missing(x._o);
@@ -1275,8 +1304,10 @@ function detail(){
 
   // SECTION 1: REGISTERED STUDENTS VIEW
   if(currentSection === 'students'){
-    d.appendChild(el('p', 'sub', 'Registered Student & Parent Profile (ID: ' + x.id + ')'));
+    d.appendChild(el('p', 'sub', 'Registered Student & Parent Profile (' + ([stuId(x) && 'Student ID: ' + stuId(x), ldId(x) && 'Lead ID: ' + ldId(x)].filter(Boolean).join(' · ') || 'ID: ' + x.id) + ')'));
     d.appendChild(kv([
+      ['Student ID', stuId(x) || '—'],
+      ['Lead ID', ldId(x) || '—'],
       ['Student Name', x.name],
       ['Parent / Guardian', x.parentName || x.name],
       ['Email', x.email],
@@ -1394,6 +1425,7 @@ function detail(){
   d.appendChild(el('p', '', x.headline || (x.status === 'incomplete' ? 'Registered tutor account. Profile submission pending.' : 'Verified Tutor')));
 
   d.appendChild(kv([
+    ['Tutor ID', tutId(x) || '—'],
     ['Application / Profile ID', x.id],
     ['City / Location', x.city],
     ['Area / Locality', [x.area].concat(String(x.travel||'').split(/[,;\n\/]+/)).map(function(a){return String(a||'').trim()}).filter(Boolean).filter(function(a,k,arr){return arr.indexOf(a)===k}).join(', ') || '—'],
@@ -2278,6 +2310,7 @@ function render(){
   if(cms){ renderCms(); return; }
   list();
   detail();
+  ensureIds();
 }
 
 $('q').addEventListener('input', function(e){

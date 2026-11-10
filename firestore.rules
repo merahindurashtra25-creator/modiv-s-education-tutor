@@ -193,6 +193,34 @@ service cloud.firestore {
     }
 
     // ==========================================
+    // 2c. Readable ids (STU101 / LD201 / TUT301): a running counter plus one small record per student, tutor or lead.
+    // Handed out by modivs-ids.js inside a transaction. The counter can only go up by one per write.
+    // display_ids documents can be read one at a time (get), never listed, except by the admin.
+    // ==========================================
+    match /counters/{counterId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && counterId == 'display_ids'
+        && request.resource.data.keys().hasOnly(['stu', 'ld', 'tut'])
+        && request.resource.data.get('stu', 100) in [100, 101]
+        && request.resource.data.get('ld', 200) in [200, 201]
+        && request.resource.data.get('tut', 300) in [300, 301];
+      allow update: if signedIn() && counterId == 'display_ids'
+        && request.resource.data.keys().hasOnly(['stu', 'ld', 'tut'])
+        && (request.resource.data.get('stu', 100) - resource.data.get('stu', 100)) in [0, 1]
+        && (request.resource.data.get('ld', 200) - resource.data.get('ld', 200)) in [0, 1]
+        && (request.resource.data.get('tut', 300) - resource.data.get('tut', 300)) in [0, 1];
+      allow delete: if isAdmin();
+    }
+    match /display_ids/{displayId} {
+      allow get: if signedIn();
+      allow list: if isAdmin();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['id', 'kind', 'key', 'createdAt'])
+        && request.resource.data.id.matches('^(STU|LD|TUT)[0-9]{3,}$');
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
     // 2b. Tutor verification documents (Aadhaar / ID, qualification certificate)
     // Strictly confidential: visible and editable only by the owning tutor and verified admin.
     // ==========================================

@@ -1691,6 +1691,7 @@
   <script src="firebase-sync.js" defer></script>
   <script src="modivs-places.js"></script>
   <script src="modivs-subjects.js"></script>
+  <script src="modivs-ids.js"></script>
   <script src="modivs-avatars.js"></script>
   <script src="modivs-session-ui.js" defer></script>
   <link rel="stylesheet" href="modivs-menu.css">
@@ -2032,7 +2033,17 @@
       };
       function ic(n) { return '<svg viewBox="0 0 24 24" aria-hidden="true">' + LI[n] + '</svg>' }
       function lhash(s) { s = String(s || ''); var h = 0; for (var i = 0; i < s.length; i++) { h = (h * 31 + s.charCodeAt(i)) >>> 0 } return h }
-      function leadId(l) { return 'MOD-LD-' + (1000 + lhash(l.id || l.email || l.name) % 9000) }
+      function leadId(l) { return (window.ModivsIds && ModivsIds.peek('ld', l.id || l.email || l.name)) || 'LD…' }
+      /* give every lead its LD id (oldest first, so they get the lowest numbers), then redraw once if any were new */
+      var IDBUSY = false;
+      function assignLeadIds() {
+        if (!window.ModivsIds || IDBUSY) return;
+        var todo = leads.filter(function (l) { return !ModivsIds.peek('ld', l.id || l.email || l.name) })
+          .sort(function (a, b) { return (new Date(a.registered_at || 0)) - (new Date(b.registered_at || 0)) });
+        if (!todo.length) return;
+        IDBUSY = true;
+        ModivsIds.getMany('ld', todo.map(function (l) { return l.id || l.email || l.name })).then(function () { IDBUSY = false; render() }, function () { IDBUSY = false });
+      }
       function areaOf(l) { return String(l.area || '').split(',')[0].trim() }
       function boardOf(l) { return String(l.board || '').split(' (')[0].trim() }
       function shortSub(s) { return s === 'Mathematics' ? 'Maths' : s }
@@ -2158,7 +2169,7 @@
           if (!budMatch(l, bud)) return false;
           if (free && !isFree(l)) return false;
           if (age && (!l.registered_at || (Date.now() - new Date(l.registered_at).getTime()) > age * 864e5)) return false;
-          var hay = [l.name, l.city, l.area, l.cls, l.board, l.notes, (l.subs || []).join(' '), (l.goals || []).join(' '), normModes(l.mode).map(modeName).join(' ')].join(' ').toLowerCase();
+          var hay = [leadId(l), l.name, l.city, l.area, l.cls, l.board, l.notes, (l.subs || []).join(' '), (l.goals || []).join(' '), normModes(l.mode).map(modeName).join(' ')].join(' ').toLowerCase();
           return !q || hay.indexOf(q) > -1;
         });
         if (sort === 'old') rows.reverse();
@@ -2168,6 +2179,7 @@
         $('count').textContent = 'Showing ' + rows.length + (rows.length === 1 ? ' lead' : ' leads');
         var sig = JSON.stringify([q, city, cls, mode, sub, bud, age, free, sort]); if (sig !== PSIG) { PG = 1; PSIG = sig }
         var pages = Math.max(1, Math.ceil(rows.length / PER)); if (PG > pages) PG = pages;
+        assignLeadIds();
         if (!rows.length) { renderPager(0); g.appendChild(el('p', 'empty', 'No active leads match your search.')); return }
         rows.slice((PG - 1) * PER, PG * PER).forEach(function (l) { g.appendChild(card(l)) });
         syncMore();
