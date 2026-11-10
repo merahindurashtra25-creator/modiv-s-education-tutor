@@ -578,8 +578,10 @@
           board: enq.board || '',
           mode: enq.mode || '',
           city: enq.city || '',
-          budget: enq.budget || ''
+          budget: enq.budget || '',
+          free: enq.free === true
         } : null,
+        free: !!(enq && enq.free === true),
         studentId: studentId || student.uid || ownerEmail,
         tutorId: tutor.uid || emailOf(tutor),
         studentEmail: ownerEmail,
@@ -587,7 +589,7 @@
         participantIds: [student.uid, tutor.uid, ownerEmail, emailOf(tutor), ownerUserId].filter(Boolean),
         unlocked: false,
         unlockedAt: null,
-        unlockCostCoins: UNLOCK_COST,
+        unlockCostCoins: (enq && enq.free === true) ? 0 : UNLOCK_COST,
         status: 'inquiry_pending',
         messages: [],
         accessLog: [
@@ -599,6 +601,10 @@
       all.unshift(c);
       save(all);
     } else {
+      var dirty = false;
+      if(enq && enq.free === true && !c.free){
+        c.free = true; c.unlockCostCoins = 0; dirty = true;
+      }
       if(enq && !c.enquiry){
         c.enquiry = {
           id: enquiryId,
@@ -607,15 +613,19 @@
           board: enq.board || '',
           mode: enq.mode || '',
           city: enq.city || '',
-          budget: enq.budget || ''
+          budget: enq.budget || '',
+          free: enq.free === true
         };
-        save(all);
+        dirty = true;
+      } else if(enq && enq.free === true && c.enquiry && !c.enquiry.free){
+        c.enquiry.free = true; dirty = true;
       }
       if(tutor.photo && (!c.tutor || !c.tutor.photo)){
         if(!c.tutor) c.tutor = tutor;
         else c.tutor.photo = tutor.photo;
-        save(all);
+        dirty = true;
       }
+      if(dirty) save(all);
     }
     syncConversationToFirestore(c);
     return c;
@@ -623,13 +633,15 @@
 
   function syncConversationToFirestore(c){
     var firestore = db();
-    if(!firestore) return;
+    if(!firestore) return Promise.resolve();
     var docId = c.docId || safeDocId(c.id);
-    firestore.collection('conversations').doc(docId).set({
+    var isFree = !!(c.free || (c.enquiry && c.enquiry.free));
+    return firestore.collection('conversations').doc(docId).set({
       id: c.id,
       docId: docId,
       conversation_id: c.id,
       enquiry_id: c.enquiry_id || c.enquiryId || '',
+      enquiryId: c.enquiryId || c.enquiry_id || '',
       tutor_id: c.tutor_id || c.tutorId || c.tutor.uid || emailOf(c.tutor),
       enquiry_owner_user_id: c.enquiry_owner_user_id || c.created_by_user_id || '',
       enquiry_owner_role: c.enquiry_owner_role || c.created_by_role || 'student',
@@ -646,10 +658,12 @@
       student: { name: c.student.name, email: emailOf(c.student), phone: c.student.phone || '' },
       tutor: { name: c.tutor.name, email: emailOf(c.tutor), photo: c.tutor.photo || '' },
       enquiry: c.enquiry || null,
+      free: isFree,
       participantIds: [emailOf(c.student), emailOf(c.tutor), c.enquiry_owner_email, c.student.uid, c.tutor.uid].filter(Boolean),
       unlocked: !!c.unlocked,
       unlockedAt: c.unlockedAt || null,
-      unlockCostCoins: UNLOCK_COST,
+      unlockedBy: c.unlockedBy || null,
+      unlockCostCoins: isFree ? 0 : UNLOCK_COST,
       status: c.unlocked ? 'unlocked' : 'inquiry_pending',
       lastMessage: c.messages && c.messages.length ? c.messages[c.messages.length - 1].text : '',
       lastMessageAt: c.updatedAt || new Date().toISOString(),
@@ -670,6 +684,16 @@
 
     var u = tutorUser || user();
     var tutorEmail = emailOf(u);
+    var isFreeConv = !!(c.free || (c.enquiry && c.enquiry.free));
+
+    if(isFreeConv){
+      if(window.ModivsWallet && c.enquiry_id){
+        return window.ModivsWallet.unlockFreeLead(tutorEmail, c.enquiry_id, c.student ? c.student.name : 'Student').then(function(r){
+          return finishUnlock(r.balance, 0);
+        });
+      }
+      return Promise.resolve(finishUnlock(getTutorCoins(tutorEmail), 0));
+    }
 
     // 1. Verify Membership Plan
     var mem = getTutorMembership(tutorEmail);
@@ -694,18 +718,21 @@
     // 3. Deduct Coins Only Once & Record Transaction
     if(window.ModivsWallet){
       return window.ModivsWallet.unlockLead(tutorEmail, 'conv_' + c.id, c.student ? c.student.name : 'Student', UNLOCK_COST).then(function(r){
-        return finishUnlock(r.balance);
+        return finishUnlock(r.balance, UNLOCK_COST);
       }).catch(function(err){
         return { success: false, reason: err.reason || 'error', message: err.message || 'Unlock failed.' };
       });
     }
-    return finishUnlock(addTutorCoins(tutorEmail, -UNLOCK_COST, 'Unlocked student inquiry (' + (c.student ? c.student.name : 'Student') + ')').balance);
+    return finishUnlock(addTutorCoins(tutorEmail, -UNLOCK_COST, 'Unlocked student inquiry (' + (c.student ? c.student.name : 'Student') + ')').balance, UNLOCK_COST);
 
-    function finishUnlock(newBalance){
+    function finishUnlock(newBalance, costUsed){
+    var coinsUsed = costUsed != null ? costUsed : UNLOCK_COST;
 
     // 4. Mark Conversation as Unlocked
     var nowIso = new Date().toISOString();
     c.unlocked = true;
+    c.free = coinsUsed === 0;
+    c.unlockCostCoins = coinsUsed;
     c.unlockedAt = nowIso;
     c.unlockedBy = tutorEmail;
     c.status = 'unlocked';
@@ -713,40 +740,55 @@
     c.accessLog.push({
       action: 'inquiry_unlocked',
       by: tutorEmail,
-      coinsDeducted: UNLOCK_COST,
+      coinsDeducted: coinsUsed,
       timestamp: nowIso
     });
     save(all);
 
-    // 5. Update Firestore
+    // 5. Update Firestore (ensure document exists first if free lead initiated by tutor, then send demo message)
     var firestore = db();
-    if(firestore){
-      var docId = c.docId || safeDocId(c.id);
-      firestore.collection('conversations').doc(docId).update({
-        unlocked: true,
-        unlockedAt: firebase.firestore.FieldValue.serverTimestamp(),
-        unlockedBy: tutorEmail,
-        status: 'unlocked',
-        accessLog: firebase.firestore.FieldValue.arrayUnion({
-          action: 'inquiry_unlocked',
-          by: tutorEmail,
-          coinsDeducted: UNLOCK_COST,
-          timestamp: nowIso
-        })
-      }).catch(function(err){ console.warn('Firestore unlock update failed:', err); });
-    }
-
-    // 6. Automatically send demo class message to the student (tutor send only this msg)
-    var demoMsg = DEFAULT_DEMO_MESSAGE;
-    if(demoMsg){
-      var alreadyHasTutorMsg = (c.messages || []).some(function(m){ return emailOf(m.senderEmail) === tutorEmail; });
-      if(!alreadyHasTutorMsg){
-        sendMessage(c.id, u, demoMsg);
+    var syncP = firestore ? syncConversationToFirestore(c) : Promise.resolve();
+    syncP.then(function(){
+      var demoMsg = DEFAULT_DEMO_MESSAGE;
+      if(demoMsg){
+        var alreadyHasTutorMsg = (c.messages || []).some(function(m){ return emailOf(m.senderEmail) === tutorEmail; });
+        if(!alreadyHasTutorMsg){
+          sendMessage(c.id, u, demoMsg);
+        }
       }
-    }
+    });
 
     return { success: true, balance: newBalance };
     }
+  }
+
+  /** Unlock a free-lead conversation (0 coins, no plan needed) and send the demo message automatically. */
+  function unlockFreeConversation(studentInput, tutorInput, enquiryInput, tutorUser){
+    var c = ensure(studentInput, tutorInput, enquiryInput);
+    var u = tutorUser || user() || tutorInput;
+    var tutorEmail = emailOf(u);
+    var all = conversations();
+    var target = all.find(function(x){ return x.id === c.id || x.docId === c.docId; }) || c;
+    var nowIso = new Date().toISOString();
+    target.free = true;
+    target.unlockCostCoins = 0;
+    if(target.enquiry) target.enquiry.free = true;
+    if(!target.unlocked){
+      target.unlocked = true;
+      target.unlockedAt = nowIso;
+      target.unlockedBy = tutorEmail;
+      target.status = 'unlocked';
+      if(!target.accessLog) target.accessLog = [];
+      target.accessLog.push({ action: 'free_lead_unlocked', by: tutorEmail, coinsDeducted: 0, timestamp: nowIso });
+    }
+    save(all);
+    return syncConversationToFirestore(target).then(function(){
+      var alreadyHasTutorMsg = (target.messages || []).some(function(m){ return emailOf(m.senderEmail) === tutorEmail; });
+      if(!alreadyHasTutorMsg){
+        return sendMessage(target.id, u, DEFAULT_DEMO_MESSAGE).then(function(){ return target; });
+      }
+      return target;
+    });
   }
 
   // =========================================================================
@@ -1038,18 +1080,21 @@
 
     var memValid = mem.isValid;
     var coinsValid = coins >= UNLOCK_COST;
+    var isFreeConv = !!(conv.free || (conv.enquiry && conv.enquiry.free));
 
     card.innerHTML =
       '<div class="mc-popup-header">' +
-        '<div class="mc-popup-icon" aria-hidden="true">🔔</div>' +
+        '<div class="mc-popup-icon" aria-hidden="true">' + (isFreeConv ? '🎁' : '🔔') + '</div>' +
         '<div>' +
-          '<h2 class="mc-popup-title">New Student Inquiry!</h2>' +
+          '<h2 class="mc-popup-title">' + (isFreeConv ? 'Free Student Lead!' : 'New Student Inquiry!') + '</h2>' +
           '<small style="color:#555b78;">Direct private tuition inquiry from student</small>' +
         '</div>' +
       '</div>' +
       // Exact prompt statement required
       '<div class="mc-popup-lead">' +
-        '“New Student Inquiry! A student wants to contact you. Activate your valid membership plan and use the required coins to view student details and messages.”' +
+        (isFreeConv
+          ? '“This is a FREE tuition lead! No membership plan or coins are needed. Unlock to view student details and send your demo class message.”'
+          : '“New Student Inquiry! A student wants to contact you. Activate your valid membership plan and use the required coins to view student details and messages.”') +
       '</div>' +
       '<div style="font-size:0.86rem;color:#555b78;margin:8px 0 14px;">' +
         '🔒 Student identity, contact details, and incoming messages remain protected until verified authorization.' +
@@ -1057,22 +1102,22 @@
       '<div class="mc-popup-status">' +
         '<div class="mc-status-item">' +
           '<span>Membership Plan:</span>' +
-          '<b class="' + (memValid ? 'mc-status-ok' : 'mc-status-bad') + '">' +
-            escapeHtml(mem.planName) + ' (' + (memValid ? 'Active' : 'Expired / Inactive') + ')' +
-          '</b>' +
+          (isFreeConv
+            ? '<b class="mc-status-ok">Not required (Free Lead)</b>'
+            : '<b class="' + (memValid ? 'mc-status-ok' : 'mc-status-bad') + '">' + escapeHtml(mem.planName) + ' (' + (memValid ? 'Active' : 'Expired / Inactive') + ')</b>') +
         '</div>' +
         '<div class="mc-status-item">' +
           '<span>Coin Balance:</span>' +
-          '<b class="' + (coinsValid ? 'mc-status-ok' : 'mc-status-bad') + '">' +
-            coins + ' Coins (' + UNLOCK_COST + ' required)' +
-          '</b>' +
+          (isFreeConv
+            ? '<b class="mc-status-ok">0 Coins required (Free)</b>'
+            : '<b class="' + (coinsValid ? 'mc-status-ok' : 'mc-status-bad') + '">' + coins + ' Coins (' + UNLOCK_COST + ' required)</b>') +
         '</div>' +
       '</div>' +
       '<div id="mcPopupErr" class="mc-popup-err" style="display:none;"></div>' +
       '<div class="mc-popup-acts">' +
-        (!memValid ? '<button type="button" class="mc-btn-secondary" id="mcActMem">Activate Membership</button>' : '') +
-        (!coinsValid ? '<button type="button" class="mc-btn-secondary" id="mcActRecharge">Recharge Coins</button>' : '') +
-        '<button type="button" class="mc-btn-primary" id="mcUnlockBtn">Unlock Inquiry (' + UNLOCK_COST + ' Coins)</button>' +
+        (!isFreeConv && !memValid ? '<button type="button" class="mc-btn-secondary" id="mcActMem">Activate Membership</button>' : '') +
+        (!isFreeConv && !coinsValid ? '<button type="button" class="mc-btn-secondary" id="mcActRecharge">Recharge Coins</button>' : '') +
+        '<button type="button" class="mc-btn-primary" id="mcUnlockBtn">' + (isFreeConv ? 'Unlock Free & Send Demo' : ('Unlock Inquiry (' + UNLOCK_COST + ' Coins)')) + '</button>' +
         '<button type="button" class="mc-btn-secondary" id="mcDismissBtn">Later</button>' +
       '</div>';
 
@@ -1482,17 +1527,20 @@
             student: d.student || { name: 'Student', email: d.studentEmail || '' },
             tutor: d.tutor || { name: 'Tutor', email: d.tutorEmail || '', photo: '' },
             enquiry: d.enquiry || null,
+            free: !!(d.free || (d.enquiry && d.enquiry.free)),
+            unlockCostCoins: d.unlockCostCoins != null ? d.unlockCostCoins : ((d.free || (d.enquiry && d.enquiry.free)) ? 0 : UNLOCK_COST),
             studentEmail: d.studentEmail,
             tutorEmail: d.tutorEmail,
             studentId: d.studentId,
             tutorId: d.tutorId,
             participantIds: d.participantIds || [],
             unlocked: !!d.unlocked,
-            unlockedAt: d.unlockedAt || null,
+            unlockedAt: d.unlockedAt && d.unlockedAt.toDate ? d.unlockedAt.toDate().toISOString() : (d.unlockedAt || null),
+            unlockedBy: d.unlockedBy || null,
             status: d.status || (d.unlocked ? 'unlocked' : 'inquiry_pending'),
             lastMessage: d.lastMessage || '',
             messages: [],
-            createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : new Date().toISOString(),
+            createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : (d.created_at || new Date().toISOString()),
             updatedAt: d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate().toISOString() : new Date().toISOString()
           };
           all.unshift(newC);
@@ -1569,6 +1617,68 @@
     return listenForConversations(tutorEmail, onInquiry);
   }
 
+  var adminConvUnsub = null;
+  function listenAllConversationsForAdmin(){
+    var firestore = db(), a = fbAuth();
+    if(!firestore) return function(){};
+    function start(){
+      if(adminConvUnsub) return;
+      try {
+        adminConvUnsub = firestore.collection('conversations').onSnapshot(function(snapshot){
+          if(!snapshot || snapshot.empty) return;
+          var all = conversations(), byId = {}, changed = false;
+          all.forEach(function(x){ byId[x.id] = x; if(x.docId) byId[x.docId] = x; });
+          snapshot.docs.forEach(function(docSnap){
+            var d = docSnap.data() || {}, id = d.id || docSnap.id;
+            var existing = byId[id] || byId[docSnap.id];
+            if(!existing){
+              var isFr = !!(d.free || (d.enquiry && d.enquiry.free));
+              existing = {
+                id: id, docId: docSnap.id, conversation_id: id,
+                enquiry_id: d.enquiry_id || d.enquiryId || '', enquiryId: d.enquiryId || d.enquiry_id || '',
+                tutor_id: d.tutor_id || d.tutorId || '',
+                enquiry_owner_user_id: d.enquiry_owner_user_id || d.created_by_user_id || '',
+                enquiry_owner_role: d.enquiry_owner_role || d.created_by_role || 'student',
+                created_by_user_id: d.created_by_user_id || d.enquiry_owner_user_id || '',
+                created_by_role: d.created_by_role || d.enquiry_owner_role || 'student',
+                enquiry_owner_email: d.enquiry_owner_email || d.studentEmail || '',
+                student_id: d.student_id || '', parent_id: d.parent_id || '',
+                student: d.student || { name: 'Student', email: d.studentEmail || '' },
+                tutor: d.tutor || { name: 'Tutor', email: d.tutorEmail || '', photo: '' },
+                enquiry: d.enquiry || null, free: isFr,
+                unlockCostCoins: d.unlockCostCoins != null ? d.unlockCostCoins : (isFr ? 0 : UNLOCK_COST),
+                studentEmail: d.studentEmail || '', tutorEmail: d.tutorEmail || '',
+                studentId: d.studentId || '', tutorId: d.tutorId || '',
+                participantIds: d.participantIds || [],
+                unlocked: !!d.unlocked,
+                unlockedAt: d.unlockedAt && d.unlockedAt.toDate ? d.unlockedAt.toDate().toISOString() : (d.unlockedAt || null),
+                unlockedBy: d.unlockedBy || null,
+                status: d.status || (d.unlocked ? 'unlocked' : 'inquiry_pending'),
+                lastMessage: d.lastMessage || '', messages: [],
+                createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : (d.created_at || new Date().toISOString()),
+                updatedAt: d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate().toISOString() : new Date().toISOString()
+              };
+              all.unshift(existing); byId[id] = existing; byId[docSnap.id] = existing; changed = true;
+            } else {
+              if(d.unlocked !== undefined && existing.unlocked !== !!d.unlocked){ existing.unlocked = !!d.unlocked; changed = true; }
+              if(d.unlockedBy && !existing.unlockedBy){ existing.unlockedBy = d.unlockedBy; changed = true; }
+              if(d.free && !existing.free){ existing.free = true; existing.unlockCostCoins = 0; changed = true; }
+              if(d.lastMessage && existing.lastMessage !== d.lastMessage){ existing.lastMessage = d.lastMessage; changed = true; }
+              if(d.status && existing.status !== d.status){ existing.status = d.status; changed = true; }
+            }
+            watchFirestoreMessages(existing, notify);
+          });
+          if(changed) save(all);
+        }, function(err){ adminConvUnsub = null; console.warn('Admin conversations listener notice:', err); });
+      } catch(e){}
+    }
+    if(a && a.currentUser && !a.currentUser.isAnonymous){ start(); }
+    else if(a && typeof a.onAuthStateChanged === 'function'){
+      var off = a.onAuthStateChanged(function(u){ if(u && !u.isAnonymous){ try{ off(); }catch(e){} start(); } });
+    }
+    return function(){ try{ adminConvUnsub && adminConvUnsub(); adminConvUnsub = null; }catch(e){} };
+  }
+
   // =========================================================================
   // Public API Export
   // =========================================================================
@@ -1596,6 +1706,7 @@
     getCoinTransactions: getCoinTransactions,
     getMembershipHistory: getMembershipHistory,
     unlockInquiry: unlockInquiry,
+    unlockFreeConversation: unlockFreeConversation,
     isConversationUnlockedForTutor: isConversationUnlockedForTutor,
     maskStudentName: maskStudentName,
 
@@ -1603,6 +1714,7 @@
     showTeacherInquiryPopup: showTeacherInquiryPopup,
     listenForTeacherInquiries: listenForTeacherInquiries,
     listenForConversations: listenForConversations,
+    listenAllConversationsForAdmin: listenAllConversationsForAdmin,
     watchFirestoreMessages: watchFirestoreMessages,
 
     // Automated Messages
@@ -1617,6 +1729,10 @@
   // Auto-start realtime conversations listener if user is signed in
   if(typeof window !== 'undefined'){
     setTimeout(function(){
+      if(isAdmin()){
+        listenAllConversationsForAdmin();
+        return;
+      }
       var u = user();
       if(u && (u.email || u.uid)){
         listenForConversations(u);

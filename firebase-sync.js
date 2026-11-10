@@ -627,6 +627,7 @@
         lead_id: leadId,
         leadId: leadId,
         unlock_status: 'unlocked',
+        free: coinsDeducted === 0,
         coins_deducted: coinsDeducted != null ? coinsDeducted : 10,
         coinsDeducted: coinsDeducted != null ? coinsDeducted : 10,
         transaction_id: txId,
@@ -643,23 +644,97 @@
   }
 
   /** Update the lead status in Firestore (accepted / demo / declined). */
-  function updateLeadStatus(leadId, tutorEmail, status) {
+  function updateLeadStatus(leadId, tutorEmail, status, tutorName) {
     var lid = sanitizeId(leadId);
+    var em = String(tutorEmail || '').trim().toLowerCase();
+    var nowIso = new Date().toISOString();
+
+    ['modivs_active_leads', 'modivs_students_db'].forEach(function(k){
+      var arr = rd(k), changed = false;
+      arr.forEach(function(x){
+        if(x && sanitizeId(x.id) === lid){
+          x.acceptedByTutor = em;
+          if(tutorName) x.acceptedByName = tutorName;
+          x.acceptedAt = nowIso;
+          x.status = status;
+          changed = true;
+        }
+      });
+      if(changed) wr(k, arr);
+    });
+
     return ensureAuth().then(function() {
       var firestore = db();
       if (!firestore) return;
+      var tsVal = (window.firebase && firebase.firestore)
+        ? firebase.firestore.FieldValue.serverTimestamp()
+        : nowIso;
       var payload = {
-        acceptedByTutor: tutorEmail || '',
+        acceptedByTutor: em,
+        acceptedByName: tutorName || '',
+        acceptedAt: nowIso,
         status: status,
-        updatedAt: (window.firebase && firebase.firestore)
-          ? firebase.firestore.FieldValue.serverTimestamp()
-          : new Date().toISOString()
+        updatedAt: tsVal
       };
+      var relDocId = 'unlock__' + sanitizeId(em) + '__' + lid;
       return Promise.all([
-        firestore.collection('leads').doc(lid).set(payload, { merge: true }).catch(function() {}),
-        firestore.collection('students').doc(lid).set(payload, { merge: true }).catch(function() {})
+        firestore.collection('leads').doc(lid).set(payload, { merge: true }).catch(function(e){ console.warn('Lead status update notice:', e); }),
+        firestore.collection('students').doc(lid).set(payload, { merge: true }).catch(function(){}),
+        em ? firestore.collection('relationships').doc(relDocId).set({
+          id: sanitizeId(em) + '__' + lid,
+          type: 'unlock',
+          tutor_id: em,
+          tutorEmail: em,
+          tutorName: tutorName || '',
+          lead_id: leadId,
+          leadId: leadId,
+          leadStatus: status,
+          status: status,
+          acceptedAt: nowIso,
+          updatedAt: tsVal
+        }, { merge: true }).catch(function(){}) : Promise.resolve()
       ]);
     });
+  }
+
+  /** Real-time listener for all unlocks & tutor lead responses (Admin only). */
+  function onAllUnlocks(callback) {
+    if (typeof callback !== 'function') return function() {};
+    var a = auth(), firestore = db();
+    if (!firestore) return function() {};
+    var map = {}, u1 = null, u2 = null, started = false;
+    function emit() {
+      var list = Object.keys(map).map(function(k){ return map[k]; });
+      try { callback(list); } catch(e) {}
+    }
+    function mergeDocs(docs) {
+      docs.forEach(function(d){
+        var data = d.data ? d.data() : d;
+        var em = String(data.tutorEmail || data.tutor_id || '').toLowerCase();
+        var lid = sanitizeId(data.leadId || data.lead_id || '');
+        if(!em || !lid) return;
+        var key = em + '__' + lid;
+        map[key] = Object.assign({}, map[key] || {}, data, { tutorEmail: em, leadId: data.leadId || data.lead_id || lid });
+      });
+      emit();
+    }
+    function start() {
+      if(started) return;
+      started = true;
+      try {
+        u1 = firestore.collection('unlocks').onSnapshot(function(s){ if(s) mergeDocs(s.docs); }, function(){});
+        u2 = firestore.collection('relationships').where('type', '==', 'unlock').onSnapshot(function(s){ if(s) mergeDocs(s.docs); }, function(){});
+      } catch(e) {}
+    }
+    waitAuthReady(a).then(function(u){
+      if(u && !u.isAnonymous) start();
+      else if(a && typeof a.onAuthStateChanged === 'function'){
+        var off = a.onAuthStateChanged(function(user){
+          if(user && !user.isAnonymous){ try{ off(); }catch(e){} start(); }
+        });
+      }
+    });
+    return function() { try{ u1 && u1(); }catch(e){} try{ u2 && u2(); }catch(e){} };
   }
 
   /** Real-time listener for unlocks for a specific tutor.  Calls callback(unlockedLeadIds[]) */
@@ -816,6 +891,7 @@
     isLeadUnlocked: isLeadUnlocked,
     saveUnlock: saveUnlock,
     onUnlocks: onUnlocks,
+    onAllUnlocks: onAllUnlocks,
     updateLeadStatus: updateLeadStatus
   };
 })();

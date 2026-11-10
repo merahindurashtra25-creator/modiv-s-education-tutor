@@ -1796,14 +1796,22 @@
         state.coins = res.balance;
         _unlockedSet[lid] = true;
         l.unlocked = true;
-        l.status = l.status || 'new';
+        var tName = (window.MY_TUTOR && window.MY_TUTOR.name) || '';
+        if (l.free && (!l.status || l.status === 'new')) {
+          l.status = 'demo';
+          if (window.ModivsFirebaseSync && l.id) {
+            try { window.ModivsFirebaseSync.updateLeadStatus(l.id, em, 'demo', tName).catch(function () { }); } catch (e) { }
+          }
+        } else {
+          l.status = l.status || 'new';
+        }
         if (window.ModivsFirebaseSync) {
           // keeps the legacy relationships record in step (idempotent, no coin changes)
           try { window.ModivsFirebaseSync.saveUnlock(em, l.id || l.name, cost).catch(function () { }); } catch (e) { }
         }
-        syncConversationUnlock(l, em);
+        syncConversationUnlock(l, em, !!l.free);
         if (state.view === 'leads' && (state.filter === 'new' || state.filter === 'free')) state.filter = 'unlocked';
-        toast(res.already ? ('Already unlocked: ' + l.name + '. No coins deducted.') : (l.free ? ('Unlocked ' + l.name + '. This is a free lead, no coins used.') : ('Unlocked ' + l.name + '. ' + COST + ' coins used. Balance: ' + res.balance)));
+        toast(res.already ? ('Already unlocked: ' + l.name + '. No coins deducted.') : (l.free ? ('Unlocked free lead ' + l.name + ' & sent demo message! Click Accept to accept this lead.') : ('Unlocked ' + l.name + '. ' + COST + ' coins used. Balance: ' + res.balance)));
         render();
       }).catch(function (err) {
         _unlocking[lid] = false;
@@ -1814,11 +1822,17 @@
       });
     }
 
-    function syncConversationUnlock(l, em) {
+    function syncConversationUnlock(l, em, autoDemo) {
       if (!window.ModivsChat || !em) return;
       var ownerMail = l.owner_email || l.email || l.studentEmail || '';
       var ownerRole = l.created_by_role || (l.by && l.by.toLowerCase().indexOf('parent') >= 0 ? 'parent' : 'student');
-      var conv = ModivsChat.ensure({ id: l.student_id || l.id, name: l.name, email: ownerMail, created_by_role: ownerRole }, window.MY_TUTOR || { email: em }, l);
+      var stuObj = { id: l.student_id || l.id, name: l.name, email: ownerMail, phone: l.phone || '', created_by_role: ownerRole };
+      var tutObj = window.MY_TUTOR || { email: em };
+      if ((l.free || autoDemo) && typeof ModivsChat.unlockFreeConversation === 'function') {
+        ModivsChat.unlockFreeConversation(stuObj, tutObj, l, tutObj).catch(function () { });
+        return;
+      }
+      var conv = ModivsChat.ensure(stuObj, tutObj, l);
       if (conv && !conv.unlocked) {
         conv.unlocked = true;
         conv.unlockedAt = new Date().toISOString();
@@ -1890,7 +1904,7 @@
       function set(s, m) {
         l.status = s;
         if (window.ModivsFirebaseSync && l.id && currentTutorEmail()) {
-          window.ModivsFirebaseSync.updateLeadStatus(l.id, currentTutorEmail(), s).catch(function () { });
+          window.ModivsFirebaseSync.updateLeadStatus(l.id, currentTutorEmail(), s, (window.MY_TUTOR && window.MY_TUTOR.name) || '').catch(function () { });
         }
         toast(m); render();
       }

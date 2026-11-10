@@ -67,6 +67,19 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/conversations/$(conversationId)).data.unlocked == true;
     }
 
+    function isFreeLead(leadId) {
+      return leadId != null && leadId != '' &&
+        exists(/databases/$(database)/documents/leads/$(leadId)) &&
+        get(/databases/$(database)/documents/leads/$(leadId)).data.free == true;
+    }
+
+    function isTutorLeadResponse() {
+      return signedIn() &&
+        isEmail(request.resource.data.acceptedByTutor) &&
+        request.resource.data.status in ['accepted', 'demo', 'declined'] &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acceptedByTutor', 'acceptedByName', 'acceptedAt', 'status', 'updatedAt']);
+    }
+
     // ==========================================
     // Default Deny Rule
     // ==========================================
@@ -217,7 +230,7 @@ service cloud.firestore {
           isEmail(resource.data.studentEmail) ||
           request.auth.uid == studentId
         )
-      );
+      ) || isTutorLeadResponse();
 
       allow delete: if isAdmin();
     }
@@ -257,18 +270,24 @@ service cloud.firestore {
       // Both participants and admin can read conversation metadata
       allow read: if isAdmin() || isConversationParticipant(resource.data);
 
-      // Student or Admin can initiate conversation
+      // Student, Admin, or Tutor opening a free lead can initiate conversation
       allow create: if isAdmin() || (signedIn() && (
         request.auth.uid == request.resource.data.studentId ||
         isEmail(request.resource.data.studentEmail) ||
-        isEmail(request.resource.data.student.email)
+        isEmail(request.resource.data.student.email) ||
+        (
+          isTutor(request.resource.data) &&
+          request.resource.data.free == true &&
+          isFreeLead(request.resource.data.enquiry_id)
+        )
       ));
 
-      // Student can update timestamps/lastMessage. Tutor can update only if unlocked.
+      // Student can update timestamps/lastMessage. Tutor can update if unlocked or unlocking a verified free lead.
       // Removed insecure client bypass (request.resource.data.unlocked == true without existing unlock).
       allow update: if isAdmin() ||
         isStudent(resource.data) ||
-        (isTutor(resource.data) && resource.data.unlocked == true);
+        (isTutor(resource.data) && resource.data.unlocked == true) ||
+        (isTutor(resource.data) && request.resource.data.free == true && isFreeLead(resource.data.enquiry_id));
 
       allow delete: if isAdmin();
 
@@ -357,7 +376,7 @@ service cloud.firestore {
         signedIn() &&
         isEmail(resource.data.email) &&
         request.resource.data.email == resource.data.email
-      );
+      ) || isTutorLeadResponse();
 
       allow delete: if isAdmin() || (signedIn() && isEmail(resource.data.email));
     }
@@ -371,7 +390,12 @@ service cloud.firestore {
       );
 
       allow create: if isAdmin() || (signedIn() && isEmail(request.resource.data.tutorEmail));
-      allow update, delete: if isAdmin();
+      allow update: if isAdmin() || (
+        signedIn() &&
+        isEmail(resource.data.tutorEmail) &&
+        request.resource.data.tutorEmail == resource.data.tutorEmail
+      );
+      allow delete: if isAdmin();
     }
 
     // ==========================================

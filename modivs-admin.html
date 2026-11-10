@@ -468,8 +468,9 @@ function withAccounts(list){
   });
 })();
 
-if(window.ModivsFirebaseSync){
-  window.ModivsFirebaseSync.onTutors(function(freshTutors){
+var adminUnlocks = [];
+function startAdminListeners(sync){
+  sync.onTutors(function(freshTutors){
     if(Array.isArray(freshTutors)){
       var tt=[];try{tt=JSON.parse(localStorage.getItem('modivs_deleted_tutors')||'[]')||[]}catch(e){}
       tutors = withAccounts(freshTutors.filter(function(x){
@@ -478,7 +479,7 @@ if(window.ModivsFirebaseSync){
       try{ render(); }catch(e){}
     }
   });
-  window.ModivsFirebaseSync.onStudents(function(freshStudents){
+  sync.onStudents(function(freshStudents){
     if(Array.isArray(freshStudents)){
       var tb=[];try{tb=JSON.parse(localStorage.getItem('modivs_deleted_leads')||'[]')||[]}catch(e){}
       students = freshStudents.filter(function(x){
@@ -487,29 +488,23 @@ if(window.ModivsFirebaseSync){
       try{ render(); }catch(e){}
     }
   });
+  if(sync.onAllUnlocks){
+    sync.onAllUnlocks(function(list){
+      adminUnlocks = Array.isArray(list) ? list : [];
+      try{ detail(); }catch(e){}
+    });
+  }
+}
+if(window.ModivsFirebaseSync){
+  startAdminListeners(window.ModivsFirebaseSync);
 } else {
-  setTimeout(function(){
-    if(window.ModivsFirebaseSync){
-      window.ModivsFirebaseSync.onTutors(function(freshTutors){
-        if(Array.isArray(freshTutors)){
-          var tt=[];try{tt=JSON.parse(localStorage.getItem('modivs_deleted_tutors')||'[]')||[]}catch(e){}
-          tutors = withAccounts(freshTutors.filter(function(x){
-            return !((x.id&&tt.indexOf(x.id)>-1)||(x.email&&tt.indexOf(String(x.email).toLowerCase())>-1));
-          }));
-          try{ render(); }catch(e){}
-        }
-      });
-      window.ModivsFirebaseSync.onStudents(function(freshStudents){
-        if(Array.isArray(freshStudents)){
-          var tb=[];try{tb=JSON.parse(localStorage.getItem('modivs_deleted_leads')||'[]')||[]}catch(e){}
-          students = freshStudents.filter(function(x){
-            return !((x.id&&tb.indexOf(x.id)>-1)||(x.email&&tb.indexOf(String(x.email).toLowerCase())>-1));
-          });
-          try{ render(); }catch(e){}
-        }
-      });
-    }
-  }, 200);
+  setTimeout(function(){ if(window.ModivsFirebaseSync) startAdminListeners(window.ModivsFirebaseSync); }, 200);
+}
+if(window.ModivsChat){
+  if(ModivsChat.listenAllConversationsForAdmin) ModivsChat.listenAllConversationsForAdmin();
+  if(ModivsChat.subscribe) ModivsChat.subscribe(function(){
+    try{ tabs(); if(currentSection === 'chat' || currentSection === 'students' || (currentSection !== 'orgs' && !isCms())){ if(currentSection === 'chat') list(); detail(); } }catch(e){}
+  });
 }
 
 function saveTutorsDb(){
@@ -1183,13 +1178,14 @@ function detail(){
 
     // Inquiry & Access Records Card
     d.appendChild(el('h3', '', 'Inquiry & Access Audit Records'));
+    var isFreeConv = !!(chat.free || chat.unlockCostCoins === 0 || (chat.enquiry && chat.enquiry.free));
     var accessPairs = [
       ['Inquiry Created At', chat.createdAt ? new Date(chat.createdAt).toLocaleString() : '—'],
-      ['Teacher Notification Popup', '“New Student Inquiry! A student wants to contact you. Activate your valid membership plan and use the required coins to view student details and messages.”'],
+      ['Lead / Inquiry Type', isFreeConv ? 'Free Lead (No plan or coins required)' : 'Paid Inquiry (10 coins + active membership)'],
       ['Teacher Authorization Status', chat.unlocked ? 'Authorized & Unlocked' : 'Pending Authorization (Details Masked for Teacher)'],
       ['Authorization Timestamp', chat.unlockedAt ? new Date(chat.unlockedAt).toLocaleString() : 'Awaiting Unlock'],
       ['Authorized By', chat.unlockedBy || (chat.unlocked ? chat.tutor.email : 'None')],
-      ['Coins Deducted', chat.unlocked ? '10 Coins (Deducted once upon authorization)' : '0 Coins (Pending)'],
+      ['Coins Deducted', chat.unlocked ? (isFreeConv ? '0 Coins (Free Lead)' : '10 Coins (Deducted once upon authorization)') : '0 Coins (Pending)'],
       ['Last Message Sent At', chat.lastMessageAt ? new Date(chat.lastMessageAt).toLocaleString() : (chat.updatedAt ? new Date(chat.updatedAt).toLocaleString() : '—')]
     ];
     d.appendChild(kv(accessPairs));
@@ -1290,6 +1286,9 @@ function detail(){
       ['School Board', x.board || 'CBSE'],
       ['School Name', x.school || '—'],
       ['Tuition Budget', x.budget || '—'],
+      ['Lead Type', x.free === true ? 'Free Tuition Lead (0 coins, no plan required)' : 'Standard Paid Lead (10 coins)'],
+      ['Lead Status', x.status || 'active'],
+      ['Accepted / Responded By Tutor', x.acceptedByTutor ? ((x.acceptedByName ? x.acceptedByName + ' · ' : '') + x.acceptedByTutor + (x.acceptedAt ? ' (' + new Date(x.acceptedAt).toLocaleString() + ')' : '')) : 'Not accepted yet'],
       ['Account Status', 'Active Student'],
       ['Registered On', x.registered_at ? new Date(x.registered_at).toLocaleDateString() : (x.sent || 'Active')]
     ]));
@@ -1299,6 +1298,36 @@ function detail(){
     if(x.notes){
       d.appendChild(el('h3', '', 'Learning Goals & Notes'));
       d.appendChild(el('p', '', x.notes));
+    }
+
+    // Tutor unlocks & demo messages for this student lead (from Firestore unlocks + conversations)
+    var xLid = String(x.id || '').replace(/[\/\\#?]/g, '_').trim();
+    var leadUnlocks = adminUnlocks.filter(function(u){ return String(u.leadId || u.lead_id || '').replace(/[\/\\#?]/g, '_').trim() === xLid; });
+    var leadConvs = window.ModivsChat ? ModivsChat.conversations().filter(function(c){
+      var ce = String(c.enquiry_id || c.enquiryId || '').replace(/[\/\\#?]/g, '_').trim();
+      return (xLid && ce === xLid) || (x.email && String(c.studentEmail || '').toLowerCase() === String(x.email).toLowerCase());
+    }) : [];
+    d.appendChild(el('h3', '', 'Tutor Unlocks, Demo Messages & Responses (' + Math.max(leadUnlocks.length, leadConvs.length) + ')'));
+    if(leadUnlocks.length || leadConvs.length){
+      var ulBox = el('div', 'log');
+      var seenTut = {};
+      leadUnlocks.forEach(function(u){
+        var tem = String(u.tutorEmail || '').toLowerCase();
+        seenTut[tem] = true;
+        var convMatch = leadConvs.filter(function(c){ return String(c.tutorEmail || '').toLowerCase() === tem; })[0];
+        var stLabel = u.leadStatus || u.status || (x.acceptedByTutor && String(x.acceptedByTutor).toLowerCase() === tem ? x.status : 'unlocked');
+        var demoInfo = convMatch && convMatch.messages && convMatch.messages.length ? (' · ' + convMatch.messages.length + ' message(s), last: "' + convMatch.messages[convMatch.messages.length - 1].text.slice(0, 70) + '"') : '';
+        ulBox.appendChild(el('p', '', '• ' + (u.tutorName || tem) + ' (' + tem + ') — ' + ((u.free || u.coinsDeducted === 0) ? 'Free Lead (0 coins)' : (u.coinsDeducted || 10) + ' coins') + ' · Status: ' + stLabel + demoInfo));
+      });
+      leadConvs.forEach(function(c){
+        var tem = String(c.tutorEmail || '').toLowerCase();
+        if(seenTut[tem]) return;
+        var demoInfo = c.messages && c.messages.length ? (' · ' + c.messages.length + ' message(s), last: "' + c.messages[c.messages.length - 1].text.slice(0, 70) + '"') : '';
+        ulBox.appendChild(el('p', '', '• ' + ((c.tutor && c.tutor.name) || tem) + ' (' + tem + ') — ' + ((c.free || c.unlockCostCoins === 0) ? 'Free Lead (0 coins)' : '10 coins') + ' · Status: ' + (c.unlocked ? 'unlocked' : 'pending') + demoInfo));
+      });
+      d.appendChild(ulBox);
+    } else {
+      d.appendChild(el('p', 'sub', 'No tutors have unlocked or messaged this lead yet.'));
     }
 
     // Check if student has sent demo requests
@@ -1490,6 +1519,32 @@ function detail(){
       txBox.appendChild(tRow);
     });
     d.appendChild(txBox);
+  }
+
+  // Tutor Unlocked & Accepted Leads (from Firestore unlocks, leads & conversations)
+  var tMailLow = String(x.email || '').toLowerCase();
+  var myUnlocks = tMailLow ? adminUnlocks.filter(function(u){ return String(u.tutorEmail || '').toLowerCase() === tMailLow; }) : [];
+  var myAcceptedLeads = tMailLow ? students.filter(function(s){ return String(s.acceptedByTutor || '').toLowerCase() === tMailLow; }) : [];
+  var myConvs = (tMailLow && window.ModivsChat) ? ModivsChat.conversations().filter(function(c){ return String(c.tutorEmail || '').toLowerCase() === tMailLow; }) : [];
+  if(myUnlocks.length || myAcceptedLeads.length || myConvs.length){
+    d.appendChild(el('h3', '', 'Unlocked Leads, Demo Messages & Accepted Leads (' + Math.max(myUnlocks.length, myAcceptedLeads.length, myConvs.length) + ')'));
+    var leadActBox = el('div', 'log');
+    var shownLeads = {};
+    myUnlocks.forEach(function(u){
+      var lid = String(u.leadId || u.lead_id || '').replace(/[\/\\#?]/g, '_').trim();
+      shownLeads[lid] = true;
+      var stu = students.filter(function(s){ return String(s.id || '').replace(/[\/\\#?]/g, '_').trim() === lid; })[0];
+      var convMatch = myConvs.filter(function(c){ return String(c.enquiry_id || c.enquiryId || '').replace(/[\/\\#?]/g, '_').trim() === lid; })[0];
+      var stStatus = u.leadStatus || u.status || (stu && String(stu.acceptedByTutor || '').toLowerCase() === tMailLow ? stu.status : 'unlocked');
+      var msgNote = convMatch && convMatch.messages && convMatch.messages.length ? (' · Demo/Messages sent: ' + convMatch.messages.length) : '';
+      leadActBox.appendChild(el('p', '', '• ' + ((stu && stu.name) || u.leadName || lid) + ' — ' + ((u.free || u.coinsDeducted === 0) ? 'Free Lead (0 coins)' : (u.coinsDeducted || 10) + ' coins') + ' · Status: ' + stStatus + msgNote));
+    });
+    myAcceptedLeads.forEach(function(s){
+      var lid = String(s.id || '').replace(/[\/\\#?]/g, '_').trim();
+      if(shownLeads[lid]) return;
+      leadActBox.appendChild(el('p', '', '• ' + (s.name || lid) + ' — ' + (s.free === true ? 'Free Lead' : 'Lead') + ' · Status: ' + (s.status || 'accepted')));
+    });
+    d.appendChild(leadActBox);
   }
 
   // Verification Documents (ID proof + qualification certificate): admin can see and open the real files
