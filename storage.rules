@@ -1,0 +1,82 @@
+rules_version = '2';
+service firebase.storage {
+  match /b/{bucket}/o {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.admin == true ||
+        (
+          request.auth.token.email_verified == true &&
+          request.auth.token.email != null && (
+            request.auth.token.email.lower() == 'happinessaggarwal@gmail.com' ||
+            request.auth.token.email.lower() == 'divyanshdhimanteam@gmail.com' ||
+            request.auth.token.email.lower() == 'luxmankumar628@gmail.com'
+          )
+        )
+      );
+    }
+
+    // Default deny all access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+
+    // Public / marketing assets uploaded by admin
+    match /public/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() &&
+        request.resource.size < 10 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*|application/pdf');
+    }
+
+    // User Profile Pictures (Tutors & Students)
+    match /profile_pictures/{userId}/{fileName} {
+      allow read: if true;
+      allow write: if (isAdmin() || (signedIn() && request.auth.uid == userId)) &&
+        request.resource.size < 5 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/(jpeg|png|webp|jpg)');
+    }
+
+    // Confidential Tutor Verification Documents (Aadhaar / ID proof, qualification certificates)
+    // Strictly confidential: readable and writable only by the owning tutor and verified admins
+    match /tutor_documents/{tutorIdentifier}/{fileName} {
+      allow read: if isAdmin() || (
+        signedIn() && (
+          request.auth.uid == tutorIdentifier ||
+          (request.auth.token.email != null && request.auth.token.email.lower() == tutorIdentifier.lower())
+        )
+      );
+
+      allow write: if (
+        isAdmin() || (
+          signedIn() && (
+            request.auth.uid == tutorIdentifier ||
+            (request.auth.token.email != null && request.auth.token.email.lower() == tutorIdentifier.lower())
+          )
+        )
+      ) &&
+      request.resource.size < 1024 * 1024 && // 1MB limit
+      request.resource.contentType.matches('image/(jpeg|png|webp|jpg)|application/pdf');
+    }
+
+    // Chat attachments for 1-on-1 tutoring sessions
+    match /chat_attachments/{conversationId}/{fileName} {
+      allow read, write: if signedIn() &&
+        request.resource.size < 10 * 1024 * 1024 &&
+        request.resource.contentType.matches('image/.*|application/pdf|text/plain');
+    }
+
+    // Students' Corner study notes and materials
+    match /corner_materials/{fileName} {
+      allow read: if true;
+      allow write: if isAdmin() &&
+        request.resource.size < 25 * 1024 * 1024 &&
+        request.resource.contentType.matches('application/pdf|image/.*|application/zip');
+    }
+  }
+}
+

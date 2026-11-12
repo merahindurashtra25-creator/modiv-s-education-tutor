@@ -1,0 +1,33 @@
+# Environment & Secret files
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*serviceAccount*.json
+*service-account*.json
+*credentials*.json
+firebase-adminsdk*.json
+
+# Vercel & Deployment
+.vercel
+.firebase/
+
+# Dependencies & Build
+node_modules/
+
+# OS & Temp files
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs & Emulators
+*.log
+firebase-debug*.log
+firestore-debug*.log
+ui-debug.log
+
+# Scratch & Testing
+scratch/
+.nyc_output/
+coverage/

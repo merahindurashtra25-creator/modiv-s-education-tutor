@@ -1,0 +1,667 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // ==========================================
+    // Helper Functions: Authentication & Identity
+    // ==========================================
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Verified administrator check:
+    // Requires custom claim `admin == true` OR verified email from designated admin list.
+    // Removed insecure placeholder admin account and enforced email_verified == true.
+    function isAdmin() {
+      return signedIn() && (
+        request.auth.token.admin == true ||
+        (
+          request.auth.token.email_verified == true &&
+          request.auth.token.email != null && (
+            request.auth.token.email.lower() == 'happinessaggarwal@gmail.com' ||
+            request.auth.token.email.lower() == 'divyanshdhimanteam@gmail.com' ||
+            request.auth.token.email.lower() == 'luxmankumar628@gmail.com'
+          )
+        )
+      );
+    }
+
+    function isOwner(uid) {
+      return signedIn() && request.auth.uid == uid;
+    }
+
+    function isEmail(email) {
+      return signedIn() && request.auth.token.email != null && email != null &&
+        request.auth.token.email.lower() == email.lower();
+    }
+
+    function isConversationParticipant(conv) {
+      // Check by email fields (primary keys stored in conversation docs)
+      // Also check participantIds which may contain emails or UIDs
+      return signedIn() && (
+        isEmail(conv.get('studentEmail', '')) ||
+        isEmail(conv.get('tutorEmail', '')) ||
+        isEmail(conv.get('enquiry_owner_email', '')) ||
+        request.auth.uid == conv.get('studentId', '') ||
+        request.auth.uid == conv.get('tutorId', '') ||
+        request.auth.uid == conv.get('student_id', '') ||
+        request.auth.uid == conv.get('tutor_id', '') ||
+        (conv.student != null && isEmail(conv.student.get('email', ''))) ||
+        (conv.tutor != null && isEmail(conv.tutor.get('email', '')))
+      );
+    }
+
+    function isStudent(conv) {
+      return signedIn() && (
+        request.auth.uid == conv.get('studentId', '') ||
+        request.auth.uid == conv.get('student_id', '') ||
+        isEmail(conv.get('studentEmail', '')) ||
+        isEmail(conv.get('student_id', '')) ||
+        isEmail(conv.get('enquiry_owner_email', '')) ||
+        (conv.student != null && isEmail(conv.student.get('email', '')))
+      );
+    }
+
+    function isTutor(conv) {
+      return signedIn() && (
+        request.auth.uid == conv.get('tutorId', '') ||
+        request.auth.uid == conv.get('tutor_id', '') ||
+        isEmail(conv.get('tutorEmail', '')) ||
+        isEmail(conv.get('tutor_id', '')) ||
+        (conv.tutor != null && isEmail(conv.tutor.get('email', '')))
+      );
+    }
+
+    function isUnlockedConversation(conversationId) {
+      return get(/databases/$(database)/documents/conversations/$(conversationId)).data.get('unlocked', false) == true ||
+        (signedIn() && request.auth.token.email != null && (
+          get(/databases/$(database)/documents/conversations/$(conversationId)).data.get('unlockedBy', '') == request.auth.token.email.lower()
+        ));
+    }
+
+    function isFreeLead(leadId) {
+      return leadId != null && leadId != '' &&
+        exists(/databases/$(database)/documents/leads/$(leadId)) &&
+        get(/databases/$(database)/documents/leads/$(leadId)).data.free == true;
+    }
+
+    // Lead moderation fields are admin-only: a student can submit a lead (approval = pending) but cannot approve it,
+    // mark it free or give it a badge. Old leads without these fields keep working.
+    function leadCreateOk() {
+      return request.resource.data.get('approval', '') == 'pending' &&
+        request.resource.data.get('free', false) != true &&
+        request.resource.data.get('leadBadge', '') == '';
+    }
+    function leadAdminFieldsKept() {
+      return request.resource.data.get('approval', 'approved') == resource.data.get('approval', 'approved') &&
+        request.resource.data.get('free', false) == resource.data.get('free', false) &&
+        request.resource.data.get('leadBadge', '') == resource.data.get('leadBadge', '');
+    }
+
+    function isTutorLeadResponse() {
+      return signedIn() &&
+        isEmail(request.resource.data.acceptedByTutor) &&
+        request.resource.data.status in ['accepted', 'demo', 'declined'] &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['acceptedByTutor', 'acceptedByName', 'acceptedAt', 'status', 'updatedAt']);
+    }
+
+    // ==========================================
+    // Default Deny Rule
+    // ==========================================
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==========================================
+    // 0. Accounts Collection (Global Unique Email)
+    // ==========================================
+    match /accounts/{emailId} {
+      allow read: if isAdmin() || isEmail(emailId);
+
+      // Enforce global uniqueness: document ID must match email and not exist prior to creation
+      allow create: if (isAdmin() || (signedIn() && isEmail(emailId)))
+        && !exists(/databases/$(database)/documents/accounts/$(emailId))
+        && request.resource.data.email == emailId.lower()
+        && (request.resource.data.role in ['student', 'tutor', 'user']);
+
+      // Prevent users from tampering with their role or email
+      allow update: if isAdmin() || (
+        signedIn() && isEmail(emailId) &&
+        request.resource.data.role == resource.data.role &&
+        request.resource.data.email == resource.data.email
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 1. Users Collection
+    // ==========================================
+    match /users/{uid} {
+      // Users can only view their own profile; Admin can view all
+      allow read: if isOwner(uid) || isAdmin();
+
+      // Creation: cannot grant self admin privileges, coins, or membership
+      allow create: if isAdmin() || (
+        isOwner(uid) &&
+        (!('role' in request.resource.data) || request.resource.data.role != 'Admin') &&
+        (!('admin' in request.resource.data) || request.resource.data.admin != true) &&
+        (!('coins' in request.resource.data) || request.resource.data.coins == 0) &&
+        (!('membership' in request.resource.data) || request.resource.data.membership == null)
+      );
+
+      // Update: users cannot tamper with role, admin status, inflated coins, or fake membership
+      allow update: if isAdmin() || (
+        isOwner(uid) &&
+        (!('role' in request.resource.data) || request.resource.data.role == resource.data.role) &&
+        (!('admin' in request.resource.data) || request.resource.data.admin == resource.data.admin) &&
+        (!('coins' in request.resource.data) || request.resource.data.coins <= resource.data.coins) &&
+        (!('membership' in request.resource.data) || request.resource.data.membership == resource.data.membership)
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 2. Tutors Directory
+    // Public directory of approved tutors. Unapproved profiles visible only to owner and admin.
+    // Tutors cannot self-approve their profiles.
+    // ==========================================
+    match /tutors/{tutorId} {
+      // Public can read approved tutors; tutors can read their own draft profile; Admin can read all
+      allow read: if resource.data.status == 'approved' || isAdmin() || (signedIn() && isEmail(resource.data.email));
+
+      // Creation: Tutor can register profile as pending/draft. Admin can register any status.
+      allow create: if isAdmin() || (
+        signedIn() &&
+        isEmail(request.resource.data.email) &&
+        request.resource.data.status != 'approved'
+      );
+
+      // Update: Tutor can update profile information (subjects, city, etc.) but cannot self-approve or reassign email
+      allow update: if isAdmin() || (
+        signedIn() &&
+        isEmail(resource.data.email) &&
+        request.resource.data.email == resource.data.email &&
+        (request.resource.data.status == resource.data.status || request.resource.data.status == 'pending') &&
+        // ratings, review count and profile badges are admin-controlled
+        !request.resource.data.diff(resource.data).affectedKeys().hasAny(['rating', 'reviewCount', 'adminBadges', 'customBadge', 'ratingUpdatedBy', 'ratingUpdatedAt'])
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 2a. Organizations (tutor side "Tutor / Organization")
+    // Doc id = the organization's lower-case login email. Private: only the owner and the admin can read it.
+    // An organization can create its profile as 'pending' and edit its details, but only the admin can
+    // approve / reject it or write the review note. A rejected organization may re-submit (status back to 'pending').
+    // ==========================================
+    match /organizations/{orgId} {
+      allow read: if isAdmin() || isEmail(orgId);
+
+      allow create: if isAdmin() || (
+        isEmail(orgId) &&
+        orgId == orgId.lower() &&
+        request.resource.data.email == orgId &&
+        request.resource.data.status == 'pending'
+      );
+
+      allow update: if isAdmin() || (
+        isEmail(orgId) &&
+        request.resource.data.email == resource.data.email &&
+        (request.resource.data.status == resource.data.status || request.resource.data.status == 'pending') &&
+        request.resource.data.get('reviewNote', '') == resource.data.get('reviewNote', '') &&
+        request.resource.data.get('reviewedBy', '') == resource.data.get('reviewedBy', '') &&
+        request.resource.data.get('reviewedAt', '') == resource.data.get('reviewedAt', '')
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 2c. Readable ids (STU101 / LD201 / TUT301): a running counter plus one small record per student, tutor or lead.
+    // Handed out by modivs-ids.js inside a transaction. The counter can only go up by one per write.
+    // display_ids documents can be read one at a time (get), never listed, except by the admin.
+    // ==========================================
+    match /counters/{counterId} {
+      allow read: if true;
+      allow create: if signedIn() && counterId == 'display_ids'
+        && request.resource.data.keys().hasOnly(['stu', 'ld', 'tut'])
+        && request.resource.data.get('stu', 100) in [100, 101]
+        && request.resource.data.get('ld', 200) in [200, 201]
+        && request.resource.data.get('tut', 300) in [300, 301];
+      allow update: if isAdmin() || (signedIn() && counterId == 'display_ids'
+        && request.resource.data.keys().hasOnly(['stu', 'ld', 'tut'])
+        && (request.resource.data.get('stu', 100) - resource.data.get('stu', 100)) in [0, 1]
+        && (request.resource.data.get('ld', 200) - resource.data.get('ld', 200)) in [0, 1]
+        && (request.resource.data.get('tut', 300) - resource.data.get('tut', 300)) in [0, 1]);
+      allow delete: if isAdmin();
+    }
+    match /display_ids/{displayId} {
+      allow get: if true;
+      allow list: if isAdmin();
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['id', 'kind', 'key', 'createdAt'])
+        && request.resource.data.id.matches('^(STU|LD|TUT)[0-9]{3,}$');
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 2b. Tutor verification documents (Aadhaar / ID, qualification certificate)
+    // Strictly confidential: visible and editable only by the owning tutor and verified admin.
+    // ==========================================
+    match /tutor_documents/{docId} {
+      allow read: if isAdmin() || (signedIn() && isEmail(resource.data.email));
+
+      allow create, update: if isAdmin() || (
+        signedIn() &&
+        isEmail(request.resource.data.email) &&
+        request.resource.data.dataUrl is string &&
+        request.resource.data.dataUrl.size() <= 1048576 // 1MB payload ceiling
+      );
+
+      allow delete: if isAdmin() || (signedIn() && isEmail(resource.data.email));
+    }
+
+    // ==========================================
+    // 3. Students Directory
+    // Private student records. Only the student themselves and administrators can access.
+    // ==========================================
+    match /students/{studentId} {
+      allow read: if isAdmin() || (
+        signedIn() && (
+          isEmail(resource.data.email) ||
+          isEmail(resource.data.studentEmail) ||
+          request.auth.uid == studentId
+        )
+      );
+
+      allow create: if isAdmin() || (signedIn() && leadCreateOk());
+
+      allow update: if isAdmin() || (
+        signedIn() && leadAdminFieldsKept() && (
+          isEmail(resource.data.email) ||
+          isEmail(resource.data.studentEmail) ||
+          request.auth.uid == studentId
+        )
+      ) || isTutorLeadResponse();
+
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 4. Inquiries, Enquiries & Demo Requests
+    // Private requirement and demo forms.
+    // ==========================================
+    match /inquiries/{inquiryId} {
+      allow read: if isAdmin() || (signedIn() && (isEmail(resource.data.email) || isEmail(resource.data.studentEmail)));
+      allow create: if signedIn() || isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    match /enquiries/{enquiryId} {
+      allow read: if isAdmin() || (signedIn() && (isEmail(resource.data.email) || isEmail(resource.data.studentEmail)));
+      allow create: if signedIn() || isAdmin();
+      allow update, delete: if isAdmin();
+    }
+
+    match /demoRequests/{requestId} {
+      allow read: if isAdmin() || (
+        signedIn() && (
+          isEmail(resource.data.email) ||
+          isEmail(resource.data.tutorEmail) ||
+          isEmail(resource.data.studentEmail)
+        )
+      );
+      allow create: if signedIn() || isAdmin();
+      allow update: if isAdmin() || (
+        signedIn() && (isEmail(resource.data.tutorEmail) || isEmail(resource.data.studentEmail)) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['status', 'confirmedDate', 'updatedAt'])
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 5. 1-to-1 Conversations & Messages
+    // ==========================================
+    match /conversations/{conversationId} {
+      // Both participants and admin can read conversation metadata
+      allow read: if isAdmin() || isConversationParticipant(resource.data);
+
+      // Any authenticated conversation participant can create the conversation document.
+      // This covers: student initiating, tutor initiating a free lead, or admin.
+      allow create: if isAdmin() || (signedIn() && (
+        request.auth.uid == request.resource.data.get('studentId', '') ||
+        isEmail(request.resource.data.get('studentEmail', '')) ||
+        isEmail(request.resource.data.get('enquiry_owner_email', '')) ||
+        (request.resource.data.student != null && isEmail(request.resource.data.student.get('email', ''))) ||
+        isEmail(request.resource.data.get('tutorEmail', '')) ||
+        (request.resource.data.tutor != null && isEmail(request.resource.data.tutor.get('email', '')))
+      ));
+
+      // Student can update timestamps/lastMessage. Tutor can update if unlocked or unlocking.
+      allow update: if isAdmin() ||
+        isStudent(resource.data) ||
+        (isTutor(resource.data) && (
+          resource.data.get('unlocked', false) == true ||
+          (
+            request.resource.data.get('unlocked', false) == true &&
+            (
+              request.resource.data.get('unlockedBy', '') == request.auth.token.email.lower() ||
+              isEmail(resource.data.get('tutorEmail', '')) ||
+              (request.resource.data.get('free', false) == true && isFreeLead(resource.data.get('enquiry_id', '')))
+            )
+          )
+        ));
+
+      allow delete: if isAdmin();
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        // Fetch the parent conversation document once and cache its fields.
+        // Firestore Security Rules allow at most 2 get() calls per rule evaluation.
+        // We use a single get() here and derive all needed checks from it.
+        function conv() {
+          return get(/databases/$(database)/documents/conversations/$(conversationId)).data;
+        }
+        function convIsUnlocked() {
+          return conv().get('unlocked', false) == true ||
+            (request.auth != null && request.auth.token.email != null &&
+              conv().get('unlockedBy', '') == request.auth.token.email.lower());
+        }
+        function convIsStudent() {
+          return signedIn() && (
+            isEmail(conv().get('studentEmail', '')) ||
+            isEmail(conv().get('enquiry_owner_email', '')) ||
+            request.auth.uid == conv().get('studentId', '') ||
+            request.auth.uid == conv().get('student_id', '') ||
+            (conv().student != null && isEmail(conv().student.get('email', '')))
+          );
+        }
+        function convIsTutor() {
+          return signedIn() && (
+            isEmail(conv().get('tutorEmail', '')) ||
+            request.auth.uid == conv().get('tutorId', '') ||
+            request.auth.uid == conv().get('tutor_id', '') ||
+            (conv().tutor != null && isEmail(conv().tutor.get('email', '')))
+          );
+        }
+        function msgParticipant() {
+          return convIsStudent() || (convIsTutor() && convIsUnlocked());
+        }
+
+        // Students can always read their own conversation messages.
+        // Tutors can only read messages if the conversation is unlocked.
+        allow read: if isAdmin() || (signedIn() && msgParticipant());
+
+        // Students can always send messages. Tutors only after unlock.
+        allow create: if isAdmin() || (signedIn() && msgParticipant());
+
+        // Allow participants to mark messages as read (only readAt/readBy/read fields)
+        allow update: if isAdmin() || (
+          signedIn() && msgParticipant() &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['readAt', 'readBy', 'read'])
+        );
+
+        allow delete: if isAdmin();
+      }
+    }
+
+    // ==========================================
+    // 6. Coin Transactions & Audit Log
+    // Financial records: tutors can only perform deductions (amount < 0) for legitimate unlocks.
+    // Credits (purchases, bonuses, manual adjustments) must be written by Admin or trusted Backend.
+    // ==========================================
+    match /coin_transactions/{txId} {
+      allow read: if isAdmin() || (signedIn() && isEmail(resource.data.tutorEmail));
+
+      allow create: if isAdmin() || (
+        signedIn() &&
+        isEmail(request.resource.data.tutorEmail) &&
+        request.resource.data.amount is int &&
+        request.resource.data.amount < 0 && // Tutors can only record debits
+        request.resource.data.balanceAfter is int &&
+        request.resource.data.balanceAfter >= 0
+      );
+
+      allow update, delete: if isAdmin();
+    }
+
+    // Tutor wallet: source of truth for coins + membership.
+    // Tutors can only decrease coins (pay for unlocks); only Admin or Backend can increase coins or modify membership.
+    match /tutor_wallets/{walletId} {
+      allow read: if isAdmin() || (signedIn() && isEmail(walletId));
+
+      allow create: if isAdmin() || (
+        signedIn() &&
+        isEmail(walletId) &&
+        request.resource.data.coins is int &&
+        request.resource.data.coins == 0 &&
+        (!('membership' in request.resource.data) || request.resource.data.membership == null)
+      );
+
+      allow update: if isAdmin() || (
+        signedIn() &&
+        isEmail(walletId) &&
+        request.resource.data.coins is int &&
+        request.resource.data.coins <= resource.data.coins &&
+        (!('membership' in request.resource.data) || request.resource.data.membership == resource.data.membership)
+      );
+
+      allow delete: if isAdmin();
+    }
+
+    // Membership purchase / extension / upgrade log: immutable audit log
+    match /membership_history/{histId} {
+      allow read: if isAdmin() || (signedIn() && isEmail(resource.data.tutorEmail));
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 7. Active Leads & Relationships
+    // Leads are public for browsing on /active-leads, but modifications are restricted to creator or admin.
+    // ==========================================
+    match /leads/{leadId} {
+      allow read: if true; // Public lead board for verified and guest tutors
+
+      allow create: if isAdmin() || (signedIn() && leadCreateOk());
+
+      allow update: if isAdmin() || (
+        signedIn() &&
+        leadAdminFieldsKept() &&
+        isEmail(resource.data.email) &&
+        request.resource.data.email == resource.data.email
+      ) || isTutorLeadResponse();
+
+      allow delete: if isAdmin() || (signedIn() && isEmail(resource.data.email));
+    }
+
+    match /relationships/{relId} {
+      allow read: if isAdmin() || (
+        signedIn() && (
+          isEmail(resource.data.tutorEmail) ||
+          isEmail(resource.data.studentEmail)
+        )
+      );
+
+      allow create: if isAdmin() || (signedIn() && isEmail(request.resource.data.tutorEmail));
+      allow update: if isAdmin() || (
+        signedIn() &&
+        isEmail(resource.data.tutorEmail) &&
+        request.resource.data.tutorEmail == resource.data.tutorEmail
+      );
+      allow delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 7c. One-time tutor unlock records
+    // ==========================================
+    match /unlocks/{docId} {
+      allow read: if isAdmin() || (signedIn() && (resource == null || isEmail(resource.data.tutorEmail)));
+
+      allow create: if isAdmin() || (
+        signedIn() &&
+        isEmail(request.resource.data.tutorEmail) &&
+        request.resource.data.leadId is string
+      );
+
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 7d. Separate Activity Notifications Collection
+    // ==========================================
+    match /notifications/{notifId} {
+      // User can only read their own notifications; Admin can read all
+      allow read: if isAdmin() || (signedIn() && (
+        isEmail(resource.data.get('recipientEmail', '')) ||
+        request.auth.uid == resource.data.get('recipientId', '')
+      ));
+
+      // Create: Admin can send any notification.
+      // Authenticated users can create notifications when sending a message, unlocking a lead,
+      // applying to a lead, or posting a requirement.
+      allow create: if isAdmin() || (signedIn() && (
+        isEmail(request.resource.data.get('recipientEmail', '')) ||
+        (
+          request.resource.data.get('type', '') in ['message', 'lead_unlock', 'lead_applied', 'lead_new', 'coin_update', 'membership_update'] &&
+          (
+            isEmail(request.resource.data.get('senderEmail', '')) ||
+            request.auth.uid == request.resource.data.get('senderId', '')
+          )
+        )
+      ));
+
+      // Update: Recipient can mark as read / update readAt.
+      // Sender can increment unreadCount or update unread message alert.
+      allow update: if isAdmin() || (signedIn() && (
+        (
+          isEmail(resource.data.get('recipientEmail', '')) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'readAt', 'unreadCount', 'updatedAt'])
+        ) ||
+        (
+          resource.data.get('type', '') == 'message' &&
+          isEmail(request.resource.data.get('senderEmail', '')) &&
+          request.resource.data.diff(resource.data).affectedKeys().hasOnly(['read', 'unreadCount', 'updatedAt', 'title', 'description'])
+        )
+      ));
+
+      allow delete: if isAdmin() || (signedIn() && isEmail(resource.data.get('recipientEmail', '')));
+    }
+
+    // ==========================================
+    // 7b. Site content edited by the admin (shop catalogue: site_content/shop)
+    // ==========================================
+    match /site_content/{docId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 8. Blogs (tutors publish, anyone reads, signed-in users comment)
+    // Limit: each tutor can publish at most 2 blogs per calendar month (UTC).
+    // ==========================================
+    function monthTag() {
+      return string(request.time.year()) + '_' + string(request.time.month());
+    }
+    function quotaPath() {
+      return /databases/$(database)/documents/blog_quota/$(request.auth.uid + '_' + monthTag());
+    }
+
+    match /blog_quota/{qid} {
+      allow read: if isAdmin() || (signedIn() && qid.matches(request.auth.uid + '_.*'));
+      allow create: if signedIn()
+        && qid == request.auth.uid + '_' + monthTag()
+        && request.resource.data.keys().hasOnly(['uid', 'count'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.count == 1;
+      allow update: if signedIn()
+        && qid == request.auth.uid + '_' + monthTag()
+        && resource.data.uid == request.auth.uid
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.count == resource.data.count + 1
+        && request.resource.data.count <= 2;
+      allow delete: if isAdmin();
+    }
+
+    match /blogs/{blogId} {
+      allow read: if true;
+
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['authorUid', 'authorName', 'title', 'category', 'excerpt', 'body', 'read', 'createdAt', 'slug'])
+        && request.resource.data.authorUid == request.auth.uid
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 5 && request.resource.data.title.size() <= 150
+        && request.resource.data.body is string
+        && request.resource.data.body.size() >= 100 && request.resource.data.body.size() <= 20000
+        && request.resource.data.authorName is string && request.resource.data.authorName.size() <= 80
+        && request.resource.data.excerpt is string && request.resource.data.excerpt.size() <= 200
+        && (!('slug' in request.resource.data) || (request.resource.data.slug is string && request.resource.data.slug.size() <= 200))
+        && getAfter(quotaPath()).data.count <= 2
+        && getAfter(quotaPath()).data.count == (exists(quotaPath()) ? get(quotaPath()).data.count : 0) + 1
+        && blogId == request.auth.uid + '_' + monthTag() + '_' + string(getAfter(quotaPath()).data.count);
+
+      // Admin can publish from the Admin Dashboard without the monthly limit
+      allow create: if isAdmin()
+        && request.resource.data.title is string
+        && request.resource.data.title.size() >= 5 && request.resource.data.title.size() <= 150
+        && request.resource.data.body is string
+        && request.resource.data.body.size() >= 100 && request.resource.data.body.size() <= 20000;
+
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (signedIn() && resource.data.authorUid == request.auth.uid);
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if signedIn()
+          && request.resource.data.keys().hasOnly(['uid', 'name', 'role', 'text', 'createdAt'])
+          && request.resource.data.uid == request.auth.uid
+          && request.resource.data.createdAt == request.time
+          && request.resource.data.text is string
+          && request.resource.data.text.size() >= 1 && request.resource.data.text.size() <= 1000
+          && request.resource.data.name is string && request.resource.data.name.size() <= 80
+          && request.resource.data.role is string && request.resource.data.role.size() <= 30
+          && exists(/databases/$(database)/documents/blogs/$(blogId));
+        allow update: if false;
+        // The commenter, the blog's author and the admin can remove a comment
+        allow delete: if isAdmin() || (signedIn() && (
+          resource.data.uid == request.auth.uid ||
+          get(/databases/$(database)/documents/blogs/$(blogId)).data.authorUid == request.auth.uid
+        ));
+      }
+    }
+
+    // ==========================================
+    // 9. Reviews (visitors send a review as "pending"; the admin approves, edits and deletes)
+    // Anyone can read approved reviews. Pending/hidden ones are visible to the admin only.
+    // ==========================================
+    match /reviews/{reviewId} {
+      allow read: if resource.data.status == 'approved' || isAdmin();
+      allow create: if isAdmin() || (signedIn()
+        && request.resource.data.keys().hasOnly(['name', 'role', 'place', 'stars', 'text', 'status', 'createdAt'])
+        && request.resource.data.status == 'pending'
+        && request.resource.data.createdAt == request.time
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 60
+        && request.resource.data.role is string && request.resource.data.role.size() <= 40
+        && request.resource.data.place is string && request.resource.data.place.size() <= 40
+        && request.resource.data.stars is int && request.resource.data.stars >= 1 && request.resource.data.stars <= 5
+        && request.resource.data.text is string && request.resource.data.text.size() >= 20 && request.resource.data.text.size() <= 500);
+      allow update, delete: if isAdmin();
+    }
+
+    // ==========================================
+    // 10. Students' Corner (free notes, files and quizzes: anyone reads, only the admin writes)
+    // Files are stored as base64 pieces in corner_chunks (no Firebase Storage needed).
+    // ==========================================
+    match /corner_items/{itemId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+    match /corner_chunks/{chunkId} {
+      allow read: if true;
+      allow create, update, delete: if isAdmin();
+    }
+  }
+}

@@ -1,0 +1,54 @@
+name: Security Audit & Automated Testing
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  security-audit:
+    name: Security & Secret Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 18
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci || npm install
+
+      - name: Verify No Committed Secrets
+        run: |
+          echo "Scanning for accidental secret file commits..."
+          FORBIDDEN=$(git ls-files | grep -E '(^|/)(\.env|\.pem|.*serviceAccount.*\.json|.*credentials.*\.json)$' | grep -v '\.env\.example' || true)
+          if [ -n "$FORBIDDEN" ]; then
+            echo "::error::Found forbidden secret files committed to the repository: $FORBIDDEN"
+            exit 1
+          fi
+          echo "No forbidden secret files committed."
+
+      - name: Scan Codebase for Leaked Private Keys
+        run: |
+          echo "Scanning repository files for private keys..."
+          LEAKED=$(grep -rnE "BEGIN (RSA|EC|DSA|OPENSSH )?PRIVATE KEY" . --exclude-dir=node_modules --exclude-dir=.git --exclude-dir=.github || true)
+          if [ -n "$LEAKED" ]; then
+            echo "::error::Leaked private key detected in source code: $LEAKED"
+            exit 1
+          fi
+          echo "No private keys detected."
+
+      - name: Run Functional Verification Scenarios
+        run: node tests/test-scenarios.js
+
+      - name: Run Security Rules & Access Control Test Suite
+        run: node tests/test-security-suite.cjs
+

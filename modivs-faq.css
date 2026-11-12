@@ -1,0 +1,16 @@
+/* Page FAQ section (shared, same look as home page FAQ) */
+.mvfaq{background:#fff;border-top:1.5px solid #eadfc9;padding:56px 20px 64px;color:#1A2035;font-family:inherit}
+.mvfaq-in{max-width:1180px;margin:0 auto}
+.mvfaq h2{font-size:clamp(1.6rem,3vw,2.2rem);letter-spacing:-.02em;line-height:1.2;margin:0 0 6px;color:#1A2035}
+.mvfaq-sub{color:#555b78;margin:0 0 20px;max-width:640px}
+.mvfaq-list{max-width:820px}
+.mvfaq details{border-bottom:1.5px solid #eadfc9;padding:4px 0}
+.mvfaq summary{cursor:pointer;font-weight:600;padding:14px 30px 14px 0;list-style:none;position:relative;color:#1A2035}
+.mvfaq summary::-webkit-details-marker{display:none}
+.mvfaq summary::after{content:"+";position:absolute;right:4px;top:12px;font-size:1.4rem;font-weight:400;line-height:1}
+.mvfaq details[open] summary::after{content:"–"}
+.mvfaq-a{color:#555b78;max-width:700px;padding-bottom:6px}
+.mvfaq-a p{margin:0 0 12px}
+.mvfaq a{color:#1A2035;font-weight:600;text-decoration:underline;text-decoration-color:#EBB92E;text-underline-offset:3px}
+.mvfaq-more{margin:20px 0 0;color:#555b78}
+@media(max-width:560px){.mvfaq{padding:40px 16px 48px}}
