@@ -1,6 +1,9 @@
-const admin = require('firebase-admin');
+const { initializeApp, getApps, cert } = require('firebase-admin/app');
+const { getFirestore, FieldValue } = require('firebase-admin/firestore');
+const { getAuth } = require('firebase-admin/auth');
 
-if (!admin.apps.length) {
+let app;
+if (!getApps().length) {
   const projectId = process.env.FIREBASE_PROJECT_ID || 'modivs-education';
   const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
   let privateKey = process.env.FIREBASE_PRIVATE_KEY;
@@ -10,8 +13,8 @@ if (!admin.apps.length) {
   }
 
   if (clientEmail && privateKey) {
-    admin.initializeApp({
-      credential: admin.credential.cert({
+    app = initializeApp({
+      credential: cert({
         projectId,
         clientEmail,
         privateKey
@@ -19,16 +22,22 @@ if (!admin.apps.length) {
       databaseURL: `https://${projectId}.firebaseio.com`
     });
   } else {
-    // Falls back to Application Default Credentials or default emulator config
-    admin.initializeApp({
+    app = initializeApp({
       projectId,
       databaseURL: `https://${projectId}.firebaseio.com`
     });
   }
+} else {
+  app = getApps()[0];
 }
 
-const db = admin.firestore();
-const auth = admin.auth();
+const db = getFirestore(app);
+const auth = getAuth(app);
 
-module.exports = { admin, db, auth };
+const admin = {
+  firestore: {
+    FieldValue
+  }
+};
 
+module.exports = { admin, db, auth, FieldValue };

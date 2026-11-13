@@ -1,4 +1,3 @@
-const cookie = require('cookie');
 const { admin, db, auth } = require('./_firebase');
 
 const SESSION_COOKIE_NAME = 'modivs_session';
@@ -15,31 +14,34 @@ function normalizeEmail(email) {
 }
 
 function parseCookies(req) {
-  return cookie.parse(req.headers.cookie || '');
+  const list = {};
+  const rc = req && req.headers && req.headers.cookie;
+  if (!rc) return list;
+  rc.split(';').forEach(c => {
+    const parts = c.split('=');
+    const key = parts.shift().trim();
+    if (key) {
+      try {
+        list[key] = decodeURIComponent(parts.join('=').trim());
+      } catch (e) {
+        list[key] = parts.join('=').trim();
+      }
+    }
+  });
+  return list;
 }
 
 function setSessionCookie(res, sessionCookie) {
   const isProd = process.env.NODE_ENV === 'production';
-  const serialized = cookie.serialize(SESSION_COOKIE_NAME, sessionCookie, {
-    maxAge: SESSION_EXPIRY_MS / 1000,
-    httpOnly: true,
-    secure: isProd,
-    path: '/',
-    sameSite: 'lax'
-  });
-  res.setHeader('Set-Cookie', serialized);
+  const maxAge = Math.floor(SESSION_EXPIRY_MS / 1000);
+  const cookieStr = `${SESSION_COOKIE_NAME}=${sessionCookie}; Max-Age=${maxAge}; Path=/; HttpOnly; SameSite=Lax${isProd ? '; Secure' : ''}`;
+  res.setHeader('Set-Cookie', cookieStr);
 }
 
 function clearSessionCookie(res) {
   const isProd = process.env.NODE_ENV === 'production';
-  const serialized = cookie.serialize(SESSION_COOKIE_NAME, '', {
-    maxAge: 0,
-    httpOnly: true,
-    secure: isProd,
-    path: '/',
-    sameSite: 'lax'
-  });
-  res.setHeader('Set-Cookie', serialized);
+  const cookieStr = `${SESSION_COOKIE_NAME}=; Max-Age=0; Path=/; HttpOnly; SameSite=Lax${isProd ? '; Secure' : ''}`;
+  res.setHeader('Set-Cookie', cookieStr);
 }
 
 async function verifyAuth(req) {
@@ -104,4 +106,3 @@ module.exports = {
   verifyAuth,
   checkCsrf
 };
-
