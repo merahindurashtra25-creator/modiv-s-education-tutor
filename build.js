@@ -47,7 +47,7 @@ const tempCombined = path.join(__dirname, '.temp_bundle.js');
 fs.writeFileSync(tempCombined, combined, 'utf8');
 
 try {
-  execSync(`npx terser "${tempCombined}" -c -m -o modivs.min.js`, { stdio: 'inherit' });
+  execSync(`npx --yes terser "${tempCombined}" -c -m -o modivs.min.js`, { stdio: 'inherit' });
   const minSize = fs.statSync('modivs.min.js').size;
   console.log(`✓ modivs.min.js created successfully (${Math.round(minSize / 1024)} KB)`);
 } finally {
