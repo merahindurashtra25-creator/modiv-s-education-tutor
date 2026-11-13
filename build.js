@@ -53,3 +53,4 @@ try {
 } finally {
   if (fs.existsSync(tempCombined)) fs.unlinkSync(tempCombined);
 }
+

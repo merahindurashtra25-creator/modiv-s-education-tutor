@@ -2,7 +2,7 @@
 const assert = require('assert');
 const https = require('https');
 
-const API_KEY = Buffer.from('QUl6YVN5QjJJOGlGRGtjdVpKQkRCd2tBTEhOZW9JUjNhOWstZmNZ', 'base64').toString('utf8');
+const API_KEY = Buffer.from('QUl6YVN5QjJJOGlGRGtjVVpKQkRCd2tBTEhOZW9JUjNhOWstZmNZ', 'base64').toString('utf8');
 const PROJECT_ID = 'modivs-education';
 
 function post(url, data, token) {

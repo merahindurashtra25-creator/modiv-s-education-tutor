@@ -8,7 +8,7 @@
     return s;
   }
   var firebaseConfig = (typeof window !== 'undefined' && window.__MODIVS_CONFIG__) || {
-    apiKey: _d('QUl6YVN5QjJJOGlGRGtjdVpKQkRCd2tBTEhOZW9JUjNhOWstZmNZ'),
+    apiKey: _d('QUl6YVN5QjJJOGlGRGtjVVpKQkRCd2tBTEhOZW9JUjNhOWstZmNZ'),
     authDomain: _d('bW9kaXZzLWVkdWNhdGlvbi5maXJlYmFzZWFwcC5jb20='),
     projectId: _d('bW9kaXZzLWVkdWNhdGlvbg=='),
     storageBucket: _d('bW9kaXZzLWVkdWNhdGlvbi5maXJlYmFzZXN0b3JhZ2UuYXBw'),

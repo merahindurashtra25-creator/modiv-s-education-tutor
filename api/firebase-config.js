@@ -18,7 +18,7 @@ module.exports = function handler(req, res) {
 
   const _d = s => Buffer.from(s, 'base64').toString('utf8');
   res.status(200).json({
-    apiKey: process.env.FIREBASE_API_KEY || _d('QUl6YVN5QjJJOGlGRGtjdVpKQkRCd2tBTEhOZW9JUjNhOWstZmNZ'),
+    apiKey: process.env.FIREBASE_API_KEY || _d('QUl6YVN5QjJJOGlGRGtjVVpKQkRCd2tBTEhOZW9JUjNhOWstZmNZ'),
     authDomain: process.env.FIREBASE_AUTH_DOMAIN || 'modivs-education.firebaseapp.com',
     projectId: process.env.FIREBASE_PROJECT_ID || 'modivs-education',
     storageBucket: process.env.FIREBASE_STORAGE_BUCKET || 'modivs-education.firebasestorage.app',
