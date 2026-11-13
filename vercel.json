@@ -38,6 +38,7 @@
     }
   ],
   "routes": [
+    { "src": "/firebase-config.js", "status": 404 },
     { "src": "/api/firebase-config", "dest": "/api/firebase-config.js" },
     { "src": "/admin", "dest": "/modivs-admin.html" },
     { "src": "/login", "dest": "/modivs-education.html" },

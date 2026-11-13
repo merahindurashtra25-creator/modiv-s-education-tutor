@@ -319,10 +319,10 @@ async function runAllSecurityTests() {
     assert(fnCode.includes('if (!RAZORPAY_KEY_SECRET)'), 'Payment functions must validate RAZORPAY_KEY_SECRET is configured');
   });
 
-  test('Firebase App Check: firebase-config.js defines App Check manager and debug token support', () => {
-    const cfgJs = fs.readFileSync(path.join(ROOT_DIR, 'firebase-config.js'), 'utf8');
-    assert(cfgJs.includes('window.ModivsAppCheck'), 'firebase-config.js must export window.ModivsAppCheck');
-    assert(cfgJs.includes('FIREBASE_APPCHECK_DEBUG_TOKEN'), 'firebase-config.js must support debug token for local testing');
+  test('Firebase App Check: firebase-sync.js defines App Check manager and debug token support', () => {
+    const syncJs = fs.readFileSync(path.join(ROOT_DIR, 'firebase-sync.js'), 'utf8');
+    assert(syncJs.includes('window.ModivsAppCheck'), 'firebase-sync.js must export window.ModivsAppCheck');
+    assert(syncJs.includes('FIREBASE_APPCHECK_DEBUG_TOKEN'), 'firebase-sync.js must support debug token for local testing');
   });
 
   console.log('\n====================================================');
