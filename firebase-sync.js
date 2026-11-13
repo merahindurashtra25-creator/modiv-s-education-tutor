@@ -2,9 +2,9 @@
   'use strict';
 
   // Integrated Firebase & App Check Initialization
-  function _d(s){
-    if(typeof atob === 'function') return atob(s);
-    if(typeof Buffer !== 'undefined') return Buffer.from(s, 'base64').toString('utf8');
+  function _d(s) {
+    if (typeof atob === 'function') return atob(s);
+    if (typeof Buffer !== 'undefined') return Buffer.from(s, 'base64').toString('utf8');
     return s;
   }
   var firebaseConfig = (typeof window !== 'undefined' && window.__MODIVS_CONFIG__) || {
@@ -19,7 +19,7 @@
   if (typeof window !== 'undefined' && window.firebase) {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
     var appCheck = null;
-    function initAppCheck(customSiteKey){
+    function initAppCheck(customSiteKey) {
       var siteKey = customSiteKey || window.MODIVS_RECAPTCHA_KEY || window.APPCHECK_RECAPTCHA_KEY;
       var isLocal = typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
       if (isLocal && typeof self !== 'undefined' && self.FIREBASE_APPCHECK_DEBUG_TOKEN === undefined) {
@@ -31,7 +31,7 @@
           ac.activate(new firebase.appCheck.ReCaptchaV3Provider(siteKey), isLocal ? false : true);
           if (window.EducationBFirebase) window.EducationBFirebase.appCheck = ac;
           return ac;
-        } catch(appCheckErr){
+        } catch (appCheckErr) {
           console.warn('Firebase App Check notice:', appCheckErr && appCheckErr.message);
         }
       }
