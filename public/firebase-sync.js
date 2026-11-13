@@ -1,6 +1,23 @@
 (function () {
   'use strict';
 
+  if (typeof window !== 'undefined' && window.firebase) {
+    try {
+      if (!window.firebase.apps.length) {
+        var cfg = window.__MODIVS_CONFIG__ || {
+          apiKey: 'AIzaSyB2I8iFDkcUZJBDBwkALHNeoIR3a9k-fcY',
+          authDomain: 'modivs-education.firebaseapp.com',
+          projectId: 'modivs-education',
+          storageBucket: 'modivs-education.firebasestorage.app',
+          messagingSenderId: '821328108086',
+          appId: '1:821328108086:web:852c06bc88fb39d0961697',
+          measurementId: 'G-H4JWBNLBC5'
+        };
+        window.firebase.initializeApp(cfg);
+      }
+    } catch (e) {}
+  }
+
   function db() {
     if (window.EducationBFirebase && window.EducationBFirebase.db) return window.EducationBFirebase.db;
     if (window.firebase && firebase.apps && firebase.apps.length) return firebase.firestore();

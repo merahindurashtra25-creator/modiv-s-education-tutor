@@ -472,6 +472,57 @@
     });
   }
 
+  function loadScript(src) {
+    return new Promise(function(resolve, reject){
+      if (typeof document === 'undefined') return reject(new Error('No document'));
+      var existing = document.querySelector('script[src="' + src + '"]');
+      if (existing) {
+        if (existing.getAttribute('data-loaded')) return resolve();
+        existing.addEventListener('load', resolve);
+        existing.addEventListener('error', reject);
+        return;
+      }
+      var s = document.createElement('script');
+      s.src = src;
+      s.onload = function(){ s.setAttribute('data-loaded', 'true'); resolve(); };
+      s.onerror = reject;
+      document.head.appendChild(s);
+    });
+  }
+
+  function ensureFirebaseAuth() {
+    if (window.firebase && window.firebase.auth && auth()) {
+      return Promise.resolve(auth());
+    }
+    return loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js')
+      .then(function(){
+        return loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js');
+      })
+      .then(function(){
+        return loadScript('https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js');
+      })
+      .then(function(){
+        if (!window.firebase.apps.length) {
+          var cfg = (typeof window !== 'undefined' && window.__MODIVS_CONFIG__) || {
+            apiKey: 'AIzaSyB2I8iFDkcUZJBDBwkALHNeoIR3a9k-fcY',
+            authDomain: 'modivs-education.firebaseapp.com',
+            projectId: 'modivs-education',
+            storageBucket: 'modivs-education.firebasestorage.app',
+            messagingSenderId: '821328108086',
+            appId: '1:821328108086:web:852c06bc88fb39d0961697',
+            measurementId: 'G-H4JWBNLBC5'
+          };
+          window.firebase.initializeApp(cfg);
+        }
+        var fbAuth = window.firebase.auth();
+        var fbDb = window.firebase.firestore();
+        window.EducationBFirebase = window.EducationBFirebase || {};
+        window.EducationBFirebase.auth = fbAuth;
+        window.EducationBFirebase.db = fbDb;
+        return fbAuth;
+      });
+  }
+
   /*
     Unified Google Sign-In / Sign-Up handler
     Enforces that Google authentication follows the selected registration page role.
@@ -481,13 +532,7 @@
   function continueWithGoogle(pageRole, options){
     options = options || {};
     var roleKey = normalizeRoleKey(pageRole);
-    var fbAuth = auth();
     var noticeContainer = options.noticeContainer || options.msgEl;
-
-    if(!fbAuth || !window.firebase || !firebase.auth){
-      if(options.onError) options.onError('Firebase authentication is not available right now. Please check your connection.');
-      return;
-    }
 
     if(typeof location !== 'undefined' && location.protocol === 'file:'){
       var fileMsg = 'Google Sign-In cannot run from a local file (file://). Please open through a local web server (e.g. Live Server / http://localhost) or test on your deployed website, or log in with Email & Password above.';
@@ -496,53 +541,60 @@
       return Promise.reject(new Error(fileMsg));
     }
 
-    var provider = new firebase.auth.GoogleAuthProvider();
-    provider.setCustomParameters({ prompt: 'select_account' });
-
     if(options.button) options.button.disabled = true;
 
-    function handleAuthError(err){
-      if(options.button) options.button.disabled = false;
-      var c = err && err.code;
-      if(c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return;
+    return ensureFirebaseAuth().then(function(fbAuth){
+      var provider = new firebase.auth.GoogleAuthProvider();
+      provider.setCustomParameters({ prompt: 'select_account' });
 
-      if(c === 'EMAIL_EXISTS'){
-        if(noticeContainer) renderDuplicateNotice(noticeContainer, err.role || err.existingRole, roleKey);
+      function handleAuthError(err){
+        if(options.button) options.button.disabled = false;
+        var c = err && err.code;
+        if(c === 'auth/popup-closed-by-user' || c === 'auth/cancelled-popup-request') return;
+
+        if(c === 'EMAIL_EXISTS'){
+          if(noticeContainer) renderDuplicateNotice(noticeContainer, err.role || err.existingRole, roleKey);
+          return Promise.reject(err);
+        }
+
+        // If popup fails with internal error or popup-blocked, fall back to redirect automatically
+        if(c === 'auth/internal-error' || c === 'auth/popup-blocked'){
+          console.warn('Google popup encountered ' + c + ', falling back to signInWithRedirect...');
+          try {
+            sessionStorage.setItem('modivs_google_pending', JSON.stringify({
+              role: roleKey,
+              isLogin: !!options.isLogin
+            }));
+            return fbAuth.signInWithRedirect(provider);
+          } catch(redirErr){
+            console.warn('Redirect fallback error:', redirErr);
+          }
+        }
+
+        var cleanMsg = (err && err.message) ? err.message.replace(/^Firebase:\s*Error\s*\(([^)]+)\)\.?/i, '$1') : 'Please try again.';
+        if(c === 'auth/internal-error'){
+          cleanMsg = 'Popup was interrupted. Please disable popup blockers, allow third-party cookies, or log in with Email & Password.';
+        } else if(c === 'auth/unauthorized-domain'){
+          var host = (typeof location !== 'undefined') ? location.hostname : 'current domain';
+          cleanMsg = 'Domain (' + host + ') is not authorized in Firebase Console yet. Please add it to Firebase Console > Authentication > Settings > Authorized Domains.';
+        }
+
+        var msg = 'Google authentication notice: ' + cleanMsg;
+        if(options.onError) options.onError(msg);
+        else console.error('Google auth error', err);
         return Promise.reject(err);
       }
 
-      // If popup fails with internal error or popup-blocked, fall back to redirect automatically
-      if(c === 'auth/internal-error' || c === 'auth/popup-blocked'){
-        console.warn('Google popup encountered ' + c + ', falling back to signInWithRedirect...');
-        try {
-          sessionStorage.setItem('modivs_google_pending', JSON.stringify({
-            role: roleKey,
-            isLogin: !!options.isLogin
-          }));
-          return fbAuth.signInWithRedirect(provider);
-        } catch(redirErr){
-          console.warn('Redirect fallback error:', redirErr);
-        }
-      }
-
-      var cleanMsg = (err && err.message) ? err.message.replace(/^Firebase:\s*Error\s*\(([^)]+)\)\.?/i, '$1') : 'Please try again.';
-      if(c === 'auth/internal-error'){
-        cleanMsg = 'Popup was interrupted. Please disable popup blockers, allow third-party cookies, or log in with Email & Password.';
-      } else if(c === 'auth/unauthorized-domain'){
-        var host = (typeof location !== 'undefined') ? location.hostname : 'current domain';
-        cleanMsg = 'Domain (' + host + ') is not authorized in Firebase Console yet. Please add it to Firebase Console > Authentication > Settings > Authorized Domains.';
-      }
-
-      var msg = 'Google authentication notice: ' + cleanMsg;
-      if(options.onError) options.onError(msg);
-      else console.error('Google auth error', err);
-      return Promise.reject(err);
-    }
-
-    return fbAuth.signInWithPopup(provider).then(function(res){
+      return fbAuth.signInWithPopup(provider).then(function(res){
+        if(options.button) options.button.disabled = false;
+        return processGoogleUser(res.user, pageRole, options);
+      }).catch(handleAuthError);
+    }).catch(function(err){
       if(options.button) options.button.disabled = false;
-      return processGoogleUser(res.user, pageRole, options);
-    }).catch(handleAuthError);
+      var msg = 'Firebase authentication could not be loaded. Please check your network connection.';
+      if(options.onError) options.onError(msg);
+      return Promise.reject(err);
+    });
   }
 
   // Auto-resolve Google Auth redirect results on page load

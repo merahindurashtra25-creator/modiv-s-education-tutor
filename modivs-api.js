@@ -153,24 +153,45 @@
 
   // Provide seamless compatibility bridge for existing code expecting EducationBFirebase
   window.ModivsAPI = ModivsAPI;
-  window.EducationBFirebase = window.EducationBFirebase || {
-    isBackendDriven: true,
-    auth: {
-      currentUser: null,
-      signOut: () => ModivsAPI.auth.logout(),
-      onAuthStateChanged: function(callback) {
-        ModivsAPI.auth.me().then(res => {
-          if (res && res.authenticated && res.user) {
-            window.EducationBFirebase.auth.currentUser = res.user;
-            callback(res.user);
-          } else {
-            window.EducationBFirebase.auth.currentUser = null;
-            callback(null);
-          }
-        }).catch(() => callback(null));
-      }
+  var realAuth = null;
+
+  function getRealAuth() {
+    if (realAuth && typeof realAuth.signInWithPopup === 'function') return realAuth;
+    if (typeof window !== 'undefined' && window.firebase && typeof window.firebase.auth === 'function') {
+      try {
+        if (window.firebase.apps && window.firebase.apps.length) return window.firebase.auth();
+      } catch (e) {}
     }
-  };
+    return null;
+  }
+
+  var existing = window.EducationBFirebase || {};
+  if (existing.auth && typeof existing.auth.signInWithPopup === 'function') {
+    realAuth = existing.auth;
+  }
+
+  window.EducationBFirebase = Object.assign({}, existing, {
+    get auth() {
+      var activeAuth = getRealAuth();
+      if (activeAuth) return activeAuth;
+      return {
+        currentUser: null,
+        signOut: () => ModivsAPI.auth.logout(),
+        onAuthStateChanged: function(callback) {
+          ModivsAPI.auth.me().then(res => {
+            if (res && res.authenticated && res.user) {
+              callback(res.user);
+            } else {
+              callback(null);
+            }
+          }).catch(() => callback(null));
+        }
+      };
+    },
+    set auth(val) {
+      realAuth = val;
+    }
+  });
 
 })(typeof window !== 'undefined' ? window : globalThis);
 
