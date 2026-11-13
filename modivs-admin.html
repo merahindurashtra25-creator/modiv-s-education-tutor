@@ -2587,7 +2587,12 @@
       var currentAdmin = (function () {
         try { return JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); } catch (e) { return null; }
       })();
-      var currentAdminEmail = (currentAdmin && currentAdmin.email) || 'happinessaggarwal@gmail.com';
+      var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
+      var currentAdminEmail = (currentAdmin && currentAdmin.email) ? String(currentAdmin.email).toLowerCase().trim() : '';
+      if (!currentAdminEmail || ADMIN_EMAILS.indexOf(currentAdminEmail) === -1) {
+        window.location.replace('modivs-education.html#login');
+        return;
+      }
 
       // Update admin header info pill
       try {

@@ -568,8 +568,32 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   });
 
   if($('forgot')){
-    $('forgot').addEventListener('click',function(){
-      toast('Password recovery reset link sent to your registered email.');
+    $('forgot').addEventListener('click', function(){
+      var em = $('lEmail');
+      var emailVal = (em ? em.value : '').trim().toLowerCase();
+      if(!emailOk(emailVal)){
+        if(em){ bad(em, true); em.focus(); }
+        toast('Please enter your registered email address in the email field first.');
+        return;
+      }
+      var fb = window.EducationBFirebase;
+      if(fb && fb.auth){
+        toast('Sending password reset email to ' + emailVal + '...');
+        fb.auth.sendPasswordResetEmail(emailVal).then(function(){
+          toast('Password reset email sent! Check your inbox and spam folder.');
+        }).catch(function(err){
+          var code = err && err.code;
+          if(code === 'auth/user-not-found'){
+            toast('No registered account found with that email address.');
+          } else if(code === 'auth/too-many-requests'){
+            toast('Too many requests. Please wait a few minutes before trying again.');
+          } else {
+            toast(err && err.message ? err.message : 'Unable to send password reset email. Please try again.');
+          }
+        });
+      } else {
+        toast('Password recovery reset link sent to your registered email.');
+      }
     });
   }
 
@@ -619,16 +643,37 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     if(!emailOk(emailVal)){ bad(em, true); msg.textContent = 'Enter a valid email address.'; return; }
     if(!pw.value){ bad(pw, true); msg.textContent = 'Enter your password.'; return; }
 
+    // Progressive login lockout check
+    if(window.ModivsAuth && ModivsAuth.getLockoutStatus){
+      var lockStatus = ModivsAuth.getLockoutStatus(emailVal);
+      if(lockStatus.locked){
+        var remStr = ModivsAuth.formatLockoutRemaining(lockStatus.remainingMs);
+        msg.textContent = lockStatus.requireReset
+          ? ('Account locked for ' + remStr + ' due to multiple failed attempts. Please use "Forgot Password?" to reset.')
+          : ('Account temporarily locked (' + remStr + ' remaining). Please wait before trying again.');
+        return;
+      }
+    }
+
     // Admin authentication: authenticates directly via Firebase Auth
     if(isAdminEmail(emailVal)){
       if(window.EducationBFirebase && window.EducationBFirebase.auth){
         msg.textContent = 'Verifying administrator credentials...';
         window.EducationBFirebase.auth.signInWithEmailAndPassword(emailVal, pw.value).then(function(result){
           msg.textContent = '';
+          if(window.ModivsAuth && ModivsAuth.resetFailedAttempts) ModivsAuth.resetFailedAttempts(emailVal);
           handleAdminLoginSuccess(emailVal, (result.user && result.user.displayName) || 'Admin', result.user && result.user.uid);
         }).catch(function(err){
           bad(pw, true);
-          msg.textContent = err && err.message ? err.message : 'Invalid administrator credentials.';
+          var lockRes = (window.ModivsAuth && ModivsAuth.recordFailedAttempt) ? ModivsAuth.recordFailedAttempt(emailVal) : { locked: false };
+          if(lockRes.locked){
+            var rem = ModivsAuth.formatLockoutRemaining(lockRes.remainingMs);
+            msg.textContent = lockRes.requireReset
+              ? ('Account locked for ' + rem + ' due to 5 failed attempts. Please reset password.')
+              : ('Too many failed attempts. Account locked for ' + rem + '.');
+          } else {
+            msg.textContent = err && err.message ? err.message : 'Invalid administrator credentials.';
+          }
         });
         return;
       }
@@ -688,17 +733,28 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       }
     }
 
-    if(window.EducationBFirebase && !window.EducationBFirebase.auth.currentUser && !window.__firebaseLoginInProgress){
+    if(window.EducationBFirebase && window.EducationBFirebase.auth){
       window.__firebaseLoginInProgress = true;
+      msg.textContent = 'Verifying credentials...';
       window.EducationBFirebase.auth.signInWithEmailAndPassword(emailVal, pw.value).then(function(result){
         window.__firebaseLoginInProgress = false;
+        msg.textContent = '';
+        if(window.ModivsAuth && ModivsAuth.resetFailedAttempts) ModivsAuth.resetFailedAttempts(emailVal);
         window.__firebaseUid = result.user.uid;
         proceedLogin(result.user.uid);
       }).catch(function(err){
         window.__firebaseLoginInProgress = false;
-        var found = users.find(function(x){ return x.email === emailVal; });
-        if(found){
-          proceedLogin('local_' + Date.now());
+        bad(pw, true);
+        var lockRes = (window.ModivsAuth && ModivsAuth.recordFailedAttempt) ? ModivsAuth.recordFailedAttempt(emailVal) : { locked: false };
+        if(lockRes.locked){
+          var rem = ModivsAuth.formatLockoutRemaining(lockRes.remainingMs);
+          if(lockRes.attempts >= 5){
+            msg.textContent = 'Account locked for ' + rem + ' due to 5 failed attempts. Use "Forgot Password?" to reset.';
+          } else if(lockRes.attempts === 4){
+            msg.textContent = 'Warning: 4 failed attempts. Account locked for ' + rem + '. 1 more attempt will lock for 60 minutes.';
+          } else {
+            msg.textContent = 'Too many failed attempts. Account temporarily locked for ' + rem + '.';
+          }
           return;
         }
         if(window.ModivsAuth){

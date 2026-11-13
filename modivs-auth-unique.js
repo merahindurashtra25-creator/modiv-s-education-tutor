@@ -565,6 +565,97 @@
     }
   } catch(e){}
 
+  // Progressive Login Rate Limiting & Lockout Enforcement
+  var LOCKOUT_PREFIX = 'modivs_login_lockout_';
+
+  function getStorage(){
+    try {
+      if(typeof window !== 'undefined' && window.localStorage) return window.localStorage;
+      if(typeof localStorage !== 'undefined') return localStorage;
+    } catch(e){}
+    return null;
+  }
+
+  function getLockoutStatus(email){
+    var mail = normalizeEmail(email);
+    if(!mail) return { locked: false, attempts: 0, remainingMs: 0 };
+    var storage = getStorage();
+    if(!storage) return { locked: false, attempts: 0, remainingMs: 0 };
+    try {
+      var raw = storage.getItem(LOCKOUT_PREFIX + mail);
+      if(!raw) return { locked: false, attempts: 0, remainingMs: 0 };
+      var data = JSON.parse(raw);
+      var now = Date.now();
+      if(data.lockoutUntil && now < data.lockoutUntil){
+        return {
+          locked: true,
+          attempts: data.attempts || 0,
+          remainingMs: data.lockoutUntil - now,
+          lockoutUntil: data.lockoutUntil,
+          requireReset: (data.attempts >= 5)
+        };
+      }
+      if(data.lockoutUntil && now >= data.lockoutUntil){
+        storage.removeItem(LOCKOUT_PREFIX + mail);
+        return { locked: false, attempts: 0, remainingMs: 0 };
+      }
+      return { locked: false, attempts: data.attempts || 0, remainingMs: 0 };
+    } catch(e){
+      return { locked: false, attempts: 0, remainingMs: 0 };
+    }
+  }
+
+  function recordFailedAttempt(email){
+    var mail = normalizeEmail(email);
+    if(!mail) return { locked: false, attempts: 1, remainingMs: 0 };
+    var storage = getStorage();
+    try {
+      var status = getLockoutStatus(mail);
+      var attempts = (status.attempts || 0) + 1;
+      var lockoutDurationMs = 0;
+      var requireReset = false;
+
+      if(attempts >= 5){
+        lockoutDurationMs = 60 * 60 * 1000;
+        requireReset = true;
+      } else if(attempts === 4){
+        lockoutDurationMs = 10 * 60 * 1000;
+      } else if(attempts === 3){
+        lockoutDurationMs = 3 * 60 * 1000;
+      }
+
+      var record = {
+        attempts: attempts,
+        lastFailed: Date.now(),
+        lockoutUntil: lockoutDurationMs > 0 ? (Date.now() + lockoutDurationMs) : 0,
+        requireReset: requireReset
+      };
+      if(storage) storage.setItem(LOCKOUT_PREFIX + mail, JSON.stringify(record));
+      return {
+        locked: lockoutDurationMs > 0,
+        attempts: attempts,
+        remainingMs: lockoutDurationMs,
+        requireReset: requireReset
+      };
+    } catch(e){
+      return { locked: false, attempts: 1, remainingMs: 0 };
+    }
+  }
+
+  function resetFailedAttempts(email){
+    var mail = normalizeEmail(email);
+    if(!mail) return;
+    var storage = getStorage();
+    try { if(storage) storage.removeItem(LOCKOUT_PREFIX + mail); } catch(e){}
+  }
+
+  function formatLockoutRemaining(remainingMs){
+    var totalSec = Math.max(1, Math.ceil(remainingMs / 1000));
+    var m = Math.floor(totalSec / 60);
+    var s = totalSec % 60;
+    return m > 0 ? (m + 'm ' + (s < 10 ? '0' : '') + s + 's') : (s + 's');
+  }
+
   window.ModivsAuthUnique = {
     normalizeEmail: normalizeEmail,
     normalizeRoleKey: normalizeRoleKey,
@@ -574,6 +665,10 @@
     registerAccount: registerAccountAtomic,
     renderDuplicateNotice: renderDuplicateNotice,
     continueWithGoogle: continueWithGoogle,
+    getLockoutStatus: getLockoutStatus,
+    recordFailedAttempt: recordFailedAttempt,
+    resetFailedAttempts: resetFailedAttempts,
+    formatLockoutRemaining: formatLockoutRemaining,
     ROLE_META: ROLE_META,
     ADMIN_EMAILS: ADMIN_EMAILS
   };

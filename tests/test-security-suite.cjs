@@ -197,6 +197,102 @@ async function runAllSecurityTests() {
     assert(fs.existsSync(scenariosTestFile), 'tests/test-scenarios.js must exist');
   });
 
+  // --- SECTION 7: AUTHENTICATION HARDENING, RATE LIMITING & BRUTE FORCE DEFENSE ---
+  test('Authentication Security: Insecure local storage login bypass completely eliminated', () => {
+    const eduHtml = fs.readFileSync(path.join(ROOT_DIR, 'modivs-education.html'), 'utf8');
+    assert(!eduHtml.includes("proceedLogin('local_'"), 'Insecure proceedLogin(local_...) fallback on wrong password must be eliminated');
+    assert(!eduHtml.includes('users.find(function(x){ return x.email === emailVal; }); if(found){ proceedLogin'), 'Local user match bypass must be removed');
+  });
+
+  test('Authentication Security: Progressive brute force rate limiting & lockout logic implemented', () => {
+    const authJs = fs.readFileSync(path.join(ROOT_DIR, 'modivs-auth-unique.js'), 'utf8');
+    assert(authJs.includes('getLockoutStatus'), 'ModivsAuth must define getLockoutStatus');
+    assert(authJs.includes('recordFailedAttempt'), 'ModivsAuth must define recordFailedAttempt');
+    assert(authJs.includes('resetFailedAttempts'), 'ModivsAuth must define resetFailedAttempts');
+    assert(authJs.includes('formatLockoutRemaining'), 'ModivsAuth must define formatLockoutRemaining');
+
+    const eduHtml = fs.readFileSync(path.join(ROOT_DIR, 'modivs-education.html'), 'utf8');
+    assert(eduHtml.includes('ModivsAuth.getLockoutStatus'), 'Login form must check getLockoutStatus before attempting login');
+    assert(eduHtml.includes('ModivsAuth.recordFailedAttempt'), 'Login form must recordFailedAttempt on authentication failure');
+    assert(eduHtml.includes('ModivsAuth.resetFailedAttempts'), 'Login form must resetFailedAttempts on successful authentication');
+  });
+
+  test('Authentication Security: Real Firebase password reset email dispatch wired', () => {
+    const eduHtml = fs.readFileSync(path.join(ROOT_DIR, 'modivs-education.html'), 'utf8');
+    assert(eduHtml.includes('sendPasswordResetEmail'), 'Forgot password handler must call sendPasswordResetEmail');
+    assert(eduHtml.includes('Check your inbox and spam folder'), 'Clear user instructions must be provided after password reset dispatch');
+  });
+
+  test('Admin Route Authorization: Admin email fallback string eliminated', () => {
+    const adminHtml = fs.readFileSync(path.join(ROOT_DIR, 'modivs-admin.html'), 'utf8');
+    assert(!adminHtml.includes("|| 'happinessaggarwal@gmail.com'"), 'Default fallback admin email assignment must be removed');
+    assert(adminHtml.includes('ADMIN_EMAILS.indexOf(currentAdminEmail) === -1'), 'Admin route must verify currentAdminEmail against approved admin list');
+  });
+
+  test('Progressive Lockout Functional Flow: 1st-2nd standard, 3rd 3m, 4th 10m, 5th 60m + reset', () => {
+    // Mock localStorage in Node
+    const mockStorage = {};
+    const mockLocalStorage = {
+      getItem: (k) => mockStorage[k] || null,
+      setItem: (k, v) => { mockStorage[k] = String(v); },
+      removeItem: (k) => { delete mockStorage[k]; }
+    };
+
+    // Load auth functions into mock environment
+    const authCode = fs.readFileSync(path.join(ROOT_DIR, 'modivs-auth-unique.js'), 'utf8');
+    const mockWindow = { localStorage: mockLocalStorage };
+    const vm = require('vm');
+    vm.runInNewContext(authCode, { window: mockWindow, localStorage: mockLocalStorage, console: console, setTimeout: setTimeout, Date: Date });
+
+    const modivsAuth = mockWindow.ModivsAuth;
+    assert(modivsAuth, 'ModivsAuth must be loaded');
+
+    const testEmail = 'target.user@example.com';
+    // Initial state: unlocked
+    let status = modivsAuth.getLockoutStatus(testEmail);
+    assert.strictEqual(status.locked, false, 'Initial state should not be locked');
+    assert.strictEqual(status.attempts, 0, 'Initial attempts should be 0');
+
+    // Attempt 1: failed (standard error)
+    let res1 = modivsAuth.recordFailedAttempt(testEmail);
+    assert.strictEqual(res1.locked, false, 'Attempt 1 should not trigger lockout');
+    assert.strictEqual(res1.attempts, 1);
+
+    // Attempt 2: failed (standard error)
+    let res2 = modivsAuth.recordFailedAttempt(testEmail);
+    assert.strictEqual(res2.locked, false, 'Attempt 2 should not trigger lockout');
+    assert.strictEqual(res2.attempts, 2);
+
+    // Attempt 3: failed (3-minute temporary lockout = 180,000 ms)
+    let res3 = modivsAuth.recordFailedAttempt(testEmail);
+    assert.strictEqual(res3.locked, true, 'Attempt 3 must trigger lockout');
+    assert.strictEqual(res3.attempts, 3);
+    assert.strictEqual(res3.remainingMs, 3 * 60 * 1000, 'Attempt 3 must lockout for 3 minutes');
+
+    // Status query reflects lockout
+    status = modivsAuth.getLockoutStatus(testEmail);
+    assert.strictEqual(status.locked, true, 'Status query must show locked');
+
+    // Attempt 4: failed (escalation lockout = 10 minutes = 600,000 ms)
+    let res4 = modivsAuth.recordFailedAttempt(testEmail);
+    assert.strictEqual(res4.locked, true);
+    assert.strictEqual(res4.attempts, 4);
+    assert.strictEqual(res4.remainingMs, 10 * 60 * 1000, 'Attempt 4 must lockout for 10 minutes');
+
+    // Attempt 5: failed (severe 60-minute lockout + reset required)
+    let res5 = modivsAuth.recordFailedAttempt(testEmail);
+    assert.strictEqual(res5.locked, true);
+    assert.strictEqual(res5.attempts, 5);
+    assert.strictEqual(res5.remainingMs, 60 * 60 * 1000, 'Attempt 5 must lockout for 60 minutes');
+    assert.strictEqual(res5.requireReset, true, 'Attempt 5 must flag password reset requirement');
+
+    // Reset failed attempts upon successful login
+    modivsAuth.resetFailedAttempts(testEmail);
+    status = modivsAuth.getLockoutStatus(testEmail);
+    assert.strictEqual(status.locked, false, 'Reset must clear lockout');
+    assert.strictEqual(status.attempts, 0, 'Reset must reset attempts counter to 0');
+  });
+
   console.log('\n====================================================');
   console.log(`RESULTS: ${passedTests} / ${totalTests} SECURITY TESTS PASSED`);
   console.log('====================================================');

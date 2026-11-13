@@ -101,11 +101,11 @@ globalThis.window = {
       if (selector.includes('checkout.razorpay.com')) return {};
       return null;
     },
-    createElement: () => ({ src: '', onload: () => {}, onerror: () => {} }),
-    head: { appendChild: () => {} },
+    createElement: () => ({ src: '', onload: () => { }, onerror: () => { } }),
+    head: { appendChild: () => { } },
     readyState: 'complete'
   },
-  addEventListener: () => {}
+  addEventListener: () => { }
 };
 globalThis.document = window.document;
 
