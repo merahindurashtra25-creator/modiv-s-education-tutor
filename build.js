@@ -5,6 +5,8 @@ const path = require('path');
 const allScripts = [
   'firebase-sync.js',
   'modivs-slug.js',
+  'modivs-select.js',
+  'modivs-country.js',
   'modivs-subjects.js',
   'modivs-places.js',
   'modivs-map.js',

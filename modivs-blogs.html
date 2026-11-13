@@ -208,9 +208,7 @@ footer.mvf p{margin:10px 0 0}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="firebase-sync.js"></script>
-<script src="modivs-slug.js"></script>
-<script src="modivs-blogs.js"></script>
+<script src="modivs.min.js"></script>
 <script>
 (function(){
  var B=window.ModivsBlogs,esc=B.esc,fmt=B.fmtDate;
@@ -346,10 +344,5 @@ footer.mvf p{margin:10px 0 0}
  B.list(60).then(function(r){posts=r;loaded=true;drawChips();renderList();drawRelated()},function(){failed=true;loaded=true;renderList()});
 })();
 </script>
-<script src="modivs-avatars.js"></script>
-<script src="modivs-session-ui.js" defer></script>
-<script src="modivs-menu.js" defer></script>
-<script src="modivs-social.js" defer></script>
-<script src="modivs-dropdown.js" defer></script>
 </body>
 </html>
