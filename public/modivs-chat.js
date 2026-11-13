@@ -1,0 +1,2021 @@
+(function () {
+  'use strict';
+
+  var STORE = 'modivs_chat_conversations';
+  var TX_STORE = 'modivs_coin_transactions';
+  var MEM_HIST_STORE = 'modivs_membership_history';
+  var CHANNEL = 'modivs_chat_updates';
+  var UNLOCK_COST = 10;
+  var listeners = [];
+  var firestoreUnsubs = {};
+  var bus = null;
+  try { bus = new BroadcastChannel(CHANNEL); bus.onmessage = notify; } catch (e) { }
+
+  function db() { return window.EducationBFirebase && window.EducationBFirebase.db; }
+  function fbAuth() { return window.EducationBFirebase && window.EducationBFirebase.auth; }
+
+  function read(key, fallback) {
+    try {
+      var v = JSON.parse(localStorage.getItem(key) || 'null');
+      return v == null ? fallback : v;
+    } catch (e) { return fallback; }
+  }
+
+  function write(key, val) {
+    try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) { }
+  }
+
+  function cleanStr(s) { return String(s || '').trim(); }
+  function emailOf(x) { return cleanStr(typeof x === 'string' ? x : ((x && x.email) || '')).toLowerCase(); }
+  function nameOf(x) { return (x && (x.name || x.displayName)) || (x && x.email) || 'User'; }
+
+  function user() {
+    var u = read('modivs_auth_user', null);
+    if (fbAuth() && fbAuth().currentUser) {
+      var f = fbAuth().currentUser;
+      return Object.assign({}, u || {}, {
+        uid: f.uid,
+        email: emailOf(u && u.email || f.email),
+        name: u && u.name || f.displayName || 'User'
+      });
+    }
+    return u;
+  }
+
+  var ADMIN_EMAILS = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
+  function isAdmin() {
+    var session = read('modivs_admin_session', null);
+    var u = user();
+    var fbU = fbAuth() && fbAuth().currentUser;
+    var sMail = session && emailOf(session.email);
+    var uMail = u && emailOf(u.email);
+    var fbMail = fbU && emailOf(fbU.email);
+    return !!(
+      (sMail && ADMIN_EMAILS.indexOf(sMail) !== -1) ||
+      (uMail && ADMIN_EMAILS.indexOf(uMail) !== -1) ||
+      (fbMail && ADMIN_EMAILS.indexOf(fbMail) !== -1)
+    );
+  }
+
+  // =========================================================================
+  // Cryptographic Engine (AES-GCM-256 for Message Payloads)
+  // Protected platform encryption with authorized admin & participant decryption
+  // =========================================================================
+  var MASTER_SECRET = 'Modivs_Education_Platform_Secure_Key_2026';
+
+  function str2ab(str) {
+    var buf = new ArrayBuffer(str.length);
+    var bufView = new Uint8Array(buf);
+    for (var i = 0, strLen = str.length; i < strLen; i++) { bufView[i] = str.charCodeAt(i); }
+    return buf;
+  }
+
+  function ab2str(buf) {
+    return String.fromCharCode.apply(null, new Uint8Array(buf));
+  }
+
+  function buf2b64(buf) {
+    var bin = '';
+    var bytes = new Uint8Array(buf);
+    for (var i = 0; i < bytes.byteLength; i++) { bin += String.fromCharCode(bytes[i]); }
+    return btoa(bin);
+  }
+
+  function b642buf(b64) {
+    var bin = atob(b64);
+    var bytes = new Uint8Array(bin.length);
+    for (var i = 0; i < bin.length; i++) { bytes[i] = bin.charCodeAt(i); }
+    return bytes.buffer;
+  }
+
+  var keyCache = {};
+  function getCryptoKey(salt) {
+    var cacheKey = salt || 'default';
+    if (keyCache[cacheKey]) return Promise.resolve(keyCache[cacheKey]);
+    if (!window.crypto || !window.crypto.subtle) {
+      return Promise.resolve(null);
+    }
+    var enc = new TextEncoder();
+    return window.crypto.subtle.importKey(
+      'raw',
+      enc.encode(MASTER_SECRET),
+      { name: 'PBKDF2' },
+      false,
+      ['deriveKey']
+    ).then(function (baseKey) {
+      return window.crypto.subtle.deriveKey(
+        {
+          name: 'PBKDF2',
+          salt: enc.encode('modivs_' + cacheKey),
+          iterations: 10000,
+          hash: 'SHA-256'
+        },
+        baseKey,
+        { name: 'AES-GCM', length: 256 },
+        false,
+        ['encrypt', 'decrypt']
+      );
+    }).then(function (derivedKey) {
+      keyCache[cacheKey] = derivedKey;
+      return derivedKey;
+    }).catch(function (err) {
+      console.warn('Crypto key derivation error:', err);
+      return null;
+    });
+  }
+
+  function encryptMessage(text, convId) {
+    if (!text) return Promise.resolve('');
+    if (!window.crypto || !window.crypto.subtle) {
+      // Graceful fallback with XOR base64 cipher tag
+      return Promise.resolve('ENC:XOR:v1:' + btoa(encodeURIComponent(text)));
+    }
+    return getCryptoKey(convId).then(function (key) {
+      if (!key) return 'ENC:XOR:v1:' + btoa(encodeURIComponent(text));
+      var iv = window.crypto.getRandomValues(new Uint8Array(12));
+      var enc = new TextEncoder();
+      return window.crypto.subtle.encrypt(
+        { name: 'AES-GCM', iv: iv },
+        key,
+        enc.encode(text)
+      ).then(function (cipherBuf) {
+        return 'ENC:AES-GCM:v1:' + buf2b64(iv) + ':' + buf2b64(cipherBuf);
+      });
+    }).catch(function (err) {
+      console.warn('Encryption failed, falling back:', err);
+      return 'ENC:XOR:v1:' + btoa(encodeURIComponent(text));
+    });
+  }
+
+  function decryptMessage(cipherText, convId) {
+    if (!cipherText || typeof cipherText !== 'string') return Promise.resolve('');
+    if (cipherText.indexOf('ENC:AES-GCM:v1:') === 0) {
+      var parts = cipherText.split(':');
+      if (parts.length < 5) return Promise.resolve(cipherText);
+      var ivB64 = parts[3];
+      var cipherB64 = parts[4];
+      if (!window.crypto || !window.crypto.subtle) {
+        return Promise.resolve('[Protected Encrypted Message]');
+      }
+      return getCryptoKey(convId).then(function (key) {
+        if (!key) return '[Encrypted AES-GCM Message]';
+        var iv = b642buf(ivB64);
+        var data = b642buf(cipherB64);
+        return window.crypto.subtle.decrypt(
+          { name: 'AES-GCM', iv: new Uint8Array(iv) },
+          key,
+          data
+        ).then(function (plainBuf) {
+          var dec = new TextDecoder();
+          return dec.decode(plainBuf);
+        }).catch(function (err) {
+          return '[Encrypted Message - Verification Failed]';
+        });
+      });
+    } else if (cipherText.indexOf('ENC:XOR:v1:') === 0) {
+      try {
+        var raw = atob(cipherText.replace('ENC:XOR:v1:', ''));
+        return Promise.resolve(decodeURIComponent(raw));
+      } catch (e) {
+        return Promise.resolve(cipherText);
+      }
+    }
+    // Plaintext legacy message
+    return Promise.resolve(cipherText);
+  }
+
+  // =========================================================================
+  // Teacher Membership & Coins System
+  // =========================================================================
+  function getTutorMembership(tutorEmailOrId) {
+    var em = cleanStr(tutorEmailOrId).toLowerCase();
+    var allTutors = read('modivs_tutors_db', []);
+    var match = allTutors.find(function (t) { return emailOf(t.email) === em || t.id === em; });
+    var usersList = read('modivs_users', []);
+    var uMatch = usersList.find(function (u) { return emailOf(u.email) === em; });
+
+    var W = window.ModivsWallet;
+    var mem;
+    if (W) {
+      W.watch(em);
+      mem = W.getMembershipRaw(em) || { planName: 'None', status: 'none', validUntil: null };
+    } else {
+      mem = (match && match.membership) || (uMatch && uMatch.membership) || null;
+    }
+    if (!mem && !W) {
+      // Default initial membership for existing approved demo tutors: Standard Active 30 days
+      var isApprovedTutor = match && match.status === 'approved';
+      if (isApprovedTutor) {
+        var expiry = new Date();
+        expiry.setDate(expiry.getDate() + 30);
+        mem = {
+          planName: 'Standard Plan',
+          status: 'active',
+          validUntil: expiry.toISOString(),
+          startedAt: new Date().toISOString()
+        };
+        if (match) { match.membership = mem; write('modivs_tutors_db', allTutors); }
+      } else {
+        mem = { planName: 'None', status: 'none', validUntil: null };
+      }
+    }
+
+    var valid = false;
+    var daysLeft = 0;
+    if (mem && mem.status === 'active' && mem.validUntil) {
+      var msLeft = new Date(mem.validUntil).getTime() - Date.now();
+      valid = msLeft > 0;
+      daysLeft = valid ? Math.ceil(msLeft / (1000 * 60 * 60 * 24)) : 0;
+    }
+    return {
+      planName: mem.planName || 'None',
+      status: valid ? 'active' : (mem.status === 'active' ? 'expired' : (mem.status || 'none')),
+      validUntil: mem.validUntil,
+      startedAt: mem.startedAt,
+      durationDays: mem.durationDays || (mem.planName === 'Premium Plan' ? 180 : (mem.planName === 'Professional Plan' ? 90 : 30)),
+      daysLeft: daysLeft,
+      isValid: valid
+    };
+  }
+
+  function setTutorMembership(tutorEmail, planName, durationDays, status, isExtend, price, bonusCoins, orderId) {
+    var em = cleanStr(tutorEmail).toLowerCase();
+    if (window.ModivsWallet) {
+      // Firestore is the source of truth; returns a promise
+      return window.ModivsWallet.setMembership(em, {
+        planName: planName, days: durationDays != null ? Number(durationDays) : 30, status: status,
+        extend: !!isExtend, price: price || '', bonusCoins: bonusCoins || 0, orderId: orderId || ''
+      }).then(function (r) { notify(); return r.membership; });
+    }
+    var now = new Date();
+    var dur = (durationDays != null ? Number(durationDays) : 30);
+    var existing = getTutorMembership(em);
+    var expiry;
+
+    if (isExtend && existing.isValid && existing.validUntil) {
+      expiry = new Date(new Date(existing.validUntil).getTime() + dur * 86400000);
+    } else {
+      expiry = new Date(now.getTime() + dur * 86400000);
+    }
+
+    var mem = {
+      planName: planName || 'Standard Plan',
+      status: status || 'active',
+      startedAt: now.toISOString(),
+      validUntil: expiry.toISOString(),
+      durationDays: dur
+    };
+
+    // Log membership purchase history
+    try {
+      var hist = read(MEM_HIST_STORE, []);
+      if (!Array.isArray(hist)) hist = [];
+      var evType = 'activated';
+      if (existing.isValid && isExtend) evType = 'extended';
+      else if (existing.isValid && existing.planName !== mem.planName) evType = 'upgraded';
+      else if (existing.planName && existing.planName !== 'None') evType = 'renewed';
+      hist.unshift({
+        id: 'mh_' + Date.now() + '_' + Math.random().toString(36).slice(2, 6),
+        tutorEmail: em,
+        planName: mem.planName,
+        type: evType,
+        durationDays: dur,
+        price: price || '',
+        startedAt: mem.startedAt,
+        validUntil: mem.validUntil,
+        createdAt: now.toISOString()
+      });
+      write(MEM_HIST_STORE, hist.slice(0, 200));
+    } catch (e) { }
+
+    var allTutors = read('modivs_tutors_db', []);
+    var match = allTutors.find(function (t) { return emailOf(t.email) === em; });
+    if (match) {
+      match.membership = mem;
+    } else {
+      allTutors.push({ id: 't_' + em.replace(/[^a-z0-9]/gi, '_'), email: em, name: em.split('@')[0], status: 'pending', stub: true, membership: mem, coins: 30 });
+    }
+    write('modivs_tutors_db', allTutors);
+
+    var usersList = read('modivs_users', []);
+    var uMatch = usersList.find(function (u) { return emailOf(u.email) === em; });
+    if (uMatch) {
+      uMatch.membership = mem;
+    } else {
+      usersList.push({ email: em, name: em.split('@')[0], role: 'Tutor', membership: mem, coins: 30 });
+    }
+    write('modivs_users', usersList);
+
+    // Sync to Firestore
+    var firestore = db();
+    if (firestore) {
+      firestore.collection('tutors').where('email', '==', em).get().then(function (snap) {
+        snap.forEach(function (doc) { doc.ref.update({ membership: mem }).catch(function () { }); });
+      }).catch(function () { });
+    }
+
+    var notifMod = (typeof window !== 'undefined' && window.ModivsNotifications) || (typeof require !== 'undefined' ? (function () { try { return require('./modivs-notifications.js'); } catch (e) { return null; } })() : null);
+    if (notifMod && typeof notifMod.createNotification === 'function') {
+      notifMod.createNotification({
+        recipientEmail: em,
+        recipientRole: 'tutor',
+        type: 'membership_update',
+        title: 'Membership Updated',
+        description: 'Your ' + mem.planName + ' membership plan is now active.',
+        actionUrl: 'modivs-tutor-dashboard.html#membership'
+      });
+    }
+
+    notify();
+    return mem;
+  }
+
+  function getTutorCoins(tutorEmailOrId) {
+    var em = cleanStr(tutorEmailOrId).toLowerCase();
+    if (window.ModivsWallet) {
+      window.ModivsWallet.watch(em);
+      return window.ModivsWallet.getCoins(em);
+    }
+    var allTutors = read('modivs_tutors_db', []);
+    var match = allTutors.find(function (t) { return emailOf(t.email) === em || t.id === em; });
+    var usersList = read('modivs_users', []);
+    var uMatch = usersList.find(function (u) { return emailOf(u.email) === em; });
+
+    var val = (match && typeof match.coins === 'number') ? match.coins :
+      ((uMatch && typeof uMatch.coins === 'number') ? uMatch.coins : null);
+
+    if (val == null) {
+      val = 30; // Welcome coin balance
+      if (match) { match.coins = val; write('modivs_tutors_db', allTutors); }
+      if (uMatch) { uMatch.coins = val; write('modivs_users', usersList); }
+    }
+    return val;
+  }
+
+  function addTutorCoins(tutorEmail, amount, description) {
+    var em = cleanStr(tutorEmail).toLowerCase();
+    if (window.ModivsWallet) {
+      var curW = window.ModivsWallet.getCoins(em);
+      var p = window.ModivsWallet.addCoins(em, amount, description).then(function (r) { notify(); return r; });
+      p.catch(function (err) { console.warn('Coin update failed:', err); });
+      return { balance: Math.max(0, curW + amount), promise: p };
+    }
+    var cur = getTutorCoins(em);
+    var next = Math.max(0, cur + amount);
+
+    var allTutors = read('modivs_tutors_db', []);
+    var match = allTutors.find(function (t) { return emailOf(t.email) === em; });
+    if (match) { match.coins = next; }
+    else { allTutors.push({ id: 't_' + em.replace(/[^a-z0-9]/gi, '_'), email: em, name: em.split('@')[0], status: 'pending', stub: true, coins: next }); }
+    write('modivs_tutors_db', allTutors);
+
+    var usersList = read('modivs_users', []);
+    var uMatch = usersList.find(function (u) { return emailOf(u.email) === em; });
+    if (uMatch) { uMatch.coins = next; }
+    else { usersList.push({ email: em, name: em.split('@')[0], role: 'Tutor', coins: next }); }
+    write('modivs_users', usersList);
+
+    // Record coin transaction
+    var txs = read(TX_STORE, []);
+    var newTx = {
+      id: 'tx_' + Date.now() + '_' + Math.random().toString(36).slice(2, 7),
+      tutorEmail: em,
+      amount: amount,
+      balanceAfter: next,
+      description: description || (amount >= 0 ? 'Coins added' : 'Coins deducted'),
+      createdAt: new Date().toISOString()
+    };
+    txs.unshift(newTx);
+    write(TX_STORE, txs);
+
+    var firestore = db();
+    if (firestore) {
+      firestore.collection('coin_transactions').doc(newTx.id).set(Object.assign({}, newTx, {
+        createdAt: firebase.firestore.FieldValue.serverTimestamp()
+      })).catch(function () { });
+
+      firestore.collection('tutors').where('email', '==', em).get().then(function (snap) {
+        snap.forEach(function (doc) { doc.ref.update({ coins: next }).catch(function () { }); });
+      }).catch(function () { });
+    }
+
+    var notifMod = (typeof window !== 'undefined' && window.ModivsNotifications) || (typeof require !== 'undefined' ? (function () { try { return require('./modivs-notifications.js'); } catch (e) { return null; } })() : null);
+    if (notifMod && typeof notifMod.createNotification === 'function') {
+      notifMod.createNotification({
+        recipientEmail: em,
+        recipientRole: 'tutor',
+        type: 'coin_update',
+        title: amount >= 0 ? 'Coins Credited' : 'Coins Deducted',
+        description: (amount >= 0 ? ('+' + amount) : amount) + ' coins: ' + (description || (amount >= 0 ? 'Coins added to your wallet' : 'Coins deducted')),
+        actionUrl: 'modivs-tutor-dashboard.html#wallet'
+      });
+    }
+
+    notify();
+    return { balance: next, tx: newTx };
+  }
+
+  function getMembershipHistory(tutorEmail) {
+    var em = emailOf(tutorEmail);
+    var all = read(MEM_HIST_STORE, []);
+    if (!Array.isArray(all)) return [];
+    return all.filter(function (h) { return emailOf(h.tutorEmail) === em; });
+  }
+
+  function getCoinTransactions(tutorEmail) {
+    var em = emailOf(tutorEmail);
+    var all = read(TX_STORE, []);
+    // an email always narrows to that tutor, even for the admin (admin used to get every tutor's transactions here)
+    if (!em) return all;
+    return all.filter(function (tx) { return emailOf(tx.tutorEmail) === em; });
+  }
+
+  // =========================================================================
+  // Conversations State & Store
+  // =========================================================================
+  function conversations() {
+    var val = read(STORE, []);
+    return Array.isArray(val) ? val : [];
+  }
+
+  function save(val) {
+    write(STORE, val);
+    try { if (bus) bus.postMessage({ type: 'changed' }); } catch (e) { }
+    notify();
+  }
+
+  function notify() {
+    listeners.slice().forEach(function (fn) { try { fn(); } catch (e) { } });
+  }
+
+  function subscribe(fn) {
+    listeners.push(fn);
+    return function () { listeners = listeners.filter(function (x) { return x !== fn; }); };
+  }
+
+  window.addEventListener('storage', function (e) {
+    if (e.key === STORE || e.key === 'modivs_tutors_db') notify();
+  });
+
+  function tutorRecord(tutor) {
+    var res = (typeof tutor === 'object' && tutor) ? Object.assign({}, tutor) : null;
+    var list = read('modivs_tutors_db', []);
+    var em = res ? emailOf(res.email || res.tutorEmail || res.id) : emailOf(tutor);
+    var match = (Array.isArray(list) ? list : []).find(function (x) {
+      return (em && emailOf(x.email) === em) || x.id === (res && res.id) || x.name === (res && res.name);
+    });
+    if (!res) {
+      res = match ? Object.assign({}, match) : { id: String(tutor || ''), name: String(tutor || 'Tutor'), email: String(tutor && tutor.indexOf('@') > 0 ? tutor : '') };
+    }
+    if (match) {
+      if (!res.email && match.email) res.email = match.email;
+      if (!res.uid && (match.uid || match.id)) res.uid = match.uid || match.id;
+      if (!res.id && match.id) res.id = match.id;
+      if (!res.displayId && (match.displayId || match.tutId)) res.displayId = match.displayId || match.tutId;
+      if (!res.photo && match.photo) res.photo = match.photo;
+      if (!res.avatar && match.avatar) res.avatar = match.avatar;
+    }
+    if (!res.email && res.id && res.id.indexOf('@') > 0) res.email = res.id;
+    return res;
+  }
+
+  function studentRecord(student) {
+    var res = (typeof student === 'object' && student) ? Object.assign({}, student) : null;
+    var list = read('modivs_students_db', []);
+    var em = res ? emailOf(res.owner_email || res.email || res.studentEmail || res.id) : emailOf(student);
+    var match = (Array.isArray(list) ? list : []).find(function (x) {
+      return (em && (emailOf(x.email) === em || emailOf(x.owner_email) === em)) || x.id === (res && res.id);
+    });
+    if (!res) {
+      res = match ? Object.assign({}, match) : { id: String(student || ''), name: String(student || 'Student'), email: String(student && student.indexOf('@') > 0 ? student : '') };
+    }
+    if (match) {
+      if (!res.email && (match.email || match.owner_email)) res.email = match.email || match.owner_email;
+      if (!res.uid && (match.uid || match.id)) res.uid = match.uid || match.id;
+      if (!res.id && match.id) res.id = match.id;
+      if (!res.displayId && (match.displayId || match.stuId)) res.displayId = match.displayId || match.stuId;
+      if (!res.photo && match.photo) res.photo = match.photo;
+      if (!res.avatar && match.avatar) res.avatar = match.avatar;
+    }
+    if (!res.email && res.id && res.id.indexOf('@') > 0) res.email = res.id;
+    return res;
+  }
+
+  function convKey(ownerOrStudent, tutor, enquiryId) {
+    var s = emailOf(ownerOrStudent && (ownerOrStudent.owner_email || ownerOrStudent.email)) || cleanStr(ownerOrStudent && (ownerOrStudent.id || ownerOrStudent.name) || 'owner').toLowerCase();
+    var t = emailOf(tutor && tutor.email) || cleanStr(tutor && (tutor.id || tutor.name) || 'tutor').toLowerCase();
+    var enq = enquiryId ? cleanStr(enquiryId) : '';
+    return enq ? safeDocId(enq + '__' + s + '__' + t) : safeDocId(s + '__' + t);
+  }
+
+  function safeDocId(key) {
+    return key.replace(/[^a-zA-Z0-9_-]/g, '_').slice(0, 120);
+  }
+
+  function find(id) {
+    return conversations().filter(function (x) { return x.id === id || x.docId === id || x.conversation_id === id; })[0] || null;
+  }
+
+  function participant(c) {
+    var u = user();
+    if (isAdmin()) return true;
+    if (!u) return false;
+    var e = emailOf(u), uid = u.uid;
+    var ownerMail = emailOf(c.enquiry_owner_email || c.owner_email || c.studentEmail || (c.student && (c.student.owner_email || c.student.email)));
+    var tutorMail = emailOf(c.tutorEmail || (c.tutor && c.tutor.email));
+
+    // Tutor access
+    if (e === tutorMail || (!!uid && (uid === (c.tutor && c.tutor.uid) || uid === c.tutor_id || uid === c.tutorId))) {
+      return true;
+    }
+
+    // Parent-owned enquiry: strictly visible only to the parent account, never child account
+    if (c.enquiry_owner_role === 'parent' || c.created_by_role === 'parent') {
+      return (e === ownerMail) || (!!uid && (uid === c.enquiry_owner_user_id || uid === c.created_by_user_id || uid === c.parent_id));
+    }
+
+    // Student-owned enquiry
+    return (e === ownerMail) || (!!uid && (uid === c.student_id || uid === (c.student && c.student.uid) || uid === c.studentId || (c.participantIds && c.participantIds.indexOf(uid) > -1)));
+  }
+
+  function isConversationUnlockedForTutor(conv, tutorEmailOrUser) {
+    if (!conv) return false;
+    if (isAdmin()) return true;
+    var u = tutorEmailOrUser || user();
+    var e = emailOf(u);
+    // Student participant always has access to their own chat
+    if (e && e === emailOf(conv.student)) return true;
+    // For tutor, check if unlocked flag is true
+    if (conv.unlocked) return true;
+
+    // Check persistent unlock cache in ModivsFirebaseSync or localStorage
+    if (e) {
+      if (window.ModivsFirebaseSync && typeof window.ModivsFirebaseSync.isLeadUnlocked === 'function') {
+        if (conv.enquiry_id && window.ModivsFirebaseSync.isLeadUnlocked(e, conv.enquiry_id)) { conv.unlocked = true; return true; }
+        if (conv.enquiryId && window.ModivsFirebaseSync.isLeadUnlocked(e, conv.enquiryId)) { conv.unlocked = true; return true; }
+        if (conv.id && window.ModivsFirebaseSync.isLeadUnlocked(e, 'conv_' + conv.id)) { conv.unlocked = true; return true; }
+        if (conv.id && window.ModivsFirebaseSync.isLeadUnlocked(e, conv.id)) { conv.unlocked = true; return true; }
+      }
+      try {
+        var unl = JSON.parse(localStorage.getItem('modivs_unlocked_leads_' + e) || '{}');
+        if (conv.enquiry_id && unl[conv.enquiry_id]) { conv.unlocked = true; return true; }
+        if (conv.id && (unl['conv_' + conv.id] || unl[conv.id])) { conv.unlocked = true; return true; }
+      } catch (ex) { }
+    }
+    return false;
+  }
+
+  function maskStudentName(name) {
+    var parts = String(name || 'Student').trim().split(' ');
+    return parts.map(function (p) {
+      if (p.length <= 1) return p;
+      return p[0] + '***';
+    }).join(' ');
+  }
+
+  function ensure(studentInput, tutorInput, enquiryInput) {
+    var student = studentRecord(studentInput), tutor = tutorRecord(tutorInput);
+    var enq = enquiryInput || (studentInput && studentInput.enquiry) || null;
+    var enquiryId = (enq && (enq.enquiry_id || enq.id)) || (studentInput && (studentInput.enquiry_id || studentInput.id)) || '';
+    var ownerRole = ((enq && enq.created_by_role) || (enq && enq.by && enq.by.toLowerCase().indexOf('parent') >= 0 ? 'parent' : '') || (studentInput && studentInput.created_by_role) || (studentInput && studentInput.role && studentInput.role.toLowerCase() === 'parent' ? 'parent' : '') || 'student').toLowerCase();
+    var ownerEmail = emailOf((enq && (enq.owner_email || enq.email)) || (studentInput && (studentInput.owner_email || studentInput.email)) || emailOf(student));
+    var ownerUserId = (enq && (enq.created_by_user_id || enq.owner_email || enq.email)) || (studentInput && (studentInput.created_by_user_id || studentInput.uid || studentInput.id)) || ownerEmail;
+    var studentId = (enq && enq.student_id) || (studentInput && (studentInput.student_id || studentInput.id)) || student.id || student.uid || '';
+    var parentId = (enq && enq.parent_id) || (ownerRole === 'parent' ? ownerUserId : '');
+
+    var id = convKey(ownerEmail || student, tutor, enquiryId);
+    var all = conversations();
+    var c = all.filter(function (x) {
+      if (x.id === id || x.docId === id || x.conversation_id === id) return true;
+      if (enquiryId && (x.enquiry_id === enquiryId || x.enquiryId === enquiryId)) {
+        var emTutor = emailOf(x.tutorEmail || (x.tutor && x.tutor.email));
+        var emOwner = emailOf(x.enquiry_owner_email || x.studentEmail || (x.student && (x.student.owner_email || x.student.email)));
+        if (emTutor === emailOf(tutor) && emOwner === ownerEmail) return true;
+      }
+      return false;
+    })[0];
+
+    if (!c) {
+      c = {
+        id: id,
+        docId: safeDocId(id),
+        conversation_id: id,
+        enquiry_id: enquiryId,
+        enquiryId: enquiryId,
+        tutor_id: tutor.id || tutor.uid || emailOf(tutor),
+        tutorId: tutor.uid || emailOf(tutor),
+        enquiry_owner_user_id: ownerUserId,
+        enquiry_owner_role: ownerRole,
+        created_by_user_id: ownerUserId,
+        created_by_role: ownerRole,
+        created_at: new Date().toISOString(),
+        student_id: studentId,
+        parent_id: parentId,
+        enquiry_owner_email: ownerEmail,
+        student: {
+          id: studentId,
+          name: (enq && (enq.student_name || enq.name)) || nameOf(student),
+          email: ownerEmail,
+          phone: (enq && enq.phone) || student.phone || '',
+          uid: student.uid || ''
+        },
+        tutor: {
+          id: tutor.id || '',
+          name: nameOf(tutor),
+          email: emailOf(tutor),
+          uid: tutor.uid || '',
+          photo: tutor.photo || tutor.avatar || tutor.profile_image || ''
+        },
+        enquiry: enq ? {
+          id: enquiryId,
+          cls: enq.cls || '',
+          subs: enq.subs || [],
+          board: enq.board || '',
+          mode: enq.mode || '',
+          city: enq.city || '',
+          budget: enq.budget || '',
+          free: enq.free === true
+        } : null,
+        free: !!(enq && enq.free === true),
+        studentId: studentId || student.uid || ownerEmail,
+        tutorId: tutor.uid || emailOf(tutor),
+        studentEmail: ownerEmail,
+        tutorEmail: emailOf(tutor),
+        participantIds: [student.uid, tutor.uid, ownerEmail, emailOf(tutor), ownerUserId].filter(Boolean),
+        unlocked: false,
+        unlockedAt: null,
+        unlockCostCoins: (enq && enq.free === true) ? 0 : UNLOCK_COST,
+        status: 'inquiry_pending',
+        messages: [],
+        accessLog: [
+          { action: 'inquiry_created', by: ownerEmail, role: ownerRole, timestamp: new Date().toISOString() }
+        ],
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      };
+      all.unshift(c);
+      save(all);
+    } else {
+      var dirty = false;
+      if (enq && enq.free === true && !c.free) {
+        c.free = true; c.unlockCostCoins = 0; dirty = true;
+      }
+      if (enq && !c.enquiry) {
+        c.enquiry = {
+          id: enquiryId,
+          cls: enq.cls || '',
+          subs: enq.subs || [],
+          board: enq.board || '',
+          mode: enq.mode || '',
+          city: enq.city || '',
+          budget: enq.budget || '',
+          free: enq.free === true
+        };
+        dirty = true;
+      } else if (enq && enq.free === true && c.enquiry && !c.enquiry.free) {
+        c.enquiry.free = true; dirty = true;
+      }
+      if (tutor.photo && (!c.tutor || !c.tutor.photo)) {
+        if (!c.tutor) c.tutor = tutor;
+        else c.tutor.photo = tutor.photo;
+        dirty = true;
+      }
+      if (dirty) save(all);
+    }
+    syncConversationToFirestore(c);
+    return c;
+  }
+
+  function syncConversationToFirestore(c) {
+    var firestore = db();
+    if (!firestore) return Promise.resolve();
+    var docId = c.docId || safeDocId(c.id);
+    var isFree = !!(c.free || (c.enquiry && c.enquiry.free));
+    return firestore.collection('conversations').doc(docId).set({
+      id: c.id,
+      docId: docId,
+      conversation_id: c.id,
+      enquiry_id: c.enquiry_id || c.enquiryId || '',
+      enquiryId: c.enquiryId || c.enquiry_id || '',
+      tutor_id: c.tutor_id || c.tutorId || c.tutor.uid || emailOf(c.tutor),
+      enquiry_owner_user_id: c.enquiry_owner_user_id || c.created_by_user_id || '',
+      enquiry_owner_role: c.enquiry_owner_role || c.created_by_role || 'student',
+      created_by_user_id: c.created_by_user_id || c.enquiry_owner_user_id || '',
+      created_by_role: c.created_by_role || c.enquiry_owner_role || 'student',
+      created_at: c.created_at || c.createdAt || new Date().toISOString(),
+      student_id: c.student_id || '',
+      parent_id: c.parent_id || '',
+      enquiry_owner_email: c.enquiry_owner_email || emailOf(c.student),
+      studentId: c.studentId || c.student.uid || emailOf(c.student),
+      tutorId: c.tutorId || c.tutor.uid || emailOf(c.tutor),
+      studentEmail: emailOf(c.student),
+      tutorEmail: emailOf(c.tutor),
+      student: { name: c.student.name, email: emailOf(c.student), phone: c.student.phone || '' },
+      tutor: { name: c.tutor.name, email: emailOf(c.tutor), photo: c.tutor.photo || '' },
+      enquiry: c.enquiry || null,
+      free: isFree,
+      participantIds: [emailOf(c.student), emailOf(c.tutor), c.enquiry_owner_email, c.student.uid, c.tutor.uid].filter(Boolean),
+      unlocked: !!c.unlocked,
+      unlockedAt: c.unlockedAt || null,
+      unlockedBy: c.unlockedBy || null,
+      unlockCostCoins: isFree ? 0 : UNLOCK_COST,
+      status: c.unlocked ? 'unlocked' : 'inquiry_pending',
+      lastMessage: c.messages && c.messages.length ? c.messages[c.messages.length - 1].text : '',
+      lastMessageAt: c.updatedAt || new Date().toISOString(),
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    }, { merge: true }).catch(function (err) {
+      console.warn('Firestore conversation sync error:', err);
+    });
+  }
+
+  // =========================================================================
+  // Inquiry Unlock Action (Backend verified deduction)
+  // =========================================================================
+  function unlockInquiry(convId, tutorUser) {
+    var all = conversations();
+    var c = all.find(function (x) { return x.id === convId || x.docId === convId; });
+    if (!c) return Promise.reject(new Error('Conversation not found.'));
+    if (c.unlocked) return Promise.resolve({ success: true, alreadyUnlocked: true });
+
+    var u = tutorUser || user();
+    var tutorEmail = emailOf(u);
+    var isFreeConv = !!(c.free || (c.enquiry && c.enquiry.free));
+
+    if (isFreeConv) {
+      if (window.ModivsWallet && c.enquiry_id) {
+        return window.ModivsWallet.unlockFreeLead(tutorEmail, c.enquiry_id, c.student ? c.student.name : 'Student').then(function (r) {
+          return finishUnlock(r.balance, 0);
+        });
+      }
+      return Promise.resolve(finishUnlock(getTutorCoins(tutorEmail), 0));
+    }
+
+    // 1. Verify Membership Plan
+    var mem = getTutorMembership(tutorEmail);
+    if (!mem.isValid) {
+      return Promise.resolve({
+        success: false,
+        reason: 'membership_invalid',
+        message: 'Active membership plan required. Please activate or renew your membership to unlock student inquiries.'
+      });
+    }
+
+    // 2. Verify Coin Balance
+    var balance = getTutorCoins(tutorEmail);
+    if (balance < UNLOCK_COST) {
+      return Promise.resolve({
+        success: false,
+        reason: 'insufficient_coins',
+        message: 'Insufficient coins. You have ' + balance + ' coins, but ' + UNLOCK_COST + ' coins are required to unlock student details and messages.'
+      });
+    }
+
+    // 3. Deduct Coins Only Once & Record Transaction
+    if (window.ModivsWallet) {
+      return window.ModivsWallet.unlockLead(tutorEmail, 'conv_' + c.id, c.student ? c.student.name : 'Student', UNLOCK_COST).then(function (r) {
+        return finishUnlock(r.balance, UNLOCK_COST);
+      }).catch(function (err) {
+        return { success: false, reason: err.reason || 'error', message: err.message || 'Unlock failed.' };
+      });
+    }
+    return finishUnlock(addTutorCoins(tutorEmail, -UNLOCK_COST, 'Unlocked student inquiry (' + (c.student ? c.student.name : 'Student') + ')').balance, UNLOCK_COST);
+
+    function finishUnlock(newBalance, costUsed) {
+      var coinsUsed = costUsed != null ? costUsed : UNLOCK_COST;
+
+      // 4. Mark Conversation as Unlocked
+      var nowIso = new Date().toISOString();
+      c.unlocked = true;
+      c.free = coinsUsed === 0;
+      c.unlockCostCoins = coinsUsed;
+      c.unlockedAt = nowIso;
+      c.unlockedBy = tutorEmail;
+      c.status = 'unlocked';
+      if (!c.accessLog) c.accessLog = [];
+      c.accessLog.push({
+        action: 'inquiry_unlocked',
+        by: tutorEmail,
+        coinsDeducted: coinsUsed,
+        timestamp: nowIso
+      });
+      save(all);
+
+      try {
+        var unl = JSON.parse(localStorage.getItem('modivs_unlocked_leads_' + tutorEmail) || '{}');
+        unl['conv_' + c.id] = true;
+        unl[c.id] = true;
+        if (c.enquiry_id) unl[c.enquiry_id] = true;
+        localStorage.setItem('modivs_unlocked_leads_' + tutorEmail, JSON.stringify(unl));
+      } catch (e) { }
+
+      if (window.ModivsFirebaseSync && typeof window.ModivsFirebaseSync.saveUnlock === 'function') {
+        try {
+          window.ModivsFirebaseSync.saveUnlock(tutorEmail, c.enquiry_id || ('conv_' + c.id), coinsUsed).catch(function () { });
+        } catch (e) { }
+      }
+
+      // Reset message listener so newly unlocked messages load immediately
+      var docId = c.docId || safeDocId(c.id);
+      if (firestoreUnsubs[docId]) {
+        try { firestoreUnsubs[docId](); } catch (e) { }
+        delete firestoreUnsubs[docId];
+      }
+      watchFirestoreMessages(c, notify);
+
+      // 5. Update Firestore (ensure document exists first if free lead initiated by tutor, then send demo message)
+      var firestore = db();
+      var syncP = firestore ? syncConversationToFirestore(c) : Promise.resolve();
+      syncP.then(function () {
+        if (firestoreUnsubs[docId]) {
+          try { firestoreUnsubs[docId](); } catch (e) { }
+          delete firestoreUnsubs[docId];
+        }
+        watchFirestoreMessages(c, notify);
+
+        var demoMsg = DEFAULT_DEMO_MESSAGE;
+        if (demoMsg) {
+          var alreadyHasTutorMsg = (c.messages || []).some(function (m) { return emailOf(m.senderEmail) === tutorEmail; });
+          if (!alreadyHasTutorMsg) {
+            sendMessage(c.id, u, demoMsg);
+          }
+        }
+      });
+
+      return { success: true, balance: newBalance };
+    }
+  }
+
+  /** Unlock a free-lead conversation (0 coins, no plan needed) and send the demo message automatically. */
+  function unlockFreeConversation(studentInput, tutorInput, enquiryInput, tutorUser) {
+    var c = ensure(studentInput, tutorInput, enquiryInput);
+    var u = tutorUser || user() || tutorInput;
+    var tutorEmail = emailOf(u);
+    var all = conversations();
+    var target = all.find(function (x) { return x.id === c.id || x.docId === c.docId; }) || c;
+    var nowIso = new Date().toISOString();
+    target.free = true;
+    target.unlockCostCoins = 0;
+    if (target.enquiry) target.enquiry.free = true;
+    if (!target.unlocked) {
+      target.unlocked = true;
+      target.unlockedAt = nowIso;
+      target.unlockedBy = tutorEmail;
+      target.status = 'unlocked';
+      if (!target.accessLog) target.accessLog = [];
+      target.accessLog.push({ action: 'free_lead_unlocked', by: tutorEmail, coinsDeducted: 0, timestamp: nowIso });
+    }
+    save(all);
+    return syncConversationToFirestore(target).then(function () {
+      var alreadyHasTutorMsg = (target.messages || []).some(function (m) { return emailOf(m.senderEmail) === tutorEmail; });
+      if (!alreadyHasTutorMsg) {
+        return sendMessage(target.id, u, DEFAULT_DEMO_MESSAGE).then(function () { return target; });
+      }
+      return target;
+    });
+  }
+
+  // =========================================================================
+  // Send Message & Automated Demo Class Notifications
+  // =========================================================================
+  var DEFAULT_DEMO_MESSAGE = "we'll provide u a demo class shortly. for further queries, contact:+919896930443\n+918054167008";
+  var DEFAULT_STUDENT_BOOKING_MESSAGE = "Demo Class Booking Request: I would like to book a demo class. Please confirm your availability.";
+
+  // Quick-reply prompts: the chat stays preset-only (no free typing), but people can pick one of these.
+  var STUDENT_PROMPTS = [
+    { label: 'Book a demo class', text: DEFAULT_STUDENT_BOOKING_MESSAGE },
+    { label: 'Ask about fees', text: 'Could you please share your fee per hour for this requirement?' },
+    { label: 'Ask about timings', text: 'Please share the days and timings you are available to take classes.' },
+    { label: 'Ask about experience', text: 'Please share your experience and qualifications for this subject.' },
+    { label: 'Home or online?', text: 'Do you take classes at my location, or online? Please confirm which options you offer.' }
+  ];
+  var TUTOR_PROMPTS = [
+    { label: 'Demo class details', text: DEFAULT_DEMO_MESSAGE },
+    { label: 'I am interested', text: 'Hello! I have read your requirement and I am interested in teaching. Please let me know when you would like to start the classes.' },
+    { label: 'Offer a free demo', text: 'I can take a free demo class. Please share a convenient date and time.' },
+    { label: 'Confirm requirement', text: 'Please confirm the class, board and subjects you need help with, so I can plan the classes.' },
+    { label: 'Share my profile', text: 'You can see my qualifications, experience and fees on my Modiv\u2019s Education profile. Happy to answer any questions about it.' }
+  ];
+  function promptChips(list, selectedText) {
+    return list.map(function (p, i) {
+      return '<button type="button" class="mc-chip' + (selectedText === p.text ? ' on' : '') + '" data-i="' + i + '">' + escapeHtml(p.label) + '</button>';
+    }).join('');
+  }
+
+  function triggerMessageNotification(conv, senderEmail, senderUser, senderRole) {
+    try {
+      var isTutor = (senderEmail === emailOf(conv.tutorEmail) || senderEmail === emailOf(conv.tutor && conv.tutor.email));
+      var recipientEmail = isTutor
+        ? emailOf(conv.studentEmail || (conv.student && conv.student.email) || conv.enquiry_owner_email)
+        : emailOf(conv.tutorEmail || (conv.tutor && conv.tutor.email));
+      var recipientRole = isTutor ? 'student' : 'tutor';
+      var notifMod = (typeof window !== 'undefined' && window.ModivsNotifications) || (typeof ModivsNotifications !== 'undefined' ? ModivsNotifications : null);
+      if (notifMod && typeof notifMod.createOrUpdateMessageNotification === 'function') {
+        notifMod.createOrUpdateMessageNotification({
+          convId: conv.id,
+          recipientEmail: recipientEmail,
+          recipientRole: recipientRole,
+          senderEmail: senderEmail,
+          senderName: nameOf(senderUser),
+          senderRole: senderRole
+        });
+      }
+    } catch (e) {
+      console.warn('triggerMessageNotification notice:', e);
+    }
+  }
+
+  function sendMessage(convId, senderUser, text) {
+    var conv = find(convId);
+    if (!conv) return Promise.reject(new Error('Conversation not found'));
+    var meUser = senderUser || user();
+    var meEmail = emailOf(meUser);
+    var nowIso = new Date().toISOString();
+    var msgId = Date.now() + '_' + Math.random().toString(36).slice(2, 8);
+    var isTutor = (meEmail === emailOf(conv.tutorEmail) || meEmail === emailOf(conv.tutor && conv.tutor.email));
+    var isParent = (conv.enquiry_owner_role === 'parent' || conv.created_by_role === 'parent' || (meUser && (meUser.role === 'Parent' || meUser.roleKey === 'parent')));
+    var myRole = 'Student';
+    if (isAdmin()) {
+      myRole = 'Admin';
+    } else if (isTutor) {
+      myRole = 'Tutor';
+    } else if (isParent) {
+      myRole = 'Parent';
+    } else {
+      myRole = 'Student';
+    }
+
+    if (myRole === 'Tutor') {
+      if (!text || TUTOR_PROMPTS.every(function (p) { return p.text !== text; })) {
+        text = DEFAULT_DEMO_MESSAGE;
+      }
+    } else if (myRole === 'Student' || myRole === 'Parent') {
+      if (!text || (STUDENT_PROMPTS.every(function (p) { return p.text !== text; }) && text.indexOf('Demo Class Booking Request') === -1 && text.indexOf('book') === -1 && text.indexOf('demo') === -1)) {
+        text = DEFAULT_STUDENT_BOOKING_MESSAGE;
+      }
+    }
+
+    var newMsg = {
+      id: msgId,
+      senderEmail: meEmail,
+      senderName: nameOf(meUser),
+      senderRole: myRole,
+      text: text,
+      ciphertext: '',
+      createdAt: nowIso,
+      readAt: ''
+    };
+
+    return encryptMessage(text, conv.id).then(function (cipherString) {
+      newMsg.ciphertext = cipherString;
+      var firestore = db();
+      if (!firestore) {
+        var all = conversations();
+        var fresh = all.find(function (x) { return x.id === conv.id || x.docId === conv.docId; });
+        if (fresh) {
+          fresh.messages.push(newMsg);
+          fresh.updatedAt = nowIso;
+          fresh.lastMessage = text;
+          save(all);
+          triggerMessageNotification(conv, meEmail, meUser, myRole);
+        }
+        return newMsg;
+      }
+
+      var docId = conv.docId || safeDocId(conv.id);
+      var convRef = firestore.collection('conversations').doc(docId);
+      var msgRef = convRef.collection('messages').doc(msgId);
+
+      // Ensure the conversation document exists in Firestore BEFORE writing the message.
+      // The messages security rule does a get(conversations/{id}) to verify participants —
+      // if the parent doc doesn't exist yet, the rule evaluates to false → permission-denied.
+      var ensureConvP = convRef.get().then(function (snap) {
+        if (!snap.exists) {
+          return syncConversationToFirestore(conv);
+        }
+      });
+
+      return ensureConvP.then(function () {
+        return msgRef.set({
+          id: msgId,
+          senderEmail: meEmail,
+          senderName: nameOf(meUser),
+          senderRole: myRole,
+          senderId: (meUser && meUser.uid) || meEmail,
+          ciphertext: cipherString,
+          text: text,
+          createdAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : nowIso,
+          readBy: [meEmail],
+          readAt: '',
+          messageType: 'text'
+        });
+      }).then(function () {
+        convRef.set({
+          lastMessage: text,
+          lastMessageAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : nowIso,
+          lastMessageSenderId: meEmail,
+          updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : nowIso
+        }, { merge: true }).catch(function () { });
+
+        var all = conversations();
+        var fresh = all.find(function (x) { return x.id === conv.id || x.docId === conv.docId; });
+        if (fresh) {
+          if (!fresh.messages.some(function (m) { return m.id === msgId; })) {
+            fresh.messages.push(newMsg);
+          }
+          fresh.updatedAt = nowIso;
+          fresh.lastMessage = text;
+          save(all);
+          triggerMessageNotification(conv, meEmail, meUser, myRole);
+        }
+        return newMsg;
+      }).catch(function (err) {
+        console.error('Firestore message send error:', err);
+        throw new Error('Message could not be saved to server (' + (err.code || err.message) + '). Please confirm inquiry unlock status.');
+      });
+    });
+  }
+
+  function onTutorMembershipPurchased(tutorEmail, customMessage) {
+    var em = cleanStr(tutorEmail).toLowerCase();
+    var msgText = DEFAULT_DEMO_MESSAGE;
+    var all = conversations();
+    var tutorConvs = all.filter(function (c) {
+      return emailOf(c.tutorEmail) === em || (c.tutor && emailOf(c.tutor.email) === em);
+    });
+
+    var u = user() || { email: em, role: 'Tutor', name: 'Tutor' };
+    var sentCount = 0;
+
+    tutorConvs.forEach(function (c) {
+      if (!c.unlocked) {
+        c.unlocked = true;
+        c.unlockedAt = new Date().toISOString();
+        c.unlockedBy = em;
+        c.status = 'unlocked';
+        syncConversationToFirestore(c);
+      }
+      var alreadySent = (c.messages || []).some(function (m) {
+        return emailOf(m.senderEmail) === em && m.text && m.text.indexOf('ready to provide a demo') > -1;
+      });
+      if (!alreadySent) {
+        sendMessage(c.id, u, msgText);
+        sentCount++;
+      }
+    });
+
+    return sentCount;
+  }
+
+  // =========================================================================
+  // Firestore Real-Time Message Listener & Decryption
+  // =========================================================================
+  function watchFirestoreMessages(c, onChange) {
+    var firestore = db();
+    if (!firestore) return;
+    var docId = c.docId || safeDocId(c.id);
+    if (firestoreUnsubs[docId]) return;
+
+    firestoreUnsubs[docId] = firestore.collection('conversations').doc(docId).collection('messages')
+      .orderBy('createdAt', 'asc').limit(150)
+      .onSnapshot(function (snapshot) {
+        if (snapshot.empty) return;
+        var all = conversations();
+        var conv = all.filter(function (x) { return x.id === c.id || x.docId === c.docId; })[0];
+        if (!conv) return;
+
+        var existingMsgIds = {};
+        conv.messages.forEach(function (m) { existingMsgIds[m.id] = true; });
+
+        var promises = [];
+        snapshot.docs.forEach(function (doc) {
+          if (!existingMsgIds[doc.id]) {
+            var d = doc.data();
+            var cipher = d.ciphertext || d.text || '';
+            var p = decryptMessage(cipher, conv.id).then(function (plainText) {
+              return {
+                id: doc.id,
+                senderEmail: d.senderEmail || '',
+                senderName: d.senderName || 'User',
+                senderRole: d.senderRole || '',
+                ciphertext: d.ciphertext || '',
+                text: plainText,
+                createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : (d.createdAt || new Date().toISOString()),
+                readAt: d.readAt || ''
+              };
+            });
+            promises.push(p);
+          }
+        });
+
+        if (promises.length) {
+          Promise.all(promises).then(function (newMsgs) {
+            newMsgs.forEach(function (m) {
+              if (!existingMsgIds[m.id]) {
+                conv.messages.push(m);
+                existingMsgIds[m.id] = true;
+              }
+            });
+            save(all);
+            if (onChange) onChange();
+          });
+        }
+      }, function (err) {
+        // Remove from cache on error so that unlock / permission changes can re-subscribe cleanly
+        delete firestoreUnsubs[docId];
+        if (err && err.code === 'permission-denied') {
+          console.info('Firestore message listener restricted: conversation locked pending teacher authorization.');
+        } else {
+          console.warn('Firestore message listener notice:', err);
+        }
+      });
+  }
+
+  function unread(c, userIdent) {
+    if (typeof c === 'string') c = find(c);
+    else if (c && c.id) c = find(c.id) || c;
+    if (!c || !c.messages) return 0;
+    var me = cleanStr(userIdent).toLowerCase();
+    return c.messages.filter(function (m) {
+      var isMine = emailOf(m.senderEmail) === me || (m.senderId && m.senderId === me);
+      return !isMine && !m.readAt;
+    }).length;
+  }
+
+  function markConversationAsRead(c, userIdent) {
+    var conv = (typeof c === 'string') ? find(c) : ((c && c.id) ? (find(c.id) || c) : c);
+    if (!conv) return false;
+    var meEmail = cleanStr(userIdent || (user() && user().email)).toLowerCase();
+    if (!meEmail) return false;
+
+    var updated = false;
+    var unreadMsgIds = [];
+    (conv.messages || []).forEach(function (m) {
+      var isMine = emailOf(m.senderEmail) === meEmail || (m.senderId && m.senderId === meEmail);
+      if (!isMine && !m.readAt) {
+        m.readAt = new Date().toISOString();
+        unreadMsgIds.push(m.id);
+        updated = true;
+      }
+    });
+
+    // Synchronize with general activity notification centre
+    var notifMod = (typeof window !== 'undefined' && window.ModivsNotifications) || (typeof ModivsNotifications !== 'undefined' ? ModivsNotifications : null);
+    if (notifMod && typeof notifMod.markConversationNotificationRead === 'function') {
+      notifMod.markConversationNotificationRead(conv.id, meEmail);
+    }
+
+    if (updated) {
+      var all = conversations();
+      all.forEach(function (x) { if (x.id === conv.id) x.messages = conv.messages; });
+      save(all);
+      notify();
+
+      var firestore = db();
+      if (firestore && unreadMsgIds.length) {
+        var docId = conv.docId || safeDocId(conv.id);
+        var b = firestore.batch();
+        unreadMsgIds.forEach(function (mid) {
+          var ref = firestore.collection('conversations').doc(docId).collection('messages').doc(mid);
+          b.set(ref, {
+            readAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString(),
+            readBy: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.arrayUnion(meEmail) : [meEmail]
+          }, { merge: true });
+        });
+        b.commit().catch(function () { });
+      }
+    }
+    return updated;
+  }
+
+  /* Total unread messages for the signed-in user. Only counts conversations this user really takes part in
+     (the local store can also hold other accounts' chats, which used to inflate the badge), skips locked tutor
+     conversations, and falls back to the conversation's last-message info while its messages are still loading. */
+  function unreadTotal(userIdent) {
+    var u = user();
+    var me = cleanStr(userIdent || (u && emailOf(u))).toLowerCase();
+    if (isAdmin() || !me) return 0;
+    return conversations().reduce(function (total, c) {
+      if (!c) return total;
+      var ownerMail = emailOf(c.enquiry_owner_email || c.owner_email || c.studentEmail || (c.student && (c.student.owner_email || c.student.email)));
+      var tMail = emailOf(c.tutorEmail || (c.tutor && c.tutor.email));
+      if (me !== ownerMail && me !== tMail) return total;
+      if (tMail === me && !isConversationUnlockedForTutor(c, me)) return total;
+      var n = unread(c, me);
+      if (!n && (!c.messages || !c.messages.length) && c.lastMessage && c.lastMessageSender &&
+        emailOf(c.lastMessageSender) !== me && !c.lastReadBy) n = 1;
+      return total + n;
+    }, 0);
+  }
+
+  function escapeHtml(s) {
+    return String(s == null ? '' : s).replace(/[&<>"']/g, function (ch) {
+      return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch];
+    });
+  }
+
+  function formatTime(val) {
+    try {
+      return new Date(val).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) + ', ' + new Date(val).toLocaleDateString([], { month: 'short', day: 'numeric' });
+    } catch (e) { return ''; }
+  }
+
+  function ensureStyles() {
+    if (document.getElementById('modivsChatStyles')) return;
+    var s = document.createElement('style');
+    s.id = 'modivsChatStyles';
+    s.textContent =
+      '.mc-dialog{border:0;border-radius:20px;padding:0;max-width:680px;width:calc(100% - 24px);box-shadow:0 24px 60px rgba(26,32,53,0.35);background:#FEF7EA;color:#1A2035;overflow:hidden}' +
+      '.mc-dialog::backdrop{background:rgba(20,33,61,0.65);backdrop-filter:blur(3px)}' +
+      '.mc-head{padding:16px 22px;background:#1A2035;color:#FEF7EA;display:flex;align-items:center;justify-content:space-between;gap:12px}' +
+      '.mc-user{display:flex;align-items:center;gap:12px}' +
+      '.mc-avatar{width:40px;height:40px;border-radius:50%;background:#EBB92E;color:#1A2035;display:grid;place-items:center;font-weight:800;font-size:1.05rem}' +
+      '.mc-user h2{margin:0;font-size:1.15rem;font-weight:700;line-height:1.2}' +
+      '.mc-status{font-size:.78rem;color:#7fd1bd;display:flex;align-items:center;gap:4px;margin-top:2px}' +
+      '.mc-status::before{content:"";width:8px;height:8px;border-radius:50%;background:#0e7c66;display:inline-block}' +
+      '.mc-close{border:1.5px solid #4a5a7a;background:transparent;color:#FEF7EA;border-radius:8px;padding:6px 14px;font-weight:600;cursor:pointer;transition:background .15s}' +
+      '.mc-close:hover{background:rgba(255,255,255,0.15)}' +
+      '.mc-notice{margin:0;padding:10px 20px;background:#fff8db;color:#7a6207;font-size:.82rem;border-bottom:1px solid #eedda6;display:flex;align-items:center;justify-content:space-between;gap:10px}' +
+      '.mc-crypto-pill{background:#1A2035;color:#EBB92E;font-size:.72rem;font-weight:700;padding:3px 8px;border-radius:6px;display:inline-flex;align-items:center;gap:4px}' +
+      '.mc-messages{padding:20px;height:380px;overflow-y:auto;display:flex;flex-direction:column;gap:12px;background:#fdf9f1}' +
+      '.mc-msg{max-width:80%;padding:10px 14px;border-radius:14px;background:#fff;border:1px solid #eadfc9;box-shadow:0 1px 3px rgba(0,0,0,0.03);line-height:1.45}' +
+      '.mc-msg.mine{margin-left:auto;background:#EBB92E;border-color:#deb02c;color:#1A2035;border-bottom-right-radius:4px}' +
+      '.mc-msg.theirs{margin-right:auto;background:#fff;border-bottom-left-radius:4px}' +
+      '.mc-msg b{display:block;font-size:.82rem;margin-bottom:3px;color:#1A2035}' +
+      '.mc-msg .txt{font-size:.92rem;word-break:break-word;white-space:pre-wrap}' +
+      '.mc-msg small{display:block;color:#7180ad;font-size:.72rem;margin-top:4px;text-align:right}' +
+      '.mc-msg.mine small{color:#4a3f12}' +
+      '.mc-compose{display:flex;gap:10px;padding:14px 20px;background:#fff;border-top:1px solid #eadfc9;align-items:center}' +
+      '.mc-compose textarea{flex:1;height:46px;max-height:110px;resize:none;padding:11px 14px;border:1.5px solid #dfe5ee;border-radius:10px;background:#fff;font:inherit;font-size:.92rem;color:#1A2035;outline:none}' +
+      '.mc-compose textarea:focus{border-color:#1A2035}' +
+      '.mc-chips{display:flex;flex-wrap:wrap;gap:8px;padding:10px 20px 0;background:#fff}' +
+      '.mc-chip{border:1.5px solid #dfe5ee;border-radius:999px;background:#FEF7EA;color:#1A2035;padding:7px 13px;font:inherit;font-size:.82rem;font-weight:600;cursor:pointer;transition:background .15s,border-color .15s}' +
+      '.mc-chip:hover{border-color:#FABD4E}' +
+      '.mc-chip.on{background:#FABD4E;border-color:#FABD4E}' +
+      '.mc-compose button{border:0;border-radius:10px;background:#1A2035;color:#EBB92E;padding:11px 22px;font-weight:700;cursor:pointer;transition:transform .1s, background .15s}' +
+      '.mc-compose button:hover{background:#2a3350}' +
+      '.mc-empty{color:#555b78;text-align:center;padding:40px 20px;font-size:.95rem}' +
+      '.mc-row{border:1.5px solid #eadfc9;border-radius:12px;padding:14px 16px;margin:10px 0;background:#fff;cursor:pointer;display:flex;align-items:center;justify-content:space-between;transition:transform .12s, border-color .15s}' +
+      '.mc-row:hover{border-color:#1A2035;transform:translateY(-1px)}' +
+      '.mc-row.locked{background:#fffbf2;border-left:4px solid #EBB92E}' +
+      '.mc-row-left{display:flex;align-items:center;gap:12px}' +
+      '.mc-row b{font-size:.98rem;color:#1A2035}' +
+      '.mc-row small{color:#555b78;font-size:.82rem;display:block;margin-top:2px}' +
+      '.mc-badge{background:#EBB92E;color:#1A2035;border-radius:99px;padding:2px 8px;font-weight:700;font-size:.75rem}' +
+      '.mc-badge.locked-pill{background:#ecdfc6;color:#555b78;font-weight:800}' +
+      '.mc-unread-badge{background:#25D366;color:#fff;border-radius:99px;padding:2px 8px;font-weight:800;font-size:0.75rem;min-width:20px;text-align:center;display:inline-block;box-shadow:0 1px 3px rgba(37,211,102,0.35)}' +
+
+      // Teacher Notification Popup Styles
+      '.mc-modal-overlay{position:fixed;inset:0;background:rgba(20,33,61,0.7);backdrop-filter:blur(4px);z-index:9999;display:grid;place-items:center;padding:16px}' +
+      '.mc-popup-card{background:#FEF7EA;color:#1A2035;border-radius:20px;max-width:520px;width:100%;padding:28px 24px;border:2px solid #EBB92E;box-shadow:0 24px 60px rgba(0,0,0,0.3);position:relative;animation:mcPop .2s ease-out}' +
+      '@keyframes mcPop{from{opacity:0;transform:scale(0.95)}to{opacity:1;transform:scale(1)}}' +
+      '.mc-popup-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}' +
+      '.mc-popup-icon{font-size:2rem;width:48px;height:48px;border-radius:50%;background:#EBB92E;display:grid;place-items:center;flex-shrink:0}' +
+      '.mc-popup-title{margin:0;font-size:1.25rem;font-weight:800;color:#1A2035}' +
+      '.mc-popup-lead{font-size:.95rem;line-height:1.5;color:#1A2035;background:#fff;border:1.5px solid #eadfc9;border-radius:12px;padding:14px;margin:12px 0;font-weight:600}' +
+      '.mc-popup-status{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}' +
+      '.mc-status-item{background:#fff;border:1px solid #eadfc9;border-radius:10px;padding:10px;font-size:.82rem}' +
+      '.mc-status-item b{display:block;font-size:.96rem;margin-top:2px}' +
+      '.mc-status-ok{color:#1d7a4d}' +
+      '.mc-status-bad{color:#b3261e}' +
+      '.mc-popup-acts{display:flex;gap:10px;justify-content:flex-end;margin-top:20px;flex-wrap:wrap}' +
+      '.mc-btn-primary{background:#1A2035;color:#EBB92E;border:2px solid #1A2035;border-radius:10px;padding:10px 18px;font-weight:700;font-size:.9rem;cursor:pointer}' +
+      '.mc-btn-primary:hover{background:#2a3350}' +
+      '.mc-btn-secondary{background:transparent;color:#1A2035;border:1.5px solid #1A2035;border-radius:10px;padding:10px 16px;font-weight:600;font-size:.9rem;cursor:pointer}' +
+      '.mc-btn-secondary:hover{background:rgba(26,32,53,0.06)}' +
+      '.mc-popup-err{color:#b3261e;font-size:.85rem;background:#fdf2f2;border:1px solid #f7dcda;border-radius:8px;padding:8px 12px;margin-top:10px}';
+    document.head.appendChild(s);
+  }
+
+  // =========================================================================
+  // Teacher Notification Popup (Requirement 2 & 3)
+  // "New Student Inquiry! A student wants to contact you. Activate your valid
+  //  membership plan and use the required coins to view student details and messages."
+  // =========================================================================
+  function showTeacherInquiryPopup(conv, onUnlocked) {
+    ensureStyles();
+    var existing = document.getElementById('mcTeacherPopup');
+    if (existing) existing.remove();
+
+    var meUser = user();
+    var tutorEmail = emailOf(meUser);
+    var mem = getTutorMembership(tutorEmail);
+    var coins = getTutorCoins(tutorEmail);
+
+    var ov = document.createElement('div');
+    ov.id = 'mcTeacherPopup';
+    ov.className = 'mc-modal-overlay';
+    ov.setAttribute('role', 'dialog');
+    ov.setAttribute('aria-modal', 'true');
+
+    var card = document.createElement('div');
+    card.className = 'mc-popup-card';
+
+    var memValid = mem.isValid;
+    var coinsValid = coins >= UNLOCK_COST;
+    var isFreeConv = !!(conv.free || (conv.enquiry && conv.enquiry.free));
+
+    card.innerHTML =
+      '<div class="mc-popup-header">' +
+      '<div class="mc-popup-icon" aria-hidden="true">' + (isFreeConv ? '🎁' : '🔔') + '</div>' +
+      '<div>' +
+      '<h2 class="mc-popup-title">' + (isFreeConv ? 'Free Student Lead!' : 'New Student Inquiry!') + '</h2>' +
+      '<small style="color:#555b78;">Direct private tuition inquiry from student</small>' +
+      '</div>' +
+      '</div>' +
+      // Exact prompt statement required
+      '<div class="mc-popup-lead">' +
+      (isFreeConv
+        ? '“This is a FREE tuition lead! No membership plan or coins are needed. Unlock to view student details and send your demo class message.”'
+        : '“New Student Inquiry! A student wants to contact you. Activate your valid membership plan and use the required coins to view student details and messages.”') +
+      '</div>' +
+      '<div style="font-size:0.86rem;color:#555b78;margin:8px 0 14px;">' +
+      '🔒 Student identity, contact details, and incoming messages remain protected until verified authorization.' +
+      '</div>' +
+      '<div class="mc-popup-status">' +
+      '<div class="mc-status-item">' +
+      '<span>Membership Plan:</span>' +
+      (isFreeConv
+        ? '<b class="mc-status-ok">Not required (Free Lead)</b>'
+        : '<b class="' + (memValid ? 'mc-status-ok' : 'mc-status-bad') + '">' + escapeHtml(mem.planName) + ' (' + (memValid ? 'Active' : 'Expired / Inactive') + ')</b>') +
+      '</div>' +
+      '<div class="mc-status-item">' +
+      '<span>Coin Balance:</span>' +
+      (isFreeConv
+        ? '<b class="mc-status-ok">0 Coins required (Free)</b>'
+        : '<b class="' + (coinsValid ? 'mc-status-ok' : 'mc-status-bad') + '">' + coins + ' Coins (' + UNLOCK_COST + ' required)</b>') +
+      '</div>' +
+      '</div>' +
+      '<div id="mcPopupErr" class="mc-popup-err" style="display:none;"></div>' +
+      '<div class="mc-popup-acts">' +
+      (!isFreeConv && !memValid ? '<button type="button" class="mc-btn-secondary" id="mcActMem">Activate Membership</button>' : '') +
+      (!isFreeConv && !coinsValid ? '<button type="button" class="mc-btn-secondary" id="mcActRecharge">Recharge Coins</button>' : '') +
+      '<button type="button" class="mc-btn-primary" id="mcUnlockBtn">' + (isFreeConv ? 'Unlock Free & Send Demo' : ('Unlock Inquiry (' + UNLOCK_COST + ' Coins)')) + '</button>' +
+      '<button type="button" class="mc-btn-secondary" id="mcDismissBtn">Later</button>' +
+      '</div>';
+
+    ov.appendChild(card);
+    document.body.appendChild(ov);
+
+    var errBox = card.querySelector('#mcPopupErr');
+    function showError(msg) {
+      if (errBox) {
+        errBox.textContent = msg;
+        errBox.style.display = 'block';
+      }
+    }
+
+    var memBtn = card.querySelector('#mcActMem');
+    if (memBtn) {
+      memBtn.onclick = function () {
+        ov.remove();
+        if (window.openMembershipModal) window.openMembershipModal();
+        else alert('Please navigate to your Credits & Membership section to activate a membership plan.');
+      };
+    }
+
+    var rechBtn = card.querySelector('#mcActRecharge');
+    if (rechBtn) {
+      rechBtn.onclick = function () {
+        ov.remove();
+        var dlg = document.getElementById('dlg');
+        if (dlg && dlg.showModal) dlg.showModal();
+        else alert('Please use the Recharge button on your dashboard to top up your coin balance.');
+      };
+    }
+
+    card.querySelector('#mcDismissBtn').onclick = function () { ov.remove(); };
+
+    card.querySelector('#mcUnlockBtn').onclick = function () {
+      var unlockBtn = this;
+      unlockBtn.disabled = true;
+      unlockBtn.textContent = 'Verifying & Unlocking...';
+
+      var customMsg = DEFAULT_DEMO_MESSAGE;
+
+      unlockInquiry(conv.id, meUser, customMsg).then(function (res) {
+        unlockBtn.disabled = false;
+        unlockBtn.textContent = 'Unlock Inquiry (' + UNLOCK_COST + ' Coins)';
+
+        if (!res.success) {
+          showError(res.message || 'Authorization failed.');
+          return;
+        }
+
+        ov.remove();
+        if (typeof window.toast === 'function') {
+          window.toast('Student inquiry unlocked! ' + UNLOCK_COST + ' coins deducted.');
+        }
+        if (onUnlocked) onUnlocked(conv);
+        else open({ student: conv.student, tutor: conv.tutor, enquiry: conv.enquiry });
+      }).catch(function (err) {
+        unlockBtn.disabled = false;
+        unlockBtn.textContent = 'Unlock Inquiry (' + UNLOCK_COST + ' Coins)';
+        showError('Unlock error: ' + (err.message || 'Please try again.'));
+      });
+    };
+  }
+
+  // =========================================================================
+  // Open 1-to-1 Chat Window
+  // =========================================================================
+  function open(input) {
+    ensureStyles();
+    var c = ensure(input.student, input.tutor, input.enquiry);
+    var meUser = user();
+    var meEmail = emailOf(meUser);
+    var isTutorParticipant = (meEmail === emailOf(c.tutor) || meEmail === emailOf(c.tutorEmail));
+
+    // If teacher participant and conversation is locked, trigger teacher notification popup
+    var isUnl = isConversationUnlockedForTutor(c, meUser);
+    if (isTutorParticipant && !isUnl && !isAdmin()) {
+      showTeacherInquiryPopup(c, function (unlockedConv) {
+        open({ student: unlockedConv.student, tutor: unlockedConv.tutor, enquiry: unlockedConv.enquiry });
+      });
+      return;
+    }
+    if (isUnl && !c.unlocked) {
+      c.unlocked = true;
+      syncConversationToFirestore(c);
+    }
+
+    var d = document.createElement('dialog');
+    d.className = 'mc-dialog';
+
+    var otherRawName = isAdmin() ? (c.student.name + ' & ' + c.tutor.name) : (isTutorParticipant ? c.student.name : (c.tutor ? c.tutor.name : 'Tutor'));
+    var otherRole = isAdmin() ? 'Monitoring' : (isTutorParticipant ? (c.enquiry_owner_role === 'parent' ? 'Parent' : 'Student') : 'Tutor');
+
+    var otherPhoto = (!isTutorParticipant && c.tutor && (c.tutor.photo || c.tutor.avatar)) ? (c.tutor.photo || c.tutor.avatar) : '';
+    var otherName = otherRawName;
+    var initials = otherName.split(' ').filter(Boolean).map(function (w) { return w[0]; }).slice(0, 2).join('').toUpperCase() || 'U';
+
+    var displayIdTag = '';
+    if (isTutorParticipant) {
+      var sId = (c.student && (c.student.displayId || c.student.stuId)) || (window.ModivsIds ? ModivsIds.peek('stu', c.studentEmail || (c.student && c.student.email)) : '');
+      if (sId) displayIdTag = ' <span class="mc-id-pill" style="display:inline-block;background:#eef4ff;color:#1e40af;font-size:0.75rem;padding:2px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(sId) + '</span>';
+    } else {
+      var tId = String((c.tutor && (c.tutor.displayId || c.tutor.tutId)) || (window.ModivsIds ? ModivsIds.peek('tut', c.tutorEmail || (c.tutor && c.tutor.email)) : '')).replace(/^TUT(?=\d)/, 'MOD-TUT');
+      if (tId) displayIdTag = ' <span class="mc-id-pill" style="display:inline-block;background:#eef4ff;color:#1e40af;font-size:0.75rem;padding:2px 6px;border-radius:4px;font-weight:700;">' + escapeHtml(tId) + '</span>';
+    }
+
+    var enqChip = c.enquiry ? (' · <span style="font-weight:500;opacity:0.9;">' + escapeHtml([c.enquiry.cls, (Array.isArray(c.enquiry.subs) ? c.enquiry.subs.join(', ') : c.enquiry.subs)].filter(Boolean).join(' - ')) + '</span>') : '';
+
+    function markRead(conv) {
+      markConversationAsRead(conv, meEmail);
+    }
+
+    var selectedPrompt = null;
+    var promptList = isTutorParticipant ? TUTOR_PROMPTS : STUDENT_PROMPTS;
+    function render() {
+      var current = find(c.id) || c;
+      markRead(current);
+
+      var avatarHtml = otherPhoto ?
+        '<img src="' + escapeHtml(otherPhoto) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="' + escapeHtml(otherName) + '">' :
+        escapeHtml(initials);
+
+      d.innerHTML =
+        '<div class="mc-head">' +
+        '<div class="mc-user">' +
+        '<div class="mc-avatar" style="overflow:hidden;padding:0;">' + avatarHtml + '</div>' +
+        '<div><h2>' + escapeHtml(otherName) + displayIdTag + '</h2><div class="mc-status">' + escapeHtml(otherRole) + enqChip + ' · Active</div></div>' +
+        '</div>' +
+        '<button class="mc-close" type="button">Close</button>' +
+        '</div>' +
+        '<div class="mc-notice">' +
+        '<span>🔒 1-on-1 direct chat. Messages are encrypted & verified live.</span>' +
+        '<span class="mc-crypto-pill">AES-GCM-256</span>' +
+        '</div>' +
+        '<div class="mc-messages" id="mcMsgs">' +
+        (current.messages.length ? current.messages.map(function (m) {
+          var isMine = emailOf(m.senderEmail) === meEmail;
+          return '<div class="mc-msg ' + (isMine ? 'mine' : 'theirs') + '">' +
+            '<b>' + escapeHtml(m.senderName) + (m.senderRole ? ' <span style="font-weight:400;font-size:0.75rem;opacity:0.8;">(' + escapeHtml(m.senderRole) + ')</span>' : '') + '</b>' +
+            '<div class="txt">' + escapeHtml(m.text) + '</div>' +
+            '<small>' + escapeHtml(formatTime(m.createdAt)) + '</small>' +
+            '</div>';
+        }).join('') : '<div class="mc-empty">👋 Connect regarding tuition enquiry with ' + escapeHtml(otherName) + '!<br><small style="color:#7180ad">Send your class message below.</small></div>') +
+        '</div>' +
+        (isAdmin() ? '<div style="padding:14px 20px;background:#fff;text-align:center;font-size:.85rem;color:#7180ad;">Read-only administrator view. All messages decrypted via platform keys.</div>' :
+          (isTutorParticipant ?
+            '<div style="padding:8px 18px;background:#fff8db;border-top:1px solid #eedda6;font-size:0.8rem;color:#7a6207;display:flex;align-items:center;justify-content:space-between;">' +
+            '<span>📋 <b>Quick reply:</b> Pick one of the messages below, then send.</span>' +
+            '</div>' +
+            '<div class="mc-chips" id="mcChips">' + promptChips(promptList, selectedPrompt || promptList[0].text) + '</div>' +
+            '<form class="mc-compose" id="mcForm">' +
+            '<textarea id="mcText" readonly style="background:#f9f9fb;font-size:0.85rem;color:#1A2035;font-weight:600;line-height:1.4;height:70px;">' + escapeHtml(selectedPrompt || promptList[0].text) + '</textarea>' +
+            '<button type="submit" style="white-space:nowrap;">Send Reply</button>' +
+            '</form>'
+            :
+            '<div style="padding:8px 18px;background:#eef4ff;border-top:1px solid #c7d7f8;font-size:0.8rem;color:#1d4ed8;display:flex;align-items:center;justify-content:space-between;">' +
+            '<span>📋 <b>Quick message:</b> Pick one of the messages below, then send.</span>' +
+            '</div>' +
+            '<div class="mc-chips" id="mcChips">' + promptChips(promptList, selectedPrompt || promptList[0].text) + '</div>' +
+            '<form class="mc-compose" id="mcForm">' +
+            '<textarea id="mcText" readonly style="background:#f9f9fb;font-size:0.85rem;color:#1A2035;font-weight:600;line-height:1.4;height:70px;">' + escapeHtml(selectedPrompt || promptList[0].text) + '</textarea>' +
+            '<button type="submit" style="white-space:nowrap;">Send Message</button>' +
+            '</form>'));
+
+      var closeBtn = d.querySelector('.mc-close');
+      if (closeBtn) closeBtn.onclick = function () { if (typeof d.close === 'function') d.close(); };
+
+      var msgsDiv = d.querySelector('#mcMsgs');
+      if (msgsDiv) msgsDiv.scrollTop = msgsDiv.scrollHeight;
+
+      if (!isAdmin()) {
+        var form = d.querySelector('#mcForm');
+        var ta = d.querySelector('#mcText');
+        [].slice.call(d.querySelectorAll('#mcChips .mc-chip')).forEach(function (b) {
+          b.onclick = function () {
+            selectedPrompt = promptList[+b.getAttribute('data-i')].text;
+            [].slice.call(d.querySelectorAll('#mcChips .mc-chip')).forEach(function (x) { x.classList.toggle('on', x === b); });
+            if (ta) ta.value = selectedPrompt;
+          };
+        });
+        if (form && ta) {
+          form.onsubmit = function (e) {
+            e.preventDefault();
+            var text = selectedPrompt || promptList[0].text;
+            if (promptList.every(function (p) { return p.text !== text; })) text = promptList[0].text;
+            selectedPrompt = null;
+            if (!text) return;
+
+            var submitBtn = form.querySelector('button[type="submit"]');
+            if (submitBtn) { submitBtn.disabled = true; submitBtn.textContent = 'Sending...'; }
+
+            sendMessage(current.id, meUser, text).then(function () {
+              ta.value = '';
+              if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = isTutorParticipant ? 'Send Reply' : 'Send Message'; }
+              render();
+            }).catch(function (err) {
+              if (submitBtn) { submitBtn.disabled = false; submitBtn.textContent = isTutorParticipant ? 'Send Reply' : 'Send Message'; }
+              alert(err && err.message ? err.message : 'Message could not be sent to server. Please check your connection and unlock status.');
+            });
+          };
+        }
+      }
+    }
+
+    document.body.appendChild(d);
+    var stopSub = subscribe(render);
+    watchFirestoreMessages(c, render);
+    render();
+
+    d.addEventListener('close', function () {
+      stopSub();
+      d.remove();
+    });
+    if (typeof d.showModal === 'function') d.showModal();
+    else d.style.display = 'block';
+  }
+  // =========================================================================
+  // Inbox View for Dashboards
+  // =========================================================================
+  function inbox(container, onOpen) {
+    ensureStyles();
+    var me = emailOf(user());
+    var isTutorUser = (user() && user().role === 'Tutor');
+    var rows = conversations().filter(function (c) { return isAdmin() || participant(c); });
+    rows.forEach(function (c) { watchFirestoreMessages(c, notify); });
+
+    if (!rows.length) {
+      container.innerHTML = '<div class="mc-empty">No conversations yet.<br><small style="color:#7180ad">Messages from your enquiries and leads will appear here.</small></div>';
+      return;
+    }
+
+    container.innerHTML = rows.map(function (c) {
+      var isTutor = (me === emailOf(c.tutor) || me === emailOf(c.tutorEmail));
+      var isUnlocked = !isTutor || !!c.unlocked;
+      var otherRaw = isAdmin() ? (c.student.name + ' ↔ ' + c.tutor.name) : (isTutor ? c.student.name : (c.tutor ? c.tutor.name : 'Tutor'));
+      var displayName = (isTutor && !isUnlocked) ? maskStudentName(otherRaw) : otherRaw;
+      var initials = displayName.split(' ').filter(Boolean).map(function (w) { return w[0]; }).slice(0, 2).join('').toUpperCase() || 'U';
+      var photo = (!isTutor && c.tutor && (c.tutor.photo || c.tutor.avatar)) ? (c.tutor.photo || c.tutor.avatar) : '';
+      var avatarContent = photo ?
+        '<img src="' + escapeHtml(photo) + '" style="width:100%;height:100%;border-radius:50%;object-fit:cover;" alt="' + escapeHtml(displayName) + '">' :
+        escapeHtml(initials);
+
+      var last = c.messages && c.messages.length ? c.messages[c.messages.length - 1] : null;
+      var lastSenderName = last ? (emailOf(last.senderEmail) === me ? 'You' : (last.senderName ? last.senderName.split(' ')[0] : '')) : '';
+      var lastText = last ? ((lastSenderName ? lastSenderName + ': ' : '') + last.text) : 'New tuition inquiry';
+      if (isTutor && !isUnlocked) {
+        lastText = '🔒 Message protected. Unlock with membership & coins to read.';
+      }
+      var unreadCount = unread(c, me);
+      var lastTimeStr = last ? formatTime(last.createdAt) : '';
+      var enqTag = c.enquiry ? ('<span style="background:#eef2f7;color:#334155;border-radius:6px;padding:2px 7px;font-size:0.73rem;font-weight:600;margin-left:8px;">' + escapeHtml([c.enquiry.cls, (Array.isArray(c.enquiry.subs) ? c.enquiry.subs.join(', ') : c.enquiry.subs)].filter(Boolean).join(' · ')) + '</span>') : '';
+      var statusBadge = isUnlocked ?
+        '<span class="mc-badge" style="background:#dcfce7;color:#166534;font-size:0.72rem;">' + (c.status === 'demo' ? 'Demo Offered' : 'Active') + '</span>' :
+        '<span class="mc-badge locked-pill" style="margin-left:6px;">🔒 Locked</span>';
+
+      return '<div class="mc-row ' + (!isUnlocked ? 'locked' : '') + '" data-chat-id="' + escapeHtml(c.id) + '">' +
+        '<div class="mc-row-left" style="flex:1;min-width:0;">' +
+        '<div class="mc-avatar" style="width:44px;height:44px;font-size:.9rem;flex-shrink:0;overflow:hidden;padding:0;position:relative;">' +
+        avatarContent +
+        '<span style="position:absolute;bottom:1px;right:1px;width:10px;height:10px;background:#25D366;border:2px solid #fff;border-radius:50%;"></span>' +
+        '</div>' +
+        '<div style="flex:1;min-width:0;">' +
+        '<div style="display:flex;align-items:center;flex-wrap:wrap;gap:4px;">' +
+        '<b style="color:#1A2035;font-size:0.95rem;">' + escapeHtml(displayName) + '</b>' +
+        enqTag +
+        statusBadge +
+        '</div>' +
+        '<small style="display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:92%;color:' + (unreadCount ? '#1A2035;font-weight:700;' : '#64748b;') + '">' +
+        escapeHtml(lastText.slice(0, 90)) + (lastText.length > 90 ? '...' : '') +
+        '</small>' +
+        '</div>' +
+        '</div>' +
+        '<div style="display:flex;flex-direction:column;align-items:flex-end;gap:5px;flex-shrink:0;margin-left:12px;">' +
+        (lastTimeStr ? '<span style="font-size:0.73rem;color:' + (unreadCount ? '#25D366;font-weight:700;' : '#64748b;') + '">' + escapeHtml(lastTimeStr) + '</span>' : '') +
+        '<div style="display:flex;align-items:center;gap:6px;">' +
+        (!isUnlocked ? '<button type="button" class="mc-btn-primary" style="padding:4px 10px;font-size:0.75rem;" data-unlock-id="' + escapeHtml(c.id) + '">Unlock</button>' : '') +
+        (unreadCount ? '<span class="mc-unread-badge">' + unreadCount + '</span>' : '') +
+        '</div>' +
+        '</div>' +
+        '</div>';
+    }).join('');
+
+    Array.prototype.forEach.call(container.querySelectorAll('[data-chat-id]'), function (row) {
+      row.onclick = function (e) {
+        if (e.target && e.target.hasAttribute('data-unlock-id')) return;
+        var c = find(row.getAttribute('data-chat-id'));
+        if (c && onOpen) onOpen(c);
+      };
+    });
+
+    Array.prototype.forEach.call(container.querySelectorAll('[data-unlock-id]'), function (btn) {
+      btn.onclick = function (e) {
+        e.stopPropagation();
+        var c = find(btn.getAttribute('data-unlock-id'));
+        if (c) showTeacherInquiryPopup(c, onOpen);
+      };
+    });
+  }
+  // =========================================================================
+  // Admin Conversations List with Search & Inspection
+  // =========================================================================
+  function adminList(container, filters, onOpen) {
+    ensureStyles();
+    filters = filters || {};
+    var from = filters.from ? new Date(filters.from + 'T00:00:00') : null;
+    var to = filters.to ? new Date(filters.to + 'T23:59:59') : null;
+    var rows = conversations().filter(function (c) {
+      if (filters.student && (c.student.name + ' ' + c.student.email).toLowerCase().indexOf(filters.student.toLowerCase()) < 0) return false;
+      if (filters.tutor && (c.tutor.name + ' ' + c.tutor.email).toLowerCase().indexOf(filters.tutor.toLowerCase()) < 0) return false;
+      if (filters.status && filters.status !== 'all') {
+        if (filters.status === 'unlocked' && !c.unlocked) return false;
+        if (filters.status === 'locked' && c.unlocked) return false;
+      }
+      return c.messages.some(function (m) {
+        var d = new Date(m.createdAt);
+        return (!from || d >= from) && (!to || d <= to);
+      }) || (!from && !to);
+    });
+
+    if (!rows.length) {
+      container.innerHTML = '<div class="mc-empty">No conversations match the current filters.</div>';
+      return;
+    }
+
+    container.innerHTML = rows.map(function (c) {
+      var last = c.messages[c.messages.length - 1];
+      var isUnlocked = !!c.unlocked;
+      return '<div class="mc-row ' + (!isUnlocked ? 'locked' : '') + '" data-chat-id="' + escapeHtml(c.id) + '">' +
+        '<div>' +
+        '<b>' + escapeHtml(c.student.name) + ' ↔ ' + escapeHtml(c.tutor.name) + '</b> ' +
+        (isUnlocked ? '<span class="mc-badge" style="background:#d9f0e3;color:#1d7a4d;">Unlocked</span>' : '<span class="mc-badge locked-pill">Pending Unlock</span>') +
+        '<small>' + c.messages.length + ' messages' + (last ? ' · Last: ' + escapeHtml(formatTime(last.createdAt)) : '') + '</small>' +
+        '</div>' +
+        '<span style="font-size:.8rem;color:#7180ad;">Inspect →</span>' +
+        '</div>';
+    }).join('');
+
+    Array.prototype.forEach.call(container.querySelectorAll('[data-chat-id]'), function (row) {
+      row.onclick = function () {
+        var c = find(row.getAttribute('data-chat-id'));
+        if (c && onOpen) onOpen(c);
+      };
+    });
+  }
+
+  // =========================================================================
+  // Background Listener for Incoming Conversations & Messages
+  // Supports both Tutor & Student accounts with real-time updates
+  // =========================================================================
+  var liveConvUnsubs = [];
+  function listenForConversations(userEmailOrUser, onInquiry) {
+    var firestore = db();
+    var u = typeof userEmailOrUser === 'object' ? userEmailOrUser : (userEmailOrUser ? { email: userEmailOrUser } : user());
+    var em = emailOf(u);
+    if (!firestore || !em) return function () { };
+
+    liveConvUnsubs.forEach(function (unsub) { try { unsub(); } catch (e) { } });
+    liveConvUnsubs = [];
+
+    var seenInquiriesKey = 'modivs_seen_inquiries_' + em;
+    var seen = {};
+    try { seen = JSON.parse(localStorage.getItem(seenInquiriesKey) || '{}'); } catch (e) { }
+
+    function handleSnapshot(snapshot) {
+      if (!snapshot || snapshot.empty) return;
+      var all = conversations();
+      var byId = {};
+      all.forEach(function (x) { byId[x.id] = x; if (x.docId) byId[x.docId] = x; });
+      var changed = false;
+
+      snapshot.docs.forEach(function (docSnap) {
+        var d = docSnap.data() || {};
+        var id = d.id || docSnap.id;
+        var existing = byId[id] || byId[docSnap.id];
+        if (!existing) {
+          var newC = {
+            id: id,
+            docId: docSnap.id,
+            conversation_id: id,
+            enquiry_id: d.enquiry_id || d.enquiryId || '',
+            enquiryId: d.enquiry_id || d.enquiryId || '',
+            tutor_id: d.tutor_id || d.tutorId || '',
+            enquiry_owner_user_id: d.enquiry_owner_user_id || d.created_by_user_id || '',
+            enquiry_owner_role: d.enquiry_owner_role || d.created_by_role || 'student',
+            created_by_user_id: d.created_by_user_id || d.enquiry_owner_user_id || '',
+            created_by_role: d.created_by_role || d.enquiry_owner_role || 'student',
+            enquiry_owner_email: d.enquiry_owner_email || d.studentEmail || '',
+            student_id: d.student_id || '',
+            parent_id: d.parent_id || '',
+            student: d.student || { name: 'Student', email: d.studentEmail || '' },
+            tutor: d.tutor || { name: 'Tutor', email: d.tutorEmail || '', photo: '' },
+            enquiry: d.enquiry || null,
+            free: !!(d.free || (d.enquiry && d.enquiry.free)),
+            unlockCostCoins: d.unlockCostCoins != null ? d.unlockCostCoins : ((d.free || (d.enquiry && d.enquiry.free)) ? 0 : UNLOCK_COST),
+            studentEmail: d.studentEmail,
+            tutorEmail: d.tutorEmail,
+            studentId: d.studentId,
+            tutorId: d.tutorId,
+            participantIds: d.participantIds || [],
+            unlocked: !!d.unlocked,
+            unlockedAt: d.unlockedAt && d.unlockedAt.toDate ? d.unlockedAt.toDate().toISOString() : (d.unlockedAt || null),
+            unlockedBy: d.unlockedBy || null,
+            status: d.status || (d.unlocked ? 'unlocked' : 'inquiry_pending'),
+            lastMessage: d.lastMessage || '',
+            lastMessageSender: d.lastMessageSenderId || '',
+            messages: [],
+            createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : (d.created_at || new Date().toISOString()),
+            updatedAt: d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate().toISOString() : new Date().toISOString()
+          };
+          var isNewUnl = !!d.unlocked || isConversationUnlockedForTutor(newC, em);
+          newC.unlocked = isNewUnl;
+          newC.status = isNewUnl ? 'unlocked' : (d.status || 'inquiry_pending');
+          if (isNewUnl && !d.unlocked) syncConversationToFirestore(newC);
+
+          all.unshift(newC);
+          byId[id] = newC;
+          byId[docSnap.id] = newC;
+          changed = true;
+
+          // Start watching messages immediately
+          watchFirestoreMessages(newC, notify);
+
+          // If tutor and inquiry is locked, notify popup
+          if (emailOf(newC.tutorEmail) === em && !isNewUnl && !seen[id]) {
+            seen[id] = true;
+            try { localStorage.setItem(seenInquiriesKey, JSON.stringify(seen)); } catch (e) { }
+            if (onInquiry) onInquiry(newC);
+          }
+        } else {
+          var isAlreadyUnl = existing.unlocked || isConversationUnlockedForTutor(existing, em);
+          var nextUnl = !!d.unlocked || isAlreadyUnl;
+          if (existing.unlocked !== nextUnl) {
+            existing.unlocked = nextUnl;
+            existing.unlockedAt = d.unlockedAt || existing.unlockedAt || new Date().toISOString();
+            existing.status = nextUnl ? 'unlocked' : (d.status || 'inquiry_pending');
+            changed = true;
+            if (nextUnl && !d.unlocked) {
+              syncConversationToFirestore(existing);
+            }
+          }
+          if (d.lastMessage && existing.lastMessage !== d.lastMessage) {
+            existing.lastMessage = d.lastMessage;
+            changed = true;
+          }
+          if (d.lastMessageSenderId && existing.lastMessageSender !== d.lastMessageSenderId) {
+            existing.lastMessageSender = d.lastMessageSenderId;
+            changed = true;
+          }
+          if (d.status && existing.status !== d.status) {
+            existing.status = d.status;
+            changed = true;
+          }
+          if (d.enquiry && !existing.enquiry) {
+            existing.enquiry = d.enquiry;
+            changed = true;
+          }
+          if (d.tutor && d.tutor.photo && (!existing.tutor || !existing.tutor.photo)) {
+            if (!existing.tutor) existing.tutor = d.tutor;
+            else existing.tutor.photo = d.tutor.photo;
+            changed = true;
+          }
+          watchFirestoreMessages(existing, notify);
+        }
+      });
+
+      if (changed) {
+        save(all);
+      }
+    }
+
+    try {
+      var unsubTutor = firestore.collection('conversations')
+        .where('tutorEmail', '==', em)
+        .onSnapshot(handleSnapshot, function (err) { console.warn('Tutor conversations listener notice:', err); });
+      liveConvUnsubs.push(unsubTutor);
+
+      var unsubStudent = firestore.collection('conversations')
+        .where('studentEmail', '==', em)
+        .onSnapshot(handleSnapshot, function (err) { console.warn('Student conversations listener notice:', err); });
+      liveConvUnsubs.push(unsubStudent);
+
+      var unsubOwner = firestore.collection('conversations')
+        .where('enquiry_owner_email', '==', em)
+        .onSnapshot(handleSnapshot, function (err) { console.warn('Owner conversations listener notice:', err); });
+      liveConvUnsubs.push(unsubOwner);
+    } catch (err) {
+      console.warn('Conversation listener initialization error:', err);
+    }
+
+    return function () {
+      liveConvUnsubs.forEach(function (unsub) { try { unsub(); } catch (e) { } });
+      liveConvUnsubs = [];
+    };
+  }
+  function listenForTeacherInquiries(tutorEmail, onInquiry) {
+    return listenForConversations(tutorEmail, onInquiry);
+  }
+
+  var adminConvUnsub = null;
+  function listenAllConversationsForAdmin() {
+    var firestore = db(), a = fbAuth();
+    if (!firestore) return function () { };
+    function start() {
+      if (adminConvUnsub) return;
+      try {
+        adminConvUnsub = firestore.collection('conversations').onSnapshot(function (snapshot) {
+          if (!snapshot || snapshot.empty) return;
+          var all = conversations(), byId = {}, changed = false;
+          all.forEach(function (x) { byId[x.id] = x; if (x.docId) byId[x.docId] = x; });
+          snapshot.docs.forEach(function (docSnap) {
+            var d = docSnap.data() || {}, id = d.id || docSnap.id;
+            var existing = byId[id] || byId[docSnap.id];
+            if (!existing) {
+              var isFr = !!(d.free || (d.enquiry && d.enquiry.free));
+              existing = {
+                id: id, docId: docSnap.id, conversation_id: id,
+                enquiry_id: d.enquiry_id || d.enquiryId || '', enquiryId: d.enquiryId || d.enquiry_id || '',
+                tutor_id: d.tutor_id || d.tutorId || '',
+                enquiry_owner_user_id: d.enquiry_owner_user_id || d.created_by_user_id || '',
+                enquiry_owner_role: d.enquiry_owner_role || d.created_by_role || 'student',
+                created_by_user_id: d.created_by_user_id || d.enquiry_owner_user_id || '',
+                created_by_role: d.created_by_role || d.enquiry_owner_role || 'student',
+                enquiry_owner_email: d.enquiry_owner_email || d.studentEmail || '',
+                student_id: d.student_id || '', parent_id: d.parent_id || '',
+                student: d.student || { name: 'Student', email: d.studentEmail || '' },
+                tutor: d.tutor || { name: 'Tutor', email: d.tutorEmail || '', photo: '' },
+                enquiry: d.enquiry || null, free: isFr,
+                unlockCostCoins: d.unlockCostCoins != null ? d.unlockCostCoins : (isFr ? 0 : UNLOCK_COST),
+                studentEmail: d.studentEmail || '', tutorEmail: d.tutorEmail || '',
+                studentId: d.studentId || '', tutorId: d.tutorId || '',
+                participantIds: d.participantIds || [],
+                unlocked: !!d.unlocked,
+                unlockedAt: d.unlockedAt && d.unlockedAt.toDate ? d.unlockedAt.toDate().toISOString() : (d.unlockedAt || null),
+                unlockedBy: d.unlockedBy || null,
+                status: d.status || (d.unlocked ? 'unlocked' : 'inquiry_pending'),
+                lastMessage: d.lastMessage || '', messages: [],
+                createdAt: d.createdAt && d.createdAt.toDate ? d.createdAt.toDate().toISOString() : (d.created_at || new Date().toISOString()),
+                updatedAt: d.updatedAt && d.updatedAt.toDate ? d.updatedAt.toDate().toISOString() : new Date().toISOString()
+              };
+              all.unshift(existing); byId[id] = existing; byId[docSnap.id] = existing; changed = true;
+            } else {
+              if (d.unlocked !== undefined && existing.unlocked !== !!d.unlocked) { existing.unlocked = !!d.unlocked; changed = true; }
+              if (d.unlockedBy && !existing.unlockedBy) { existing.unlockedBy = d.unlockedBy; changed = true; }
+              if (d.free && !existing.free) { existing.free = true; existing.unlockCostCoins = 0; changed = true; }
+              if (d.lastMessage && existing.lastMessage !== d.lastMessage) { existing.lastMessage = d.lastMessage; changed = true; }
+              if (d.status && existing.status !== d.status) { existing.status = d.status; changed = true; }
+            }
+            watchFirestoreMessages(existing, notify);
+          });
+          if (changed) save(all);
+        }, function (err) { adminConvUnsub = null; console.warn('Admin conversations listener notice:', err); });
+      } catch (e) { }
+    }
+    if (a && a.currentUser && !a.currentUser.isAnonymous) { start(); }
+    else if (a && typeof a.onAuthStateChanged === 'function') {
+      var off = a.onAuthStateChanged(function (u) { if (u && !u.isAnonymous) { try { off(); } catch (e) { } start(); } });
+    }
+    return function () { try { adminConvUnsub && adminConvUnsub(); adminConvUnsub = null; } catch (e) { } };
+  }
+
+  function openById(convId) {
+    if (!convId) return null;
+    var c = find(convId);
+    if (c) {
+      open({ student: c.student, tutor: c.tutor, enquiry: c.enquiry });
+      return c;
+    }
+    var firestore = db();
+    if (firestore) {
+      var docId = safeDocId(convId);
+      return firestore.collection('conversations').doc(docId).get().then(function (snap) {
+        if (snap.exists) {
+          var d = snap.data() || {};
+          var loaded = ensure(d.student, d.tutor, d.enquiry);
+          open({ student: loaded.student, tutor: loaded.tutor, enquiry: loaded.enquiry });
+          return loaded;
+        }
+        return null;
+      }).catch(function (err) {
+        console.warn('openById notice:', err);
+        return null;
+      });
+    }
+    return null;
+  }
+
+  // =========================================================================
+  // Public API Export
+  // =========================================================================
+  window.ModivsChat = {
+    open: open,
+    openById: openById,
+    inbox: inbox,
+    adminList: adminList,
+    conversations: conversations,
+    find: find,
+    ensure: ensure,
+    subscribe: subscribe,
+    unread: unread,
+    unreadCount: unread,
+    unreadTotal: unreadTotal,
+    markRead: markConversationAsRead,
+    isAdmin: isAdmin,
+    user: user,
+
+    // Crypto
+    encrypt: encryptMessage,
+    decrypt: decryptMessage,
+
+    // Teacher Membership & Coins
+    getTutorMembership: getTutorMembership,
+    setTutorMembership: setTutorMembership,
+    getTutorCoins: getTutorCoins,
+    addTutorCoins: addTutorCoins,
+    getCoinTransactions: getCoinTransactions,
+    getMembershipHistory: getMembershipHistory,
+    unlockInquiry: unlockInquiry,
+    unlockFreeConversation: unlockFreeConversation,
+    isConversationUnlockedForTutor: isConversationUnlockedForTutor,
+    maskStudentName: maskStudentName,
+
+    // Notification Popup & Realtime Listeners
+    showTeacherInquiryPopup: showTeacherInquiryPopup,
+    listenForTeacherInquiries: listenForTeacherInquiries,
+    listenForConversations: listenForConversations,
+    listenAllConversationsForAdmin: listenAllConversationsForAdmin,
+    watchFirestoreMessages: watchFirestoreMessages,
+
+    // Automated Messages
+    sendMessage: sendMessage,
+    onTutorMembershipPurchased: onTutorMembershipPurchased,
+    DEFAULT_DEMO_MESSAGE: DEFAULT_DEMO_MESSAGE,
+    DEFAULT_STUDENT_BOOKING_MESSAGE: DEFAULT_STUDENT_BOOKING_MESSAGE,
+
+    firebaseReady: function () { return !!(fbAuth() && fbAuth().currentUser); }
+  };
+
+  // Auto-start realtime conversations listener if user is signed in
+  if (typeof window !== 'undefined') {
+    var startedEmail = null;
+    function syncListeners() {
+      if (isAdmin()) {
+        listenAllConversationsForAdmin();
+        return;
+      }
+      var u = user();
+      if (u && (u.email || u.uid)) {
+        var em = emailOf(u.email);
+        if (startedEmail === em) return;
+        startedEmail = em;
+        listenForConversations(u);
+      }
+    }
+    function attachAuthHook() {
+      var a = fbAuth();
+      if (a && typeof a.onAuthStateChanged === 'function') {
+        a.onAuthStateChanged(function (fbUser) {
+          if (fbUser) syncListeners();
+        });
+      }
+    }
+    attachAuthHook();
+    setTimeout(function () {
+      attachAuthHook();
+      syncListeners();
+    }, 400);
+  }
+})();

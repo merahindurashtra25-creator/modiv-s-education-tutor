@@ -1,0 +1,596 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modiv’s Education – Student / Parent registration</title>
+<meta name="description" content="Register as a student or parent on Modiv’s Education and get matched with verified home and online tutors.">
+<meta name="keywords" content="student registration, parent registration, register for tuition, find home tutor, online tutor, private tuition, demo class, home tutor near me, Modiv’s Education, Modivs Education, Modivian tutor">
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+<script src="modivs-api.js"></script>
+<script src="firebase-sync.js"></script>
+<script src="modivs-location.js"></script>
+<script src="modivs-auth-unique.js"></script>
+<style>
+button,input,select,textarea{font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif}
+
+:root{--white:#fff;--mist:#f2f5f9;--line:#dfe5ee;--ink:#14213d;--muted:#5d6b82;--accent:#0e7c66;--accent-d:#0a5f4e;--tint:#e8f5f1;--err:#b3261e;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--white);color:var(--ink);font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;line-height:1.5}
+button,input,select,textarea{font:inherit;color:inherit}
+.hide{display:none!important}
+.brand{font-weight:800;font-size:1.2rem;letter-spacing:-.01em;display:inline-flex;align-items:center;text-decoration:none}.brand img{height:64px;width:auto;display:block}.brand span{color:var(--accent)}
+.shell{display:grid;grid-template-columns:70fr 30fr;min-height:100vh}
+.main{padding:36px 28px 60px;display:flex;justify-content:center}
+.col{width:100%;max-width:640px}
+.topl{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.topl .links{display:flex;gap:8px;align-items:center}.topl .links a{color:var(--ink);text-decoration:none;font-weight:600;font-size:.88rem;border:1.5px solid var(--line);padding:6px 12px;border-radius:8px;background:#fff}.topl .links a:hover{border-color:var(--ink)}
+.side{background:var(--ink);color:#fff;padding:36px 26px}
+.side h2{font-size:1rem;margin:28px 0 14px;font-weight:600;color:#aab6cc}
+.shell{overflow:hidden}
+.side{position:relative;overflow:hidden;isolation:isolate;background:linear-gradient(160deg,#1a2035 0%,#14213d 55%,#0f3a4a 100%);background-size:200% 200%}
+.side::before,.side::after{content:"";position:absolute;border-radius:50%;z-index:-1;pointer-events:none}
+.side::before{width:260px;height:260px;top:-70px;right:-80px;background:radial-gradient(circle at 30% 30%,#fabd4e,rgba(250,189,78,0) 70%);opacity:.5}
+.side::after{width:300px;height:300px;bottom:-120px;left:-110px;background:radial-gradient(circle at 60% 40%,#2fb59a,rgba(47,181,154,0) 70%);opacity:.4}
+@media(prefers-reduced-motion:no-preference){
+ .side{animation:sideSlide 1.05s cubic-bezier(.22,1,.36,1) both,sideShift 14s ease-in-out 1.1s infinite alternate}
+ .side::before{animation:orbFloat 7s ease-in-out infinite alternate}
+ .side::after{animation:orbFloat 9s ease-in-out -3s infinite alternate-reverse}
+ .side>*{animation:sideRise .8s cubic-bezier(.22,1,.36,1) both}
+ .side>*:nth-child(1){animation-delay:.6s}.side>*:nth-child(2){animation-delay:.8s}.side>*:nth-child(3){animation-delay:1s}
+ .col{animation:cardFade .8s .1s ease-out both}
+}
+@keyframes sideSlide{0%{transform:translateX(105%);opacity:0;border-top-left-radius:120px;border-bottom-left-radius:120px}60%{opacity:1}100%{transform:none;opacity:1;border-top-left-radius:0;border-bottom-left-radius:0}}
+@keyframes sideShift{from{background-position:0 0}to{background-position:100% 100%}}
+@keyframes orbFloat{from{transform:translate(0,0) scale(1)}to{transform:translate(-28px,34px) scale(1.18)}}
+@keyframes sideRise{from{transform:translateY(24px);opacity:0}to{transform:none;opacity:1}}
+@keyframes cardFade{from{transform:translateY(14px);opacity:0}to{transform:none;opacity:1}}
+.steps{list-style:none;margin:0;padding:0}
+.steps li{display:flex;gap:12px;align-items:center;padding:9px 0;color:#aab6cc;font-size:.95rem}
+.steps i{width:26px;height:26px;border-radius:50%;border:1.5px solid #4a5a7a;display:grid;place-items:center;font-style:normal;font-size:.8rem;flex:none}
+.steps li.on{color:#fff;font-weight:600}.steps li.on i{background:var(--accent);border-color:var(--accent)}
+.steps li.done i{background:#fff;color:var(--ink);border-color:#fff}
+.bar{height:6px;background:var(--mist);border-radius:99px;margin:18px 0 28px;overflow:hidden}
+.bar div{height:100%;background:var(--accent);width:0}
+h1{font-size:1.85rem;line-height:1.15;margin:0 0 6px;letter-spacing:-.02em;font-weight:800}
+.sub{color:var(--muted);margin:0 0 20px}
+label,.lab{display:block;font-weight:600;font-size:.9rem;margin:18px 0 6px}
+.hint{font-weight:400;color:var(--muted);font-size:.82rem}
+input[type=text],input[type=email],input[type=password],input[type=tel],input[type=number],input[type=date],select,textarea{width:100%;padding:11px 13px;border:1.5px solid var(--line);border-radius:8px;background:var(--white)}
+textarea{min-height:100px;resize:vertical}
+:is(input,select,textarea,button):focus-visible{outline:3px solid #7fd1bd;outline-offset:2px}
+.bad{border-color:var(--err)!important}
+.avs.bad{outline:2px solid var(--err);outline-offset:4px;border-radius:14px}
+.two{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{position:relative;margin:0!important;font-weight:400!important}.chip input{position:absolute;opacity:0}
+.chip span{display:block;padding:8px 14px;border:1.5px solid var(--line);border-radius:999px;cursor:pointer;font-size:.92rem}
+.chip input:checked+span{background:var(--tint);border-color:var(--accent);font-weight:600}
+.slotgrp{margin:10px 0 4px;padding:12px 14px;border:1px solid var(--line);border-radius:12px;background:#fafcfb}.slothead{font-weight:700;font-size:.9rem;margin-bottom:8px}.slothead .hint{font-weight:400}
+#slotBox.bad{outline:2px solid #d9534f;outline-offset:2px;border-radius:12px}
+.chip input:focus-visible+span{outline:3px solid #7fd1bd;outline-offset:2px}
+.avs{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:4px}
+.av-opt{position:relative;margin:0!important;font-weight:400!important}
+.av-opt input{position:absolute;opacity:0}
+.av-opt .avc{display:flex;flex-direction:column;align-items:center;gap:8px;padding:16px 10px;border:1.5px solid var(--line);border-radius:14px;cursor:pointer;background:#fff;transition:border-color .15s,box-shadow .15s,transform .15s}
+.av-opt .avc img{width:92px;height:92px;border-radius:50%;display:block;box-shadow:0 2px 8px rgba(20,33,61,.15)}
+.av-opt .avc b{font-size:.95rem}
+.av-opt:hover .avc{transform:translateY(-2px);border-color:var(--accent)}
+.av-opt input:checked+.avc{border-color:var(--accent);background:var(--tint);box-shadow:0 0 0 3px rgba(14,124,102,.18)}
+.av-opt input:checked+.avc b::after{content:" ✓";color:var(--accent-d)}
+.av-opt input:focus-visible+.avc{outline:3px solid #7fd1bd;outline-offset:2px}
+.roles{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.roles .chip span{border-radius:10px;padding:14px;text-align:center;font-weight:600}
+.roles .chip small{display:block;font-weight:400;color:var(--muted)}
+.card{background:var(--mist);border-radius:12px;padding:16px;margin:12px 0;position:relative}
+.card .rm{position:absolute;top:10px;right:10px;border:0;background:none;color:var(--muted);cursor:pointer;font-weight:600}
+.add{border:1.5px dashed var(--accent);background:var(--white);color:var(--accent-d);font-weight:600;border-radius:8px;padding:10px 14px;cursor:pointer;margin-top:6px}
+.nav{display:flex;justify-content:space-between;gap:12px;margin-top:32px}
+.btn{padding:12px 22px;border-radius:8px;border:0;font-weight:600;cursor:pointer;background:var(--accent);color:#fff}
+.btn:hover{background:var(--accent-d)}
+.btn.ghost{background:var(--white);border:1.5px solid var(--line);color:var(--ink)}.btn.ghost:hover{background:var(--mist)}
+.msg{color:var(--err);font-size:.88rem;min-height:1.3em;margin-top:14px}
+.check{display:flex;gap:10px;align-items:flex-start;margin-top:18px;font-weight:400}
+.check input{margin-top:4px;accent-color:var(--accent)}
+.prev{border:1px solid var(--line);border-radius:14px;padding:22px;margin-top:8px}
+.prev h3{margin:0;font-size:1.3rem}.prev p{margin:6px 0}
+.tag{display:inline-block;background:var(--tint);color:var(--accent-d);font-size:.82rem;font-weight:600;padding:3px 10px;border-radius:99px;margin:2px 4px 2px 0}
+.status{display:inline-block;background:var(--tint);color:var(--accent-d);font-weight:600;font-size:.85rem;padding:4px 12px;border-radius:99px}
+.done-box{text-align:center;padding:40px 0}
+.toast{position:fixed;left:50%;bottom:calc(22px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:#fff;padding:11px 18px;border-radius:8px;font-size:.9rem}
+@media(max-width:820px){.shell{grid-template-columns:1fr}.side{display:none}.main{padding:24px 16px 60px}.two{grid-template-columns:1fr}}
+</style>
+<script>
+try{var _as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');var adminEmails=((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });if(_as&&_as.email&&adminEmails.indexOf(_as.email.toLowerCase())!==-1&&!/[?&]student=1/.test(location.search)){location.replace('modivs-active-leads.html#post')}}catch(e){}
+</script>
+<script src="modivs-places.js"></script>
+<script src="modivs-subjects.js"></script>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<link rel="stylesheet" href="modivs-menu.css">
+<link rel="stylesheet" href="modivs-mobile.css">
+<link rel="stylesheet" href="modivs-footer.css">
+</head>
+<body>
+<header class="mv-header">
+ <div class="mv-wrap mv-bar">
+  <a class="mv-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <nav id="mvNav" aria-label="Main menu">
+   <ul>
+    <li><a href="index.html">Home</a></li>
+    <li><a href="modivs-active-leads.html">Active leads</a></li>
+    <li><a href="modivs-tutors.html">Find a tutor</a></li>
+    <li><a href="modivs-shop.html">Shop</a></li>
+    <li class="mv-dd"><button type="button" class="mv-dd-b" aria-haspopup="true" aria-expanded="false">More <span class="car" aria-hidden="true">▾</span></button><ul class="mv-dd-m">
+     <li><a href="modivs-guide.html">Guide</a></li>
+     <li><a href="modivs-students-corner.html">Students’ Corner</a></li>
+     <li><a href="modivs-blogs.html">Blogs</a></li>
+     <li><a href="modivs-contact.html">Contact us</a></li>
+    </ul></li>
+   </ul>
+  </nav>
+  <div class="acts" id="mvActs">
+   <a class="btn" id="navTutor" href="modivs-become-tutor.html">Become a Tutor</a>
+   <a class="btn o" id="navLoginBtn" href="modivs-education.html#login">Log in</a>
+   <a class="btn y" id="navSignup" href="modivs-signup.html">Sign up</a>
+   <button class="burger" id="mvBurger" aria-expanded="false" aria-controls="mvNav">Menu</button>
+  </div>
+ </div>
+</header>
+<div class="shell">
+ <main class="main"><div class="col">
+  <div class="bar" aria-hidden="true"><div id="fill"></div></div>
+  <form id="form" novalidate></form>
+ </div></main>
+ <aside class="side">
+  <div class="brand">Find a tutor</div>
+  <h2>Your progress</h2>
+  <ol class="steps" id="steps"></ol>
+ </aside>
+</div>
+<div class="toast hide" id="toast" role="status"></div>
+
+<script>
+(function(){
+var STEPS=['Create account','Student details','Learning needs','Tutor preferences','Review & submit'];
+var SUBJECTS=['Mathematics','Physics','Chemistry','Biology','English','Hindi','Punjabi','Computer Science','Accountancy','Economics','Social Science','Music','Art'];
+var CLASSES=['Nursery–KG','Class 1','Class 2','Class 3','Class 4','Class 5','Class 6','Class 7','Class 8','Class 9','Class 10','Class 11','Class 12','College / University','Adult learner'];
+var BOARDS=['CBSE','ICSE','PSEB','IB','IGCSE','State board','Other'];
+var GOALS=['Improve school grades','Board exam preparation','Competitive exam (JEE, NEET, etc.)','Homework help','Build concepts from basics','Learn a new skill'];
+var LANGS=['English','Hindi','Punjabi','Urdu','Other'];
+var LEARN_LANGS=['Spoken English','English (IELTS / TOEFL / PTE)','Hindi','Punjabi','French','German','Spanish','Japanese','Korean','Chinese (Mandarin)','Italian','Russian','Arabic','Other'];
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var TIMES=['Morning','Afternoon','Evening'];
+var SLOTS={Morning:['6:00 - 7:00 AM','7:00 - 8:00 AM','8:00 - 9:00 AM','9:00 - 10:00 AM','10:00 - 11:00 AM','11:00 AM - 12:00 PM'],Afternoon:['12:00 - 1:00 PM','1:00 - 2:00 PM','2:00 - 3:00 PM','3:00 - 4:00 PM'],Evening:['4:00 - 5:00 PM','5:00 - 6:00 PM','6:00 - 7:00 PM','7:00 - 8:00 PM','8:00 - 9:00 PM']};
+var D={role:'Parent',email:'',pass:'',regName:'',phone:'',city:'',
+ stuName:'',stuAge:'',learnLang:'',cls:'',board:'',school:'',avatar:'',
+ subjects:[],level:'',goals:[],weak:'',notes:'',
+ modes:['Online'],formats:['1-on-1 Individual tuition'],area:'',budgetMin:'',budgetMax:'',freq:'',days:[],times:[],slots:[],start:'',tGender:'',langs:[],demo:'',agree:false};
+
+/* ---- logged-in students: update the saved requirement instead of signing up again ---- */
+var AU=null;try{AU=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
+var EDIT=!!(AU&&AU.role==='Student / Parent'&&AU.email);
+var SAVED_ID='',SAVED_STATUS='';
+function jget(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
+if(EDIT){
+ var em=String(AU.email).toLowerCase();
+ var user=(jget('modivs_users',[])||[]).filter(function(u){return u.email===em})[0]||{};
+ var req=jget('modivs_student_req',null);
+ if(!req||String(req.email).toLowerCase()!==em){req=(jget('modivs_students_db',[])||[]).filter(function(x){return String(x.email).toLowerCase()===em})[0]||null}
+ var form=jget('modivs_student_form',null);
+ if(form&&String(form.email).toLowerCase()!==em)form=null;
+ D.email=em;D.regName=AU.name||user.name||'';D.phone=user.phone||'';D.city=user.city||'';D.pass=user.pass||'';D.google=(user.provider==='google');
+ if(req){
+  SAVED_ID=req.id||'';SAVED_STATUS=req.status||'';
+  D.regName=req.parentName||D.regName;D.phone=req.phone||D.phone;D.city=req.city||D.city;
+  D.stuName=req.name||'';D.stuAge=req.age||'';D.learnLang=req.learnLang||'';D.avatar=req.avatar||'';D.cls=req.cls||'';D.board=req.board||'';D.school=req.school||'';
+  D.subjects=Array.isArray(req.subs)?req.subs.filter(function(x){return x!=='General'}):[];D.level=req.level||'';
+  D.goals=Array.isArray(req.goals)?req.goals:[];D.notes=req.notes||'';
+  if(Array.isArray(req.days))D.days=req.days;
+  if(req.timeSlot)D.times=String(req.timeSlot).split(',').map(function(x){return x.trim()}).filter(function(x){return TIMES.indexOf(x)>-1});
+  if(Array.isArray(req.timeSlots))D.slots=req.timeSlots;
+  D.modes=Array.isArray(req.mode)&&req.mode.length?req.mode:D.modes;
+  var nums=String(req.budget||'').replace(/,/g,'').match(/\d+/g)||[];D.budgetMin=nums[0]||'';D.budgetMax=nums[1]||nums[0]||'';
+  var fm=String(req.freq||'').match(/\d+/);D.freq=fm?(+fm[0]>=6?'6 or more':fm[0]):'';
+  D.role=/^Parent/.test(req.by||'')?'Parent':(req.by==='Student'?'Student':D.role);
+ }
+ if(!req&&!form&&!D.stuName)D.stuName=D.regName;
+ if(form){Object.keys(form).forEach(function(k){if(k!=='pass'&&k!=='agree'&&form[k]!=null)D[k]=form[k]});D.email=em}
+ D.agree=false;
+}
+var intent = jget('modivs_search_intent', null);
+if(intent && !EDIT){
+ if(intent.subject && D.subjects.indexOf(intent.subject) === -1) D.subjects.push(intent.subject);
+ if(intent.level) D.level = intent.level;
+ if(intent.mode && D.modes.indexOf(intent.mode) === -1) D.modes = [intent.mode];
+ if(intent.format && D.formats.indexOf(intent.format) === -1) D.formats = [intent.format];
+}
+var step=EDIT?1:0,submitted=false,tT;
+var f=document.getElementById('form');
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function toast(t){var e=document.getElementById('toast');e.textContent=t;e.classList.remove('hide');clearTimeout(tT);tT=setTimeout(function(){e.classList.add('hide')},2400)}
+function field(id,label,val,type,hint,ph){return '<label for="'+id+'">'+label+(hint?' <span class="hint">'+hint+'</span>':'')+'</label><input id="'+id+'" type="'+(type||'text')+'" value="'+esc(val)+'"'+(ph?' placeholder="'+esc(ph)+'"':'')+'>'}
+function chips(name,list,sel){return '<div class="chips" role="group">'+list.map(function(x){return '<label class="chip"><input type="checkbox" data-group="'+name+'" value="'+esc(x)+'"'+(sel.indexOf(x)>-1?' checked':'')+'><span>'+esc(x)+'</span></label>'}).join('')+'</div>'}
+function sel(id,label,val,opts){return '<label for="'+id+'">'+label+'</label><select id="'+id+'"><option value="">Select</option>'+opts.map(function(o){return '<option'+(o===val?' selected':'')+'>'+esc(o)+'</option>'}).join('')+'</select>'}
+
+/* time slots for each chosen period (Morning / Afternoon / Evening) */
+function slotsHtml(times,slots){
+ return TIMES.filter(function(p){return times.indexOf(p)>-1}).map(function(p){
+  return '<div class="slotgrp" data-period="'+p+'"><div class="slothead">'+p+' slots <span class="hint">pick one or more</span></div>'+chips('slots',SLOTS[p],slots)+'</div>'}).join('')}
+function refreshSlots(){
+ var box=document.getElementById('slotBox');if(!box)return;
+ var times=group('times'),keep=group('slots');
+ box.innerHTML=slotsHtml(times,keep)}
+function slotPeriod(sl){for(var i=0;i<TIMES.length;i++){if(SLOTS[TIMES[i]].indexOf(sl)>-1)return TIMES[i]}return ''}
+function nav(last){return '<div class="nav"><button type="button" class="btn ghost" data-act="back"'+(step===(EDIT?1:0)?' style="visibility:hidden"':'')+'>Back</button>'+(EDIT&&!last?'<button type="button" class="btn ghost" data-act="save">Save changes</button>':'')+'<button type="submit" class="btn">'+(last?(EDIT?'Update requirements':'Submit requirements'):(step===0?'Create account':'Save and continue'))+'</button></div>'}
+var MSG='<div class="msg" id="msg" role="alert"></div>';
+function avatarPicker(){var p=D.role==='Parent';
+ return '<div class="lab" id="avatarLab">Choose '+(p?'your child’s':'your')+' avatar <span class="hint">shown on your requirement</span></div><div class="avs" role="radiogroup" aria-labelledby="avatarLab" id="avatarBox">'+
+ ['male','female'].map(function(k){return '<label class="av-opt"><input type="radio" name="avatar" value="'+k+'"'+(D.avatar===k?' checked':'')+'><span class="avc"><img src="'+ModivsAvatars.src(k)+'" alt="'+(k==='male'?'Boy':'Girl')+' avatar"><b>'+(k==='male'?'Boy':'Girl')+'</b></span></label>'}).join('')+'</div>'}
+
+var views=[
+function(){return '<h1>Student / Parent sign up</h1><p class="sub">Create your account as a parent or as a student, then tell us what you need.</p>'+
+ '<div class="lab">I am a</div><div class="roles">'+['Parent','Student'].map(function(r){return '<label class="chip"><input type="radio" name="role" value="'+r+'"'+(D.role===r?' checked':'')+'><span>'+r+'<small>'+(r==='Parent'?'Registering for my child':'Registering for myself')+'</small></span></label>'}).join('')+'</div>'+
+ field('regName','Your full name',D.regName)+'<div class="two"><div>'+field('phone','Mobile number',D.phone,'tel')+'</div><div>'+field('email','Email',D.email,'email')+'</div></div>'+
+ '<div id="studentLocPicker0" style="margin:10px 0;"></div><input type="hidden" id="city" value="'+esc(D.city)+'">'+
+ (D.google?'':field('pass','Password',D.pass,'password','at least 8 characters')+field('pass2','Confirm password','','password'))+
+ '<div style="margin:14px 0 6px;"><button type="button" id="googleStudentBtn" class="btn ghost" style="width:100%;display:inline-flex;align-items:center;justify-content:center;gap:10px;font-weight:600;"><svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continue with Google</button></div>'+
+ MSG+nav()+'<p class="sub" style="margin-top:16px;font-size:0.9rem;">Already have an account? <a href="modivs-education.html#login" style="color:var(--accent-d);font-weight:600;">Log in</a> · <a href="modivs-education.html#tutor-signup" style="color:var(--accent-d);font-weight:600;">Tutor sign up</a></p>'},
+function(){var p=D.role==='Parent';return '<h1>'+(p?'Your child’s details':'About you')+'</h1><p class="sub">This helps us match the right tutor.</p>'+
+ field('stuName',p?'Child’s name':'Your name',D.stuName)+'<div class="two"><div>'+field('stuAge','Age',D.stuAge,'number','minimum 12 years')+'</div><div>'+sel('cls','Class / level',D.cls,CLASSES)+'</div></div>'+
+ sel('learnLang','Language you want to learn',D.learnLang,LEARN_LANGS)+'<p class="hint" style="margin:-4px 0 10px">Optional. Choose it if you want a language tutor.</p>'+
+ '<div class="two"><div>'+sel('board','Board',D.board,BOARDS)+'</div><div>'+field('school','School or college',D.school,'text','optional')+'</div></div>'+
+ avatarPicker()+MSG+nav()},
+function(){return '<h1>'+(EDIT?'Update your requirements':'What do you need help with?')+'</h1><p class="sub">Choose subjects and goals. Tutors see this when you send a request.</p>'+
+ '<div class="lab">Subjects needed</div>'+ModivsSubjects.picker('subjects',D.subjects)+
+ sel('level','Current level in these subjects',D.level,['Struggling','Below average','Average','Good, want to excel'])+
+ '<div class="lab">Goals</div>'+chips('goals',GOALS,D.goals)+
+ '<label for="weak">Topics or areas that need most help <span class="hint">optional</span></label><textarea id="weak" placeholder="e.g. Algebra, trigonometry, English grammar">'+esc(D.weak)+'</textarea>'+
+ '<label for="notes">Anything else tutors should know <span class="hint">optional</span></label><textarea id="notes" style="min-height:70px">'+esc(D.notes)+'</textarea>'+MSG+nav()},
+function(){return '<h1>Tutor preferences</h1><p class="sub">Tell us how and when you want classes.</p>'+
+ '<div class="lab">Teaching mode</div>'+chips('modes',['Online','Offline (Tutor comes to my home)','Offline (At tutor’s place)'],D.modes)+
+ '<div class="lab">Tuition format</div>'+chips('formats',['1-on-1 Individual tuition','Group tuition (Small batch)'],D.formats)+
+ '<div id="studentLocPicker3" style="margin:10px 0;"></div><input type="hidden" id="area" value="'+esc(D.area)+'">'+
+ '<div class="two"><div>'+field('budgetMin','Budget from (₹ per hour)',D.budgetMin,'number')+'</div><div>'+field('budgetMax','Budget up to (₹ per hour)',D.budgetMax,'number')+'</div></div>'+
+ '<div class="two"><div>'+sel('freq','Classes per week',D.freq,['1','2','3','4','5','6 or more'])+'</div><div>'+field('start','Preferred start date',D.start,'date')+'</div></div>'+
+ '<div class="lab">Preferred days</div>'+chips('days',DAYS,D.days)+'<div class="lab">Preferred time <span class="hint">pick a period, then choose your time slots</span></div>'+chips('times',TIMES,D.times)+'<div id="slotBox">'+slotsHtml(D.times,D.slots)+'</div>'+
+ '<div class="two"><div>'+sel('tGender','Tutor gender',D.tGender,['No preference','Female','Male'])+'</div><div>'+sel('demo','Demo class',D.demo,['Yes, I want a demo first','No, not needed'])+'</div></div>'+
+ '<div class="lab">Language of teaching</div>'+chips('langs',LANGS,D.langs)+MSG+nav()},
+function(){function tags(a){return a.map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join('')||'<span class="hint">None</span>'}
+ return '<h1>Review your requirements</h1><p class="sub">Check everything, then '+(EDIT?'save your changes.':'submit to see matching tutors.')+'</p><div class="prev"><div style="display:flex;align-items:center;gap:14px">'+(D.avatar?'<img src="'+ModivsAvatars.src(D.avatar)+'" alt="" style="width:64px;height:64px;border-radius:50%">':'')+'<h3>'+esc(D.stuName)+'</h3></div>'+
+ '<p class="hint">'+esc(D.cls)+' · '+esc(D.board)+' · '+esc(D.city)+(D.school?' · '+esc(D.school):'')+'</p>'+
+ '<p><b>Subjects</b><br>'+tags(D.subjects)+'</p><p><b>Goals</b><br>'+tags(D.goals)+'</p>'+(D.weak?'<p><b>Needs help with</b><br>'+esc(D.weak)+'</p>':'')+
+ '<p><b>Mode</b><br>'+tags(D.modes)+'</p><p><b>Tuition format</b><br>'+tags(D.formats)+'</p><p><b>Schedule</b><br>'+esc(D.freq)+' class(es) a week · '+esc(D.days.join(', '))+' · '+esc(D.times.join(', '))+'</p>'+(D.slots&&D.slots.length?'<p><b>Time slots</b><br>'+tags(D.slots)+'</p>':'')+
+ '<p><b>Budget</b><br>₹'+esc(D.budgetMin)+' to ₹'+esc(D.budgetMax)+' per hour</p><p><b>Language</b><br>'+esc(D.langs.join(', '))+'</p></div>'+
+ '<label class="check"><input type="checkbox" id="agree"'+(D.agree?' checked':'')+'><span>I confirm these details are correct and agree to Modiv’s Education terms. I’m '+(D.role==='Parent'?'the parent or guardian of the student.':'registering for myself.')+'</span></label>'+MSG+nav(true)}
+];
+
+function render(){
+ document.getElementById('fill').style.width=(submitted?100:(step/(STEPS.length-1))*100)+'%';
+ document.getElementById('steps').innerHTML=STEPS.map(function(s,i){var c=submitted||i<step?'done':(i===step?'on':'');return '<li class="'+c+'"'+(EDIT&&i>=1?' data-go="'+i+'" style="cursor:pointer" tabindex="0"':'')+'><i>'+(c==='done'?'✓':i+1)+'</i>'+s+'</li>'}).join('');
+   if(submitted){
+    try {
+      localStorage.setItem('modivs_auth_user', JSON.stringify({ name: D.regName, email: D.email, role: 'Student / Parent' }));
+
+      // Save student user account
+      var users = JSON.parse(localStorage.getItem('modivs_users') || '[]');
+      var locData = D.location || { city: D.city, area: D.area, fullAddress: (D.area ? D.area + ', ' : '') + D.city };
+      if(!users.some(function(u){ return u.email === D.email.toLowerCase(); })){
+        users.push({
+          name: D.regName,
+          email: D.email.toLowerCase(),
+          phone: D.phone,
+          city: D.city,
+          location: locData,
+          role: 'Student / Parent',
+          roleKey: 'student',
+          created_at: new Date().toISOString()
+        });
+        localStorage.setItem('modivs_users', JSON.stringify(users));
+      }
+
+      // Save student profile requirement to database
+      var studentReq = {
+        id: SAVED_ID || ('stu_' + Date.now()),
+        name: D.stuName || D.regName,
+        parentName: D.regName,
+        email: D.email.toLowerCase(),
+        phone: D.phone,
+        city: D.city,
+        area: D.area || '',
+        location: locData,
+        cls: D.cls,
+        board: D.board,
+        school: D.school || '',
+        age: +D.stuAge || '',
+        learnLang: D.learnLang || '',
+        avatar: D.avatar || '',
+        subs: (D.subjects && D.subjects.length) ? D.subjects : ['General'],
+        level: D.level || 'Average',
+        goals: D.goals || ['Academic improvement'],
+        notes: D.notes || '',
+        mode: D.modes || ['Online'],
+        budget: '₹' + (D.budgetMin || 500) + '–' + (D.budgetMax || 800) + ' / hour',
+        freq: D.freq || '3 classes a week',
+        days: D.days || [],
+        timeSlot: (D.times||[]).join(', '),
+        timeSlots: D.slots || [],
+        status: SAVED_STATUS || 'pending',
+        sent: EDIT ? 'Updated just now' : 'Just now',
+        registered_at: new Date().toISOString()
+      };
+      // new requirement = submitted for admin approval; editing keeps the admin's decision, badges and first submit time
+      try {
+        var _ex = (JSON.parse(localStorage.getItem('modivs_active_leads') || '[]').filter(function(l){ return l.email === studentReq.email; })[0]) ||
+                  (JSON.parse(localStorage.getItem('modivs_students_db') || '[]').filter(function(s){ return s.email === studentReq.email; })[0]) || null;
+        if (_ex) {
+          ['approval','approvedAt','approvedBy','liveAt','reviewedAt','rejectionNote','leadBadge','submitted_at','acceptedAt','acceptedByTutor','acceptedByName'].forEach(function(k){ if (_ex[k] !== undefined) studentReq[k] = _ex[k]; });
+        } else { studentReq.approval = 'pending'; studentReq.submitted_at = studentReq.registered_at; }
+      } catch (e) { studentReq.approval = studentReq.approval || 'pending'; }
+      var studentsDb = JSON.parse(localStorage.getItem('modivs_students_db') || '[]');
+      var exIdx = studentsDb.findIndex(function(s){ return s.email === studentReq.email; });
+      if(exIdx >= 0){
+        studentsDb[exIdx] = studentReq;
+      } else {
+        studentsDb.unshift(studentReq);
+      }
+      localStorage.setItem('modivs_students_db', JSON.stringify(studentsDb));
+      localStorage.setItem('modivs_student_req', JSON.stringify(studentReq));
+      var keep=JSON.parse(JSON.stringify(D));delete keep.pass;localStorage.setItem('modivs_student_form', JSON.stringify(keep));
+      // keep the saved account details in sync
+      var us2=JSON.parse(localStorage.getItem('modivs_users') || '[]');us2.forEach(function(u){if(u.email===D.email.toLowerCase()){u.name=D.regName;u.phone=D.phone;u.city=D.city;u.location=locData}});localStorage.setItem('modivs_users',JSON.stringify(us2));
+
+      // Publish the requirement to the Active Leads page
+      var leadsDb = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]');
+      var lead = Object.assign({}, studentReq, { status: 'active', by: D.role === 'Parent' ? 'Parent: ' + D.regName : 'Student' });
+      var lIdx = leadsDb.findIndex(function(l){ return l.email === lead.email; });
+      if(lIdx >= 0 && leadsDb[lIdx].free === true) lead.free = true; // keep the admin's free-lead mark
+      if(lIdx >= 0){ leadsDb[lIdx] = lead; } else { leadsDb.unshift(lead); }
+      localStorage.setItem('modivs_active_leads', JSON.stringify(leadsDb));
+
+      // Global Unique Email registration in centralized accounts collection
+      if(window.ModivsAuth && ModivsAuth.registerAccount){
+        ModivsAuth.registerAccount({
+          email: D.email,
+          role: 'student',
+          name: D.regName,
+          phone: D.phone,
+          location: locData
+        }).catch(function(e){ console.warn('registerAccount sync error', e); });
+      }
+
+      // Sync to Firebase if connected
+      if(window.ModivsFirebaseSync){
+        ModivsFirebaseSync.saveLead(lead).catch(function(e){ console.warn('Sync save lead failed', e); });
+      }
+      if(window.ModivsIds){
+        ModivsIds.get('stu', D.email.toLowerCase()).catch(function(){});
+      }
+      if(window.EducationBFirebase){
+        var fbAuth = window.EducationBFirebase.auth, firestore = window.EducationBFirebase.db;
+        var currentUid = (fbAuth && fbAuth.currentUser && fbAuth.currentUser.uid) || '';
+        var userDoc = {
+          uid: currentUid,
+          name: D.regName,
+          email: D.email.toLowerCase(),
+          phone: D.phone,
+          city: D.city,
+          location: locData,
+          role: 'Student / Parent',
+          roleKey: 'student',
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+        if(fbAuth && D.pass && !fbAuth.currentUser){
+          fbAuth.createUserWithEmailAndPassword(D.email.toLowerCase(), D.pass).then(function(res){
+            if(res && res.user) {
+              res.user.updateProfile({ displayName: D.regName });
+              if(firestore){
+                firestore.collection('users').doc(res.user.uid).set(Object.assign({}, userDoc, { uid: res.user.uid }), { merge: true }).catch(function(){});
+              }
+            }
+          }).catch(function(err){ console.warn('Student auth creation error:', err); });
+        } else if(firestore && currentUid){
+          firestore.collection('users').doc(currentUid).set(userDoc, { merge: true }).catch(function(){});
+        }
+        if(firestore){
+          firestore.collection('students').doc(studentReq.id).set(studentReq, { merge: true }).catch(function(){});
+          firestore.collection('leads').doc(studentReq.id).set(lead, { merge: true }).catch(function(){});
+        }
+      }
+    } catch(err){}
+    f.innerHTML='<div class="done-box"><h1>'+(EDIT?'Requirements updated!':'Requirements saved!')+'</h1><p class="sub">Thanks, '+esc(D.regName.split(' ')[0])+'. We have set up your Student Dashboard and matched verified tutors for '+esc(D.stuName)+'.</p><p><span class="status">Your Student Dashboard is ready</span></p><div class="nav" style="justify-content:center;gap:12px;margin-top:20px;"><a href="modivs-student-dashboard.html" class="btn" style="text-decoration:none;display:inline-flex;align-items:center;padding:12px 24px;">Open Student Dashboard &rarr;</a><a href="modivs-home.html" class="btn ghost" style="text-decoration:none;display:inline-flex;align-items:center;padding:12px 24px;">Home</a><button type="button" class="btn ghost" data-act="edit">Edit requirements</button></div></div>';
+    return;
+  }
+ f.innerHTML=views[step]();window.scrollTo(0,0);
+ if(step===0){
+   setTimeout(function(){
+     var box = document.getElementById('studentLocPicker0');
+     if(box && window.ModivsLocation){
+       ModivsLocation.attachLocationPicker(box, {
+         idPrefix: 'stu_loc_',
+         label: 'Your Location / City',
+         placeholder: 'Search city, locality, or use current location',
+         initialLocation: D.location || (D.city ? { city: D.city, area: D.area, fullAddress: (D.area ? D.area + ', ' : '') + D.city } : null),
+         onLocationChange: function(loc){
+           D.location = loc;
+           if(loc.city) D.city = loc.city;
+           if(loc.area) D.area = loc.area;
+           var cInput = document.getElementById('city');
+           if(cInput) cInput.value = D.city;
+         }
+       });
+     }
+     var gBtn = document.getElementById('googleStudentBtn');
+     if(gBtn && window.ModivsAuth){
+       gBtn.addEventListener('click', function(){
+         gBtn.disabled = true;
+         gBtn.textContent = 'Connecting with Google…';
+         ModivsAuth.continueWithGoogle('student').then(function(res){
+           if(res.isExisting){
+             if(res.role === 'student'){
+               location.href = 'modivs-student-dashboard.html';
+             } else {
+               gBtn.disabled = false;
+               gBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continue with Google';
+               ModivsAuth.renderDuplicateNotice('msg', res, 'student');
+             }
+           } else {
+             D.email = res.email;
+             D.regName = (res.user && res.user.displayName) || D.regName || res.email.split('@')[0];
+             D.google = true;
+             step = 1;
+             render();
+           }
+         }).catch(function(err){
+           gBtn.disabled = false;
+           gBtn.innerHTML = '<svg width="18" height="18" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg> Continue with Google';
+           if(err && err.isExisting){
+             ModivsAuth.renderDuplicateNotice('msg', err, 'student');
+           } else if(err && err.message){
+             say(err.message);
+           }
+         });
+       });
+     }
+   }, 50);
+ } else if(step===3){
+   setTimeout(function(){
+     var box = document.getElementById('studentLocPicker3');
+     if(box && window.ModivsLocation){
+       ModivsLocation.attachLocationPicker(box, {
+         idPrefix: 'stu_pref_loc_',
+         label: 'Locality / Preferred Area',
+         placeholder: 'Search area or use current location',
+         initialLocation: D.location || (D.area ? { area: D.area, city: D.city, fullAddress: D.area + (D.city ? ', ' + D.city : '') } : null),
+         onLocationChange: function(loc){
+           D.location = Object.assign({}, D.location, loc);
+           if(loc.area) D.area = loc.area;
+           if(loc.city) D.city = loc.city;
+           var aInput = document.getElementById('area');
+           if(aInput) aInput.value = D.area || '';
+         }
+       });
+     }
+   }, 50);
+ }
+}
+function v(id){var e=document.getElementById(id);return e?e.value.trim():''}
+function group(n){return Array.prototype.map.call(f.querySelectorAll('input[data-group="'+n+'"]:checked'),function(x){return x.value})}
+function flag(id,m){var e=document.getElementById(id);if(e){e.classList.add('bad');e.focus()}document.getElementById('msg').textContent=m;return false}
+function say(m){document.getElementById('msg').textContent=m;return false}
+
+function read(){ // store current inputs
+ if(step===0){
+   var r=f.querySelector('input[name=role]:checked');if(r)D.role=r.value;
+   D.regName=v('regName');D.phone=v('phone');
+   D.city=v('city')||ModivsPlaces.canon('city',v('city'));
+   D.email=v('email');
+   if(!D.google)D.pass=v('pass');
+   if(!D.location) D.location={};
+   if(D.city) D.location.city=D.city;
+ }
+ if(step===1){var av=f.querySelector('input[name=avatar]:checked');D.avatar=av?av.value:D.avatar;D.stuName=v('stuName');D.stuAge=v('stuAge');D.learnLang=v('learnLang');D.cls=v('cls');D.board=v('board');D.school=v('school')}
+ if(step===2){D.subjects=group('subjects');D.level=v('level');D.goals=group('goals');D.weak=v('weak');D.notes=v('notes')}
+ if(step===3){
+   D.modes=group('modes');D.formats=group('formats');D.area=v('area');
+   if(!D.location) D.location={};
+   if(D.area) D.location.area=D.area;
+   D.budgetMin=v('budgetMin');D.budgetMax=v('budgetMax');D.freq=v('freq');D.start=v('start');D.days=group('days');D.times=group('times');D.slots=group('slots').filter(function(x){return D.times.indexOf(slotPeriod(x))>-1});D.tGender=v('tGender');D.demo=v('demo');D.langs=group('langs');
+ }
+ if(step===4){D.agree=document.getElementById('agree').checked}
+}
+function check(){
+ f.querySelectorAll('.bad').forEach(function(e){e.classList.remove('bad')});
+ if(step===0){
+  if(!D.regName)return flag('regName','Enter your full name.');
+  if(!/^[+0-9\s-]{10,15}$/.test(D.phone))return flag('phone','Enter a valid mobile number.');
+  if(!D.city)return flag('city','Select your city.');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(D.email))return flag('email','Enter a valid email address.');
+  if(!D.google){if(D.pass.length<8)return flag('pass','Use at least 8 characters for your password.');
+  if(D.pass!==v('pass2'))return flag('pass2','Passwords do not match.')}}
+ if(step===1){
+  if(!D.stuName)return flag('stuName','Enter a name.');
+  if(!(+D.stuAge>=12&&+D.stuAge<=70))return flag('stuAge','Students must be 12 years or older. Enter an age between 12 and 70.');
+  if(!D.cls)return flag('cls','Choose a class or level.');
+  if(!D.board)return flag('board','Choose a board.');
+  if(!D.avatar)return flag('avatarBox','Choose an avatar (boy or girl) for the requirement.')}
+ if(step===2){
+  if(!D.subjects.length)return say('Choose at least one subject.');
+  if(!D.level)return flag('level','Choose the current level.');
+  if(!D.goals.length)return say('Choose at least one goal.')}
+ if(step===3){
+  if(!D.modes.length)return say('Choose at least one teaching mode.');
+  if(!D.formats.length)return say('Choose at least one tuition format (1-on-1 or group).');
+  if(D.modes.some(function(m){return m.indexOf('Offline')>-1})&&!D.area)return flag('area','Enter your area for offline in-person classes.');
+  if(!(+D.budgetMin>0))return flag('budgetMin','Enter your minimum budget.');
+  if(+D.budgetMax<+D.budgetMin)return flag('budgetMax','Maximum budget must be at least the minimum.');
+  if(!D.freq)return flag('freq','Choose classes per week.');
+  if(!D.days.length)return say('Choose at least one preferred day.');
+  if(!D.times.length)return say('Choose at least one preferred time.');
+  for(var ti=0;ti<D.times.length;ti++){var pp=D.times[ti];if(!D.slots.some(function(x){return slotPeriod(x)===pp}))return flag('slotBox','Pick at least one '+pp.toLowerCase()+' time slot.')}
+  if(!D.langs.length)return say('Choose at least one language.')}
+ if(step===4&&!D.agree)return say('Tick the confirmation to submit.');
+ return true;
+}
+f.addEventListener('change',function(e){var t=e.target;if(t&&t.getAttribute&&t.getAttribute('data-group')==='times')refreshSlots()});
+f.addEventListener('submit',function(e){
+  e.preventDefault();
+  read();
+  if(!check()) return;
+  if(step===0 && !EDIT){
+    var submitBtn = f.querySelector('button[type="submit"]');
+    if(submitBtn) submitBtn.disabled = true;
+    if(window.ModivsAuth){
+      ModivsAuth.checkEmailRole(D.email).then(function(res){
+        if(submitBtn) submitBtn.disabled = false;
+        if(res.exists && res.role !== 'student'){
+          ModivsAuth.renderDuplicateNotice('msg', res, 'student');
+          flag('email','');
+          return;
+        }
+        step++;render();toast('Progress saved');
+      }).catch(function(){
+        if(submitBtn) submitBtn.disabled = false;
+        step++;render();toast('Progress saved');
+      });
+      return;
+    }
+  }
+  if(step===4){submitted=true;render();return}
+  step++;render();toast('Progress saved')
+});
+function saveAll(){ // edit mode: validate steps 1-3, then save without walking through the review step
+ read();var keep=step;
+ for(var st=1;st<=3;st++){step=st;render();if(!check())return}
+ D.agree=true;submitted=true;render()}
+document.getElementById('steps').addEventListener('click',function(e){
+ var li=e.target.closest('li[data-go]');if(!li||!EDIT||submitted)return;
+ read();step=+li.getAttribute('data-go');render()});
+document.getElementById('steps').addEventListener('keydown',function(e){if(e.key==='Enter'||e.key===' '){var li=e.target.closest('li[data-go]');if(li){e.preventDefault();li.click()}}});
+f.addEventListener('click',function(e){var a=e.target.getAttribute('data-act');
+ if(a==='save'){saveAll();return}
+ if(a==='back'){read();step--;render()}
+ if(a==='edit'){submitted=false;step=1;render()}});
+(function(){var t=document.getElementById('topLinks');if(!t)return;
+ var au=null;try{au=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
+ if(au&&au.role==='Student / Parent'){var a=document.createElement('a');a.href='modivs-student-dashboard.html';a.textContent='My dashboard';t.appendChild(a)}
+})();
+render();
+})();
+</script>
+<!-- mv-footer -->
+<footer class="mv-foot v2">
+  <div class="fv-grid">
+   <div class="fv-col fv-brand"><a class="fv-logo" href="modivs-home.html#top" aria-label="Modiv’s Education home"><img src="logo.png" alt="Modiv’s Education"></a><p>Connecting tutors with students and parents, one class at a time.</p><div class="fv-app"><b>Download Our App</b><div class="fv-badges"><a href="#" class="fv-badge" aria-label="Get it on Google Play"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#00D7FE" d="M3.6 2.2c-.3.3-.5.8-.5 1.4v16.8c0 .6.2 1.1.5 1.4l.1.1 9.4-9.4v-.2z"/><path fill="#00F076" d="M16.2 15.4l-3.1-3.1v-.2l3.1-3.1.1.1 3.7 2.1c1.1.6 1.1 1.6 0 2.2l-3.7 2z"/><path fill="#FF3A44" d="M16.3 15.3L13.1 12.2 3.6 21.8c.4.4.9.4 1.6.1z"/><path fill="#FFC900" d="M16.3 9.1L5.2 2.2c-.7-.4-1.2-.3-1.6.1l9.5 9.5z"/></svg><span><small>GET IT ON</small>Google Play</span></a><a href="#" class="fv-badge" aria-label="Download on the App Store"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg><span><small>Download on the</small>App Store</span></a></div></div><div class="fv-follow"><b>Follow Us</b><div class="fv-soc"><a href="https://www.facebook.com/modivseducation/" target="_blank" rel="noopener noreferrer" title="Facebook" aria-label="Modiv’s Education on Facebook" style="--c:#1877F2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg></a><a href="https://www.instagram.com/modivs_education/" target="_blank" rel="noopener noreferrer" title="Instagram" aria-label="Modiv’s Education on Instagram" style="--c:#E4405F"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zM12 0C8.741 0 8.333.014 7.053.072 2.695.272.273 2.69.073 7.052.014 8.333 0 8.741 0 12c0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98C8.333 23.986 8.741 24 12 24c3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98C15.668.014 15.259 0 12 0zm0 5.838a6.162 6.162 0 100 12.324 6.162 6.162 0 000-12.324zM12 16a4 4 0 110-8 4 4 0 010 8zm6.406-11.845a1.44 1.44 0 100 2.881 1.44 1.44 0 000-2.881z"/></svg></a><a href="https://www.youtube.com/channel/UC1PXZRzp5Yp1kihDURNhkpg" target="_blank" rel="noopener noreferrer" title="YouTube" aria-label="Modiv’s Education on YouTube" style="--c:#FF0000"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg></a><a href="https://x.com/" target="_blank" rel="noopener noreferrer" title="X" aria-label="Modiv’s Education on X" style="--c:#000000"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg></a><a href="https://www.linkedin.com/in/modiv-education-554176143/" target="_blank" rel="noopener noreferrer" title="LinkedIn" aria-label="Modiv’s Education on LinkedIn" style="--c:#0A66C2"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 01-2.063-2.065 2.064 2.064 0 112.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg></a><a href="https://wa.me/message/AZVJXD4HG3DOG1" target="_blank" rel="noopener noreferrer" title="WhatsApp" aria-label="Modiv’s Education on WhatsApp" style="--c:#25D366"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 01-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 01-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 012.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0012.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 005.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 00-3.48-8.413z"/></svg></a></div></div></div>
+   <div class="fv-col"><h4>For Students &amp; Parents</h4><ul class="fv-list"><li><a href="modivs-find-tutor.html" id="footFindTutor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="M20 20l-4.2-4.2"/></svg><span>Find a Tutor</span></a></li><li><a href="modivs-post-requirement.html"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="5" y="4.5" width="14" height="16.5" rx="2"/><path d="M9 4.5V3.5h6v1M8.5 11l1.6 1.6L13 9.5M8.5 17h7"/></svg><span>Post a Requirement</span></a></li><li><a href="modivs-tutors.html"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 5.2a3 3 0 0 1 0 5.6M18 14.8c1.8.7 3 2.4 3 5.2"/></svg><span>Browse Tutors</span></a></li><li><a href="modivs-home.html#subjects"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10.3 5.2 7.8 4.6 4 4.8v13c3.8-.2 6.3.4 8 1.7 1.7-1.3 4.2-1.9 8-1.7v-13c-3.8-.2-6.3.4-8 1.7zM12 6.5v13"/></svg><span>Subjects &amp; Classes</span></a></li><li><a href="modivs-home.html#faq"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9"/><path d="M9.5 9.5a2.6 2.6 0 1 1 3.8 2.3c-.8.5-1.3 1-1.3 2M12 17h.01"/></svg><span>FAQs</span></a></li></ul></div>
+   <div class="fv-col"><h4>For Tutors</h4><ul class="fv-list"><li><a href="modivs-become-tutor.html" id="footBecomeTutor"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="9" cy="8" r="3.2"/><path d="M3 20c0-3.3 2.7-5.5 6-5.5 1.5 0 2.8.4 3.9 1.1M18 10v6M15 13h6"/></svg><span>Become a Tutor</span></a></li><li><a href="modivs-active-leads.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l9 5-9 5-9-5zM3 12.5l9 5 9-5M3 17l9 5 9-5"/></svg><span>Active Leads</span></a></li><li><a href="modivs-guide.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 6.5C10.3 5.2 7.8 4.6 4 4.8v13c3.8-.2 6.3.4 8 1.7 1.7-1.3 4.2-1.9 8-1.7v-13c-3.8-.2-6.3.4-8 1.7zM12 6.5v13"/></svg><span>Tutor Guidelines</span></a></li><li><a href="modivs-become-tutor.html#pricing"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 20V12M10 20V6M15 20v-6M20 20V9"/></svg><span>Plans &amp; Pricing</span></a></li><li><a href="modivs-contact.html"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="3" y="13" width="4" height="6" rx="1.5"/><rect x="17" y="13" width="4" height="6" rx="1.5"/><path d="M19 19c0 1.5-1.5 2.5-4 2.5"/></svg><span>Help &amp; Support</span></a></li></ul></div>
+   <div class="fv-col fv-contact"><h4>Contact &amp; Locations</h4><ul class="fv-list"><li><a href="tel:+919896930443"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span>+91 98969 30443</span></a></li><li><a href="tel:+918054167008"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 4h4l2 5-2.5 1.5a11 11 0 0 0 5 5L15 13l5 2v4a2 2 0 0 1-2 2A16 16 0 0 1 3 6a2 2 0 0 1 2-2z"/></svg><span>+91 80541 67008</span></a></li><li><a href="mailto:support@modivians.com"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg><span>support@modivians.com</span></a></li></ul><div class="fv-locs"><b><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s7-6 7-11a7 7 0 0 0-14 0c0 5 7 11 7 11z"/><circle cx="12" cy="10" r="2.5"/></svg>Our Service Locations</b><div class="fv-cities"><div><a href="modivs-tutors.html?city=Chandigarh" title="Find tutors in Chandigarh">Chandigarh</a><a href="modivs-tutors.html?city=Mohali" title="Find tutors in Mohali">Mohali</a><a href="modivs-tutors.html?city=Panchkula" title="Find tutors in Panchkula">Panchkula</a></div><div><a href="modivs-tutors.html?city=Ludhiana" title="Find tutors in Ludhiana">Ludhiana</a><a href="modivs-tutors.html?city=Patiala" title="Find tutors in Patiala">Patiala</a><a href="modivs-tutors.html?city=Jalandhar" title="Find tutors in Jalandhar">Jalandhar</a><a href="modivs-tutors.html?city=Amritsar" title="Find tutors in Amritsar">Amritsar</a></div></div></div></div>
+  </div>
+  <div class="fv-bottom"><div class="fv-legal" role="navigation" aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact Us</a><a href="modivs-sitemap.html">Sitemap</a></div><p class="fv-copy">© 2026 Modiv’s Education. All rights reserved.</p></div>
+</footer>
+<script src="modivs-menu.js" defer></script>
+<script src="modivs-pass-eye.js"></script>
+<script src="modivs-social.js" defer></script>
+<script src="modivs-dropdown.js" defer></script>
+</body>
+</html>

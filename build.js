@@ -73,6 +73,49 @@ function syncEnvBridge() {
   fs.writeFileSync(path.join(__dirname, 'modivs-env.js'), content, 'utf8');
 }
 
+function copyToPublic() {
+  const publicDir = path.join(__dirname, 'public');
+  fs.mkdirSync(publicDir, { recursive: true });
+
+  const allowedExts = new Set([
+    '.html', '.css', '.js', '.png', '.jpg', '.jpeg', '.svg', '.ico', '.txt', '.xml', '.webmanifest'
+  ]);
+
+  const excludedPrefixes = ['test-', 'firebase-migrate-', 'migrate-'];
+  const excludedFiles = new Set([
+    'build.js',
+    'package.json',
+    'package-lock.json',
+    'vercel.json',
+    'firebase.json',
+    'firestore.indexes.json'
+  ]);
+
+  const files = fs.readdirSync(__dirname);
+  let count = 0;
+
+  for (const file of files) {
+    if (file === 'public' || file === 'node_modules' || file === 'api' || file === 'functions' || file === 'tests' || file === '.git' || file === '.github') {
+      continue;
+    }
+
+    const fullPath = path.join(__dirname, file);
+    const stat = fs.statSync(fullPath);
+    if (!stat.isFile()) continue;
+
+    const ext = path.extname(file).toLowerCase();
+    if (!allowedExts.has(ext)) continue;
+    if (excludedFiles.has(file)) continue;
+    if (excludedPrefixes.some(p => file.startsWith(p))) continue;
+    if (file.includes('serviceAccount') || file.includes('credential')) continue;
+
+    fs.copyFileSync(fullPath, path.join(publicDir, file));
+    count++;
+  }
+
+  console.log(`✓ Copied ${count} production files into ${publicDir}`);
+}
+
 async function runBuild() {
   syncEnvBridge();
   console.log('Building production bundle modivs.min.js...');
@@ -97,6 +140,9 @@ async function runBuild() {
   fs.writeFileSync('modivs.min.js', result.code, 'utf8');
   const minSize = fs.statSync('modivs.min.js').size;
   console.log(`✓ modivs.min.js generated successfully (${Math.round(minSize / 1024)} KB)`);
+
+  copyToPublic();
+
   console.log('✓ Production build complete. Source maps disabled, debugger statements stripped.');
 }
 
@@ -104,4 +150,3 @@ runBuild().catch(err => {
   console.error('Build failed:', err);
   process.exit(1);
 });
-

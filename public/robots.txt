@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+Disallow: /modivs-admin.html
+Disallow: /admin
+Disallow: /modivs-tutor-dashboard.html
+Disallow: /modivs-student-dashboard.html
+Disallow: /modivs-org-dashboard.html
+Disallow: /modivs-tutor-edit-profile.html
+
+Sitemap: https://www.modivians.com/sitemap.xml

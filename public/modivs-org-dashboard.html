@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<link rel="icon" type="image/png" href="favicon.png">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Modiv’s Education – Organization dashboard</title>
+<meta name="description" content="Your Modiv’s Education organization dashboard: manage your organization details, your team of tutors and matching student leads.">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<style>
+button,input,select,textarea{font-family:inherit}
+.dash .app{display:grid}
+.dash main{min-width:0}
+.dash .box{background:#fff;border:1.5px solid var(--line);padding:20px 22px;margin:0 0 18px}
+.dash .box h2{margin:0 0 4px}
+.dash .sub{color:var(--muted);font-size:.9rem;margin:0 0 14px}
+.dash h1.pt{font-size:1.5rem;margin:0 0 4px}
+.dash .hd{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.dash .b{display:inline-flex;align-items:center;gap:8px;padding:10px 18px;border:1.5px solid var(--navy);background:#fff;color:var(--navy);cursor:pointer;font-size:.9rem;text-decoration:none}
+.dash .b:hover{background:var(--cream)}
+.dash .b.y{background:var(--yellow);border-color:var(--yellow)}
+.dash .b.sm{padding:6px 12px;font-size:.82rem}
+.dash .b.danger{border-color:#e7b4b0;color:var(--bad)}
+.dash .grid2{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}
+.dash label.f{display:block;font-size:.84rem;font-weight:600;margin:12px 0 5px}
+.dash label.f .hint,.dash .hint{font-weight:400;color:var(--muted);font-size:.78rem}
+.dash .in{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:.92rem;background:#fff;color:var(--navy)}
+.dash .in:focus{outline:3px solid #f6dd9c;border-color:var(--yellow)}
+.dash .in.bad{border-color:var(--bad)}
+.dash textarea.in{min-height:96px;resize:vertical}
+.dash .chips{display:flex;flex-wrap:wrap;gap:8px}
+.dash .chip{position:relative}.dash .chip input{position:absolute;opacity:0}
+.dash .chip span{display:block;padding:7px 14px;border:1.5px solid var(--line);border-radius:999px;cursor:pointer;font-size:.86rem;background:#fff}
+.dash .chip input:checked+span{background:#fff0c2;border-color:var(--yellow);font-weight:600}
+.dash .chip input:focus-visible+span{outline:3px solid #f6dd9c;outline-offset:2px}
+.dash .kv{display:grid;grid-template-columns:170px minmax(0,1fr);gap:8px 14px;font-size:.92rem;margin:0}
+.dash .kv dt{color:var(--muted);font-weight:500}.dash .kv dd{margin:0;font-weight:500;overflow-wrap:anywhere}
+.dash .tag{display:inline-block;background:#fff0c2;border-radius:999px;padding:2px 10px;font-size:.78rem;margin:0 4px 4px 0;font-weight:500}
+.dash .pill{display:inline-block;border-radius:999px;padding:3px 11px;font-size:.76rem;font-weight:600}
+.dash .pill.ok{background:#e3f6ec;color:var(--ok)}.dash .pill.wait{background:#fff0e0;color:#d9660a}.dash .pill.off{background:#eee;color:#666}.dash .pill.bad{background:#f7dcda;color:var(--bad)}
+.dash .banner.bad{border-left-color:var(--bad)}.dash .banner small{display:block;color:var(--muted);margin-top:3px}
+.dash .msub-q{width:100%;padding:10px 12px;border:1.5px solid var(--line);border-radius:10px;font-size:.92rem;background:#fff;color:var(--navy)}.dash .msub-q:focus{outline:3px solid #f6dd9c;border-color:var(--yellow)}
+.dash .bar{height:9px;background:#f1e8d3;border-radius:99px;overflow:hidden;margin:8px 0 4px}.dash .bar i{display:block;height:100%;background:var(--yellow)}
+.dash .msg{min-height:1.2em;font-size:.88rem;color:var(--bad);margin:10px 0 0}
+.dash .msg.ok{color:var(--ok)}
+.dash .empty{padding:22px;text-align:center;color:var(--muted);border:1.5px dashed var(--line);border-radius:14px}
+.dash .acts{display:flex;gap:8px;flex-wrap:wrap}
+.dash .rrow .acts{margin-left:auto}
+.dash .toast{position:fixed;left:50%;bottom:26px;transform:translateX(-50%);background:var(--navy);color:#fff;padding:10px 18px;border-radius:99px;font-size:.88rem;z-index:50}
+.dash .toast[hidden]{display:none}
+.dash .banner{background:#fff;border:1.5px solid #eadfc9;border-left:5px solid #EBB92E;border-radius:14px;padding:14px 18px;margin:0 0 18px;display:flex;gap:14px;align-items:center;flex-wrap:wrap}
+.dash .banner p{margin:0;flex:1;min-width:200px;font-size:.9rem}
+.dash .dlg{position:fixed;inset:0;background:rgba(26,32,53,.5);display:grid;place-items:center;padding:16px;z-index:40}
+.dash .dlg[hidden]{display:none}
+.dash .dlg .card{background:#fff;border-radius:18px;padding:22px;width:100%;max-width:560px;max-height:calc(100vh - 40px);overflow:auto}
+@media(max-width:640px){.dash .grid2{grid-template-columns:1fr}.dash .kv{grid-template-columns:1fr;gap:2px 0}.dash .kv dd{margin-bottom:8px}.dash .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash .nav{display:flex;overflow-x:auto;gap:6px}.dash .nav button{white-space:nowrap;width:auto}}
+</style>
+<link rel="stylesheet" href="modivs-menu.css">
+<link rel="stylesheet" href="modivs-mobile.css">
+<link rel="stylesheet" href="modivs-dashboard.css">
+<link rel="stylesheet" href="modivs-footer.css">
+</head>
+<body class="dash">
+<script src="modivs-dashboard.js"></script>
+<script src="modivs-org.js"></script>
+<script src="modivs-subjects.js"></script>
+<script src="modivs-api.js"></script>
+<script src="firebase-sync.js"></script>
+<script>
+/* Only organization accounts belong here. */
+(function(){
+ var u=null;try{u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
+ if(!u||!u.email){location.replace('modivs-education.html#tutor-login');return}
+ if(!ModivsOrg.isOrg(u.email)){
+  location.replace(u.role==='Tutor'?'modivs-tutor-dashboard.html':(u.role==='Student / Parent'?'modivs-student-dashboard.html':'modivs-home.html'));
+ }
+})();
+</script>
+<header class="dh">
+ <div class="dh-in">
+  <a class="dh-brand" href="modivs-home.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <div class="dh-sp"></div>
+  <div class="dh-user">
+   <button type="button" class="dh-ub" id="dhUserBtn" aria-haspopup="true" aria-expanded="false" aria-controls="dhMenu">
+    <span class="dh-av" id="dhAva">OR</span><span class="nm" id="dhName">Hi, Organization</span><svg class="ic" aria-hidden="true"><use href="#i-chev"></use></svg>
+   </button>
+   <div class="dh-menu" id="dhMenu" hidden>
+    <div class="dh-who"><b id="dhWho">Organization</b><span class="ver">Organization</span></div>
+    <a href="modivs-home.html"><svg class="ic" aria-hidden="true"><use href="#i-home"></use></svg>Home</a>
+    <button type="button" data-view="details"><svg class="ic" aria-hidden="true"><use href="#i-edit"></use></svg>Edit organization details</button>
+    <a href="modivs-guide.html#tutor"><svg class="ic" aria-hidden="true"><use href="#i-help"></use></svg>How to use</a>
+    <button type="button" class="out" id="logoutTop"><svg class="ic" aria-hidden="true"><use href="#i-out"></use></svg>Log out</button>
+   </div>
+  </div>
+ </div>
+</header>
+<div class="app">
+ <aside class="side" aria-label="Organization menu">
+  <div class="side-me">
+   <div class="sm-av" id="sideAva">OR</div>
+   <b class="sm-nm" id="sideName">Organization</b>
+   <span class="sm-id" id="sideId">Organization account</span>
+  </div>
+  <nav class="nav" id="nav" aria-label="Sections"></nav>
+ </aside>
+ <main id="view" tabindex="-1"></main>
+</div>
+<div class="dlg" id="dlg" hidden><div class="card" id="dlgCard" role="dialog" aria-modal="true"></div></div>
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+(function(){
+'use strict';
+var AU=null;try{AU=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
+if(!AU||!AU.email||!window.ModivsOrg||!ModivsOrg.isOrg(AU.email))return;
+var EMAIL=String(AU.email).toLowerCase();
+var TYPES=['Coaching institute','Tuition centre','School','College / University','Tutor agency','Ed-tech company','NGO / Trust','Other'];
+var SUBJECTS=['Mathematics','Physics','Chemistry','Biology','English','Hindi','Punjabi','Computer Science','Accountancy','Economics','Social Science','Music','Art','Competitive exams'];
+var LEVELS=['Primary (1–5)','Middle (6–8)','Secondary (9–10)','Senior secondary (11–12)','College / University','Competitive exams'];
+var MODES=['Online','Offline (At student’s home)','Offline (At our centre)'];
+var LANGS=['English','Hindi','Punjabi','Urdu','Other'];
+var DAYS=['Mon','Tue','Wed','Thu','Fri','Sat','Sun'];
+var TIMES=['Morning','Afternoon','Evening'];
+var state={view:'overview'};
+function $(i){return document.getElementById(i)}
+function esc(s){return String(s==null?'':s).replace(/[&<>"]/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]})}
+function org(){return ModivsOrg.get(EMAIL)||{}}
+function save(p){return ModivsOrg.save(EMAIL,p)}
+function ic(n){return ModivsDash.icon(n)}
+var tT;function toast(t){var e=$('toast');e.textContent=t;e.hidden=false;clearTimeout(tT);tT=setTimeout(function(){e.hidden=true},2400)}
+function chips(name,list,sel){sel=sel||[];return '<div class="chips" role="group">'+list.map(function(x){return '<label class="chip"><input type="checkbox" data-g="'+name+'" value="'+esc(x)+'"'+(sel.indexOf(x)>-1?' checked':'')+'><span>'+esc(x)+'</span></label>'}).join('')+'</div>'}
+function grpSub(root,n,extra){
+ var out=Array.prototype.map.call(root.querySelectorAll('input[data-group="'+n+'"]:checked'),function(x){return x.value}),low=out.map(function(x){return x.toLowerCase()});
+ String(extra||'').split(',').forEach(function(x){x=x.trim().slice(0,40);if(x&&low.indexOf(x.toLowerCase())<0){low.push(x.toLowerCase());out.push(x)}});
+ return out}
+function grp(root,n){return Array.prototype.map.call(root.querySelectorAll('input[data-g="'+n+'"]:checked'),function(x){return x.value})}
+function tags(a){return a&&a.length?a.map(function(x){return '<span class="tag">'+esc(x)+'</span>'}).join(''):'<span class="hint">Not added yet</span>'}
+function val(v){return v?esc(v):'<span class="hint">Not added yet</span>'}
+
+/* ---- profile completion ---- */
+function missing(o){return ModivsOrg.missing(o)}
+function pct(o){return Math.round((ModivsOrg.REQ.length-missing(o).length)/ModivsOrg.REQ.length*100)}
+/* approval by the admin: pending (waiting) | approved | rejected */
+function approved(o){return ModivsOrg.isApproved(o)}
+function statusPill(o){var s=ModivsOrg.status(o);return s==='approved'?'<span class="pill ok">Approved</span>':s==='rejected'?'<span class="pill bad">Not approved</span>':(pct(o)<100?'<span class="pill wait">Details incomplete</span>':'<span class="pill wait">Awaiting admin approval</span>')}
+function approvalBanner(o){
+ var s=ModivsOrg.status(o),note=o.reviewNote?'<small>Note from our team: '+esc(o.reviewNote)+'</small>':'';
+ if(s==='approved')return '';
+ if(s==='rejected')return '<div class="banner bad"><p><b>Your organization was not approved.</b>'+note+'<small>Update your details and save them to send your profile for review again.</small></p><button class="b y sm" data-view="details">Update details</button></div>';
+ if(pct(o)<100)return '';
+ return '<div class="banner"><p><b>Your organization is waiting for admin approval.</b><small>We review every organization before it can see student leads. You can keep adding your tutors meanwhile.</small></p></div>'}
+
+/* ---- sidebar / header ---- */
+var NAV=[['overview','dash','Overview'],['details','user','Organization details'],['tutors','users','Our tutors'],['leads','target','Student leads'],['settings','gear','Account & settings']];
+function paintChrome(){
+ var o=org(),nm=o.name||AU.name||'Organization';
+ $('dhName').textContent='Hi, '+nm;$('dhWho').textContent=nm;
+ ModivsDash.paintAvatar($('dhAva'),o.logo||'',ModivsDash.initials(nm));
+ ModivsDash.paintAvatar($('sideAva'),o.logo||'',ModivsDash.initials(nm));
+ $('sideName').textContent=nm;
+ $('sideId').textContent=(o.orgType||'Organization')+' account';
+ var n=$('nav');n.innerHTML='';
+ NAV.forEach(function(x){var b=document.createElement('button');b.type='button';b.setAttribute('data-view',x[0]);b.innerHTML=ic(x[1])+'<span>'+x[2]+'</span>'+(x[0]==='tutors'&&(o.tutors||[]).length?'<span class="n">'+o.tutors.length+'</span>':'');if(state.view===x[0])b.setAttribute('aria-current','page');n.appendChild(b)});
+ var out=document.createElement('button');out.type='button';out.className='out';out.id='logoutSide';out.innerHTML=ic('out')+'<span>Log out</span>';n.appendChild(out)}
+function go(v){state.view=v;render();try{$('view').focus({preventScroll:true})}catch(e){}window.scrollTo({top:0})}
+document.addEventListener('click',function(e){
+ var b=e.target.closest&&e.target.closest('[data-view]');if(b){e.preventDefault();$('dhMenu').hidden=true;go(b.getAttribute('data-view'));return}
+ var a=e.target.closest&&e.target.closest('[data-act]');if(!a)return;
+ var act=a.getAttribute('data-act'),id=a.getAttribute('data-id');
+ if(act==='addTutor')tutorDialog();
+ else if(act==='editTutor')tutorDialog(id);
+ else if(act==='delTutor'){var o=org();if(confirm('Remove this tutor from your organization?')){save({tutors:(o.tutors||[]).filter(function(t){return t.id!==id})});toast('Tutor removed');render()}}
+ else if(act==='toggleTutor'){var o2=org();save({tutors:(o2.tutors||[]).map(function(t){if(t.id===id)t.active=!t.active;return t})});render()}
+ else if(act==='closeDlg')closeDlg()});
+function doLogout(){try{localStorage.removeItem('modivs_auth_user')}catch(e){}try{var fb=window.EducationBFirebase;if(fb&&fb.auth&&fb.auth.signOut)fb.auth.signOut().catch(function(){})}catch(e){}location.href='modivs-home.html'}
+document.addEventListener('click',function(e){if(e.target.closest&&(e.target.closest('#logoutSide')||e.target.closest('#logoutTop'))){e.preventDefault();doLogout()}});
+document.addEventListener('keydown',function(e){if(e.key==='Escape')closeDlg()});
+
+/* ---- views ---- */
+function vOverview(){
+ var o=org(),p=pct(o),miss=missing(o),ts=o.tutors||[],act=ts.filter(function(t){return t.active!==false});
+ var leads=matchLeads(o);
+ var h='<div class="hd"><div><h1 class="pt">Welcome, '+esc(o.name||AU.name||'Organization')+'</h1><p class="sub">Manage your organization, your tutors and the students looking for them.</p></div><div class="acts"><button class="b y" data-act="addTutor">+ Add a tutor</button></div></div>';
+ h+=approvalBanner(o);
+ if(miss.length)h+='<div class="banner"><p><b>Complete your organization details ('+p+'%).</b> Still missing: '+esc(miss.slice(0,4).join(', '))+(miss.length>4?' and '+(miss.length-4)+' more':'')+'.</p><button class="b y sm" data-view="details">Complete details</button></div>';
+ h+='<div class="kpis">'+
+  kpi('','users','Tutors on your team',ts.length,'tutors','Manage team')+
+  kpi('g','star','Active tutors',act.length,'tutors','View list')+
+  kpi('o','target','Matching student leads',leads.length,'leads','See leads')+
+  kpi('p','doc','Profile completion',p+'%','details',p<100?'Complete now':'View details')+'</div>';
+ h+='<section class="box"><div class="hd"><h2>Organization details</h2><button class="b sm" data-view="details">Edit</button></div>'+detailsKv(o)+'<div class="bar" aria-hidden="true"><i style="width:'+p+'%"></i></div><small class="hint">'+p+'% complete · '+statusPill(o)+'</small></section>';
+ h+='<section class="box"><div class="hd"><h2>Your tutors</h2><button class="b sm" data-view="tutors">View all</button></div>'+(ts.length?ts.slice(0,4).map(tutorRow).join(''):'<div class="empty">No tutors added yet. Add the tutors who teach with your organization.<br><br><button class="b y sm" data-act="addTutor">+ Add a tutor</button></div>')+'</section>';
+ return h}
+function kpi(cls,icn,lb,num,view,lnk){return '<div class="kpi '+cls+'"><span class="ic-box">'+ic(icn)+'</span><span class="lb">'+lb+'</span><span class="num">'+num+'</span><button class="lnk" type="button" data-view="'+view+'">'+lnk+' →</button></div>'}
+function detailsKv(o){
+ return '<dl class="kv"><dt>Organization name</dt><dd>'+val(o.name)+'</dd><dt>Type</dt><dd>'+val(o.orgType)+'</dd><dt>Registration / GST no.</dt><dd>'+val(o.regNo)+'</dd><dt>Established</dt><dd>'+val(o.year)+'</dd>'+
+ '<dt>Contact person</dt><dd>'+val([o.contactPerson,o.designation].filter(Boolean).join(' · '))+'</dd><dt>Phone</dt><dd>'+val(o.phone)+'</dd><dt>Email</dt><dd>'+esc(o.email||EMAIL)+'</dd><dt>Website</dt><dd>'+val(o.website)+'</dd>'+
+ '<dt>Location</dt><dd>'+val([o.address,o.city].filter(Boolean).join(', '))+'</dd><dt>About</dt><dd>'+val(o.about)+'</dd>'+
+ '<dt>Subjects</dt><dd>'+tags(o.subjects)+'</dd><dt>Classes / levels</dt><dd>'+tags(o.levels)+'</dd><dt>Teaching modes</dt><dd>'+tags(o.modes)+'</dd><dt>Languages</dt><dd>'+tags(o.langs)+'</dd>'+
+ '<dt>Fees (per hour)</dt><dd>'+val(o.feeMin||o.feeMax?('₹'+(o.feeMin||'—')+' – ₹'+(o.feeMax||'—')):'')+'</dd><dt>Team size</dt><dd>'+val(o.teamSize)+'</dd><dt>Availability</dt><dd>'+tags((o.workDays||[]).concat(o.workTimes||[]))+'</dd></dl>'}
+function vDetails(){
+ var o=org();
+ var h='<div class="hd"><div><h1 class="pt">Organization details</h1><p class="sub">This is what students and parents see about your organization.</p></div></div><form class="box" id="orgForm" novalidate>'+
+ '<h2>Basic information</h2><div class="grid2"><div><label class="f" for="oName">Organization name *</label><input class="in" id="oName" maxlength="80" value="'+esc(o.name)+'"></div>'+
+ '<div><label class="f" for="oType">Organization type *</label><select class="in" id="oType"><option value="">Select</option>'+TYPES.map(function(t){return '<option'+(o.orgType===t?' selected':'')+'>'+esc(t)+'</option>'}).join('')+'</select></div>'+
+ '<div><label class="f" for="oReg">Registration / GST number *</label><input class="in" id="oReg" maxlength="30" value="'+esc(o.regNo)+'"></div>'+
+ '<div><label class="f" for="oYear">Year established</label><input class="in" id="oYear" type="number" min="1900" max="2100" value="'+esc(o.year)+'"></div></div>'+
+ '<label class="f" for="oAbout">About your organization *</label><textarea class="in" id="oAbout" maxlength="800" placeholder="What you teach, your results, your teaching approach…">'+esc(o.about)+'</textarea>'+
+ '<h2 style="margin-top:22px">Contact</h2><div class="grid2"><div><label class="f" for="oPerson">Contact person *</label><input class="in" id="oPerson" value="'+esc(o.contactPerson)+'"></div>'+
+ '<div><label class="f" for="oDesg">Designation</label><input class="in" id="oDesg" placeholder="e.g. Director" value="'+esc(o.designation)+'"></div>'+
+ '<div><label class="f" for="oPhone">Phone *</label><input class="in" id="oPhone" type="tel" value="'+esc(o.phone)+'"></div>'+
+ '<div><label class="f" for="oWa">WhatsApp <span class="hint">optional</span></label><input class="in" id="oWa" type="tel" value="'+esc(o.whatsapp)+'"></div>'+
+ '<div><label class="f" for="oWeb">Website <span class="hint">optional</span></label><input class="in" id="oWeb" type="url" placeholder="https://" value="'+esc(o.website)+'"></div>'+
+ '<div><label class="f" for="oCity">City *</label><input class="in" id="oCity" value="'+esc(o.city)+'"></div></div>'+
+ '<label class="f" for="oAddr">Address *</label><input class="in" id="oAddr" value="'+esc(o.address)+'">'+
+ '<h2 style="margin-top:22px">What you offer</h2><label class="f">Subjects offered *</label>'+chips('subjects',SUBJECTS,o.subjects)+
+ '<label class="f">Classes / levels *</label>'+chips('levels',LEVELS,o.levels)+
+ '<label class="f">Teaching modes *</label>'+chips('modes',MODES,o.modes)+
+ '<label class="f">Languages of teaching</label>'+chips('langs',LANGS,o.langs)+
+ '<div class="grid2"><div><label class="f" for="oFmin">Fees from (₹ per hour)</label><input class="in" id="oFmin" type="number" min="0" value="'+esc(o.feeMin)+'"></div><div><label class="f" for="oFmax">Fees up to (₹ per hour)</label><input class="in" id="oFmax" type="number" min="0" value="'+esc(o.feeMax)+'"></div></div>'+
+ '<div class="grid2"><div><label class="f" for="oTeam">Team size <span class="hint">number of tutors</span></label><input class="in" id="oTeam" type="number" min="1" value="'+esc(o.teamSize)+'"></div></div>'+
+ '<label class="f">Working days</label>'+chips('workDays',DAYS,o.workDays)+'<label class="f">Working hours</label>'+chips('workTimes',TIMES,o.workTimes)+
+ '<div class="msg" id="oMsg" role="alert"></div><div class="acts" style="margin-top:14px"><button class="b y" type="submit">Save details</button><button class="b" type="button" data-view="overview">Cancel</button></div></form>';
+ return h}
+function tutorRow(t){
+ return '<div class="rrow"><span class="pic">'+esc(ModivsDash.initials(t.name))+'</span><div class="info"><b>'+esc(t.name)+' '+(t.active===false?'<span class="pill off">Inactive</span>':'<span class="pill ok">Active</span>')+'</b><small>'+esc([(t.subjects||[]).join(', '),t.qual,t.exp?t.exp+' yrs exp.':'',t.fee?'₹'+t.fee+'/hr':''].filter(Boolean).join(' · ')||'No details added')+'</small></div><div class="acts"><button class="b sm" data-act="editTutor" data-id="'+esc(t.id)+'">Edit</button><button class="b sm" data-act="toggleTutor" data-id="'+esc(t.id)+'">'+(t.active===false?'Activate':'Deactivate')+'</button><button class="b sm danger" data-act="delTutor" data-id="'+esc(t.id)+'">Remove</button></div></div>'}
+function vTutors(){
+ var ts=org().tutors||[];
+ return '<div class="hd"><div><h1 class="pt">Our tutors</h1><p class="sub">The tutors who teach with your organization.</p></div><button class="b y" data-act="addTutor">+ Add a tutor</button></div><section class="box">'+(ts.length?ts.map(tutorRow).join(''):'<div class="empty">No tutors yet. Add your first tutor to build your team.</div>')+'</section>'}
+function tutorDialog(id){
+ var o=org(),t=(o.tutors||[]).filter(function(x){return x.id===id})[0]||{};
+ $('dlgCard').innerHTML='<h2 style="margin:0 0 4px">'+(id?'Edit tutor':'Add a tutor')+'</h2><p class="sub">Add the details of a tutor teaching with '+esc(o.name||'your organization')+'.</p><form id="tForm" novalidate>'+
+ '<label class="f" for="tName">Tutor name *</label><input class="in" id="tName" maxlength="60" value="'+esc(t.name)+'">'+
+ '<div class="grid2"><div><label class="f" for="tEmail">Email <span class="hint">optional</span></label><input class="in" id="tEmail" type="email" value="'+esc(t.email)+'"></div><div><label class="f" for="tPhone">Phone <span class="hint">optional</span></label><input class="in" id="tPhone" type="tel" value="'+esc(t.phone)+'"></div>'+
+ '<div><label class="f" for="tQual">Qualification</label><input class="in" id="tQual" placeholder="e.g. M.Sc. Physics" value="'+esc(t.qual)+'"></div><div><label class="f" for="tExp">Experience (years)</label><input class="in" id="tExp" type="number" min="0" max="60" value="'+esc(t.exp)+'"></div>'+
+ '<div><label class="f" for="tFee">Fee (₹ per hour)</label><input class="in" id="tFee" type="number" min="0" value="'+esc(t.fee)+'"></div></div>'+
+ '<label class="f">Subjects * <span class="hint">search, or tick a category and choose</span></label>'+ModivsSubjects.picker('tsubjects',t.subjects)+
+  '<label class="f" for="tOther">Other subject <span class="hint">optional, if you could not find it above. Separate with commas</span></label><input class="in" id="tOther" maxlength="120" placeholder="e.g. Robotics, Sign language">'+
+ '<div class="msg" id="tMsg" role="alert"></div><div class="acts" style="margin-top:14px"><button class="b y" type="submit">'+(id?'Save changes':'Add tutor')+'</button><button class="b" type="button" data-act="closeDlg">Cancel</button></div></form>';
+ $('dlg').hidden=false;setTimeout(function(){$('tName').focus()},30);
+ $('tForm').addEventListener('keydown',function(e){if(e.key==='Enter'&&e.target.classList&&e.target.classList.contains('msub-q'))e.preventDefault()});
+ $('tForm').addEventListener('submit',function(e){
+  e.preventDefault();var name=$('tName').value.trim(),subs=grpSub($('tForm'),'tsubjects',$('tOther').value),m=$('tMsg');
+  if(name.length<2){m.textContent='Enter the tutor’s name.';return}
+  if(!subs.length){m.textContent='Choose at least one subject.';return}
+  var rec={id:id||('ot_'+Date.now()),name:name,email:$('tEmail').value.trim().toLowerCase(),phone:$('tPhone').value.trim(),qual:$('tQual').value.trim(),exp:$('tExp').value.trim(),fee:$('tFee').value.trim(),subjects:subs,active:t.active!==false};
+  var list=(org().tutors||[]).slice();var i=list.findIndex(function(x){return x.id===rec.id});if(i>-1)list[i]=rec;else list.push(rec);
+  save({tutors:list});closeDlg();toast(id?'Tutor updated':'Tutor added');render()})}
+function closeDlg(){$('dlg').hidden=true;$('dlgCard').innerHTML=''}
+$('dlg').addEventListener('click',function(e){if(e.target===$('dlg'))closeDlg()});
+
+/* ---- student leads that match this organization ---- */
+function matchLeads(o){
+ if(!approved(o))return [];
+ var L=[];try{L=JSON.parse(localStorage.getItem('modivs_active_leads')||'[]')||[]}catch(e){}
+ var subs=(o.subjects||[]).map(function(x){return x.toLowerCase()}),city=String(o.city||'').trim().toLowerCase();
+ return L.filter(function(l){
+  if(l.status&&l.status!=='active')return false;
+  var ok=!subs.length||(l.subs||[]).some(function(s){return subs.indexOf(String(s).toLowerCase())>-1||s==='General'});
+  var cok=!city||!l.city||String(l.city).toLowerCase()===city||(l.mode||[]).some(function(m){return /online/i.test(m)});
+  return ok&&cok})}
+function vLeads(){
+ var o=org(),ls=matchLeads(o);
+ if(!approved(o))return '<div class="hd"><div><h1 class="pt">Student leads</h1><p class="sub">Requirements that match your subjects and city.</p></div></div>'+approvalBanner(o)+'<section class="box"><div class="empty">Student leads unlock once our team approves your organization.'+(pct(o)<100?'<br><br><button class="b y sm" data-view="details">Complete your details</button>':'')+'</div></section>';
+ var h='<div class="hd"><div><h1 class="pt">Student leads</h1><p class="sub">Requirements that match your subjects and city.</p></div><a class="b y" href="modivs-active-leads.html">Open all active leads</a></div><section class="box">';
+ if(!(o.subjects||[]).length)h+='<div class="banner"><p>Add the subjects you offer to see better-matched leads.</p><button class="b y sm" data-view="details">Add subjects</button></div>';
+ h+=ls.length?ls.slice(0,12).map(function(l){return '<div class="rrow"><span class="pic">'+esc(ModivsDash.initials(l.name))+'</span><div class="info"><b>'+esc((l.subs||[]).join(', ')||'Requirement')+' · '+esc(l.cls||'')+'</b><small>'+esc([l.city,(l.mode||[]).join(', '),l.budget,l.timeSlot].filter(Boolean).join(' · '))+'</small></div></div>'}).join(''):'<div class="empty">No matching leads right now. Check back soon.</div>';
+ return h+'</section>'}
+function vSettings(){
+ var o=org();
+ return '<div class="hd"><div><h1 class="pt">Account &amp; settings</h1><p class="sub">Your login and account information.</p></div></div><section class="box"><dl class="kv"><dt>Login email</dt><dd>'+esc(EMAIL)+'</dd><dt>Account type</dt><dd>Organization</dd><dt>Verification</dt><dd>'+statusPill(o)+'</dd><dt>Created</dt><dd>'+esc(o.created_at?new Date(o.created_at).toLocaleDateString():'')+'</dd></dl><div class="acts" style="margin-top:16px"><button class="b" data-view="details">Edit organization details</button><button class="b danger" id="logoutSide2">Log out</button></div></section>'}
+
+function render(){
+ paintChrome();
+ var v=$('view'),f={overview:vOverview,details:vDetails,tutors:vTutors,leads:vLeads,settings:vSettings}[state.view]||vOverview;
+ v.innerHTML=f();
+ var of=$('orgForm');if(of)of.addEventListener('submit',saveDetails);
+ var l2=$('logoutSide2');if(l2)l2.addEventListener('click',doLogout)}
+function saveDetails(e){
+ e.preventDefault();var m=$('oMsg'),f=$('orgForm');
+ function g(i){return $(i).value.trim()}
+ f.querySelectorAll('.bad').forEach(function(x){x.classList.remove('bad')});
+ function bad(id,t){$(id).classList.add('bad');$(id).focus();m.textContent=t;return false}
+ if(g('oName').length<2)return bad('oName','Enter your organization name.');
+ if(!g('oType'))return bad('oType','Choose your organization type.');
+ if(!g('oReg'))return bad('oReg','Enter your registration or GST number.');
+ if(g('oAbout').length<20)return bad('oAbout','Tell us a little more about your organization (at least 20 characters).');
+ if(!g('oPerson'))return bad('oPerson','Enter a contact person.');
+ if(!/^[+0-9\s-]{10,15}$/.test(g('oPhone')))return bad('oPhone','Enter a valid phone number.');
+ if(g('oWa')&&!/^[+0-9\s-]{10,15}$/.test(g('oWa')))return bad('oWa','Enter a valid WhatsApp number.');
+ if(!g('oCity'))return bad('oCity','Enter your city.');
+ if(!g('oAddr'))return bad('oAddr','Enter your address.');
+ var subs=grp(f,'subjects'),lv=grp(f,'levels'),md=grp(f,'modes');
+ if(!subs.length){m.textContent='Choose at least one subject.';return}
+ if(!lv.length){m.textContent='Choose at least one class level.';return}
+ if(!md.length){m.textContent='Choose at least one teaching mode.';return}
+ if(g('oFmin')&&g('oFmax')&&+g('oFmax')<+g('oFmin'))return bad('oFmax','Maximum fee must be at least the minimum.');
+ var name=g('oName'),prev=org(),st=ModivsOrg.status(prev),resubmit=false,note='';
+ if(st==='rejected'){resubmit=true;note='Organization details saved and sent for review again'}
+ else if(st==='approved'&&(prev.name!==name||prev.regNo!==g('oReg')||prev.orgType!==g('oType'))){resubmit=true;note='Details saved. Because you changed your name, type or registration number, our team will review them again'}
+ save({status:resubmit?'pending':st,name:name,orgType:g('oType'),regNo:g('oReg'),year:g('oYear'),about:g('oAbout'),contactPerson:g('oPerson'),designation:g('oDesg'),phone:g('oPhone'),whatsapp:g('oWa'),website:g('oWeb'),city:g('oCity'),address:g('oAddr'),subjects:subs,levels:lv,modes:md,langs:grp(f,'langs'),feeMin:g('oFmin'),feeMax:g('oFmax'),teamSize:g('oTeam'),workDays:grp(f,'workDays'),workTimes:grp(f,'workTimes')},{resubmit:resubmit});
+ try{AU.name=name;localStorage.setItem('modivs_auth_user',JSON.stringify(AU))}catch(x){}
+ toast(note||'Organization details saved');state.view='overview';render();window.scrollTo({top:0})}
+if(location.hash==='#details')state.view='details';
+render();
+if(ModivsOrg.pull)ModivsOrg.pull(EMAIL).then(function(changed){if(changed&&!(state.view==='details'&&document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#orgForm')))render()});
+})();
+</script>
+<script src="modivs-avatars.js"></script>
+</body>
+</html>
