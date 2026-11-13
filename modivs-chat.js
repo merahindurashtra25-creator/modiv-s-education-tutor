@@ -42,19 +42,10 @@
     return u;
   }
 
-  var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
   function isAdmin() {
     var session = read('modivs_admin_session', null);
     var u = user();
-    var fbU = fbAuth() && fbAuth().currentUser;
-    var sMail = session && emailOf(session.email);
-    var uMail = u && emailOf(u.email);
-    var fbMail = fbU && emailOf(fbU.email);
-    return !!(
-      (sMail && ADMIN_EMAILS.indexOf(sMail) !== -1) ||
-      (uMail && ADMIN_EMAILS.indexOf(uMail) !== -1) ||
-      (fbMail && ADMIN_EMAILS.indexOf(fbMail) !== -1)
-    );
+    return !!((session && (session.role === 'Admin' || session.isAdmin)) || (u && u.role === 'Admin'));
   }
 
   // =========================================================================

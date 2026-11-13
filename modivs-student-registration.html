@@ -104,7 +104,7 @@ textarea{min-height:100px;resize:vertical}
 @media(max-width:820px){.shell{grid-template-columns:1fr}.side{display:none}.main{padding:24px 16px 60px}.two{grid-template-columns:1fr}}
 </style>
 <script>
-try{var _as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');var adminEmails=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','luxmankumar628@gmail.com'];if(_as&&_as.email&&adminEmails.indexOf(_as.email.toLowerCase())!==-1&&!/[?&]student=1/.test(location.search)){location.replace('modivs-active-leads.html#post')}}catch(e){}
+try{var _as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');if(_as&&(_as.role==='Admin'||_as.isAdmin)&&!/[?&]student=1/.test(location.search)){location.replace('modivs-active-leads.html#post')}}catch(e){}
 </script>
 <script src="modivs-places.js"></script>
 <script src="modivs-subjects.js"></script>

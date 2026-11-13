@@ -10,11 +10,13 @@ const auth = admin.auth();
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_TwTMFGYwNbt9BA';
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 
-const MASTER_ADMIN_EMAILS = [
-  'happinessaggarwal@gmail.com',
-  'divyanshdhimanteam@gmail.com',
-  'luxmankumar628@gmail.com'
-];
+const MASTER_ADMIN_EMAILS = process.env.MASTER_ADMIN_EMAILS
+  ? process.env.MASTER_ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase())
+  : [
+      'happinessaggarwal@gmail.com',
+      'divyanshdhimanteam@gmail.com',
+      'luxmankumar628@gmail.com'
+    ];
 
 const normalizeEmail = email => String(email || '').trim().toLowerCase();
 

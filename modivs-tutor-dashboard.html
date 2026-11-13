@@ -1401,8 +1401,7 @@
         var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
         var admin = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
         var isTutor = (u && u.role === 'Tutor');
-        var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
-        var isAdmin = (admin && admin.email && adminEmails.indexOf(admin.email.toLowerCase()) !== -1);
+        var isAdmin = !!(admin && (admin.role === 'Admin' || admin.isAdmin));
         if (!isTutor && !isAdmin) {
           window.location.replace('modivs-education.html#tutor-login');
         }

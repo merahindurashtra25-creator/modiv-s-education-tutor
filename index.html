@@ -895,14 +895,13 @@ section .ht-h{max-width:100%}
  })();
 
  // Admin session: show who is logged in, hide sign-up/login buttons
- var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','luxmankumar628@gmail.com'];
  var isAdmin=false;
  var adminEmail='';
  try{
   var _as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');
-  if(_as&&_as.email&&ADMIN_EMAILS.indexOf(_as.email.toLowerCase())!==-1){
+  if(_as&&(_as.role==='Admin'||_as.isAdmin)){
    isAdmin=true;
-   adminEmail=_as.email;
+   adminEmail=_as.email||'Admin';
   }
  }catch(err){}
  if(isAdmin){

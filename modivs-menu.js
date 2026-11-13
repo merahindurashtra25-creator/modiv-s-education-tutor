@@ -34,14 +34,13 @@
       if(h==='modivs-home.html')h='index.html';
       if(h&&h===file)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
     });
-    var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','luxmankumar628@gmail.com'];
     var isAdmin=false;
     var adminEmail='';
     try{
       var s=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');
-      if(s&&s.email&&ADMIN_EMAILS.indexOf(s.email.toLowerCase())!==-1){
+      if(s&&(s.role==='Admin'||s.isAdmin)){
         isAdmin=true;
-        adminEmail=s.email;
+        adminEmail=s.email||'Admin';
       }
     }catch(e){}
     if(isAdmin){

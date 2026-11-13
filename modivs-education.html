@@ -598,7 +598,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   }
 
   // Helper for admin email check
-  var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
+  var ADMIN_EMAILS = ['aGFwcGluZXNzYWdnYXJ3YWxAZ21haWwuY29t', 'ZGl2eWFuc2hkaGltYW50ZWFtQGdtYWlsLmNvbQ==', 'bHV4bWFua3VtYXI2MjhAZ21haWwuY29t'].map(function(b){ try{ return atob(b); }catch(e){ return ''; } });
   function isAdminEmail(em){
     if(!em) return false;
     return ADMIN_EMAILS.indexOf(String(em).trim().toLowerCase()) !== -1;

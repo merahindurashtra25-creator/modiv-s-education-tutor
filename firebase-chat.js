@@ -13,8 +13,9 @@
     var em = String(userEmail || '').toLowerCase();
     if(!em) return;
 
-    var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
-    var isAdmin = adminEmails.indexOf(em) !== -1;
+    var a = null;
+    try { a = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); } catch(e){}
+    var isAdmin = !!(a && (a.role === 'Admin' || a.isAdmin));
 
     // For admins fetch all; for regular users fetch by all three participant email fields.
     var queries = isAdmin

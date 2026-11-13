@@ -187,8 +187,7 @@
   function session() {
     try {
       var a = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
-      var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
-      if (a && a.email && adminEmails.indexOf(a.email.toLowerCase()) !== -1) return { name: a.name || 'Admin', role: 'Admin', admin: true };
+      if (a && (a.role === 'Admin' || a.isAdmin)) return { name: a.name || 'Admin', role: 'Admin', admin: true };
     } catch (e) { }
     try {
       var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');

@@ -1140,8 +1140,7 @@ if(window.ModivsLocSearch)ModivsLocSearch.sync();
 if(window.ModivsPlaces)ModivsPlaces.upgrade('tCity','tArea');
 /* ---------- admin: add tutor profile directly ---------- */
 (function(){
- var ADMIN_EMAILS=['happinessaggarwal@gmail.com','divyanshdhimanteam@gmail.com','luxmankumar628@gmail.com'];
- var ADMIN=false,adminMail='happinessaggarwal@gmail.com';try{var as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');if(as&&as.email&&ADMIN_EMAILS.indexOf(as.email.toLowerCase())!==-1){ADMIN=true;adminMail=as.email;}}catch(e){}
+ var ADMIN=false,adminMail='';try{var as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');if(as&&(as.role==='Admin'||as.isAdmin)){ADMIN=true;adminMail=as.email||'';}}catch(e){}
  if(!ADMIN)return;
  document.body.classList.add('is-admin');
  ['navJoin'].forEach(function(i){var a=$(i);if(a)a.style.display='none'});

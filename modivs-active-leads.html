@@ -1926,7 +1926,7 @@
       function maskPhone(p) { p = String(p || '').replace(/\D/g, ''); return p.length >= 4 ? p.slice(0, 2) + 'xxxxxx' + p.slice(-2) : 'Hidden' }
       /* a lead counts as FREE only when the admin ticked "Free tuition lead" (stored as boolean true) */
       function isFree(l) { return !!l && l.free === true }
-      function adminNow() { try { var as = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); return !!(as && as.email && ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'].indexOf(as.email.toLowerCase()) !== -1) } catch (e) { return false } }
+      function adminNow() { try { var as = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); return !!(as && (as.role === 'Admin' || as.isAdmin)) } catch (e) { return false } }
       function load() {
         var all = read('modivs_active_leads').concat(read('modivs_students_db'));
         var seen = {}, out = [];
@@ -1957,8 +1957,7 @@
           }
         }, 200);
       }
-      var ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
-      var ADMIN = false; try { var as = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); ADMIN = !!(as && as.email && ADMIN_EMAILS.indexOf(as.email.toLowerCase()) !== -1) } catch (e) { }
+      var ADMIN = adminNow();
       function tomb() { return read('modivs_deleted_leads') }
       function fillSelect(id, vals) { var s = $(id); Array.from(new Set(vals.filter(Boolean))).sort(function (a, b) { return String(a).localeCompare(String(b), 'en', { numeric: true }) }).forEach(function (v) { var o = el('option', '', v); o.value = v; s.appendChild(o) }) }
       fillSelect('fCity', leads.map(function (l) { return l.city }));

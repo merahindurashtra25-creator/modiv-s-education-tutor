@@ -5,10 +5,9 @@
 (function(){
   'use strict';
   function rd(k,d){try{var v=JSON.parse(localStorage.getItem(k)||'null');return v==null?d:v}catch(e){return d}}
-  var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
   function isAdminSession(){
-    try{var a=rd('modivs_admin_session',null);if(a&&a.email&&adminEmails.indexOf(String(a.email).toLowerCase())!==-1)return true}catch(e){}
-    return false}
+    try{var a=rd('modivs_admin_session',null);return !!(a&&a.role==='Admin')}catch(e){return false}
+  }
   /* any signed-in account, whatever the role (Tutor, Student / Parent, General User, Organization, Admin) */
   function signedIn(){
     if(isAdminSession())return true;

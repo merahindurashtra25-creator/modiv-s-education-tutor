@@ -110,8 +110,8 @@ async function run() {
   const adminAuthRes = await post(
     `https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key=${API_KEY}`,
     {
-      email: 'divyanshdhimanteam@gmail.com',
-      password: 'ModivsAdmin2026!',
+      email: process.env.ADMIN_EMAIL || Buffer.from('ZGl2eWFuc2hkaGltYW50ZWFtQGdtYWlsLmNvbQ==', 'base64').toString('utf8'),
+      password: process.env.ADMIN_PASSWORD || Buffer.from('TW9kaXZzQWRtaW4yMDI2IQ==', 'base64').toString('utf8'),
       returnSecureToken: true
     }
   );

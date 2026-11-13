@@ -31,8 +31,7 @@
   function isAdminSession() {
     try {
       var as = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
-      var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
-      if (as && as.email && adminEmails.indexOf(String(as.email).toLowerCase()) > -1) return true;
+      if (as && (as.role === 'Admin' || as.isAdmin)) return true;
     } catch (e) { }
     return false;
   }
@@ -225,9 +224,7 @@
     }
 
     function startWithAuth(user) {
-      var adminEmails = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
-      var userEmail = user && user.email ? String(user.email).toLowerCase() : '';
-      var isAdmin = isAdminSession() || (user && !user.isAnonymous && adminEmails.indexOf(userEmail) > -1);
+      var isAdmin = isAdminSession();
       if (isAdmin) {
         attach(firestore.collection('tutors'));
       } else {
