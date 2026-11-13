@@ -63,26 +63,32 @@
           return reject(new Error('Invalid payment amount.'));
         }
 
-        // 1. Create official Razorpay Order via Cloud Function when available
+        // 1. Create official Razorpay Order via Backend API or Cloud Function
         var orderPromise = opts.orderId ? Promise.resolve(opts.orderId) : (
-          (window.firebase && typeof firebase.functions === 'function') ? (function(){
-            try {
-              var createOrderFn = firebase.functions().httpsCallable('createRazorpayOrder');
-              return createOrderFn({
-                amount: paise,
-                currency: opts.currency || RAZORPAY_CONFIG.currency,
-                receipt: 'rcpt_' + Date.now().toString(36),
-                notes: opts.notes || { platform: "Modiv's Education", service: opts.service || 'Tuition Services' }
-              }).then(function(res){
-                return (res && res.data && res.data.orderId) || null;
-              }).catch(function(err){
-                console.warn('Server order creation warning (using direct checkout):', err);
-                return null;
-              });
-            } catch(e) {
-              return Promise.resolve(null);
-            }
-          })() : Promise.resolve(null)
+          (window.ModivsAPI && window.ModivsAPI.payments) ? (
+            window.ModivsAPI.payments.createOrder(paise, opts.notes || { platform: "Modiv's Education", service: opts.service || 'Tuition Services' })
+              .then(function(res){ return (res && res.orderId) || null; })
+              .catch(function(err){ console.warn('Backend order creation notice:', err); return null; })
+          ) : (
+            (window.firebase && typeof firebase.functions === 'function') ? (function(){
+              try {
+                var createOrderFn = firebase.functions().httpsCallable('createRazorpayOrder');
+                return createOrderFn({
+                  amount: paise,
+                  currency: opts.currency || RAZORPAY_CONFIG.currency,
+                  receipt: 'rcpt_' + Date.now().toString(36),
+                  notes: opts.notes || { platform: "Modiv's Education", service: opts.service || 'Tuition Services' }
+                }).then(function(res){
+                  return (res && res.data && res.data.orderId) || null;
+                }).catch(function(err){
+                  console.warn('Server order creation warning (using direct checkout):', err);
+                  return null;
+                });
+              } catch(e) {
+                return Promise.resolve(null);
+              }
+            })() : Promise.resolve(null)
+          )
         );
 
         orderPromise.then(function(officialOrderId){
@@ -118,19 +124,28 @@
               var sig = response.razorpay_signature || '';
 
               // 2. Server-side signature verification
-              var verifyPromise = (sig && oId && window.firebase && typeof firebase.functions === 'function') ? (function(){
-                try {
-                  var verifyFn = firebase.functions().httpsCallable('verifyRazorpaySignature');
-                  return verifyFn({ orderId: oId, paymentId: pId, signature: sig }).then(function(res){
-                    return (res && res.data) || { verified: true };
-                  }).catch(function(err){
-                    console.warn('Server verification warning:', err);
-                    return { verified: true, fallback: true };
-                  });
-                } catch(e) {
-                  return Promise.resolve({ verified: true, fallback: true });
-                }
-              })() : Promise.resolve({ verified: true });
+              var verifyPromise = (sig && oId && window.ModivsAPI && window.ModivsAPI.payments) ? (
+                window.ModivsAPI.payments.verify(oId, pId, sig).then(function(res){
+                  return (res && res.verified !== false) ? { verified: true } : { verified: false };
+                }).catch(function(err){
+                  console.warn('Backend verification warning:', err);
+                  return { verified: true, fallback: true };
+                })
+              ) : (
+                (sig && oId && window.firebase && typeof firebase.functions === 'function') ? (function(){
+                  try {
+                    var verifyFn = firebase.functions().httpsCallable('verifyRazorpaySignature');
+                    return verifyFn({ orderId: oId, paymentId: pId, signature: sig }).then(function(res){
+                      return (res && res.data) || { verified: true };
+                    }).catch(function(err){
+                      console.warn('Server verification warning:', err);
+                      return { verified: true, fallback: true };
+                    });
+                  } catch(e) {
+                    return Promise.resolve({ verified: true, fallback: true });
+                  }
+                })() : Promise.resolve({ verified: true })
+              );
 
               verifyPromise.then(function(vRes){
                 if(vRes && vRes.verified === false){

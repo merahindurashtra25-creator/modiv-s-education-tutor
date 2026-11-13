@@ -3,6 +3,7 @@ const path = require('path');
 const terser = require('terser');
 
 const allScripts = [
+  'modivs-api.js',
   'firebase-sync.js',
   'modivs-slug.js',
   'modivs-select.js',
@@ -53,18 +54,9 @@ function syncEnvBridge() {
     });
   }
 
-  // Only expose safe public variables from .env / process.env to client window.__ENV__
+  // Only expose client-needed public variables from .env / process.env to client window.__ENV__
   const publicEnv = {
-    FIREBASE_API_KEY: envVars.FIREBASE_API_KEY || process.env.FIREBASE_API_KEY || '',
-    FIREBASE_AUTH_DOMAIN: envVars.FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN || '',
-    FIREBASE_PROJECT_ID: envVars.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || '',
-    FIREBASE_STORAGE_BUCKET: envVars.FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET || '',
-    FIREBASE_MESSAGING_SENDER_ID: envVars.FIREBASE_MESSAGING_SENDER_ID || process.env.FIREBASE_MESSAGING_SENDER_ID || '',
-    FIREBASE_APP_ID: envVars.FIREBASE_APP_ID || process.env.FIREBASE_APP_ID || '',
-    FIREBASE_MEASUREMENT_ID: envVars.FIREBASE_MEASUREMENT_ID || process.env.FIREBASE_MEASUREMENT_ID || '',
     GOOGLE_MAPS_API_KEY: envVars.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || '',
-    APPCHECK_RECAPTCHA_KEY: envVars.APPCHECK_RECAPTCHA_KEY || process.env.APPCHECK_RECAPTCHA_KEY || '',
-    MASTER_ADMIN_EMAILS: envVars.MASTER_ADMIN_EMAILS || process.env.MASTER_ADMIN_EMAILS || '',
     RAZORPAY_KEY_ID: envVars.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || ''
   };
 

@@ -1197,12 +1197,14 @@
       line-height: 1.3;
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden
     }
 
     .lc.full h3 {
-      -webkit-line-clamp: unset
+      -webkit-line-clamp: unset;
+      line-clamp: unset
     }
 
     .lc-who {
@@ -1233,12 +1235,14 @@
     .lc h3.open {
       display: block;
       -webkit-line-clamp: unset;
+      line-clamp: unset;
       overflow: visible
     }
 
     .lc.full h3 {
       display: block;
       -webkit-line-clamp: unset;
+      line-clamp: unset;
       overflow: visible
     }
 
@@ -1268,18 +1272,21 @@
       line-height: 1.5;
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden
     }
 
     .lc.full .lc-desc {
       -webkit-line-clamp: unset;
+      line-clamp: unset;
       display: block
     }
 
     .lc-desc.open {
       display: block;
       -webkit-line-clamp: unset;
+      line-clamp: unset;
       overflow: visible
     }
 
@@ -1352,6 +1359,7 @@
     .lc-ic b {
       display: -webkit-box;
       -webkit-line-clamp: 2;
+      line-clamp: 2;
       -webkit-box-orient: vertical;
       overflow: hidden;
       font-size: .84rem;
@@ -1360,7 +1368,8 @@
     }
 
     .lc.full .lc-ic b {
-      -webkit-line-clamp: unset
+      -webkit-line-clamp: unset;
+      line-clamp: unset
     }
 
     .lc-ic b.pill {
@@ -1684,10 +1693,7 @@
     }
   </style>
   <script src="modivs-import-data.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js" defer></script>
-  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js" defer></script>
-  <script src="firebase-config.js" defer></script>
+  <script src="modivs-api.js"></script>
   <script src="firebase-sync.js" defer></script>
   <script src="modivs-places.js"></script>
   <script src="modivs-subjects.js"></script>
