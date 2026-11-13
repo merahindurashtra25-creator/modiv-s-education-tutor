@@ -63,3 +63,4 @@ npm run build
 - **Debugger Stripping:** Any lingering `debugger;` statements are stripped (`drop_debugger: true`).
 - **Backend API Integration:** `modivs-api.js` is bundled into `modivs.min.js`.
 - **Output:** Generates production bundle `modivs.min.js` (~335 KB).
+
