@@ -1,5 +1,4 @@
 {
-  "version": 2,
   "cleanUrls": true,
   "trailingSlash": false,
   "headers": [
@@ -37,28 +36,26 @@
       ]
     }
   ],
-  "routes": [
-    { "src": "/api/(.*)", "dest": "/api/$1" },
-    { "src": "/admin", "dest": "/modivs-admin.html" },
-    { "src": "/login", "dest": "/modivs-education.html" },
-    { "src": "/tutor-dashboard", "dest": "/modivs-tutor-dashboard.html" },
-    { "src": "/student-dashboard", "dest": "/modivs-student-dashboard.html" },
-    { "src": "/tutor-profile", "dest": "/modivs-tutor-profile.html" },
-    { "src": "/tutor-edit-profile", "dest": "/modivs-tutor-edit-profile.html" },
-    { "src": "/student-registration", "dest": "/modivs-student-registration.html" },
-    { "src": "/tutors", "dest": "/modivs-tutors.html" },
-    { "src": "/find-a-tutor", "dest": "/modivs-find-tutor.html" },
-    { "src": "/find-a-modivian-tutor", "dest": "/modivs-find-tutor.html" },
-    { "src": "/become-a-modivian-tutor", "dest": "/modivs-become-tutor.html" },
-    { "src": "/active-leads", "dest": "/modivs-active-leads.html" },
-    { "src": "/shop", "dest": "/modivs-shop.html" },
-    { "src": "/blogs", "dest": "/modivs-blogs.html" },
-    { "src": "/students-corner", "dest": "/modivs-students-corner.html" },
-    { "src": "/contact", "dest": "/modivs-contact.html" },
-    { "src": "/privacy-policy", "dest": "/modivs-privacy-policy.html" },
-    { "src": "/terms", "dest": "/modivs-terms.html" },
-    { "src": "/refund-policy", "dest": "/modivs-refund-policy.html" },
-    { "src": "/sitemap", "dest": "/modivs-sitemap.html" },
-    { "src": "/", "dest": "/index.html" }
+  "rewrites": [
+    { "source": "/admin", "destination": "/modivs-admin.html" },
+    { "source": "/login", "destination": "/modivs-education.html" },
+    { "source": "/tutor-dashboard", "destination": "/modivs-tutor-dashboard.html" },
+    { "source": "/student-dashboard", "destination": "/modivs-student-dashboard.html" },
+    { "source": "/tutor-profile", "destination": "/modivs-tutor-profile.html" },
+    { "source": "/tutor-edit-profile", "destination": "/modivs-tutor-edit-profile.html" },
+    { "source": "/student-registration", "destination": "/modivs-student-registration.html" },
+    { "source": "/tutors", "destination": "/modivs-tutors.html" },
+    { "source": "/find-a-tutor", "destination": "/modivs-find-tutor.html" },
+    { "source": "/find-a-modivian-tutor", "destination": "/modivs-find-tutor.html" },
+    { "source": "/become-a-modivian-tutor", "destination": "/modivs-become-tutor.html" },
+    { "source": "/active-leads", "destination": "/modivs-active-leads.html" },
+    { "source": "/shop", "destination": "/modivs-shop.html" },
+    { "source": "/blogs", "destination": "/modivs-blogs.html" },
+    { "source": "/students-corner", "destination": "/modivs-students-corner.html" },
+    { "source": "/contact", "destination": "/modivs-contact.html" },
+    { "source": "/privacy-policy", "destination": "/modivs-privacy-policy.html" },
+    { "source": "/terms", "destination": "/modivs-terms.html" },
+    { "source": "/refund-policy", "destination": "/modivs-refund-policy.html" },
+    { "source": "/sitemap", "destination": "/modivs-sitemap.html" }
   ]
 }
