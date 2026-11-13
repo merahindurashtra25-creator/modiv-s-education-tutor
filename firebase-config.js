@@ -14,21 +14,26 @@
 
     // Initialize App Check gracefully when supported and configured
     var appCheck = null;
-    if(typeof firebase.appCheck === 'function'){
-      try {
-        var siteKey = window.MODIVS_RECAPTCHA_KEY || window.APPCHECK_RECAPTCHA_KEY;
-        var isLocal = typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-        if(isLocal && typeof self !== 'undefined' && self.FIREBASE_APPCHECK_DEBUG_TOKEN === undefined){
-          self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-        }
-        if(siteKey && firebase.appCheck.ReCaptchaV3Provider){
-          appCheck = firebase.appCheck();
-          appCheck.activate(new firebase.appCheck.ReCaptchaV3Provider(siteKey), isLocal ? false : true);
-        }
-      } catch(appCheckErr){
-        console.warn('Firebase App Check notice:', appCheckErr && appCheckErr.message);
+    function initAppCheck(customSiteKey){
+      var siteKey = customSiteKey || window.MODIVS_RECAPTCHA_KEY || window.APPCHECK_RECAPTCHA_KEY;
+      var isLocal = typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
+      if(isLocal && typeof self !== 'undefined' && self.FIREBASE_APPCHECK_DEBUG_TOKEN === undefined){
+        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
       }
+      if(typeof firebase.appCheck === 'function' && siteKey && firebase.appCheck.ReCaptchaV3Provider){
+        try {
+          var ac = firebase.appCheck();
+          ac.activate(new firebase.appCheck.ReCaptchaV3Provider(siteKey), isLocal ? false : true);
+          if(window.EducationBFirebase) window.EducationBFirebase.appCheck = ac;
+          return ac;
+        } catch(appCheckErr){
+          console.warn('Firebase App Check notice:', appCheckErr && appCheckErr.message);
+        }
+      }
+      return null;
     }
+
+    appCheck = initAppCheck();
 
     window.EducationBFirebase = {
       auth: firebase.auth(),
@@ -36,6 +41,9 @@
       storage: (typeof firebase.storage === 'function') ? firebase.storage() : null,
       appCheck: appCheck,
       config: firebaseConfig
+    };
+    window.ModivsAppCheck = {
+      init: initAppCheck
     };
   }
 })();

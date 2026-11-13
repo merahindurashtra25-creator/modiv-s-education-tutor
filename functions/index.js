@@ -440,6 +440,10 @@ exports.createRazorpayOrder = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('invalid-argument', 'Valid amount in paise is required.');
   }
 
+  if (!RAZORPAY_KEY_SECRET) {
+    throw new functions.https.HttpsError('failed-precondition', 'Payment gateway credentials are not configured on the server.');
+  }
+
   const postData = JSON.stringify({
     amount: Math.round(amount),
     currency,
@@ -503,6 +507,10 @@ exports.verifyRazorpaySignature = functions.https.onCall(async (data, context) =
 
   if (!orderId || !paymentId || !signature) {
     throw new functions.https.HttpsError('invalid-argument', 'orderId, paymentId, and signature are required.');
+  }
+
+  if (!RAZORPAY_KEY_SECRET) {
+    throw new functions.https.HttpsError('failed-precondition', 'Payment verification credentials are not configured on the server.');
   }
 
   const expectedSignature = crypto

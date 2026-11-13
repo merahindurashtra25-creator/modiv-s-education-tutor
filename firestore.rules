@@ -459,6 +459,35 @@ service cloud.firestore {
     }
 
     // ==========================================
+    // 6b. Financial Records & Backend-Controlled Payment Logs
+    // Verified payments, payment logs, memberships and coins are written exclusively
+    // by trusted Cloud Functions using the Admin SDK, never by direct client operations.
+    // ==========================================
+    match /verified_payments/{paymentId} {
+      allow read: if isAdmin() || (signedIn() && isEmail(resource.data.userEmail));
+      allow write: if false; // Only Cloud Functions Admin SDK can write verified payments
+    }
+
+    match /payments/{paymentId} {
+      allow read: if isAdmin() || (signedIn() && isEmail(resource.data.email));
+      allow write: if false; // Only Cloud Functions Admin SDK can write payment records
+    }
+
+    match /memberships/{membershipId} {
+      allow read: if isAdmin() || (signedIn() && isEmail(resource.data.email));
+      allow write: if false; // Only Cloud Functions Admin SDK can write membership records
+    }
+
+    match /coins/{coinId} {
+      allow read: if isAdmin() || (signedIn() && isEmail(resource.data.email));
+      allow write: if false; // Only Cloud Functions Admin SDK can write coin records
+    }
+
+    match /admin_records/{recordId} {
+      allow read, write: if isAdmin();
+    }
+
+    // ==========================================
     // 7. Active Leads & Relationships
     // Leads are public for browsing on /active-leads, but modifications are restricted to creator or admin.
     // ==========================================

@@ -293,6 +293,38 @@ async function runAllSecurityTests() {
     assert.strictEqual(status.attempts, 0, 'Reset must reset attempts counter to 0');
   });
 
+  // --- SECTION 8: COMPLETE AUDIT ASSERTIONS (SECRETS, APP CHECK, CLOUD FUNCTIONS) ---
+  test('Firestore Rules: Backend-controlled financial collections deny client writes', () => {
+    assert(rulesContent.includes('match /verified_payments/{paymentId}'), 'verified_payments match block must exist');
+    assert(rulesContent.includes('match /payments/{paymentId}'), 'payments match block must exist');
+    assert(rulesContent.includes('match /memberships/{membershipId}'), 'memberships match block must exist');
+    assert(rulesContent.includes('match /coins/{coinId}'), 'coins match block must exist');
+    assert(rulesContent.includes('match /admin_records/{recordId}'), 'admin_records match block must exist');
+  });
+
+  test('Third-Party API Hygiene: modivs-location.js does not expose hardcoded Google Maps API keys', () => {
+    const locJs = fs.readFileSync(path.join(ROOT_DIR, 'modivs-location.js'), 'utf8');
+    assert(!locJs.includes('AIzaSyDi4be0HNq7v1Ayf3Wlikdkc2iGpf22VBo'), 'Hardcoded Google Maps key must be purged from modivs-location.js');
+    assert(locJs.includes('window.MODIVS_MAPS_KEY || \'\''), 'modivs-location.js must use dynamic configuration');
+  });
+
+  test('Environment Template Hygiene: .env.example does not leak live API keys or admin emails', () => {
+    const envExample = fs.readFileSync(path.join(ROOT_DIR, '.env.example'), 'utf8');
+    assert(!envExample.includes('AIzaSyDi4be0HNq7v1Ayf3Wlikdkc2iGpf22VBo'), '.env.example must not contain live Google Maps key');
+    assert(!envExample.includes('happinessaggarwal@gmail.com'), '.env.example must not contain private admin emails');
+  });
+
+  test('Cloud Functions Payment Hardening: createOrder & verifySignature fail closed if secret is missing', () => {
+    const fnCode = fs.readFileSync(path.join(ROOT_DIR, 'functions', 'index.js'), 'utf8');
+    assert(fnCode.includes('if (!RAZORPAY_KEY_SECRET)'), 'Payment functions must validate RAZORPAY_KEY_SECRET is configured');
+  });
+
+  test('Firebase App Check: firebase-config.js defines App Check manager and debug token support', () => {
+    const cfgJs = fs.readFileSync(path.join(ROOT_DIR, 'firebase-config.js'), 'utf8');
+    assert(cfgJs.includes('window.ModivsAppCheck'), 'firebase-config.js must export window.ModivsAppCheck');
+    assert(cfgJs.includes('FIREBASE_APPCHECK_DEBUG_TOKEN'), 'firebase-config.js must support debug token for local testing');
+  });
+
   console.log('\n====================================================');
   console.log(`RESULTS: ${passedTests} / ${totalTests} SECURITY TESTS PASSED`);
   console.log('====================================================');
