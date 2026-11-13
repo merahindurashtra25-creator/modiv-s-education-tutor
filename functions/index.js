@@ -7,16 +7,33 @@ admin.initializeApp();
 const db = admin.firestore();
 const auth = admin.auth();
 
+// Load environment variables from .env if present
+try {
+  const fs = require('fs');
+  const path = require('path');
+  const envPath = path.join(__dirname, '.env');
+  const rootEnvPath = path.join(__dirname, '..', '.env');
+  const p = fs.existsSync(envPath) ? envPath : (fs.existsSync(rootEnvPath) ? rootEnvPath : null);
+  if (p) {
+    fs.readFileSync(p, 'utf8').split('\n').forEach(line => {
+      const m = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+      if (m && !process.env[m[1]]) {
+        let val = (m[2] || '').trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
+        process.env[m[1]] = val;
+      }
+    });
+  }
+} catch (e) {}
+
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_TwTMFGYwNbt9BA';
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || '';
 
-const MASTER_ADMIN_EMAILS = process.env.MASTER_ADMIN_EMAILS
-  ? process.env.MASTER_ADMIN_EMAILS.split(',').map(e => e.trim().toLowerCase())
-  : [
-      'happinessaggarwal@gmail.com',
-      'divyanshdhimanteam@gmail.com',
-      'luxmankumar628@gmail.com'
-    ];
+const MASTER_ADMIN_EMAILS = (process.env.MASTER_ADMIN_EMAILS ? process.env.MASTER_ADMIN_EMAILS.split(',') : [
+  'happinessaggarwal@gmail.com',
+  'divyanshdhimanteam@gmail.com',
+  'luxmankumar628@gmail.com'
+]).map(e => String(e).trim().toLowerCase());
 
 const normalizeEmail = email => String(email || '').trim().toLowerCase();
 
@@ -433,6 +450,13 @@ exports.secureUnlockLead = functions.https.onCall(async (data, context) => {
  * Creates an official order with Razorpay Orders API.
  */
 exports.createRazorpayOrder = functions.https.onCall(async (data, context) => {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'User must be authenticated to create a payment order.');
+  }
+  if (!RAZORPAY_KEY_SECRET) {
+    throw new functions.https.HttpsError('failed-precondition', 'Razorpay secret key is not configured on the server.');
+  }
+
   const amount = Number(data && data.amount); // in paise
   const currency = String(data && data.currency || 'INR').toUpperCase();
   const receipt = String(data && data.receipt || ('rcpt_' + Date.now().toString(36)));
@@ -440,10 +464,6 @@ exports.createRazorpayOrder = functions.https.onCall(async (data, context) => {
 
   if (!amount || amount <= 0) {
     throw new functions.https.HttpsError('invalid-argument', 'Valid amount in paise is required.');
-  }
-
-  if (!RAZORPAY_KEY_SECRET) {
-    throw new functions.https.HttpsError('failed-precondition', 'Payment gateway credentials are not configured on the server.');
   }
 
   const postData = JSON.stringify({
@@ -503,16 +523,16 @@ exports.createRazorpayOrder = functions.https.onCall(async (data, context) => {
  * Verifies authenticity of Razorpay payment signature using HMAC SHA256.
  */
 exports.verifyRazorpaySignature = functions.https.onCall(async (data, context) => {
+  if (!RAZORPAY_KEY_SECRET) {
+    throw new functions.https.HttpsError('failed-precondition', 'Razorpay secret key is not configured on the server.');
+  }
+
   const orderId = String(data && data.orderId || '').trim();
   const paymentId = String(data && data.paymentId || '').trim();
   const signature = String(data && data.signature || '').trim();
 
   if (!orderId || !paymentId || !signature) {
     throw new functions.https.HttpsError('invalid-argument', 'orderId, paymentId, and signature are required.');
-  }
-
-  if (!RAZORPAY_KEY_SECRET) {
-    throw new functions.https.HttpsError('failed-precondition', 'Payment verification credentials are not configured on the server.');
   }
 
   const expectedSignature = crypto

@@ -1401,17 +1401,29 @@
         var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
         var admin = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
         var isTutor = (u && u.role === 'Tutor');
-        var isAdmin = !!(admin && (admin.role === 'Admin' || admin.isAdmin));
+        var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
+        var isAdmin = (admin && admin.email && adminEmails.indexOf(admin.email.toLowerCase()) !== -1);
         if (!isTutor && !isAdmin) {
           window.location.replace('modivs-education.html#tutor-login');
         }
       } catch (e) { }
     })();
   </script>
+  <script src="modivs-chat.js"></script>
+  <script src="modivs-notifications.js"></script>
+  <script src="modivs-ids.js"></script>
+  <script src="modivs-lead-status.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js"></script>
+  <script src="firebase-config.js"></script>
+  <script src="firebase-sync.js"></script>
+  <script src="modivs-wallet.js"></script>
+  <script src="modivs-subjects.js"></script>
+  <script src="razorpay-config.js"></script>
+  <script src="firebase-chat.js"></script>
+  <script src="modivs-slug.js"></script>
+  <script src="modivs-blogs.js"></script>
   <link rel="stylesheet" href="modivs-menu.css">
   <link rel="stylesheet" href="modivs-mobile.css">
   <link rel="stylesheet" href="modivs-dashboard.css">
@@ -1422,6 +1434,7 @@
   <script>/* organization accounts have their own dashboard */
     (function () { try { var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'), o = JSON.parse(localStorage.getItem('modivs_org_profiles') || '{}'); if (u && u.email && o[String(u.email).toLowerCase()]) location.replace('modivs-org-dashboard.html') } catch (e) { } })();
   </script>
+  <script src="modivs-dashboard.js"></script>
   <header class="dh">
     <div class="dh-in">
       <a class="dh-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
@@ -3793,6 +3806,9 @@
       var acBtn = document.getElementById('dhAccountBtn'); if (acBtn) acBtn.addEventListener('click', function () { var m = document.getElementById('dhMenu'); if (m) m.hidden = true; if (window.mvOpenAccount) window.mvOpenAccount(); });
     })();
   </script>
+  <script src="modivs-avatars.js"></script>
+  <script src="modivs-pass-eye.js"></script>
+  <script src="modivs-social.js" defer></script>
 </body>
 
 </html>

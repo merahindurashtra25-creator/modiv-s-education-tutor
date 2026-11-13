@@ -1,6 +1,6 @@
 const fs = require('fs');
-const { execSync } = require('child_process');
 const path = require('path');
+const terser = require('terser');
 
 const allScripts = [
   'firebase-sync.js',
@@ -37,22 +37,79 @@ const allScripts = [
   'razorpay-config.js'
 ];
 
-console.log('Building production bundle modivs.min.js...');
-const validScripts = allScripts.filter(f => fs.existsSync(f));
+function syncEnvBridge() {
+  const envPath = path.join(__dirname, '.env');
+  const envVars = {};
+  if (fs.existsSync(envPath)) {
+    fs.readFileSync(envPath, 'utf8').split('\n').forEach(line => {
+      const m = line.match(/^\s*([\w.-]+)\s*=\s*(.*)?\s*$/);
+      if (m) {
+        let val = (m[2] || '').trim();
+        if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+          val = val.slice(1, -1);
+        }
+        envVars[m[1]] = val;
+      }
+    });
+  }
 
-const combined = validScripts.map(f => {
-  const code = fs.readFileSync(f, 'utf8');
-  return `/* --- ${f} --- */\n` + code + '\n;';
-}).join('\n');
+  // Only expose safe public variables from .env / process.env to client window.__ENV__
+  const publicEnv = {
+    FIREBASE_API_KEY: envVars.FIREBASE_API_KEY || process.env.FIREBASE_API_KEY || '',
+    FIREBASE_AUTH_DOMAIN: envVars.FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN || '',
+    FIREBASE_PROJECT_ID: envVars.FIREBASE_PROJECT_ID || process.env.FIREBASE_PROJECT_ID || '',
+    FIREBASE_STORAGE_BUCKET: envVars.FIREBASE_STORAGE_BUCKET || process.env.FIREBASE_STORAGE_BUCKET || '',
+    FIREBASE_MESSAGING_SENDER_ID: envVars.FIREBASE_MESSAGING_SENDER_ID || process.env.FIREBASE_MESSAGING_SENDER_ID || '',
+    FIREBASE_APP_ID: envVars.FIREBASE_APP_ID || process.env.FIREBASE_APP_ID || '',
+    FIREBASE_MEASUREMENT_ID: envVars.FIREBASE_MEASUREMENT_ID || process.env.FIREBASE_MEASUREMENT_ID || '',
+    GOOGLE_MAPS_API_KEY: envVars.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || '',
+    APPCHECK_RECAPTCHA_KEY: envVars.APPCHECK_RECAPTCHA_KEY || process.env.APPCHECK_RECAPTCHA_KEY || '',
+    MASTER_ADMIN_EMAILS: envVars.MASTER_ADMIN_EMAILS || process.env.MASTER_ADMIN_EMAILS || '',
+    RAZORPAY_KEY_ID: envVars.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || ''
+  };
 
-const tempCombined = path.join(__dirname, '.temp_bundle.js');
-fs.writeFileSync(tempCombined, combined, 'utf8');
-
-try {
-  execSync(`npx --yes terser "${tempCombined}" -c -m -o modivs.min.js`, { stdio: 'inherit' });
-  const minSize = fs.statSync('modivs.min.js').size;
-  console.log(`✓ modivs.min.js created successfully (${Math.round(minSize / 1024)} KB)`);
-} finally {
-  if (fs.existsSync(tempCombined)) fs.unlinkSync(tempCombined);
+  const content = `/**
+ * Modiv's Education - Client Environment Bridge (modivs-env.js)
+ * Exposes non-sensitive public client environment variables to browser scripts.
+ * Generated automatically from .env during build.
+ */
+(function(window){
+  'use strict';
+  window.__ENV__ = window.__ENV__ || ${JSON.stringify(publicEnv, null, 2)};
+})(typeof window !== 'undefined' ? window : globalThis);
+`;
+  fs.writeFileSync(path.join(__dirname, 'modivs-env.js'), content, 'utf8');
 }
+
+async function runBuild() {
+  syncEnvBridge();
+  console.log('Building production bundle modivs.min.js...');
+  const validScripts = allScripts.filter(f => fs.existsSync(f));
+
+  const codeMap = {};
+  for (const f of validScripts) {
+    codeMap[f] = fs.readFileSync(f, 'utf8');
+  }
+
+  const result = await terser.minify(codeMap, {
+    compress: {
+      drop_debugger: true,
+      passes: 2
+    },
+    mangle: false, // Keep global and function names intact for inter-script compatibility
+    sourceMap: false
+  });
+
+  if (result.error) throw result.error;
+
+  fs.writeFileSync('modivs.min.js', result.code, 'utf8');
+  const minSize = fs.statSync('modivs.min.js').size;
+  console.log(`✓ modivs.min.js generated successfully (${Math.round(minSize / 1024)} KB)`);
+  console.log('✓ Production build complete. Source maps disabled, debugger statements stripped.');
+}
+
+runBuild().catch(err => {
+  console.error('Build failed:', err);
+  process.exit(1);
+});
 

@@ -61,10 +61,13 @@ button,input,select,textarea{font-family:inherit}
 <link rel="stylesheet" href="modivs-footer.css">
 </head>
 <body class="dash">
+<script src="modivs-dashboard.js"></script>
+<script src="modivs-org.js"></script>
+<script src="modivs-subjects.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="modivs.min.js"></script>
+<script src="firebase-sync.js"></script>
 <script>
 /* Only organization accounts belong here. */
 (function(){
@@ -305,5 +308,6 @@ render();
 if(ModivsOrg.pull)ModivsOrg.pull(EMAIL).then(function(changed){if(changed&&!(state.view==='details'&&document.activeElement&&document.activeElement.closest&&document.activeElement.closest('#orgForm')))render()});
 })();
 </script>
+<script src="modivs-avatars.js"></script>
 </body>
 </html>

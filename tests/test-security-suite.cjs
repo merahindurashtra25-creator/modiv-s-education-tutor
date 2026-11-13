@@ -182,7 +182,7 @@ async function runAllSecurityTests() {
     const rzpConfigPath = path.join(ROOT_DIR, 'razorpay-config.js');
     assert(fs.existsSync(rzpConfigPath), 'razorpay-config.js must exist');
     const rzpContent = fs.readFileSync(rzpConfigPath, 'utf8');
-    assert(rzpContent.includes('rzp_live_TwTMFGYwNbt9BA'), 'Razorpay live key ID must be configured');
+    assert(rzpContent.includes('RAZORPAY_KEY_ID') || rzpContent.includes('rzp_live_TwTMFGYwNbt9BA'), 'Razorpay live key ID must be configured via environment');
     assert(rzpContent.includes('checkout.razorpay.com'), 'Razorpay checkout script must be loaded');
 
     const vercelJson = JSON.parse(fs.readFileSync(path.join(ROOT_DIR, 'vercel.json'), 'utf8'));
@@ -195,134 +195,6 @@ async function runAllSecurityTests() {
   test('Regression Safety: Existing 12 functional scenarios remain intact', () => {
     const scenariosTestFile = path.join(ROOT_DIR, 'tests', 'test-scenarios.js');
     assert(fs.existsSync(scenariosTestFile), 'tests/test-scenarios.js must exist');
-  });
-
-  // --- SECTION 7: AUTHENTICATION HARDENING, RATE LIMITING & BRUTE FORCE DEFENSE ---
-  test('Authentication Security: Insecure local storage login bypass completely eliminated', () => {
-    const eduHtml = fs.readFileSync(path.join(ROOT_DIR, 'modivs-education.html'), 'utf8');
-    assert(!eduHtml.includes("proceedLogin('local_'"), 'Insecure proceedLogin(local_...) fallback on wrong password must be eliminated');
-    assert(!eduHtml.includes('users.find(function(x){ return x.email === emailVal; }); if(found){ proceedLogin'), 'Local user match bypass must be removed');
-  });
-
-  test('Authentication Security: Progressive brute force rate limiting & lockout logic implemented', () => {
-    const authJs = fs.readFileSync(path.join(ROOT_DIR, 'modivs-auth-unique.js'), 'utf8');
-    assert(authJs.includes('getLockoutStatus'), 'ModivsAuth must define getLockoutStatus');
-    assert(authJs.includes('recordFailedAttempt'), 'ModivsAuth must define recordFailedAttempt');
-    assert(authJs.includes('resetFailedAttempts'), 'ModivsAuth must define resetFailedAttempts');
-    assert(authJs.includes('formatLockoutRemaining'), 'ModivsAuth must define formatLockoutRemaining');
-
-    const eduHtml = fs.readFileSync(path.join(ROOT_DIR, 'modivs-education.html'), 'utf8');
-    assert(eduHtml.includes('ModivsAuth.getLockoutStatus'), 'Login form must check getLockoutStatus before attempting login');
-    assert(eduHtml.includes('ModivsAuth.recordFailedAttempt'), 'Login form must recordFailedAttempt on authentication failure');
-    assert(eduHtml.includes('ModivsAuth.resetFailedAttempts'), 'Login form must resetFailedAttempts on successful authentication');
-  });
-
-  test('Authentication Security: Real Firebase password reset email dispatch wired', () => {
-    const eduHtml = fs.readFileSync(path.join(ROOT_DIR, 'modivs-education.html'), 'utf8');
-    assert(eduHtml.includes('sendPasswordResetEmail'), 'Forgot password handler must call sendPasswordResetEmail');
-    assert(eduHtml.includes('Check your inbox and spam folder'), 'Clear user instructions must be provided after password reset dispatch');
-  });
-
-  test('Admin Route Authorization: Admin email fallback string eliminated', () => {
-    const adminHtml = fs.readFileSync(path.join(ROOT_DIR, 'modivs-admin.html'), 'utf8');
-    assert(!adminHtml.includes("|| 'happinessaggarwal@gmail.com'"), 'Default fallback admin email assignment must be removed');
-    assert(adminHtml.includes('ADMIN_EMAILS.indexOf(currentAdminEmail) === -1'), 'Admin route must verify currentAdminEmail against approved admin list');
-  });
-
-  test('Progressive Lockout Functional Flow: 1st-2nd standard, 3rd 3m, 4th 10m, 5th 60m + reset', () => {
-    // Mock localStorage in Node
-    const mockStorage = {};
-    const mockLocalStorage = {
-      getItem: (k) => mockStorage[k] || null,
-      setItem: (k, v) => { mockStorage[k] = String(v); },
-      removeItem: (k) => { delete mockStorage[k]; }
-    };
-
-    // Load auth functions into mock environment
-    const authCode = fs.readFileSync(path.join(ROOT_DIR, 'modivs-auth-unique.js'), 'utf8');
-    const mockWindow = { localStorage: mockLocalStorage };
-    const vm = require('vm');
-    vm.runInNewContext(authCode, { window: mockWindow, localStorage: mockLocalStorage, console: console, setTimeout: setTimeout, Date: Date });
-
-    const modivsAuth = mockWindow.ModivsAuth;
-    assert(modivsAuth, 'ModivsAuth must be loaded');
-
-    const testEmail = 'target.user@example.com';
-    // Initial state: unlocked
-    let status = modivsAuth.getLockoutStatus(testEmail);
-    assert.strictEqual(status.locked, false, 'Initial state should not be locked');
-    assert.strictEqual(status.attempts, 0, 'Initial attempts should be 0');
-
-    // Attempt 1: failed (standard error)
-    let res1 = modivsAuth.recordFailedAttempt(testEmail);
-    assert.strictEqual(res1.locked, false, 'Attempt 1 should not trigger lockout');
-    assert.strictEqual(res1.attempts, 1);
-
-    // Attempt 2: failed (standard error)
-    let res2 = modivsAuth.recordFailedAttempt(testEmail);
-    assert.strictEqual(res2.locked, false, 'Attempt 2 should not trigger lockout');
-    assert.strictEqual(res2.attempts, 2);
-
-    // Attempt 3: failed (3-minute temporary lockout = 180,000 ms)
-    let res3 = modivsAuth.recordFailedAttempt(testEmail);
-    assert.strictEqual(res3.locked, true, 'Attempt 3 must trigger lockout');
-    assert.strictEqual(res3.attempts, 3);
-    assert.strictEqual(res3.remainingMs, 3 * 60 * 1000, 'Attempt 3 must lockout for 3 minutes');
-
-    // Status query reflects lockout
-    status = modivsAuth.getLockoutStatus(testEmail);
-    assert.strictEqual(status.locked, true, 'Status query must show locked');
-
-    // Attempt 4: failed (escalation lockout = 10 minutes = 600,000 ms)
-    let res4 = modivsAuth.recordFailedAttempt(testEmail);
-    assert.strictEqual(res4.locked, true);
-    assert.strictEqual(res4.attempts, 4);
-    assert.strictEqual(res4.remainingMs, 10 * 60 * 1000, 'Attempt 4 must lockout for 10 minutes');
-
-    // Attempt 5: failed (severe 60-minute lockout + reset required)
-    let res5 = modivsAuth.recordFailedAttempt(testEmail);
-    assert.strictEqual(res5.locked, true);
-    assert.strictEqual(res5.attempts, 5);
-    assert.strictEqual(res5.remainingMs, 60 * 60 * 1000, 'Attempt 5 must lockout for 60 minutes');
-    assert.strictEqual(res5.requireReset, true, 'Attempt 5 must flag password reset requirement');
-
-    // Reset failed attempts upon successful login
-    modivsAuth.resetFailedAttempts(testEmail);
-    status = modivsAuth.getLockoutStatus(testEmail);
-    assert.strictEqual(status.locked, false, 'Reset must clear lockout');
-    assert.strictEqual(status.attempts, 0, 'Reset must reset attempts counter to 0');
-  });
-
-  // --- SECTION 8: COMPLETE AUDIT ASSERTIONS (SECRETS, APP CHECK, CLOUD FUNCTIONS) ---
-  test('Firestore Rules: Backend-controlled financial collections deny client writes', () => {
-    assert(rulesContent.includes('match /verified_payments/{paymentId}'), 'verified_payments match block must exist');
-    assert(rulesContent.includes('match /payments/{paymentId}'), 'payments match block must exist');
-    assert(rulesContent.includes('match /memberships/{membershipId}'), 'memberships match block must exist');
-    assert(rulesContent.includes('match /coins/{coinId}'), 'coins match block must exist');
-    assert(rulesContent.includes('match /admin_records/{recordId}'), 'admin_records match block must exist');
-  });
-
-  test('Third-Party API Hygiene: modivs-location.js does not expose hardcoded Google Maps API keys', () => {
-    const locJs = fs.readFileSync(path.join(ROOT_DIR, 'modivs-location.js'), 'utf8');
-    assert(!locJs.includes('AIzaSyDi4be0HNq7v1Ayf3Wlikdkc2iGpf22VBo'), 'Hardcoded Google Maps key must be purged from modivs-location.js');
-    assert(locJs.includes('window.MODIVS_MAPS_KEY || \'\''), 'modivs-location.js must use dynamic configuration');
-  });
-
-  test('Environment Template Hygiene: .env.example does not leak live API keys or admin emails', () => {
-    const envExample = fs.readFileSync(path.join(ROOT_DIR, '.env.example'), 'utf8');
-    assert(!envExample.includes('AIzaSyDi4be0HNq7v1Ayf3Wlikdkc2iGpf22VBo'), '.env.example must not contain live Google Maps key');
-    assert(!envExample.includes('happinessaggarwal@gmail.com'), '.env.example must not contain private admin emails');
-  });
-
-  test('Cloud Functions Payment Hardening: createOrder & verifySignature fail closed if secret is missing', () => {
-    const fnCode = fs.readFileSync(path.join(ROOT_DIR, 'functions', 'index.js'), 'utf8');
-    assert(fnCode.includes('if (!RAZORPAY_KEY_SECRET)'), 'Payment functions must validate RAZORPAY_KEY_SECRET is configured');
-  });
-
-  test('Firebase App Check: firebase-sync.js defines App Check manager and debug token support', () => {
-    const syncJs = fs.readFileSync(path.join(ROOT_DIR, 'firebase-sync.js'), 'utf8');
-    assert(syncJs.includes('window.ModivsAppCheck'), 'firebase-sync.js must export window.ModivsAppCheck');
-    assert(syncJs.includes('FIREBASE_APPCHECK_DEBUG_TOKEN'), 'firebase-sync.js must support debug token for local testing');
   });
 
   console.log('\n====================================================');

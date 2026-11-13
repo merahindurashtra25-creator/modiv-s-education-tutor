@@ -2,6 +2,8 @@
 .env
 .env.*
 !.env.example
+functions/.env
+modivs-env.js
 *.pem
 *.key
 *serviceAccount*.json

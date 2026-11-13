@@ -217,7 +217,8 @@ footer .copy{margin-top:22px;padding-top:16px;border-top:1px solid #34406a;color
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="modivs.min.js"></script>
+<script src="firebase-sync.js"></script>
+<script src="modivs-shop-data.js"></script>
 <script>
 (function(){
 // =============================================================================================
@@ -377,5 +378,11 @@ save();renderGrid();
 window.ModivsShop.load().then(function(p){PRODUCTS=p;fillFilters();cart=cart.filter(byId);save();renderGrid()});
 })();
 </script>
+<script src="razorpay-config.js"></script>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<script src="modivs-menu.js" defer></script>
+<script src="modivs-social.js" defer></script>
+<script src="modivs-dropdown.js" defer></script>
 </body>
 </html>

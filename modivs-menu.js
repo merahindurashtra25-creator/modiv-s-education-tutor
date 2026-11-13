@@ -34,13 +34,14 @@
       if(h==='modivs-home.html')h='index.html';
       if(h&&h===file)a.setAttribute('aria-current','page');else a.removeAttribute('aria-current');
     });
+    var ADMIN_EMAILS=((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
     var isAdmin=false;
     var adminEmail='';
     try{
       var s=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');
-      if(s&&(s.role==='Admin'||s.isAdmin)){
+      if(s&&s.email&&ADMIN_EMAILS.indexOf(s.email.toLowerCase())!==-1){
         isAdmin=true;
-        adminEmail=s.email||'Admin';
+        adminEmail=s.email;
       }
     }catch(e){}
     if(isAdmin){

@@ -12,7 +12,7 @@
     rel="stylesheet">
   <script>
     (function () {
-      var ADMIN_EMAILS = ['aGFwcGluZXNzYWdnYXJ3YWxAZ21haWwuY29t', 'ZGl2eWFuc2hkaGltYW50ZWFtQGdtYWlsLmNvbQ==', 'bHV4bWFua3VtYXI2MjhAZ21haWwuY29t'].map(function(b){ try{ return atob(b); }catch(e){ return ''; } });
+      var ADMIN_EMAILS = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
       try {
         var s = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
         if (!s || !s.email || ADMIN_EMAILS.indexOf(String(s.email).toLowerCase()) === -1) {
@@ -1508,13 +1508,21 @@
       margin-left: 4px
     }
   </style>
+  <script src="modivs-avatars.js"></script>
+  <script src="modivs-docs.js"></script>
+  <script src="modivs-avail.js"></script>
+  <script src="modivs-import-data.js"></script>
+  <script src="modivs-chat.js"></script>
+  <script src="modivs-org.js"></script>
+  <script src="modivs-ids.js"></script>
+  <script src="modivs-lead-status.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js"></script>
+  <script src="firebase-config.js"></script>
   <script>
     (function () {
-      var ADMIN_EMAILS = ['aGFwcGluZXNzYWdnYXJ3YWxAZ21haWwuY29t', 'ZGl2eWFuc2hkaGltYW50ZWFtQGdtYWlsLmNvbQ==', 'bHV4bWFua3VtYXI2MjhAZ21haWwuY29t'].map(function(b){ try{ return atob(b); }catch(e){ return ''; } });
+      var ADMIN_EMAILS = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
       if (window.EducationBFirebase && window.EducationBFirebase.auth) {
         window.EducationBFirebase.auth.onAuthStateChanged(function (user) {
           if (!user) {
@@ -1537,6 +1545,15 @@
       }
     })();
   </script>
+  <script src="firebase-sync.js"></script>
+  <script src="modivs-wallet.js"></script>
+  <script src="firebase-chat.js"></script>
+  <script src="modivs-notifications.js"></script>
+  <script src="modivs-shop-data.js"></script>
+  <script src="modivs-stories.js"></script>
+  <script src="modivs-slug.js"></script>
+  <script src="modivs-blogs.js"></script>
+  <script src="modivs-reviews.js"></script>
   <link rel="stylesheet" href="modivs-menu.css">
   <link rel="stylesheet" href="modivs-mobile.css">
   <link rel="stylesheet" href="modivs-footer.css">
@@ -2570,12 +2587,7 @@
       var currentAdmin = (function () {
         try { return JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); } catch (e) { return null; }
       })();
-      var ADMIN_EMAILS = ['aGFwcGluZXNzYWdnYXJ3YWxAZ21haWwuY29t', 'ZGl2eWFuc2hkaGltYW50ZWFtQGdtYWlsLmNvbQ==', 'bHV4bWFua3VtYXI2MjhAZ21haWwuY29t'].map(function(b){ try{ return atob(b); }catch(e){ return ''; } });
-      var currentAdminEmail = (currentAdmin && currentAdmin.email) ? String(currentAdmin.email).toLowerCase().trim() : '';
-      if (!currentAdminEmail || ADMIN_EMAILS.indexOf(currentAdminEmail) === -1) {
-        window.location.replace('modivs-education.html#login');
-        return;
-      }
+      var currentAdminEmail = (currentAdmin && currentAdmin.email) || '';
 
       // Update admin header info pill
       try {
@@ -4764,6 +4776,9 @@
       <p class="fv-copy">© 2026 Modiv’s Education. All rights reserved.</p>
     </div>
   </footer>
+  <script src="modivs-menu.js" defer></script>
+  <script src="modivs-session-ui.js" defer></script>
+  <script src="modivs-social.js" defer></script>
 </body>
 
 </html>

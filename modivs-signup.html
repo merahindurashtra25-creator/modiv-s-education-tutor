@@ -82,7 +82,8 @@ body{background:linear-gradient(135deg,#f7faf9 0%,#eaf3f1 55%,#fdf6e7 100%);over
  try{
   var u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null');
   var a=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');
-  if((a&&(a.role==='Admin'||a.isAdmin))||(u&&u.role==='Admin'))location.replace('modivs-admin.html');
+  var adminEmails=((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
+  if(a&&a.email&&adminEmails.indexOf(a.email.toLowerCase())!==-1)location.replace('modivs-admin.html');
   else if(u&&u.role==='Admin')location.replace('modivs-admin.html');
   else if(u&&u.role==='Tutor')location.replace((window.ModivsOrg&&ModivsOrg.isOrg(u.email))?'modivs-org-dashboard.html':'modivs-tutor-dashboard.html');
   else if(u&&u.role==='Student / Parent')location.replace('modivs-student-dashboard.html');

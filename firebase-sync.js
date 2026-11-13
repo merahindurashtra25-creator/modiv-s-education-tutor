@@ -1,52 +1,6 @@
 (function () {
   'use strict';
 
-  // Integrated Firebase & App Check Initialization
-  var firebaseConfig = (typeof window !== 'undefined' && window.__MODIVS_CONFIG__) || {
-    apiKey: 'AIzaSyB2I8iFDkcUZJBDBwkALHNeoIR3a9k-fcY',
-    authDomain: 'modivs-education.firebaseapp.com',
-    projectId: 'modivs-education',
-    storageBucket: 'modivs-education.firebasestorage.app',
-    messagingSenderId: '821328108086',
-    appId: '1:821328108086:web:852c06bc88fb39d0961697',
-    measurementId: 'G-H4JWBNLBC5'
-  };
-  if (typeof window !== 'undefined' && window.firebase) {
-    if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
-    var appCheck = null;
-    function initAppCheck(customSiteKey) {
-      var siteKey = customSiteKey || window.MODIVS_RECAPTCHA_KEY || window.APPCHECK_RECAPTCHA_KEY;
-      var isLocal = typeof location !== 'undefined' && (location.hostname === 'localhost' || location.hostname === '127.0.0.1');
-      if (isLocal && typeof self !== 'undefined' && self.FIREBASE_APPCHECK_DEBUG_TOKEN === undefined) {
-        self.FIREBASE_APPCHECK_DEBUG_TOKEN = true;
-      }
-      if (typeof firebase.appCheck === 'function' && siteKey && firebase.appCheck.ReCaptchaV3Provider) {
-        try {
-          var ac = firebase.appCheck();
-          ac.activate(new firebase.appCheck.ReCaptchaV3Provider(siteKey), isLocal ? false : true);
-          if (window.EducationBFirebase) window.EducationBFirebase.appCheck = ac;
-          return ac;
-        } catch (appCheckErr) {
-          console.warn('Firebase App Check notice:', appCheckErr && appCheckErr.message);
-        }
-      }
-      return null;
-    }
-    appCheck = initAppCheck();
-    if (!window.EducationBFirebase) {
-      window.EducationBFirebase = {
-        auth: firebase.auth(),
-        db: firebase.firestore(),
-        storage: (typeof firebase.storage === 'function') ? firebase.storage() : null,
-        appCheck: appCheck,
-        config: firebaseConfig
-      };
-    }
-    if (!window.ModivsAppCheck) {
-      window.ModivsAppCheck = { init: initAppCheck };
-    }
-  }
-
   function db() {
     if (window.EducationBFirebase && window.EducationBFirebase.db) return window.EducationBFirebase.db;
     if (window.firebase && firebase.apps && firebase.apps.length) return firebase.firestore();
@@ -77,7 +31,8 @@
   function isAdminSession() {
     try {
       var as = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
-      if (as && (as.role === 'Admin' || as.isAdmin)) return true;
+      var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
+      if (as && as.email && adminEmails.indexOf(String(as.email).toLowerCase()) > -1) return true;
     } catch (e) { }
     return false;
   }
@@ -270,7 +225,9 @@
     }
 
     function startWithAuth(user) {
-      var isAdmin = isAdminSession();
+      var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
+      var userEmail = user && user.email ? String(user.email).toLowerCase() : '';
+      var isAdmin = isAdminSession() || (user && !user.isAnonymous && adminEmails.indexOf(userEmail) > -1);
       if (isAdmin) {
         attach(firestore.collection('tutors'));
       } else {

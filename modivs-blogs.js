@@ -187,7 +187,8 @@
   function session() {
     try {
       var a = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
-      if (a && (a.role === 'Admin' || a.isAdmin)) return { name: a.name || 'Admin', role: 'Admin', admin: true };
+      var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
+      if (a && a.email && adminEmails.indexOf(a.email.toLowerCase()) !== -1) return { name: a.name || 'Admin', role: 'Admin', admin: true };
     } catch (e) { }
     try {
       var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');

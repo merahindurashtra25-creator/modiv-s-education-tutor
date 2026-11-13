@@ -38,9 +38,6 @@
     }
   ],
   "routes": [
-    { "src": "/(firebase-sync|firebase-chat|razorpay-config)\\.js", "dest": "/" },
-    { "src": "/modivs-(?!min\\.js)[^/]*\\.js", "dest": "/" },
-    { "src": "/tests/.*", "dest": "/" },
     { "src": "/admin", "dest": "/modivs-admin.html" },
     { "src": "/login", "dest": "/modivs-education.html" },
     { "src": "/tutor-dashboard", "dest": "/modivs-tutor-dashboard.html" },

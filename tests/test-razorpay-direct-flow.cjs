@@ -108,6 +108,8 @@ globalThis.window = {
   addEventListener: () => { }
 };
 globalThis.document = window.document;
+process.env.RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_TwTMFGYwNbt9BA';
+globalThis.window.__ENV__ = { RAZORPAY_KEY_ID: process.env.RAZORPAY_KEY_ID };
 
 // Load razorpay-config.js
 const ModivsRazorpay = require('../razorpay-config.js');

@@ -150,17 +150,18 @@ dialog::backdrop{background:rgba(26,32,53,.55)}
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="modivs.min.js"></script>
+<script src="firebase-config.js"></script>
 <script>
 (function(){
 'use strict';
 var $=function(i){return document.getElementById(i)};
+var ADMINS=((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
 var CHUNK=600000,MAXB=4*1024*1024;
 var LABEL={note:'Notes',file:'File',quiz:'Quiz'},CTA={note:'Read notes',file:'Open free file',quiz:'Take quiz'};
 var items=[],type='all',state='loading',admin=false,cur=null;
 function esc(s){return String(s==null?'':s).replace(/[&<>"']/g,function(c){return{'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function safeUrl(u){return /^https?:\/\//i.test(u||'')?u:''}
-try{var s=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');admin=!!(s&&(s.role==='Admin'||s.isAdmin))}catch(e){}
+try{var s=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');admin=!!(s&&s.email&&ADMINS.indexOf(String(s.email).toLowerCase())>-1)}catch(e){}
 function fb(){return new Promise(function(res,rej){var n=0;(function c(){var f=window.EducationBFirebase;if(f&&f.db)return res(f);if(++n>100)return rej(new Error('Could not connect. Please check your internet connection.'));setTimeout(c,100)})()})}
 function fmt(d){return d?d.toLocaleDateString('en-IN',{day:'numeric',month:'short',year:'numeric'}):''}
 
@@ -330,5 +331,9 @@ function remove(id){
 load();
 })();
 </script>
+<script src="modivs-avatars.js"></script>
+<script src="modivs-session-ui.js" defer></script>
+<script src="modivs-menu.js" defer></script>
+<script src="modivs-dropdown.js" defer></script>
 </body>
 </html>

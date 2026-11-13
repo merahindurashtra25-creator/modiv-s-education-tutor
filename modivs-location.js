@@ -8,7 +8,8 @@
 (function(window){
   'use strict';
 
-  var GOOGLE_MAPS_API_KEY = window.MODIVS_MAPS_KEY || '';
+  var env = (typeof window !== 'undefined' && window.__ENV__) || (typeof process !== 'undefined' && process.env) || {};
+  var GOOGLE_MAPS_API_KEY = env.GOOGLE_MAPS_API_KEY || window.MODIVS_MAPS_KEY || '';
   var mapsScriptLoading = false;
   var mapsScriptLoaded = false;
   var mapsLoadCallbacks = [];
@@ -17,10 +18,6 @@
     if(window.google && window.google.maps && window.google.maps.places){
       mapsScriptLoaded = true;
       if(callback) callback();
-      return;
-    }
-    if(!GOOGLE_MAPS_API_KEY){
-      if(callback) callback(new Error('Google Maps API key not configured. Using native geolocation fallback.'));
       return;
     }
     if(callback) mapsLoadCallbacks.push(callback);

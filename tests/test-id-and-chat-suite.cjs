@@ -283,7 +283,7 @@ async function runTests() {
   // --- Scenario 12: Student Dashboard tutor cards render tutor's permanent display ID chip ---
   {
     const stuDash = fs.readFileSync(path.join(__dirname, '..', 'modivs-student-dashboard.html'), 'utf8');
-    assert(stuDash.includes('t.displayId || t.tutId'));
+    assert(stuDash.includes('displayId: String(t.displayId || t.tutId') || stuDash.includes('displayId: t.displayId || t.tutId'));
     assert(stuDash.includes('renderTutorCard'));
     assert(stuDash.includes('tid'));
     console.log("[PASS] Scenario 12: Student Dashboard tutor cards render tutor's permanent display ID chip");
@@ -399,12 +399,12 @@ async function runTests() {
     const tutorsCode = fs.readFileSync(path.join(__dirname, '..', 'modivs-tutors.html'), 'utf8');
     const idsCode = fs.readFileSync(path.join(__dirname, '..', 'modivs-ids.js'), 'utf8');
 
-    assert(tutorDashCode.includes('bestTid') && tutorDashCode.includes('tutor.displayId || tutor.tutId'));
+    assert(tutorDashCode.includes('bestTid = String(tutor.displayId || tutor.tutId') || tutorDashCode.includes('bestTid = tutor.displayId || tutor.tutId'));
     assert(tutorDashCode.includes('applyLiveTid'));
     assert(tutorDashCode.includes('modivs_id_channel'));
     assert(idsCode.includes('syncLocalState'));
     assert(idsCode.includes('checkRemote'));
-    assert(tutorsCode.includes('paint(d.key, d.id)') || tutorsCode.includes('paint(d.key,d.id)'));
+    assert(tutorsCode.includes('paint(d.key,d.id)'));
     console.log('[PASS] Scenario 23: Admin changing Tutor ID updates tutor profile, dashboard, and cards with live sync');
     passed++;
   }

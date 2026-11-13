@@ -1,14 +1,15 @@
 /**
  * Modiv's Education - Official Razorpay Live Payment Gateway Integration
  * 
- * Live API Key ID: rzp_live_TwTMFGYwNbt9BA
+ * Configured via environment variable RAZORPAY_KEY_ID
  * Supports: UPI (Google Pay, PhonePe, Paytm, BHIM, QR), Debit & Credit Cards, Net Banking, Wallets.
  */
 (function(window){
   'use strict';
 
+  var env = (typeof window !== 'undefined' && window.__ENV__) || (typeof process !== 'undefined' && process.env) || {};
   var RAZORPAY_CONFIG = {
-    keyId: 'rzp_live_TwTMFGYwNbt9BA',
+    keyId: env.RAZORPAY_KEY_ID || '',
     name: "Modiv's Education",
     currency: 'INR',
     themeColor: '#1A2035',
@@ -88,7 +89,7 @@
           var effectiveOrderId = officialOrderId || opts.orderId || undefined;
 
           var rzpOptions = {
-            key: RAZORPAY_CONFIG.keyId,
+            key: RAZORPAY_CONFIG.keyId || (typeof window !== 'undefined' && window.__ENV__ && window.__ENV__.RAZORPAY_KEY_ID) || (typeof process !== 'undefined' && process.env.RAZORPAY_KEY_ID) || '',
             amount: paise,
             currency: opts.currency || RAZORPAY_CONFIG.currency,
             name: opts.name || RAZORPAY_CONFIG.name,

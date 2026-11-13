@@ -14,7 +14,8 @@
     var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
     var admin = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
     var isStudent = (u && u.role === 'Student / Parent');
-    var isAdmin = !!(admin && (admin.role === 'Admin' || admin.isAdmin));
+    var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
+    var isAdmin = (admin && admin.email && adminEmails.indexOf(admin.email.toLowerCase()) !== -1);
     if(!isStudent && !isAdmin){
       window.location.replace('modivs-education.html#student-login');
     }
@@ -91,16 +92,25 @@ dialog h2{margin:0 0 4px}
 @media(max-width:960px){.app{grid-template-columns:1fr}.side{position:static;max-height:none}.two{grid-template-columns:1fr}}
 @media(max-width:760px){.tutor-top-nav{display:none}}
 </style>
+<script src="modivs-import-data.js"></script>
+<script src="modivs-ids.js"></script>
+<script src="modivs-lead-status.js"></script>
+<script src="modivs-chat.js"></script>
+<script src="modivs-notifications.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="modivs.min.js"></script>
+<script src="firebase-config.js"></script>
+<script src="firebase-sync.js"></script>
+<script src="firebase-chat.js"></script>
+<script src="modivs-avatars.js"></script>
 <link rel="stylesheet" href="modivs-menu.css">
 <link rel="stylesheet" href="modivs-mobile.css">
 <link rel="stylesheet" href="modivs-dashboard.css">
 <link rel="stylesheet" href="modivs-footer.css">
 </head>
 <body class="dash">
+<script src="modivs-dashboard.js"></script>
 <header class="dh">
  <div class="dh-in">
   <a class="dh-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
@@ -1018,5 +1028,6 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
   </div>
   <div class="fv-bottom"><div class="fv-legal" role="navigation" aria-label="Legal and contact links"><a href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact Us</a><a href="modivs-sitemap.html">Sitemap</a></div><p class="fv-copy">© 2026 Modiv’s Education. All rights reserved.</p></div>
 </footer>
+<script src="modivs-social.js" defer></script>
 </body>
 </html>

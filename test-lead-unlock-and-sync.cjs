@@ -156,9 +156,7 @@ async function run() {
 
   // 1. Authenticate with admin account
   console.log('\n[1/7] Authenticating with admin credentials...');
-  const testAdminEmail = process.env.ADMIN_EMAIL || Buffer.from('ZGl2eWFuc2hkaGltYW50ZWFtQGdtYWlsLmNvbQ==', 'base64').toString('utf8');
-  const testAdminPass = process.env.ADMIN_PASSWORD || Buffer.from('TW9kaXZzQWRtaW4yMDI2IQ==', 'base64').toString('utf8');
-  const adminToken = await login(testAdminEmail, testAdminPass);
+  const adminToken = await login('divyanshdhimanteam@gmail.com', 'ModivsAdmin2026!');
   console.log('✓ Admin authenticated successfully.');
 
   // 2. Create a test student lead in Firestore
@@ -188,7 +186,7 @@ async function run() {
   console.log('✓ Lead created in Firestore collection "leads".');
 
   // 3. Tutor A Unlocks Lead
-  const tutorAEmail = testAdminEmail; // using existing authenticated tutor
+  const tutorAEmail = 'divyanshdhimanteam@gmail.com'; // using existing authenticated tutor
   const unlockDocIdA = tutorAEmail.replace(/[\/\\#?]/g, '_') + '__' + testLeadId;
   const relDocIdA = 'unlock__' + unlockDocIdA;
   console.log(`\n[3/7] Tutor A unlocks lead -> Writing unlock record to relationships [${relDocIdA}]...`);

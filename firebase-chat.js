@@ -13,9 +13,8 @@
     var em = String(userEmail || '').toLowerCase();
     if(!em) return;
 
-    var a = null;
-    try { a = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); } catch(e){}
-    var isAdmin = !!(a && (a.role === 'Admin' || a.isAdmin));
+    var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
+    var isAdmin = adminEmails.indexOf(em) !== -1;
 
     // For admins fetch all; for regular users fetch by all three participant email fields.
     var queries = isAdmin

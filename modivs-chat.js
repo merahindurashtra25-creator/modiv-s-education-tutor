@@ -42,10 +42,19 @@
     return u;
   }
 
+  var ADMIN_EMAILS = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return e.trim().toLowerCase(); });
   function isAdmin() {
     var session = read('modivs_admin_session', null);
     var u = user();
-    return !!((session && (session.role === 'Admin' || session.isAdmin)) || (u && u.role === 'Admin'));
+    var fbU = fbAuth() && fbAuth().currentUser;
+    var sMail = session && emailOf(session.email);
+    var uMail = u && emailOf(u.email);
+    var fbMail = fbU && emailOf(fbU.email);
+    return !!(
+      (sMail && ADMIN_EMAILS.indexOf(sMail) !== -1) ||
+      (uMail && ADMIN_EMAILS.indexOf(uMail) !== -1) ||
+      (fbMail && ADMIN_EMAILS.indexOf(fbMail) !== -1)
+    );
   }
 
   // =========================================================================
