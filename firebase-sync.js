@@ -2,19 +2,14 @@
   'use strict';
 
   // Integrated Firebase & App Check Initialization
-  function _d(s) {
-    if (typeof atob === 'function') return atob(s);
-    if (typeof Buffer !== 'undefined') return Buffer.from(s, 'base64').toString('utf8');
-    return s;
-  }
   var firebaseConfig = (typeof window !== 'undefined' && window.__MODIVS_CONFIG__) || {
-    apiKey: _d('QUl6YVN5QjJJOGlGRGtjVVpKQkRCd2tBTEhOZW9JUjNhOWstZmNZ'),
-    authDomain: _d('bW9kaXZzLWVkdWNhdGlvbi5maXJlYmFzZWFwcC5jb20='),
-    projectId: _d('bW9kaXZzLWVkdWNhdGlvbg=='),
-    storageBucket: _d('bW9kaXZzLWVkdWNhdGlvbi5maXJlYmFzZXN0b3JhZ2UuYXBw'),
-    messagingSenderId: _d('ODIxMzI4MTA4MDg2'),
-    appId: _d('MTo4MjEzMjgxMDgwODY6d2ViOjg1MmMwNmJjODhmYjM5ZDA5NjE2OTc='),
-    measurementId: _d('Ry1INEpXQk5MQkM1')
+    apiKey: 'AIzaSyB2I8iFDkcUZJBDBwkALHNeoIR3a9k-fcY',
+    authDomain: 'modivs-education.firebaseapp.com',
+    projectId: 'modivs-education',
+    storageBucket: 'modivs-education.firebasestorage.app',
+    messagingSenderId: '821328108086',
+    appId: '1:821328108086:web:852c06bc88fb39d0961697',
+    measurementId: 'G-H4JWBNLBC5'
   };
   if (typeof window !== 'undefined' && window.firebase) {
     if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);

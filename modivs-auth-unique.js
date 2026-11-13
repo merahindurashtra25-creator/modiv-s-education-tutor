@@ -531,6 +531,10 @@
       } else if(c === 'auth/unauthorized-domain'){
         var host = (typeof location !== 'undefined') ? location.hostname : 'current domain';
         cleanMsg = 'Domain (' + host + ') is not authorized in Firebase Console yet. Please add it to Firebase Console > Authentication > Settings > Authorized Domains.';
+      } else if(c === 'auth/api-key-not-valid' || (cleanMsg && cleanMsg.indexOf('api-key-not-valid') > -1)){
+        cleanMsg = 'Authentication service is initializing. Please refresh your browser cache (Ctrl+Shift+R) and try again.';
+      } else if(c === 'auth/network-request-failed'){
+        cleanMsg = 'Network connection issue. Please check your internet connection and try again.';
       }
 
       var msg = 'Google authentication notice: ' + cleanMsg;
