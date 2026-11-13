@@ -2,7 +2,6 @@
   "name": "modivs-education",
   "version": "1.0.0",
   "scripts": {
-    "build": "node -e \"console.log('Production assets ready.')\"",
     "bundle": "node build.js",
     "test": "node tests/test-scenarios.js && node tests/test-security-suite.cjs && node tests/test-id-and-chat-suite.cjs",
     "test:security": "node tests/test-security-suite.cjs",
