@@ -1,0 +1,34 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>Modiv's Education</title>
+  <script src="modivs.min.js?v=mwoy8cj5-2oklo"></script>
+  <script>
+    (function () {
+      var path = window.location.pathname;
+      var clean = decodeURIComponent(path).replace(/^\/+|\/+$/g, '');
+      var base = path.substring(0, path.lastIndexOf('/') + 1);
+      var segment = clean.split('/').pop() || '';
+      var search = window.location.search || '';
+      var hash = window.location.hash || '';
+
+      var match = null;
+      if (window.ModivsSlug && typeof window.ModivsSlug.resolve === 'function') {
+        match = window.ModivsSlug.resolve(segment) || window.ModivsSlug.resolve(clean);
+      }
+
+      if (match && match.file) {
+        window.location.replace(base + match.file + search + hash);
+      } else {
+        var fallbackFile = segment.toLowerCase().replace(/\s+/g, '-') + '.html';
+        if (fallbackFile === '.html') fallbackFile = 'index.html';
+        window.location.replace(base + fallbackFile + search + hash);
+      }
+    })();
+  </script>
+</head>
+<body>
+  <p>Loading Modiv's Education... <a href="index.html">Click here if not redirected</a>.</p>
+</body>
+</html>

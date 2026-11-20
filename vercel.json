@@ -1,0 +1,233 @@
+{
+  "buildCommand": "node build.js",
+  "outputDirectory": "public",
+  "cleanUrls": true,
+  "trailingSlash": false,
+  "headers": [
+    {
+      "source": "/(.*)",
+      "headers": [
+        {
+          "key": "X-Content-Type-Options",
+          "value": "nosniff"
+        },
+        {
+          "key": "X-Frame-Options",
+          "value": "SAMEORIGIN"
+        },
+        {
+          "key": "Strict-Transport-Security",
+          "value": "max-age=63072000; includeSubDomains; preload"
+        },
+        {
+          "key": "Referrer-Policy",
+          "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Cross-Origin-Opener-Policy",
+          "value": "same-origin-allow-popups"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), payment=(self \"https://checkout.razorpay.com\"), usb=(), geolocation=(self)"
+        },
+        {
+          "key": "Content-Security-Policy",
+          "value": "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasestorage.app https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://maps.googleapis.com https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com https://*.firebaseapp.com https://accounts.google.com https://*.google.com https://apis.google.com; img-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.gstatic.com https://maps.googleapis.com https://*.firebaseapp.com https://checkout.razorpay.com https://*.razorpay.com https://apis.google.com https://accounts.google.com https://*.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https: blob: data: https://api.razorpay.com https://checkout.razorpay.com https://*.firebaseapp.com https://accounts.google.com https://*.google.com;"
+        }
+      ]
+    },
+    {
+      "source": "/version.json",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate, max-age=0"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.html)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/:path((?!.*\\.[a-zA-Z0-9]+$).*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(?:js|css))",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=0, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(?:js|css))",
+      "has": [
+        {
+          "type": "query",
+          "key": "v"
+        }
+      ],
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/(.*\\.(?:png|jpg|jpeg|gif|svg|ico|webp|woff2|woff|ttf))",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, must-revalidate"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    { "source": "/home", "destination": "/index.html" },
+    { "source": "/admin", "destination": "/modivs-admin.html" },
+    { "source": "/admindashboard", "destination": "/modivs-admin.html" },
+    { "source": "/admin-dashboard", "destination": "/modivs-admin.html" },
+    { "source": "/login", "destination": "/modivs-education.html" },
+    { "source": "/signin", "destination": "/modivs-education.html" },
+    { "source": "/sign-in", "destination": "/modivs-education.html" },
+    { "source": "/education", "destination": "/modivs-education.html" },
+    { "source": "/signup", "destination": "/modivs-signup.html" },
+    { "source": "/sign-up", "destination": "/modivs-signup.html" },
+    { "source": "/user-signup", "destination": "/modivs-user-signup.html" },
+    { "source": "/usersignup", "destination": "/modivs-user-signup.html" },
+    { "source": "/tutor-dashboard", "destination": "/modivs-tutor-dashboard.html" },
+    { "source": "/tutordashboard", "destination": "/modivs-tutor-dashboard.html" },
+    { "source": "/student-dashboard", "destination": "/modivs-student-dashboard.html" },
+    { "source": "/studentdashboard", "destination": "/modivs-student-dashboard.html" },
+    { "source": "/org-dashboard", "destination": "/modivs-org-dashboard.html" },
+    { "source": "/orgdashboard", "destination": "/modivs-org-dashboard.html" },
+    { "source": "/organization-dashboard", "destination": "/modivs-org-dashboard.html" },
+    { "source": "/organizationdashboard", "destination": "/modivs-org-dashboard.html" },
+    { "source": "/tutor-profile", "destination": "/modivs-tutor-profile.html" },
+    { "source": "/tutorprofile", "destination": "/modivs-tutor-profile.html" },
+    { "source": "/tutor-registration", "destination": "/modivs-tutor-profile.html" },
+    { "source": "/tutorregistration", "destination": "/modivs-tutor-profile.html" },
+    { "source": "/tutor-edit-profile", "destination": "/modivs-tutor-edit-profile.html" },
+    { "source": "/tutoreditprofile", "destination": "/modivs-tutor-edit-profile.html" },
+    { "source": "/edit-tutor-profile", "destination": "/modivs-tutor-edit-profile.html" },
+    { "source": "/edittutorprofile", "destination": "/modivs-tutor-edit-profile.html" },
+    { "source": "/student-registration", "destination": "/modivs-student-registration.html" },
+    { "source": "/studentregistration", "destination": "/modivs-student-registration.html" },
+    { "source": "/student-parent-registration", "destination": "/modivs-student-registration.html" },
+    { "source": "/studentparentregistration", "destination": "/modivs-student-registration.html" },
+    { "source": "/student-signup", "destination": "/modivs-student-signup.html" },
+    { "source": "/studentsignup", "destination": "/modivs-student-signup.html" },
+    { "source": "/book-a-demo-class", "destination": "/modivs-student-signup.html" },
+    { "source": "/bookademoclass", "destination": "/modivs-student-signup.html" },
+    { "source": "/demo-class", "destination": "/modivs-student-signup.html" },
+    { "source": "/democlass", "destination": "/modivs-student-signup.html" },
+    { "source": "/tutors", "destination": "/modivs-tutors.html" },
+    { "source": "/browse-tutors", "destination": "/modivs-tutors.html" },
+    { "source": "/browsetutors", "destination": "/modivs-tutors.html" },
+    { "source": "/meet-our-verified-tutors", "destination": "/modivs-tutors.html" },
+    { "source": "/modivs tutors chandigarh", "destination": "/modivs-tutors-chandigarh.html" },
+    { "source": "/modivs%20tutors%20chandigarh", "destination": "/modivs-tutors-chandigarh.html" },
+    { "source": "/modivs-tutors-chandigarh", "destination": "/modivs-tutors-chandigarh.html" },
+    { "source": "/tutors-in-chandigarh", "destination": "/modivs-tutors-chandigarh.html" },
+    { "source": "/tutorsinchandigarh", "destination": "/modivs-tutors-chandigarh.html" },
+    { "source": "/chandigarh-tutors", "destination": "/modivs-tutors-chandigarh.html" },
+    { "source": "/chandigarhtutors", "destination": "/modivs-tutors-chandigarh.html" },
+    { "source": "/home-tuition-near-me-in-chandigarh", "destination": "/modivs-tutors-chandigarh.html" },
+    { "source": "/hometuitionchandigarh", "destination": "/modivs-tutors-chandigarh.html" },
+    { "source": "/modivs tutors mohali", "destination": "/modivs-tutors-mohali.html" },
+    { "source": "/modivs%20tutors%20mohali", "destination": "/modivs-tutors-mohali.html" },
+    { "source": "/modivs-tutors-mohali", "destination": "/modivs-tutors-mohali.html" },
+    { "source": "/tutors-in-mohali", "destination": "/modivs-tutors-mohali.html" },
+    { "source": "/tutorsinmohali", "destination": "/modivs-tutors-mohali.html" },
+    { "source": "/mohali-tutors", "destination": "/modivs-tutors-mohali.html" },
+    { "source": "/mohalitutors", "destination": "/modivs-tutors-mohali.html" },
+    { "source": "/home-tuition-near-me-in-mohali", "destination": "/modivs-tutors-mohali.html" },
+    { "source": "/hometuitionmohali", "destination": "/modivs-tutors-mohali.html" },
+    { "source": "/modivs tutors panchkula", "destination": "/modivs-tutors-panchkula.html" },
+    { "source": "/modivs%20tutors%20panchkula", "destination": "/modivs-tutors-panchkula.html" },
+    { "source": "/modivs-tutors-panchkula", "destination": "/modivs-tutors-panchkula.html" },
+    { "source": "/tutors-in-panchkula", "destination": "/modivs-tutors-panchkula.html" },
+    { "source": "/tutorsinpanchkula", "destination": "/modivs-tutors-panchkula.html" },
+    { "source": "/panchkula-tutors", "destination": "/modivs-tutors-panchkula.html" },
+    { "source": "/panchkulatutors", "destination": "/modivs-tutors-panchkula.html" },
+    { "source": "/home-tuition-near-me-in-panchkula", "destination": "/modivs-tutors-panchkula.html" },
+    { "source": "/hometuitionpanchkula", "destination": "/modivs-tutors-panchkula.html" },
+    { "source": "/find-a-tutor", "destination": "/modivs-find-tutor.html" },
+    { "source": "/findtutor", "destination": "/modivs-find-tutor.html" },
+    { "source": "/find-tutor", "destination": "/modivs-find-tutor.html" },
+    { "source": "/findatutor", "destination": "/modivs-find-tutor.html" },
+    { "source": "/find-a-modivian-tutor", "destination": "/modivs-find-tutor.html" },
+    { "source": "/findamodiviantutor", "destination": "/modivs-find-tutor.html" },
+    { "source": "/our-vision", "destination": "/modivs-social-vision.html" },
+    { "source": "/ourvision", "destination": "/modivs-social-vision.html" },
+    { "source": "/social-vision", "destination": "/modivs-social-vision.html" },
+    { "source": "/become-a-modivian-tutor", "destination": "/modivs-become-tutor.html" },
+    { "source": "/becometutor", "destination": "/modivs-become-tutor.html" },
+    { "source": "/become-a-tutor", "destination": "/modivs-become-tutor.html" },
+    { "source": "/becomeatutor", "destination": "/modivs-become-tutor.html" },
+    { "source": "/become-tutor", "destination": "/modivs-become-tutor.html" },
+    { "source": "/becomeamodiviantutor", "destination": "/modivs-become-tutor.html" },
+    { "source": "/active-leads", "destination": "/modivs-active-leads.html" },
+    { "source": "/activeleads", "destination": "/modivs-active-leads.html" },
+    { "source": "/leads", "destination": "/modivs-active-leads.html" },
+    { "source": "/post-requirement", "destination": "/modivs-post-requirement.html" },
+    { "source": "/postrequirement", "destination": "/modivs-post-requirement.html" },
+    { "source": "/post-a-requirement", "destination": "/modivs-post-requirement.html" },
+    { "source": "/postarequirement", "destination": "/modivs-post-requirement.html" },
+    { "source": "/shop", "destination": "/modivs-shop.html" },
+    { "source": "/store", "destination": "/modivs-shop.html" },
+    { "source": "/blogs", "destination": "/modivs-blogs.html" },
+    { "source": "/blog", "destination": "/modivs-blogs.html" },
+    { "source": "/students-corner", "destination": "/modivs-students-corner.html" },
+    { "source": "/studentscorner", "destination": "/modivs-students-corner.html" },
+    { "source": "/free-notes-files-quizzes", "destination": "/modivs-students-corner.html" },
+    { "source": "/freenotesfilesquizzes", "destination": "/modivs-students-corner.html" },
+    { "source": "/videos", "destination": "/modivs-videos.html" },
+    { "source": "/guide", "destination": "/modivs-guide.html" },
+    { "source": "/how-to-use", "destination": "/modivs-guide.html" },
+    { "source": "/howtouse", "destination": "/modivs-guide.html" },
+    { "source": "/student-tutor-guide", "destination": "/modivs-guide.html" },
+    { "source": "/studenttutorguide", "destination": "/modivs-guide.html" },
+    { "source": "/contact", "destination": "/modivs-contact.html" },
+    { "source": "/contact-us", "destination": "/modivs-contact.html" },
+    { "source": "/contactus", "destination": "/modivs-contact.html" },
+    { "source": "/privacy-policy", "destination": "/modivs-privacy-policy.html" },
+    { "source": "/privacypolicy", "destination": "/modivs-privacy-policy.html" },
+    { "source": "/privacy", "destination": "/modivs-privacy-policy.html" },
+    { "source": "/terms", "destination": "/modivs-terms.html" },
+    { "source": "/terms-and-conditions", "destination": "/modivs-terms.html" },
+    { "source": "/termsandconditions", "destination": "/modivs-terms.html" },
+    { "source": "/refund-policy", "destination": "/modivs-refund-policy.html" },
+    { "source": "/refundpolicy", "destination": "/modivs-refund-policy.html" },
+    { "source": "/refund-and-cancellation-policy", "destination": "/modivs-refund-policy.html" },
+    { "source": "/refundandcancellationpolicy", "destination": "/modivs-refund-policy.html" },
+    { "source": "/refund", "destination": "/modivs-refund-policy.html" },
+    { "source": "/sitemap", "destination": "/modivs-sitemap.html" },
+    { "source": "/site-map", "destination": "/modivs-sitemap.html" }
+  ]
+}
