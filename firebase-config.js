@@ -13,7 +13,8 @@
     storageBucket: "modivs-education.firebasestorage.app",
     messagingSenderId: "821328108086",
     appId: "1:821328108086:web:852c06bc88fb39d0961697",
-    measurementId: "G-H4JWBNLBC5"
+    measurementId: "G-H4JWBNLBC5",
+    vapidKey: "BNaz3v2Ga9IfiZXftbOpKu3oGWnNx0rRb7g3yJs84xVaJ9x2EWqy5yleIcVPWIFhQecnzjBFAx6jn91jBnA5TEs"
   };
 
   function isBadKey(k) {
@@ -50,6 +51,13 @@
       }
       if (!window.EducationBFirebase.db && typeof window.firebase.firestore === 'function') {
         window.EducationBFirebase.db = window.firebase.firestore();
+      }
+      if (!window.EducationBFirebase.messaging && typeof window.firebase.messaging === 'function') {
+        try {
+          if (typeof window.firebase.messaging.isSupported !== 'function' || window.firebase.messaging.isSupported()) {
+            window.EducationBFirebase.messaging = window.firebase.messaging();
+          }
+        } catch(e){}
       }
       if (typeof window.firebase.analytics === 'function') {
         window.EducationBAnalytics = window.firebase.analytics();

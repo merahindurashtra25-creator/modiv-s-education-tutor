@@ -99,6 +99,7 @@ function syncEnvBridge() {
     FIREBASE_MESSAGING_SENDER_ID: envVars.FIREBASE_MESSAGING_SENDER_ID || process.env.FIREBASE_MESSAGING_SENDER_ID || '821328108086',
     FIREBASE_APP_ID: envVars.FIREBASE_APP_ID || process.env.FIREBASE_APP_ID || '1:821328108086:web:852c06bc88fb39d0961697',
     FIREBASE_MEASUREMENT_ID: envVars.FIREBASE_MEASUREMENT_ID || process.env.FIREBASE_MEASUREMENT_ID || 'G-H4JWBNLBC5',
+    FIREBASE_VAPID_KEY: envVars.FIREBASE_VAPID_KEY || process.env.FIREBASE_VAPID_KEY || 'BNaz3v2Ga9IfiZXftbOpKu3oGWnNx0rRb7g3yJs84xVaJ9x2EWqy5yleIcVPWIFhQecnzjBFAx6jn91jBnA5TEs',
     GOOGLE_MAPS_API_KEY: envVars.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || '',
     RAZORPAY_KEY_ID: envVars.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || 'rzp_live_U1yN0O1Ni2s8MB',
     MASTER_ADMIN_EMAILS: envVars.MASTER_ADMIN_EMAILS || process.env.MASTER_ADMIN_EMAILS || DEFAULT_ADMIN_EMAILS
@@ -121,7 +122,8 @@ function syncEnvBridge() {
     storageBucket: "${publicEnv.FIREBASE_STORAGE_BUCKET}",
     messagingSenderId: "${publicEnv.FIREBASE_MESSAGING_SENDER_ID}",
     appId: "${publicEnv.FIREBASE_APP_ID}",
-    measurementId: "${publicEnv.FIREBASE_MEASUREMENT_ID}"
+    measurementId: "${publicEnv.FIREBASE_MEASUREMENT_ID}",
+    vapidKey: "${publicEnv.FIREBASE_VAPID_KEY}"
   };
   function isBad(k) { return !k || typeof k !== 'string' || !k.trim() || k.indexOf('your_') === 0; }
   if (!window.__MODIVS_CONFIG__ || isBad(window.__MODIVS_CONFIG__.apiKey)) {
@@ -140,10 +142,10 @@ function copyToPublic() {
   const publicDir = path.join(__dirname, 'public');
   fs.mkdirSync(publicDir, { recursive: true });
 
-  // Clean up any raw individual JS files from previous builds so source files are never exposed
+  // Clean up any raw individual JS files from previous builds so source files are never exposed (keep service worker)
   const existingFiles = fs.readdirSync(publicDir);
   for (const f of existingFiles) {
-    if (f.endsWith('.js') && f !== 'modivs.min.js') {
+    if (f.endsWith('.js') && f !== 'modivs.min.js' && f !== 'firebase-messaging-sw.js') {
       try { fs.unlinkSync(path.join(publicDir, f)); } catch (e) { }
     }
   }
@@ -226,6 +228,12 @@ function copyToPublic() {
   // Copy bundled minified script to public
   if (fs.existsSync('modivs.min.js')) {
     fs.copyFileSync('modivs.min.js', path.join(publicDir, 'modivs.min.js'));
+    count++;
+  }
+
+  // Copy Firebase Web Push service worker
+  if (fs.existsSync('firebase-messaging-sw.js')) {
+    fs.copyFileSync('firebase-messaging-sw.js', path.join(publicDir, 'firebase-messaging-sw.js'));
     count++;
   }
 

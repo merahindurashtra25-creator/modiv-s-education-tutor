@@ -31,6 +31,80 @@
   var firestoreUnsubs = {};
   var memoryStore = {}; // email -> array of notification objects
 
+  var VAPID_KEY = (typeof window !== 'undefined' && window.__ENV__ && window.__ENV__.FIREBASE_VAPID_KEY)
+    ? window.__ENV__.FIREBASE_VAPID_KEY
+    : 'BNaz3v2Ga9IfiZXftbOpKu3oGWnNx0rRb7g3yJs84xVaJ9x2EWqy5yleIcVPWIFhQecnzjBFAx6jn91jBnA5TEs';
+
+  function saveTokenToUser(em, token) {
+    var db = getDb();
+    if (!db || !em || !token) return;
+    try {
+      var userRef = db.collection('users').doc(cleanEmail(em));
+      var update = {
+        lastFcmToken: token,
+        updatedAt: (typeof firebase !== 'undefined' && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+      };
+      if (typeof firebase !== 'undefined' && firebase.firestore && firebase.firestore.FieldValue.arrayUnion) {
+        update.fcmTokens = firebase.firestore.FieldValue.arrayUnion(token);
+      }
+      userRef.set(update, { merge: true }).catch(function(){});
+    } catch(e){}
+  }
+
+  function requestPushPermission(userEmail) {
+    var em = cleanEmail(userEmail) || currentUserEmail();
+    if (typeof window === 'undefined' || !('Notification' in window)) {
+      return Promise.reject(new Error('Push notifications are not supported in this browser.'));
+    }
+
+    return Notification.requestPermission().then(function(permission) {
+      if (permission !== 'granted') {
+        throw new Error('Notification permission was not granted.');
+      }
+
+      if ('serviceWorker' in navigator) {
+        return navigator.serviceWorker.register('/firebase-messaging-sw.js').then(function(reg) {
+          var fb = window.EducationBFirebase;
+          var messaging = (fb && fb.messaging) || (window.firebase && typeof window.firebase.messaging === 'function' ? window.firebase.messaging() : null);
+
+          if (messaging && typeof messaging.getToken === 'function') {
+            return messaging.getToken({ vapidKey: VAPID_KEY, serviceWorkerRegistration: reg }).then(function(token) {
+              if (token) {
+                try { localStorage.setItem('modivs_fcm_token', token); } catch(e){}
+                if (em) saveTokenToUser(em, token);
+              }
+              return token;
+            }).catch(function(err){
+              console.warn('FCM getToken note:', err && err.message);
+              return 'granted_native';
+            });
+          }
+          return 'granted_native';
+        });
+      }
+      return 'granted';
+    });
+  }
+
+  function showLocalPush(title, desc, actionUrl) {
+    if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') return;
+    try {
+      if (document.hidden) {
+        var n = new Notification(title || "Modiv’s Education Alert", {
+          body: desc || 'You have a new update.',
+          icon: '/favicon.png',
+          badge: '/favicon.png',
+          data: { url: actionUrl || '/' }
+        });
+        n.onclick = function() {
+          window.focus();
+          if (actionUrl && actionUrl !== '/') window.location.href = actionUrl;
+          n.close();
+        };
+      }
+    } catch(e){}
+  }
+
   function cleanEmail(em) {
     return String(em || '').trim().toLowerCase();
   }
@@ -228,6 +302,7 @@
     }
     saveLocalNotifications(recipientEmail, localList);
     emitChange();
+    showLocalPush(notifTitle, notifDesc, '/tutor-dashboard');
 
     if (!firestore) return Promise.resolve(updatedDoc);
 
@@ -355,6 +430,7 @@
     localList.unshift(doc);
     saveLocalNotifications(recipientEmail, localList);
     emitChange();
+    showLocalPush(notifTitle, notifDesc, '/tutor-dashboard');
 
     var firestore = getDb();
     if (!firestore) return Promise.resolve(doc);
@@ -603,7 +679,12 @@
 
       var unreadCount = list.filter(function(n) { return !n.read; }).length;
 
+      var pushBanner = (typeof window !== 'undefined' && 'Notification' in window && Notification.permission !== 'granted')
+        ? '<div style="background:#FEF7EA;border:1.5px solid #eadfc9;border-radius:10px;padding:9px 14px;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;gap:8px;font-size:0.85rem;"><span>🔔 <b>Turn on Push Notifications</b> to get instant alerts for new leads &amp; messages.</span><button type="button" id="btnEnablePush" class="btn y" style="padding:4px 10px;font-size:0.8rem;border-radius:6px;cursor:pointer;">Enable</button></div>'
+        : '';
+
       var headerHtml =
+        pushBanner +
         '<div class="mn-header">' +
         '<div class="mn-filters">' +
         '<button type="button" class="mn-chip ' + (filter === 'all' ? 'active' : '') + '" data-filter="all">All (' + list.length + ')</button>' +
@@ -650,6 +731,17 @@
       container.innerHTML = '<div class="mn-center">' + headerHtml + listHtml + '</div>';
 
       // Event handlers
+      var enablePushBtn = container.querySelector('#btnEnablePush');
+      if (enablePushBtn) {
+        enablePushBtn.onclick = function() {
+          requestPushPermission(em).then(function(){
+            renderView();
+          }).catch(function(err){
+            alert(err && err.message ? err.message : 'Permission not granted');
+          });
+        };
+      }
+
       var markAllBtn = container.querySelector('#mnMarkAllBtn');
       if (markAllBtn) {
         markAllBtn.onclick = function() {
@@ -726,6 +818,9 @@
   }
 
   return {
+    VAPID_KEY: VAPID_KEY,
+    requestPushPermission: requestPushPermission,
+    showLocalPush: showLocalPush,
     notifications: getLocalNotifications,
     getLocalNotifications: getLocalNotifications,
     unreadTotal: unreadTotal,
