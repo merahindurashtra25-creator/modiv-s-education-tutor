@@ -5,7 +5,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js?v=mwq1leln-oycmj"></script>
+  <script src="modivs.min.js?v=mwq1vbt6-slrjc"></script>
   
   <script>(function () { try { var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); if (u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1)) { var h = document.documentElement; h.style.visibility = 'hidden'; window.__mvShow = function () { h.style.visibility = '' }; setTimeout(window.__mvShow, 2500) } } catch (e) { } })();</script>
   <link rel="icon" type="image/png" href="favicon.png">
@@ -1484,7 +1484,7 @@
           window.location.replace('modivs-education.html#tutor-login');
           return;
         }
-        } else if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
           // BFCache and multi-tab session protection
           window.addEventListener('pageshow', function (e) {
             if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
@@ -1514,10 +1514,10 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwq1leln-oycmj">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwq1leln-oycmj">
-  <link rel="stylesheet" href="modivs-dashboard.css?v=mwq1leln-oycmj">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwq1leln-oycmj">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwq1vbt6-slrjc">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwq1vbt6-slrjc">
+  <link rel="stylesheet" href="modivs-dashboard.css?v=mwq1vbt6-slrjc">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwq1vbt6-slrjc">
 </head>
 
 <body class="dash">

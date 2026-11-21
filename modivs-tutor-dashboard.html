@@ -1484,7 +1484,7 @@
           window.location.replace('modivs-education.html#tutor-login');
           return;
         }
-        } else if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+        if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
           // BFCache and multi-tab session protection
           window.addEventListener('pageshow', function (e) {
             if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {

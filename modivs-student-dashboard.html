@@ -34,7 +34,7 @@
       window.location.replace('modivs-education.html#student-login');
       return;
     }
-    } else if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
+    if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
       // BFCache and multi-tab session protection
       window.addEventListener('pageshow', function (e) {
         if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
@@ -757,17 +757,19 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
   function renderTutorCard(t, isFav){
     var tid = String(t.displayId || t.tutId || (window.ModivsIds && t.email ? ModivsIds.peek('tut', t.email) : '')).replace(/^TUT(?=\d)/, 'MOD-TUT');
     var idChip = tid ? '<span class="ver" style="background:#0e7c66;color:#fff;margin-right:6px;">' + tid + '</span>' : '';
-    return '<div class="lead" id="tutor-'+t.id+'">' +
+    var safeId = String(t.id || '').replace(/"/g, '&quot;');
+    var safeName = String(t.name || 'Tutor').replace(/"/g, '&quot;');
+    return '<div class="lead" id="tutor-'+safeId+'">' +
       '<div>' +
-        '<h3>' + idChip + t.name + ' <span class="ver">Verified</span> <span style="font-size:0.85rem;color:var(--ok);font-weight:700;">' + (t.rating > 0 ? '★ ' + Number(t.rating).toFixed(1) + ' (' + t.reviewCount + (t.reviewCount === 1 ? ' review)' : ' reviews)') : '☆ No ratings & reviews yet') + '</span>' + tutorBadgeHtml(t) + '</h3>' +
-        '<p class="meta">' + t.qual + ' · ' + t.exp + ' · ' + t.city + '</p>' +
-        '<div class="tags">' + t.subs.map(function(s){return '<span>'+s+'</span>'}).join('') + t.modes.map(function(m){return '<span style="border-color:var(--ok);color:var(--ok);">'+m+'</span>'}).join('') + '</div>' +
-        '<p style="margin:6px 0 0;font-size:0.9rem;"><strong>Fee:</strong> ₹' + t.fee + ' / hour</p>' +
+        '<h3>' + idChip + safeName + ' <span class="ver">Verified</span> <span style="font-size:0.85rem;color:var(--ok);font-weight:700;">' + (t.rating > 0 ? '★ ' + Number(t.rating).toFixed(1) + ' (' + t.reviewCount + (t.reviewCount === 1 ? ' review)' : ' reviews)') : '☆ No ratings & reviews yet') + '</span>' + tutorBadgeHtml(t) + '</h3>' +
+        '<p class="meta">' + (t.qual || '') + ' · ' + (t.exp || '') + ' · ' + (t.city || '') + '</p>' +
+        '<div class="tags">' + (t.subs||[]).map(function(s){return '<span>'+s+'</span>'}).join('') + (t.modes||[]).map(function(m){return '<span style="border-color:var(--ok);color:var(--ok);">'+m+'</span>'}).join('') + '</div>' +
+        '<p style="margin:6px 0 0;font-size:0.9rem;"><strong>Fee:</strong> ₹' + (t.fee || '') + ' / hour</p>' +
       '</div>' +
       '<div class="acts">' +
-        '<button class="b y" type="button" onclick="openDemoModal(\''+t.id+'\', \''+t.name.replace(/'/g, "\\'")+'\')">Book Free Demo</button>' +
-        '<button class="b o" type="button" onclick="openStudentChat(\''+t.id+'\', \''+t.name.replace(/'/g, "\\'")+'\')">Chat</button>' +
-        '<button class="b o" type="button" onclick="toggleFav(\''+t.id+'\')">' + (isFav ? '★ Saved' : '☆ Save') + '</button>' +
+        '<button class="b y" type="button" data-demo-id="' + safeId + '" data-demo-name="' + safeName + '">Book Free Demo</button>' +
+        '<button class="b o" type="button" data-chat-id="' + safeId + '" data-chat-name="' + safeName + '">Chat</button>' +
+        '<button class="b o" type="button" data-fav-id="' + safeId + '">' + (isFav ? '★ Saved' : '☆ Save') + '</button>' +
       '</div>' +
     '</div>';
   }
@@ -983,6 +985,28 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
   document.getElementById('enquiriesList').addEventListener('click', function(e){
     var b = e.target.closest && e.target.closest('[data-chat-id]');
     if(b) window.openStudentChat(b.getAttribute('data-chat-id'), b.getAttribute('data-chat-name'));
+  });
+
+  ['tutorsList', 'favouritesList'].forEach(function(listId) {
+    var el = document.getElementById(listId);
+    if (!el) return;
+    el.addEventListener('click', function(e) {
+      var dBtn = e.target.closest && e.target.closest('[data-demo-id]');
+      if (dBtn) {
+        window.openDemoModal(dBtn.getAttribute('data-demo-id'), dBtn.getAttribute('data-demo-name'));
+        return;
+      }
+      var cBtn = e.target.closest && e.target.closest('[data-chat-id]');
+      if (cBtn) {
+        window.openStudentChat(cBtn.getAttribute('data-chat-id'), cBtn.getAttribute('data-chat-name'));
+        return;
+      }
+      var fBtn = e.target.closest && e.target.closest('[data-fav-id]');
+      if (fBtn) {
+        window.toggleFav(fBtn.getAttribute('data-fav-id'));
+        return;
+      }
+    });
   });
 
   window.toggleFav = function(id){
