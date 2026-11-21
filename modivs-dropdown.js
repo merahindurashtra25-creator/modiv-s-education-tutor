@@ -10,6 +10,7 @@
    'header nav .mv-dd-b .car{display:inline-block;font-size:.7rem;transition:transform .2s}',
    'header nav .mv-dd:hover .car,header nav .mv-dd.open .car{transform:rotate(180deg)}',
    'header nav ul.mv-dd-m{display:none !important;position:absolute;top:calc(100% + 4px);left:0;min-width:180px;flex-direction:column;gap:2px;margin:0;padding:8px;list-style:none;background:var(--mv-cream,var(--cream,#FEF7EA));border:1px solid var(--mv-line,var(--line,#eadfc9));border-radius:12px;box-shadow:0 12px 28px rgba(26,32,53,.14);z-index:120}',
+   'header nav ul.mv-dd-m::before{content:"";position:absolute;left:0;right:0;top:-8px;height:8px}',
    'header nav .mv-dd:hover > ul.mv-dd-m,header nav .mv-dd.open > ul.mv-dd-m{display:flex !important}',
    'header nav ul.mv-dd-m li{margin:0;padding:0}',
    'header nav ul.mv-dd-m a{padding:9px 12px}',
@@ -19,10 +20,14 @@
   function init(){
    [].forEach.call(document.querySelectorAll('header nav .mv-dd'),function(li){
     var b=li.querySelector('.mv-dd-b'),m=li.querySelector('.mv-dd-m');if(!b||!m)return;
-    function set(o){li.classList.toggle('open',o);b.setAttribute('aria-expanded',o?'true':'false')}
-    b.addEventListener('click',function(e){e.stopPropagation();set(!li.classList.contains('open'))});
-    li.addEventListener('mouseenter',function(){set(true)});
-    li.addEventListener('mouseleave',function(){set(false)});
+    var canHover=window.matchMedia&&window.matchMedia('(hover:hover) and (pointer:fine) and (min-width:1025px)'),t=null;
+    function hov(){return !!(canHover&&canHover.matches)}
+    function set(o){clearTimeout(t);li.classList.toggle('open',o);b.setAttribute('aria-expanded',o?'true':'false')}
+    /* desktop: click keeps the menu open (a click right after the hover-open used to close it again); touch/mobile: click toggles */
+    b.addEventListener('click',function(e){e.stopPropagation();set(hov()?true:!li.classList.contains('open'))});
+    /* desktop hover with a short close delay so the pointer can reach the items */
+    li.addEventListener('mouseenter',function(){if(hov())set(true)});
+    li.addEventListener('mouseleave',function(){if(!hov())return;clearTimeout(t);t=setTimeout(function(){set(false)},250)});
     document.addEventListener('click',function(e){if(!li.contains(e.target))set(false)});
     m.addEventListener('click',function(e){if(e.target.closest&&e.target.closest('a'))set(false)});
     window.addEventListener('resize',function(){set(false)});

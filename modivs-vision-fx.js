@@ -6,7 +6,7 @@
  var bar=document.createElement('div');bar.className='sv-prog';bar.setAttribute('aria-hidden','true');document.body.appendChild(bar);
  var tick=false;function upd(){tick=false;var h=document.documentElement.scrollHeight-innerHeight;bar.style.setProperty('--p',h>0?Math.min(1,scrollY/h):0)}
  addEventListener('scroll',function(){if(!tick){tick=true;requestAnimationFrame(upd)}},{passive:true});upd();
- var groups=['.sv-why>div','.sv-bridge','.sv-strip li','.sv-head','.sv-grid4 li','.sv-beyond .ph','.sv-beyond>div>*:not(.sv-ck)','.sv-ck li','.sv-subj li','.sv-faq .in','.sv-faq details','.sv-reg .sv-w>div:first-child>*','.sv-form'];
+ var groups=['.sv-why>div','.sv-bridge','.sv-strip li','.sv-head','.sv-grid4 li','.sv-beyond .ph','.sv-beyond>div>*:not(.sv-ck)','.sv-ck li','.sv-subj li','.sv-gg li','.sv-earn-t>*','.sv-earn-s li','.sv-faq .in','.sv-faq details','.sv-reg .sv-w>div:first-child>*','.sv-form'];
  var io=new IntersectionObserver(function(es){es.forEach(function(e){
   if(!e.isIntersecting)return;var el=e.target;io.unobserve(el);
   el.classList.remove('sv-hide');

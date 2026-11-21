@@ -65,7 +65,7 @@
 
 /* beyond */
 .sv-beyond{display:grid;grid-template-columns:minmax(0,540px) minmax(0,624px);justify-content:space-between;align-items:center;gap:48px 76px;padding-top:80px;padding-bottom:80px}
-.sv-beyond .ph{min-height:360px;aspect-ratio:540/500;border-radius:12px 12px 100px 12px;background:linear-gradient(135deg,#E6E9DC,#E4DDC3);position:relative}
+.sv-beyond .ph{min-height:300px;aspect-ratio:16/10;border-radius:12px 12px 40px 12px;background:linear-gradient(135deg,#E6E9DC,#E4DDC3);position:relative}
 .sv-beyond h2{font-size:clamp(26px,2.5vw,36px);font-weight:800;line-height:1.25;letter-spacing:-.03em;margin:21px 0}
 .sv-beyond>div>p{font-size:15px;color:var(--sv-grey);margin-bottom:21px;max-width:580px}
 .sv-ck{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:18px}
@@ -124,7 +124,7 @@
 @media (max-width:1000px){
  .sv-hero,.sv-why,.sv-beyond,.sv-faq,.sv-reg .sv-w{grid-template-columns:1fr;gap:40px}
  .sv-hero>*,.sv-why>*,.sv-beyond>*,.sv-faq>*,.sv-reg .sv-w>*{min-width:0}
- .sv-beyond .ph{min-height:0;width:100%;max-width:100%;aspect-ratio:540/500}
+ .sv-beyond .ph{min-height:0;width:100%;max-width:100%;aspect-ratio:16/10}
  .sv-orbit,.sv-glow{display:none}
  .sv-photo{max-width:600px;aspect-ratio:auto;min-height:440px}
  .sv-seal{right:12px}
@@ -206,3 +206,42 @@
 @keyframes svspin{to{transform:rotate(360deg)}}
 @keyframes svripple{to{transform:scale(1.07);opacity:.2}}
 @keyframes svopen{from{opacity:0;transform:translateY(-6px)}}
+
+/* Group tuitions */
+.sv-group{padding-top:72px;padding-bottom:72px}
+.sv-glead{font-size:16px;color:var(--sv-grey);max-width:760px;margin:0 0 28px}
+.sv-gg{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.sv-gg li{padding:24px 20px;background:var(--sv-cream);border:1px solid var(--sv-line);border-radius:10px;display:flex;flex-direction:column;gap:10px;transition:transform .25s ease,box-shadow .25s ease}
+.sv-gg li:hover{transform:translateY(-5px);box-shadow:0 12px 26px rgba(26,32,53,.09)}
+.sv-gg i{width:44px;height:44px;border-radius:12px;background:#F6E8BA;color:var(--sv-navy);display:flex;align-items:center;justify-content:center}
+.sv-gg h3{font-size:18px;font-weight:700;line-height:1.4}
+.sv-gg p{font-size:14px;color:var(--sv-grey)}
+.sv-gnote{margin:28px 0 0;font-size:14px;font-weight:500;color:var(--sv-navy);display:flex;flex-wrap:wrap;gap:8px 16px;align-items:center}
+@media (max-width:1000px){.sv-gg{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.sv-gg{grid-template-columns:1fr}.sv-group{padding-top:48px;padding-bottom:48px}}
+
+.sv-beyond .ph>img{object-position:50% center}
+
+/* Start earning */
+.sv-earn{background:var(--sv-navy);color:var(--sv-bg);padding:72px 0}
+.sv-earn .sv-w{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:48px 64px;align-items:center}
+.sv-earn .sv-k{color:var(--sv-gold)}
+.sv-earn h2{font-size:clamp(28px,3vw,42px);font-weight:800;line-height:1.2;letter-spacing:-.03em;margin:14px 0 18px}
+.sv-earn-t>p{font-size:16px;color:#D9D6CC;max-width:520px;margin-bottom:24px}
+.sv-earn .sv-acts{display:flex;flex-wrap:wrap;gap:16px;align-items:center}
+.sv-earn-n{font-size:12px;color:var(--sv-gold);margin-top:14px}
+.sv-earn-s{list-style:none;margin:0;padding:0;display:grid;grid-template-columns:1fr 1fr;gap:14px;counter-reset:e}
+.sv-earn-s li{counter-increment:e;padding:20px 18px;background:rgba(254,247,234,.07);border:1px solid rgba(235,185,46,.35);border-radius:12px;display:flex;flex-direction:column;gap:6px;transition:transform .25s ease,background .25s ease}
+.sv-earn-s li:hover{transform:translateY(-4px);background:rgba(254,247,234,.12)}
+.sv-earn-s li:before{content:"0" counter(e);font-size:13px;font-weight:700;color:var(--sv-gold)}
+.sv-earn-s b{font-size:17px;line-height:1.4}
+.sv-earn-s span{font-size:13px;color:#D9D6CC}
+@media (max-width:1000px){.sv-earn .sv-w{grid-template-columns:1fr}}
+@media (max-width:560px){.sv-earn{padding:48px 0}.sv-earn-s{grid-template-columns:1fr}}
+
+.sv .sv-group .sv-head{margin-bottom:18px}
+.sv .sv-glead{margin:0 0 28px}
+.sv .sv-gnote{margin:32px 0 0}
+.sv .sv-earn-t>p{margin:0 0 24px}
+.sv .sv-earn-t>.sv-earn-n{margin:14px 0 0}
+.sv .sv-earn .sv-btn{color:var(--sv-navy);font-weight:700}

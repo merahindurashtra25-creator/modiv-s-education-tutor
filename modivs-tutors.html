@@ -465,6 +465,7 @@ details.tf-fg{min-width:0;max-width:100%}
     <li><a href="/shop">Shop</a></li>
     <li><a href="/our-vision">Our Vision</a></li>
     <li class="mv-dd"><button type="button" class="mv-dd-b" aria-haspopup="true" aria-expanded="false">More <span class="car" aria-hidden="true">▾</span></button><ul class="mv-dd-m">
+     <li><a href="/tuition">Tuition</a></li>
      <li><a href="/guide">Guide</a></li>
      <li><a href="/students-corner">Students’ Corner</a></li>
      <li><a href="/videos">From Modiv’s Education</a></li>
@@ -1517,5 +1518,19 @@ if(window.initLocationAutocomplete){
 <script src="modivs-menu.js" defer></script>
 <script src="modivs-social.js" defer></script>
 <script src="modivs-dropdown.js" defer></script>
+<!-- Chatbot: Botpress webchat bubble -->
+<script>
+(function(){
+  var H="https://vdk-viber-runtime-prod.bot.botpress.host",B="01393fab-9092-4db5-a3d0-c336c1cb9fec";
+  var l=document.createElement("link");l.rel="stylesheet";l.href=H+"/edge/webchat.css";document.head.appendChild(l);
+  var s=document.createElement("script");s.src=H+"/edge/webchat.js";s.async=true;
+  s.onload=function(){
+    fetch(H+"/edge/bots/"+B+"/config").then(function(r){return r.json()}).then(function(c){
+      window.VdkEdgeWebchat.mount(Object.assign({},c.webchat,{mode:"bubble",baseUrl:H,botId:B}));
+    }).catch(function(){});
+  };
+  document.body.appendChild(s);
+})();
+</script>
 </body>
 </html>

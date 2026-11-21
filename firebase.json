@@ -87,6 +87,14 @@
         "destination": "/modivs-social-vision.html"
       },
       {
+        "source": "/tuition",
+        "destination": "/modivs-tuition.html"
+      },
+      {
+        "source": "/tuitions",
+        "destination": "/modivs-tuition.html"
+      },
+      {
         "source": "/blogs",
         "destination": "/modivs-blogs.html"
       },
