@@ -379,13 +379,11 @@
 
   /**
    * Synchronizes page links:
-   * - In local/file environment: resolves clean slugs to actual physical .html files so every click works.
-   * - In production: converts .html links to clean pretty URLs.
+   * Ensures that internal links resolve cleanly to their actual HTML files.
    */
   function cleanLinks(rootEl){
     if(typeof document === 'undefined') return;
     var scope = rootEl || document;
-    var isLocal = isLocalEnvironment();
     try {
       var links = scope.querySelectorAll('a[href]');
       for(var i = 0; i < links.length; i++){
@@ -401,27 +399,13 @@
         var pathPart = qParts[0];
         var query = qParts.length > 1 ? '?' + qParts[1] : '';
         
-        if(isLocal){
-          // Local/file mode: map to working local .html files
-          var targetReal = resolveToRealFile(pathPart);
-          if(targetReal){
-            var tParts = targetReal.split('#');
-            var tFile = tParts[0];
-            var tHash = hash || (tParts.length > 1 ? '#' + tParts[1] : '');
-            a.setAttribute('href', tFile + query + tHash);
-          }
-        } else {
-          // Production mode: map .html links to clean slugs
-          if(!pathPart.endsWith('.html') && !pathPart.endsWith('.htm') && pathPart.indexOf('modiv') === -1) continue;
-          var targetPage = resolve(pathPart);
-          if(!targetPage && pathPart.indexOf('modiv') !== -1){
-            var stripped = pathPart.replace(/^\/+/, '').replace(/^modivs?-?/i, '').replace(/\.html?$/i, '');
-            targetPage = resolve(stripped);
-          }
-          if(targetPage && targetPage.slug){
-            var newSlug = (targetPage.slug === 'home' || targetPage.file === 'index.html' || targetPage.slug === '') ? '' : targetPage.slug;
-            a.setAttribute('href', (newSlug ? ('/' + newSlug) : '/') + query + hash);
-          }
+        // If link starts with a slash or clean slug, resolve to real working file
+        var targetReal = resolveToRealFile(pathPart);
+        if(targetReal){
+          var tParts = targetReal.split('#');
+          var tFile = tParts[0];
+          var tHash = hash || (tParts.length > 1 ? '#' + tParts[1] : '');
+          a.setAttribute('href', tFile + query + tHash);
         }
       }
     } catch(e){}

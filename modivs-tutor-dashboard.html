@@ -1527,7 +1527,7 @@
   <script src="modivs-dashboard.js"></script>
   <header class="dh">
     <div class="dh-in">
-      <a class="dh-brand" href="/"><img src="logo.png" alt="Modiv’s Education"></a>
+      <a class="dh-brand" href="index.html"><img src="logo.png" alt="Modiv’s Education"></a>
       <div class="dh-sp"></div>
       <a class="dh-issue" id="dhIssue"
         href="https://wa.me/919896930443?text=Hi%20Modiv%27s%20Education%20team%2C%0A%0AI%27d%20like%20to%20report%20an%20issue%20on%20the%20Tutor%20Dashboard%3A%0A%0A%28Please%20describe%20the%20problem%20here%29" target="_blank" rel="noopener noreferrer"
@@ -1554,19 +1554,19 @@
         </button>
         <div class="dh-menu" id="dhMenu" hidden>
           <div class="dh-who"><b id="dhWho">Tutor</b><span class="ver" id="dhRole">Tutor</span></div>
-          <a href="/"><svg class="ic" aria-hidden="true">
+          <a href="index.html"><svg class="ic" aria-hidden="true">
               <use href="#i-home"></use>
             </svg>Home</a>
           <button type="button" id="dhPhotoBtn"><svg class="ic" aria-hidden="true">
               <use href="#i-user"></use>
             </svg>Change profile photo</button>
-          <a href="/tutor-edit-profile"><svg class="ic" aria-hidden="true">
+          <a href="modivs-tutor-edit-profile.html"><svg class="ic" aria-hidden="true">
               <use href="#i-edit"></use>
             </svg>Edit profile</a>
           <button type="button" id="dhAccountBtn"><svg class="ic" aria-hidden="true">
               <use href="#i-gear"></use>
             </svg>My account</button>
-          <a href="/guide#tutor"><svg class="ic" aria-hidden="true">
+          <a href="modivs-guide.html#tutor"><svg class="ic" aria-hidden="true">
               <use href="#i-help"></use>
             </svg>How to use</a>
           <button type="button" class="out" id="tutorLogoutBtn"><svg class="ic" aria-hidden="true">
@@ -1684,7 +1684,7 @@
           <li>Wait for admin approval. Your status shows in the banner above.</li>
           <li>Open <b>Student Leads</b> to find students and unlock their details with coins.</li>
           <li>Reply in <b>Messages</b>, arrange a demo class and start teaching.</li>
-        </ol><a class="gb" href="/guide#tutor">Open the full guide</a>
+        </ol><a class="gb" href="modivs-guide.html#tutor">Open the full guide</a>
       </div>
       <script>(function () {
           var c = document.getElementById('guideCard'), k = 'modivs_guide_tutor'; if (!c) return; try { if (localStorage.getItem(k) !== '1') c.hidden = false } catch (e) { c.hidden = false }
@@ -3847,7 +3847,7 @@
                 '<span style="font-size:1.8rem;" aria-hidden="true">📝</span>' +
                 '<div style="flex:1;min-width:240px;"><h3 style="margin:0;font-size:1.05rem;color:var(--navy);">Complete at least 80% of your tutor profile to submit for review. (' + pc.pct + '% completed)</h3>' +
                 '<p style="margin:4px 0 0;font-size:0.88rem;color:var(--muted);">Add your contact details, subjects, qualifications, fees and availability so our admin team can verify and list your profile.</p></div>' +
-                '<a href="/tutor-edit-profile" class="b y" style="text-decoration:none;font-size:0.9rem;">Complete my profile &rarr;</a>' +
+                '<a href="modivs-tutor-edit-profile.html" class="b y" style="text-decoration:none;font-size:0.9rem;">Complete my profile &rarr;</a>' +
                 '</div>';
             } else if (t.status === 'pending' || (t.status !== 'approved' && pc.pct >= 80)) {
               if (pEl) { pEl.textContent = 'Pending Approval'; pEl.style.background = '#ecdfc6'; pEl.style.color = 'var(--navy)'; }
@@ -3873,7 +3873,7 @@
                 '<h3 style="margin:0;font-size:1.05rem;color:var(--bad);">Your application needs changes. Please review the admin feedback and resubmit.</h3>' +
                 '<p style="margin:6px 0 0;font-size:0.9rem;color:var(--navy);background:#fff;padding:8px 12px;border-radius:8px;border:1px dashed var(--bad);">' + feedbackHtml + '</p>' +
                 '</div>' +
-                '<a href="/tutor-edit-profile" class="b y" style="text-decoration:none;font-size:0.9rem;">Edit &amp; Resubmit Application &rarr;</a>' +
+                '<a href="modivs-tutor-edit-profile.html" class="b y" style="text-decoration:none;font-size:0.9rem;">Edit &amp; Resubmit Application &rarr;</a>' +
                 '</div>';
             } else {
               // Approved
@@ -3914,7 +3914,7 @@
                 (verified
                   ? '<p>You have successfully created your tutor profile and verified it.</p><p class="mvw-sub">Your profile is live. Students and parents can now find you and send requests.</p>'
                   : '<p>You have successfully created your tutor profile.</p><p class="mvw-sub">Our team is verifying your documents. You will go live in tutor search as soon as you are approved.</p>') +
-                '<div class="mvw-act"><button type="button" class="mvw-ok">Go to my dashboard</button><a class="mvw-ln" href="/tutors#tutor-materials">Study material guidelines</a></div>' +
+                '<div class="mvw-act"><button type="button" class="mvw-ok">Go to my dashboard</button><a class="mvw-ln" href="modivs-tutors.html#tutor-materials">Study material guidelines</a></div>' +
                 '<div class="mvw-time">This message shows for about ' + hrs + ' more hour' + (hrs > 1 ? 's' : '') + '.</div></div>';
               document.body.appendChild(ov);
               var closeW = function () { try { sessionStorage.setItem('modivs_welcome_closed', '1') } catch (x) { } ov.remove(); document.removeEventListener('keydown', onKey) };
@@ -4073,7 +4073,7 @@
   <!-- mv-footer -->
   <footer class="mv-foot v2">
     <div class="fv-grid">
-      <div class="fv-col fv-brand"><a class="fv-logo" href="/#top"
+      <div class="fv-col fv-brand"><a class="fv-logo" href="index.html#top"
           aria-label="Modiv’s Education home"><img src="logo.png" alt="Modiv’s Education"></a>
         <p>Connecting tutors with students and parents, one class at a time.</p>
         <div class="fv-app"><b>Download Our App</b>
@@ -4125,23 +4125,23 @@
       <div class="fv-col">
         <h4>For Students &amp; Parents</h4>
         <ul class="fv-list">
-          <li><a href="/find-tutor" id="footFindTutor"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="modivs-find-tutor.html" id="footFindTutor"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="11" cy="11" r="6.5" />
                 <path d="M20 20l-4.2-4.2" />
               </svg><span>Find a Tutor</span></a></li>
-          <li><a href="/post-requirement"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="modivs-post-requirement.html"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <rect x="5" y="4.5" width="14" height="16.5" rx="2" />
                 <path d="M9 4.5V3.5h6v1M8.5 11l1.6 1.6L13 9.5M8.5 17h7" />
               </svg><span>Post a Requirement</span></a></li>
-          <li><a href="/tutors"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="modivs-tutors.html"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="9" cy="8" r="3.2" />
                 <path d="M3 20c0-3.3 2.7-5.5 6-5.5s6 2.2 6 5.5M16 5.2a3 3 0 0 1 0 5.6M18 14.8c1.8.7 3 2.4 3 5.2" />
               </svg><span>Browse Tutors</span></a></li>
-          <li><a href="/#subjects"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="index.html#subjects"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   d="M12 6.5C10.3 5.2 7.8 4.6 4 4.8v13c3.8-.2 6.3.4 8 1.7 1.7-1.3 4.2-1.9 8-1.7v-13c-3.8-.2-6.3.4-8 1.7zM12 6.5v13" />
               </svg><span>Subjects &amp; Classes</span></a></li>
-          <li><a href="/#faq"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="index.html#faq"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="12" cy="12" r="9" />
                 <path d="M9.5 9.5a2.6 2.6 0 1 1 3.8 2.3c-.8.5-1.3 1-1.3 2M12 17h.01" />
               </svg><span>FAQs</span></a></li>
@@ -4150,21 +4150,21 @@
       <div class="fv-col">
         <h4>For Tutors</h4>
         <ul class="fv-list">
-          <li><a href="/become-tutor" id="footBecomeTutor"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="modivs-become-tutor.html" id="footBecomeTutor"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <circle cx="9" cy="8" r="3.2" />
                 <path d="M3 20c0-3.3 2.7-5.5 6-5.5 1.5 0 2.8.4 3.9 1.1M18 10v6M15 13h6" />
               </svg><span>Become a Tutor</span></a></li>
-          <li><a href="/active-leads"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="modivs-active-leads.html"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M12 3l9 5-9 5-9-5zM3 12.5l9 5 9-5M3 17l9 5 9-5" />
               </svg><span>Active Leads</span></a></li>
-          <li><a href="/guide"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="modivs-guide.html"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <path
                   d="M12 6.5C10.3 5.2 7.8 4.6 4 4.8v13c3.8-.2 6.3.4 8 1.7 1.7-1.3 4.2-1.9 8-1.7v-13c-3.8-.2-6.3.4-8 1.7zM12 6.5v13" />
               </svg><span>Tutor Guidelines</span></a></li>
-          <li><a href="/login#tutor-login"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="modivs-education.html#tutor-login"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M5 20V12M10 20V6M15 20v-6M20 20V9" />
               </svg><span>Plans &amp; Pricing</span></a></li>
-          <li><a href="/contact"><svg viewBox="0 0 24 24" aria-hidden="true">
+          <li><a href="modivs-contact.html"><svg viewBox="0 0 24 24" aria-hidden="true">
                 <path d="M4 14v-2a8 8 0 0 1 16 0v2" />
                 <rect x="3" y="13" width="4" height="6" rx="1.5" />
                 <rect x="17" y="13" width="4" height="6" rx="1.5" />
@@ -4191,21 +4191,21 @@
               <circle cx="12" cy="10" r="2.5" />
             </svg>Our Service Locations</b>
           <div class="fv-cities">
-            <div><a href="/chandigarh" title="Home tutors in Chandigarh">Chandigarh</a><a
-                href="/mohali" title="Home tutors in Mohali">Mohali</a><a
-                href="/panchkula" title="Home tutors in Panchkula">Panchkula</a></div>
-            <div><a href="/tutors?city=Ludhiana" title="Find tutors in Ludhiana">Ludhiana</a><a
-                href="/tutors?city=Patiala" title="Find tutors in Patiala">Patiala</a><a
-                href="/tutors?city=Jalandhar" title="Find tutors in Jalandhar">Jalandhar</a><a
-                href="/tutors?city=Amritsar" title="Find tutors in Amritsar">Amritsar</a></div>
+            <div><a href="modivs-tutors-chandigarh.html" title="Home tutors in Chandigarh">Chandigarh</a><a
+                href="modivs-tutors-mohali.html" title="Home tutors in Mohali">Mohali</a><a
+                href="modivs-tutors-panchkula.html" title="Home tutors in Panchkula">Panchkula</a></div>
+            <div><a href="modivs-tutors.html?city=Ludhiana" title="Find tutors in Ludhiana">Ludhiana</a><a
+                href="modivs-tutors.html?city=Patiala" title="Find tutors in Patiala">Patiala</a><a
+                href="modivs-tutors.html?city=Jalandhar" title="Find tutors in Jalandhar">Jalandhar</a><a
+                href="modivs-tutors.html?city=Amritsar" title="Find tutors in Amritsar">Amritsar</a></div>
           </div>
         </div>
       </div>
     </div>
     <div class="fv-bottom">
       <div class="fv-legal" role="navigation" aria-label="Legal and contact links"><a
-          href="/privacy">Privacy Policy</a><a href="/terms">Terms &amp; Conditions</a><a
-          href="/refunds">Refund Policy</a><a href="/contact">Contact Us</a></div>
+          href="modivs-privacy-policy.html">Privacy Policy</a><a href="modivs-terms.html">Terms &amp; Conditions</a><a
+          href="modivs-refund-policy.html">Refund Policy</a><a href="modivs-contact.html">Contact Us</a></div>
       <p class="fv-copy">© 2026 Modiv’s Education. All rights reserved.</p>
     </div>
   </footer>
