@@ -59,10 +59,14 @@
     }catch(e){}
     if(isAdmin){
       ['navLoginBtn','navSignup','navJoin'].forEach(function(id){var x=document.getElementById(id);if(x)x.style.display='none'});
+      function navUrl(u){
+        try{if(window.ModivsSlug&&typeof window.ModivsSlug.resolveToRealFile==='function'&&window.ModivsSlug.isLocal&&window.ModivsSlug.isLocal()){var r=window.ModivsSlug.resolveToRealFile(u);if(r)return r}}catch(e){}
+        return u;
+      }
       var acts=hd.querySelector('.acts');
       if(acts&&!acts.querySelector('#mvUser')&&!acts.querySelector('#mvAdmBtn')&&!window.ModivsSessionUI){
-        var dash=document.createElement('a');dash.className='btn y';dash.href='/admin';dash.textContent='Admin dashboard';
-        var out=document.createElement('a');out.className='btn o';out.href='/';out.textContent='Log out';
+        var dash=document.createElement('a');dash.className='btn y';dash.href=navUrl('/admin');dash.textContent='Admin dashboard';
+        var out=document.createElement('a');out.className='btn o';out.href=navUrl('/');out.textContent='Log out';
         out.addEventListener('click',function(e){
           e.preventDefault();
           var pServer = fetch('/api/auth?action=logout', { method: 'POST', credentials: 'include' }).catch(function(){});
@@ -72,12 +76,12 @@
             try{localStorage.removeItem('modivs_admin_session')}catch(e){}
             try{localStorage.removeItem('modivs_auth_user')}catch(e){}
             try{sessionStorage.clear()}catch(e){}
-            window.location.replace('/login');
+            window.location.replace(navUrl('/login'));
           }).catch(function(){
             try{localStorage.removeItem('modivs_admin_session')}catch(e){}
             try{localStorage.removeItem('modivs_auth_user')}catch(e){}
             try{sessionStorage.clear()}catch(e){}
-            window.location.replace('/login');
+            window.location.replace(navUrl('/login'));
           });
         });
         acts.insertBefore(dash,b);acts.insertBefore(out,b);

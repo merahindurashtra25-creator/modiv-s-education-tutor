@@ -88,6 +88,15 @@
       '.dash .mv-user, .dash #mvUser, .dash #mvAdmBtn, .dh .mv-user, .dh #mvUser, .dh-in .mv-user, .dh-user + .mv-user, .mv-user + .dh-user, body.dash .mv-user { display: none !important; }';
     document.head.appendChild(s)
   }
+  function navUrl(u) {
+    try {
+      if (window.ModivsSlug && typeof window.ModivsSlug.resolveToRealFile === 'function' && window.ModivsSlug.isLocal && window.ModivsSlug.isLocal()) {
+        var r = window.ModivsSlug.resolveToRealFile(u);
+        if (r) return r;
+      }
+    } catch(e) {}
+    return u;
+  }
   function logout() {
     var pServer = fetch('/api/auth?action=logout', { method: 'POST', credentials: 'include' }).catch(function(){});
     var pFb = Promise.resolve();
@@ -101,12 +110,12 @@
       try { localStorage.removeItem('modivs_auth_user'); } catch (e) { }
       try { localStorage.removeItem('modivs_admin_session'); } catch (e) { }
       try { sessionStorage.clear(); } catch (e) { }
-      window.location.replace('/login');
+      window.location.replace(navUrl('/login'));
     }).catch(function(){
       try { localStorage.removeItem('modivs_auth_user'); } catch (e) { }
       try { localStorage.removeItem('modivs_admin_session'); } catch (e) { }
       try { sessionStorage.clear(); } catch (e) { }
-      window.location.replace('/login');
+      window.location.replace(navUrl('/login'));
     });
   }
   function hideEl(b) { b.style.setProperty('display', 'none', 'important'); b.setAttribute('aria-hidden', 'true'); b.tabIndex = -1 }
@@ -169,14 +178,14 @@
     menu.appendChild(who);
 
     if (u.role === 'Admin') {
-      var d = document.createElement('a'); d.href = '/admin'; d.innerHTML = '👑 <b>Admin Dashboard</b>';
-      var leads = document.createElement('a'); leads.href = '/active-leads'; leads.textContent = 'Active Leads';
-      var tutors = document.createElement('a'); tutors.href = '/tutors'; tutors.textContent = 'Tutors Directory';
+      var d = document.createElement('a'); d.href = navUrl('/admin'); d.innerHTML = '👑 <b>Admin Dashboard</b>';
+      var leads = document.createElement('a'); leads.href = navUrl('/active-leads'); leads.textContent = 'Active Leads';
+      var tutors = document.createElement('a'); tutors.href = navUrl('/tutors'); tutors.textContent = 'Tutors Directory';
       var out = document.createElement('button'); out.type = 'button'; out.textContent = 'Log out'; out.addEventListener('click', logout);
       menu.appendChild(d); menu.appendChild(leads); menu.appendChild(tutors); menu.appendChild(out);
     } else {
       var dash = u.role === 'Tutor' ? tutorDash(u) : (u.role === 'Student / Parent' ? '/student-dashboard' : '/');
-      var d = document.createElement('a'); d.href = dash; d.textContent = u.role === 'General User' ? 'Home' : 'My dashboard';
+      var d = document.createElement('a'); d.href = navUrl(dash); d.textContent = u.role === 'General User' ? 'Home' : 'My dashboard';
       var out = document.createElement('button'); out.type = 'button'; out.textContent = 'Log out'; out.addEventListener('click', logout);
       menu.appendChild(d); menu.appendChild(out);
     }
@@ -197,12 +206,12 @@
     var u = rd('modivs_auth_user', null);
     var p = (location.pathname.split('/').pop() || '').toLowerCase(), h = location.hash || '';
     var dash;
-    if (isAdminSession()) dash = '/admin';
+    if (isAdminSession()) dash = navUrl('/admin');
     else {
       var r = normalizeRole((u && (u.role || u.roleKey)) || '');
-      if (r === 'Tutor') dash = tutorDash(u);
-      else if (r === 'Student / Parent') dash = '/student-dashboard';
-      else dash = '/';
+      if (r === 'Tutor') dash = navUrl(tutorDash(u));
+      else if (r === 'Student / Parent') dash = navUrl('/student-dashboard');
+      else dash = navUrl('/');
     }
     var isLogin = /^(modivs-education\.html|education|login)$/i.test(p) && /^(|#|#login|#student-login|#tutor-login)$/.test(h);
     var isSignupPage = /^(modivs-signup\.html|signup|modivs-user-signup\.html|user-signup)$/i.test(p) || (/^(modivs-student-signup\.html|student-signup)$/i.test(p) && !!u && normalizeRole(u.role || u.roleKey) === 'Student / Parent');

@@ -223,13 +223,140 @@
   }
 
   /**
-   * Automatically updates browser address bar to the clean slug if on a modiv-prefixed or .html page,
-   * without reloading or causing flicker. Preserves search params & hash.
+   * Detects if current environment is local (file://, localhost, 127.0.0.1, or local dev port).
+   */
+  function isLocalEnvironment(){
+    if(typeof window === 'undefined' || !window.location) return false;
+    var proto = window.location.protocol;
+    var host = window.location.hostname || '';
+    var port = window.location.port || '';
+    if(proto === 'file:') return true;
+    if(host === 'localhost' || host === '127.0.0.1' || host === '[::1]' || host === '') return true;
+    if(host.indexOf('192.168.') === 0 || host.indexOf('10.') === 0 || host.endsWith('.local')) return true;
+    if(port !== '' && port !== '80' && port !== '443') return true;
+    return false;
+  }
+
+  /**
+   * Resolves any slug, alias, path or URL to its actual physical HTML file.
+   */
+  function resolveToRealFile(href){
+    if(!href) return '';
+    var raw = String(href).split('?')[0].split('#')[0].trim().toLowerCase();
+    var cleanKey = raw.replace(/^\/+|\/+$/g, '');
+    var baseName = cleanKey.split('/').pop() || cleanKey;
+    
+    var directMap = {
+      '': 'index.html',
+      'home': 'index.html',
+      'index': 'index.html',
+      'main': 'index.html',
+      'active-leads': 'modivs-active-leads.html',
+      'leads': 'modivs-active-leads.html',
+      'activeleads': 'modivs-active-leads.html',
+      'admin': 'modivs-admin.html',
+      'admindashboard': 'modivs-admin.html',
+      'admin-dashboard': 'modivs-admin.html',
+      'become-tutor': 'modivs-become-tutor.html',
+      'teach': 'modivs-become-tutor.html',
+      'becometutor': 'modivs-become-tutor.html',
+      'become-a-tutor': 'modivs-become-tutor.html',
+      'social-vision': 'modivs-social-vision.html',
+      'vision': 'modivs-social-vision.html',
+      'our-vision': 'modivs-social-vision.html',
+      'ourvision': 'modivs-social-vision.html',
+      'our-social-vision': 'modivs-social-vision.html',
+      'tuition': 'modivs-tuition.html',
+      'tuitions': 'modivs-tuition.html',
+      'blogs': 'modivs-blogs.html',
+      'blog': 'modivs-blogs.html',
+      'articles': 'modivs-blogs.html',
+      'contact': 'modivs-contact.html',
+      'contact-us': 'modivs-contact.html',
+      'contactus': 'modivs-contact.html',
+      'support': 'modivs-contact.html',
+      'education': 'modivs-education.html#login',
+      'login': 'modivs-education.html#login',
+      'signin': 'modivs-education.html#login',
+      'sign-in': 'modivs-education.html#login',
+      'portal': 'modivs-education.html#login',
+      'find-tutor': 'modivs-find-tutor.html',
+      'find': 'modivs-find-tutor.html',
+      'findtutor': 'modivs-find-tutor.html',
+      'find-a-tutor': 'modivs-find-tutor.html',
+      'guide': 'modivs-guide.html',
+      'how-to-use': 'modivs-guide.html',
+      'howtouse': 'modivs-guide.html',
+      'notes': 'modivs-notes.html',
+      'free-notes': 'modivs-notes.html',
+      'org-dashboard': 'modivs-org-dashboard.html',
+      'parent-dashboard': 'modivs-parent-dashboard.html',
+      'parent-registration': 'modivs-parent-registration.html',
+      'parent-signup': 'modivs-parent-signup.html',
+      'post-requirement': 'modivs-post-requirement.html',
+      'post': 'modivs-post-requirement.html',
+      'postreq': 'modivs-post-requirement.html',
+      'post-a-requirement': 'modivs-post-requirement.html',
+      'privacy': 'modivs-privacy-policy.html',
+      'privacy-policy': 'modivs-privacy-policy.html',
+      'privacypolicy': 'modivs-privacy-policy.html',
+      'refunds': 'modivs-refund-policy.html',
+      'refund': 'modivs-refund-policy.html',
+      'refund-policy': 'modivs-refund-policy.html',
+      'refundpolicy': 'modivs-refund-policy.html',
+      'shop': 'modivs-shop.html',
+      'store': 'modivs-shop.html',
+      'signup': 'modivs-signup.html',
+      'sign-up': 'modivs-signup.html',
+      'register': 'modivs-signup.html',
+      'sitemap': 'modivs-sitemap.html',
+      'site-map': 'modivs-sitemap.html',
+      'student-dashboard': 'modivs-student-dashboard.html',
+      'studentdashboard': 'modivs-student-dashboard.html',
+      'student-registration': 'modivs-student-registration.html',
+      'student-signup': 'modivs-student-signup.html',
+      'studentsignup': 'modivs-student-signup.html',
+      'demo': 'modivs-student-signup.html',
+      'students-corner': 'modivs-students-corner.html',
+      'studentscorner': 'modivs-students-corner.html',
+      'terms': 'modivs-terms.html',
+      'terms-and-conditions': 'modivs-terms.html',
+      'tutor-dashboard': 'modivs-tutor-dashboard.html',
+      'tutordashboard': 'modivs-tutor-dashboard.html',
+      'tutor-edit-profile': 'modivs-tutor-edit-profile.html',
+      'tutoreditprofile': 'modivs-tutor-edit-profile.html',
+      'tutor-profile': 'modivs-tutor-profile.html',
+      'tutorprofile': 'modivs-tutor-profile.html',
+      'chandigarh': 'modivs-tutors-chandigarh.html',
+      'tutors-chandigarh': 'modivs-tutors-chandigarh.html',
+      'mohali': 'modivs-tutors-mohali.html',
+      'tutors-mohali': 'modivs-tutors-mohali.html',
+      'panchkula': 'modivs-tutors-panchkula.html',
+      'tutors-panchkula': 'modivs-tutors-panchkula.html',
+      'tutors': 'modivs-tutors.html',
+      'browse-tutors': 'modivs-tutors.html',
+      'user-signup': 'modivs-user-signup.html',
+      'videos': 'modivs-videos.html'
+    };
+
+    if(directMap.hasOwnProperty(cleanKey)) return directMap[cleanKey];
+    if(directMap.hasOwnProperty(baseName)) return directMap[baseName];
+    if(directMap.hasOwnProperty(baseName.replace(/\.html?$/i, ''))) return directMap[baseName.replace(/\.html?$/i, '')];
+    
+    var p = resolve(cleanKey) || resolve(baseName);
+    if(p && p.file) return p.file;
+    if(baseName.endsWith('.html') || baseName.endsWith('.htm')) return baseName;
+    return null;
+  }
+
+  /**
+   * Automatically updates browser address bar to the clean slug on production.
+   * On local dev/file environments, this is disabled to preserve working static file navigation.
    */
   function autoSyncUrl(){
     if(typeof window === 'undefined' || !window.location || !window.history || !window.history.replaceState) return;
+    if(isLocalEnvironment()) return;
     try {
-      if(window.location.protocol === 'file:') return;
       var path = window.location.pathname || '';
       var cleanKey = path.replace(/^\/+|\/+$/g, '').toLowerCase();
       var file = (path.split('/').pop() || 'index.html').toLowerCase();
@@ -251,18 +378,20 @@
   }
 
   /**
-   * Rewrites internal <a href="*.html"> links on the page to clean slugs,
-   * so user hovers and clicks always see clean, pretty URLs.
+   * Synchronizes page links:
+   * - In local/file environment: resolves clean slugs to actual physical .html files so every click works.
+   * - In production: converts .html links to clean pretty URLs.
    */
   function cleanLinks(rootEl){
     if(typeof document === 'undefined') return;
     var scope = rootEl || document;
+    var isLocal = isLocalEnvironment();
     try {
       var links = scope.querySelectorAll('a[href]');
       for(var i = 0; i < links.length; i++){
         var a = links[i];
         var href = a.getAttribute('href');
-        if(!href || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#') || href.startsWith('javascript:')) continue;
+        if(!href || /^(?:https?:|\/\/|mailto:|tel:|javascript:|#)/i.test(href)) continue;
         
         var parts = href.split('#');
         var baseWithQuery = parts[0];
@@ -272,30 +401,69 @@
         var pathPart = qParts[0];
         var query = qParts.length > 1 ? '?' + qParts[1] : '';
         
-        if(!pathPart.endsWith('.html') && !pathPart.endsWith('.htm') && pathPart.indexOf('modiv') === -1) continue;
-        var targetPage = resolve(pathPart);
-        if(!targetPage && pathPart.indexOf('modiv') !== -1){
-          var stripped = pathPart.replace(/^\/+/, '').replace(/^modivs?-?/i, '').replace(/\.html?$/i, '');
-          targetPage = resolve(stripped);
-        }
-        if(targetPage && targetPage.slug){
-          var newSlug = (targetPage.slug === 'home' || targetPage.file === 'index.html' || targetPage.slug === '') ? '' : targetPage.slug;
-          a.setAttribute('href', (newSlug ? ('/' + newSlug) : '/') + query + hash);
+        if(isLocal){
+          // Local/file mode: map to working local .html files
+          var targetReal = resolveToRealFile(pathPart);
+          if(targetReal){
+            var tParts = targetReal.split('#');
+            var tFile = tParts[0];
+            var tHash = hash || (tParts.length > 1 ? '#' + tParts[1] : '');
+            a.setAttribute('href', tFile + query + tHash);
+          }
+        } else {
+          // Production mode: map .html links to clean slugs
+          if(!pathPart.endsWith('.html') && !pathPart.endsWith('.htm') && pathPart.indexOf('modiv') === -1) continue;
+          var targetPage = resolve(pathPart);
+          if(!targetPage && pathPart.indexOf('modiv') !== -1){
+            var stripped = pathPart.replace(/^\/+/, '').replace(/^modivs?-?/i, '').replace(/\.html?$/i, '');
+            targetPage = resolve(stripped);
+          }
+          if(targetPage && targetPage.slug){
+            var newSlug = (targetPage.slug === 'home' || targetPage.file === 'index.html' || targetPage.slug === '') ? '' : targetPage.slug;
+            a.setAttribute('href', (newSlug ? ('/' + newSlug) : '/') + query + hash);
+          }
         }
       }
     } catch(e){}
   }
 
+  // Global click delegate for local/file navigation to guarantee no link ever breaks or goes blank
+  if(typeof window !== 'undefined'){
+    if(isLocalEnvironment()){
+      document.addEventListener('click', function(e){
+        var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
+        if(!a) return;
+        var href = a.getAttribute('href');
+        if(!href || /^(?:https?:|\/\/|mailto:|tel:|javascript:|#)/i.test(href)) return;
+        
+        var parts = href.split('#');
+        var baseWithQuery = parts[0];
+        var hash = parts.length > 1 ? '#' + parts[1] : '';
+        
+        var qParts = baseWithQuery.split('?');
+        var pathPart = qParts[0];
+        var query = qParts.length > 1 ? '?' + qParts[1] : '';
+        
+        var realFile = resolveToRealFile(pathPart);
+        if(realFile){
+          e.preventDefault();
+          var fParts = realFile.split('#');
+          var finalHash = hash || (fParts.length > 1 ? '#' + fParts[1] : '');
+          window.location.href = fParts[0] + query + finalHash;
+        }
+      }, true);
+    }
+  }
+
   // Auto-run immediately and when DOM is ready
   if(typeof window !== 'undefined'){
+    cleanLinks();
     autoSyncUrl();
     if(document.readyState === 'loading'){
       document.addEventListener('DOMContentLoaded', function(){
-        autoSyncUrl();
         cleanLinks();
+        autoSyncUrl();
       });
-    } else {
-      cleanLinks();
     }
   }
 
@@ -315,6 +483,9 @@
     getAllPages: getAllPages,
     page: page,
     resolve: resolve,
+    resolveToRealFile: resolveToRealFile,
+    isLocal: isLocalEnvironment,
+    isLocalEnvironment: isLocalEnvironment,
     urlFor: urlFor,
     isValid: isValid,
     autoSyncUrl: autoSyncUrl,

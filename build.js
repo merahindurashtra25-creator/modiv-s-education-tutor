@@ -129,9 +129,16 @@ function syncEnvBridge() {
   if (!window.__MODIVS_CONFIG__ || isBad(window.__MODIVS_CONFIG__.apiKey)) {
     window.__MODIVS_CONFIG__ = cfg;
   }
-  // Immediate URL cleanup: prevent showing 'modiv' or '.html' in browser address bar
+  // Immediate URL cleanup: prevent showing 'modiv' or '.html' in browser address bar (production only)
   try {
-    if (window.location && window.history && window.history.replaceState && window.location.protocol !== 'file:') {
+    var _isLocal = !window.location || window.location.protocol === 'file:' || 
+                   window.location.hostname === 'localhost' || 
+                   window.location.hostname === '127.0.0.1' || 
+                   window.location.hostname === '[::1]' || 
+                   window.location.hostname.indexOf('192.168.') === 0 || 
+                   window.location.hostname.indexOf('10.') === 0 || 
+                   (window.location.port !== '' && window.location.port !== '80' && window.location.port !== '443');
+    if (window.location && window.history && window.history.replaceState && !_isLocal) {
       var _p = window.location.pathname || '';
       if (_p.indexOf('modiv') !== -1 || _p.indexOf('.html') !== -1 || _p.indexOf('.htm') !== -1 || _p.indexOf('%20') !== -1 || _p.indexOf(' ') !== -1 || _p.indexOf('_') !== -1) {
         var _parts = _p.split('?')[0].split('#')[0].split('/').filter(Boolean);
@@ -299,6 +306,57 @@ function copyToPublic() {
   }
   if (fs.existsSync(path.join(__dirname, 'location-autocomplete.js'))) {
     fs.copyFileSync(path.join(__dirname, 'location-autocomplete.js'), path.join(publicDir, 'location-autocomplete.js'));
+  }
+
+  // Generate clean slug HTML aliases so static servers and direct links resolve cleanly
+  const aliases = {
+    'tutors.html': 'modivs-tutors.html',
+    'active-leads.html': 'modivs-active-leads.html',
+    'tuition.html': 'modivs-tuition.html',
+    'our-vision.html': 'modivs-social-vision.html',
+    'social-vision.html': 'modivs-social-vision.html',
+    'become-tutor.html': 'modivs-become-tutor.html',
+    'login.html': 'modivs-education.html',
+    'education.html': 'modivs-education.html',
+    'signup.html': 'modivs-signup.html',
+    'guide.html': 'modivs-guide.html',
+    'shop.html': 'modivs-shop.html',
+    'blogs.html': 'modivs-blogs.html',
+    'contact.html': 'modivs-contact.html',
+    'videos.html': 'modivs-videos.html',
+    'students-corner.html': 'modivs-students-corner.html',
+    'find-tutor.html': 'modivs-find-tutor.html',
+    'post-requirement.html': 'modivs-post-requirement.html',
+    'chandigarh.html': 'modivs-tutors-chandigarh.html',
+    'mohali.html': 'modivs-tutors-mohali.html',
+    'panchkula.html': 'modivs-tutors-panchkula.html',
+    'student-dashboard.html': 'modivs-student-dashboard.html',
+    'tutor-dashboard.html': 'modivs-tutor-dashboard.html',
+    'tutor-edit-profile.html': 'modivs-tutor-edit-profile.html',
+    'tutor-profile.html': 'modivs-tutor-profile.html',
+    'admin.html': 'modivs-admin.html',
+    'org-dashboard.html': 'modivs-org-dashboard.html',
+    'student-signup.html': 'modivs-student-signup.html',
+    'student-registration.html': 'modivs-student-registration.html',
+    'user-signup.html': 'modivs-user-signup.html',
+    'privacy.html': 'modivs-privacy-policy.html',
+    'privacy-policy.html': 'modivs-privacy-policy.html',
+    'terms.html': 'modivs-terms.html',
+    'refunds.html': 'modivs-refund-policy.html',
+    'refund-policy.html': 'modivs-refund-policy.html',
+    'sitemap.html': 'modivs-sitemap.html'
+  };
+
+  for (const [alias, src] of Object.entries(aliases)) {
+    const pubSrc = path.join(publicDir, src);
+    if (fs.existsSync(pubSrc)) {
+      fs.copyFileSync(pubSrc, path.join(publicDir, alias));
+      count++;
+    }
+    const rootSrc = path.join(__dirname, src);
+    if (fs.existsSync(rootSrc)) {
+      try { fs.copyFileSync(rootSrc, path.join(__dirname, alias)); } catch(e){}
+    }
   }
 
   // Write deployment version manifest
