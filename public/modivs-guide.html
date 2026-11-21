@@ -70,6 +70,47 @@ footer a{color:#d8dcec;margin:0 10px}
  .step{transition:transform .2s,box-shadow .2s}.step:hover{transform:translateY(-3px);box-shadow:0 10px 26px rgba(20,33,61,.09)}
 }
 @keyframes rise{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+
+/* ---- Blogs-style glow-up (matches /blogs) ---- */
+:root{--accent:#1A2035;--accent-d:#2a3350;--tint:#fff3cf}
+:is(a,button,summary):focus-visible{outline:3px solid var(--yellow);outline-offset:3px}
+@keyframes vUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes vFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(4deg)}}
+@keyframes vBlob{0%,100%{border-radius:60% 40% 55% 45%/50% 55% 45% 50%;transform:translate(0,0)}50%{border-radius:45% 55% 40% 60%/55% 45% 55% 45%;transform:translate(-14px,10px)}}
+@keyframes vShine{0%{transform:translateX(-130%) skewX(-20deg)}60%,100%{transform:translateX(260%) skewX(-20deg)}}
+@keyframes vPulse{0%{box-shadow:0 0 0 0 rgba(235,185,46,.55)}100%{box-shadow:0 0 0 12px rgba(235,185,46,0)}}
+@keyframes vGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.pill{display:inline-block;background:var(--yellow);color:var(--navy);padding:5px 14px;border-radius:99px;font-weight:600;font-size:.85rem;position:relative;overflow:hidden;animation:vPulse 2.4s ease-out infinite}
+.pill::after{content:"";position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:vShine 3.6s 1s ease-in-out infinite}
+.hero{background:linear-gradient(120deg,#fff3cf 0%,#fbe7b0 50%,#f6d675 100%);color:var(--navy);text-align:left;margin:18px 24px 0;border-radius:28px;padding:56px max(24px,calc(50% - 476px)) 72px}
+.hero::before{width:320px;height:320px;top:-80px;right:-60px;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.85),rgba(255,255,255,0) 65%);border-radius:50%;animation:vBlob 9s ease-in-out infinite}
+.hero::after{content:"🧭";width:auto;height:auto;top:26px;right:9%;bottom:auto;left:auto;border-radius:0;background:none;font-size:4rem;animation:vFloat 5s ease-in-out infinite;filter:drop-shadow(0 10px 14px rgba(26,32,53,.2))}
+.hero h1{position:relative;display:block;width:fit-content;max-width:100%;font-size:clamp(2rem,4.5vw,3.2rem);line-height:1.08;letter-spacing:-.03em;margin:16px 0 12px}
+.hero h1::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:9px;border-radius:6px;background:var(--yellow);opacity:.75;z-index:-1;transform-origin:left;animation:vGrow .8s .3s both}
+.hero p{margin:0;max-width:640px;font-size:1.1rem;color:#4a5072}
+.hero>*{animation:vUp .6s both}.hero>*:nth-child(2){animation-delay:.1s}.hero>*:nth-child(3){animation-delay:.2s}
+.switch{border:1.5px solid var(--line);box-shadow:0 10px 28px rgba(26,32,53,.12)}
+.switch button:hover{color:var(--navy)}
+.switch button[aria-selected=true]{background:var(--navy);color:var(--yellow);box-shadow:0 8px 18px rgba(26,32,53,.25)}
+.step{border-radius:22px}
+.step::before{box-shadow:0 3px 8px rgba(168,117,0,.25)}
+.step .go{background:var(--yellow);color:var(--navy);border:2px solid var(--yellow);transition:transform .2s,box-shadow .2s,background-color .2s}
+.step .go:hover{background:#D9A41C;transform:translateY(-2px);box-shadow:0 8px 18px rgba(26,32,53,.18)}
+.tip{background:var(--tint);border-color:var(--line);color:#2b3150;border-radius:14px}
+.tip b{color:#a87500}
+.step li::marker{color:#c58f00}
+details{border-radius:16px;transition:border-color .2s,box-shadow .2s}
+details:hover,details[open]{border-color:var(--yellow);box-shadow:0 8px 18px rgba(26,32,53,.06)}
+summary::after{color:#c58f00}
+h2.sec{position:relative;padding-left:14px}
+h2.sec::before{content:"";position:absolute;left:0;top:.2em;bottom:.2em;width:5px;border-radius:4px;background:var(--yellow)}
+.cta{position:relative;overflow:hidden;border-radius:22px;background:linear-gradient(135deg,var(--navy),#33406f)}
+.cta::after{content:"";position:absolute;right:-50px;top:-50px;width:200px;height:200px;border-radius:50%;background:rgba(235,185,46,.18);animation:vBlob 8s ease-in-out infinite}
+.cta>*{position:relative;z-index:1}
+.cta a{transition:transform .2s,box-shadow .2s}.cta a:hover{filter:none;transform:translateY(-2px);box-shadow:0 8px 18px rgba(0,0,0,.25)}
+@media(prefers-reduced-motion:no-preference){.step:hover{border-color:var(--yellow);box-shadow:0 14px 28px rgba(26,32,53,.1)}}
+@media(max-width:640px){.hero{margin:12px 12px 0;border-radius:22px;padding:36px 24px 60px}.hero::after{font-size:3rem;right:6%}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 <link rel="stylesheet" href="modivs-menu.css?v=mwq2t2xn-nxlr2">
 <link rel="stylesheet" href="modivs-mobile.css?v=mwq2t2xn-nxlr2">
@@ -107,6 +148,7 @@ footer a{color:#d8dcec;margin:0 10px}
 </header>
 
 <section class="hero">
+ <span class="pill">🧭 Step-by-step guide</span>
  <h1>How to use Modiv’s Education</h1>
  <p>A quick, step-by-step guide for students, parents and tutors. Pick your role to see exactly what to do.</p>
 </section>

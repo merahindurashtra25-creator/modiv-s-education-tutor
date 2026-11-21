@@ -110,6 +110,54 @@ footer .copy{margin-top:22px;padding-top:16px;border-top:1px solid #34406a;color
 @media(max-width:480px){header.mv-header .cartbtn>span:not(.n){display:none}header.mv-header .cartbtn{gap:5px;padding:6px 9px}header.mv-header .acts .btn.y:not(.cartbtn){padding:6px 9px}header.mv-header .burger{padding:6px 10px;font-size:.8rem}header.mv-header .mv-wrap{padding:0 16px}header.mv-header .acts{gap:5px}}
 @media(max-width:370px){header.mv-header #navSignup{display:none}}
 @media(prefers-reduced-motion:reduce){html{scroll-behavior:auto}.drawer{transition:none}}
+
+/* ---- Blogs-style glow-up (matches /blogs) ---- */
+@keyframes vUp{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+@keyframes vPop{0%{opacity:0;transform:scale(.92) translateY(14px)}100%{opacity:1;transform:none}}
+@keyframes vFloat{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(-10px) rotate(4deg)}}
+@keyframes vBlob{0%,100%{border-radius:60% 40% 55% 45%/50% 55% 45% 50%;transform:translate(0,0)}50%{border-radius:45% 55% 40% 60%/55% 45% 55% 45%;transform:translate(-14px,10px)}}
+@keyframes vShine{0%{transform:translateX(-130%) skewX(-20deg)}60%,100%{transform:translateX(260%) skewX(-20deg)}}
+@keyframes vPulse{0%{box-shadow:0 0 0 0 rgba(235,185,46,.55)}100%{box-shadow:0 0 0 12px rgba(235,185,46,0)}}
+@keyframes vGrow{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+.pill{display:inline-block;background:var(--yellow);padding:5px 14px;border-radius:99px;font-weight:600;font-size:.85rem;position:relative;overflow:hidden;animation:vPulse 2.4s ease-out infinite}
+.pill::after{content:"";position:absolute;top:0;bottom:0;width:40%;background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:vShine 3.6s 1s ease-in-out infinite}
+.btn{transition:transform .2s,box-shadow .2s,background-color .2s}
+.btn:hover{transform:translateY(-2px);box-shadow:0 8px 18px rgba(26,32,53,.18)}
+.hero{position:relative;overflow:hidden;margin:18px 24px 0;border-radius:28px;padding:56px 0 44px;background:linear-gradient(120deg,#fff3cf 0%,#fbe7b0 50%,#f6d675 100%)}
+.hero .wrap{position:relative;z-index:2}
+.hero::before{content:"";position:absolute;right:-60px;top:-80px;width:320px;height:320px;background:radial-gradient(circle at 30% 30%,rgba(255,255,255,.85),rgba(255,255,255,0) 65%);animation:vBlob 9s ease-in-out infinite}
+.hero::after{content:"🛍️";position:absolute;right:9%;top:26px;font-size:4rem;animation:vFloat 5s ease-in-out infinite;filter:drop-shadow(0 10px 14px rgba(26,32,53,.2))}
+.hero h1{position:relative;display:block;width:fit-content;max-width:100%;margin-top:16px}
+.hero h1::after{content:"";position:absolute;left:0;right:0;bottom:-2px;height:9px;border-radius:6px;background:var(--yellow);opacity:.75;z-index:-1;transform-origin:left;animation:vGrow .8s .3s both}
+.hero .wrap>*{animation:vUp .6s both}.hero .wrap>*:nth-child(2){animation-delay:.1s}.hero .wrap>*:nth-child(3){animation-delay:.2s}.hero .wrap>*:nth-child(4){animation-delay:.3s}
+.hero .lead{color:#4a5072}
+.how li{background:rgba(255,255,255,.65);border:1px solid var(--line);border-radius:99px;padding:3px 14px}
+.tools{background:transparent;border:0;padding:0;margin:28px 0 0;animation:vUp .6s .15s both}
+.tools .row{width:calc(100% - 48px);max-width:1172px;margin:0 auto;background:var(--card);border:1.5px solid var(--line);border-radius:18px;padding:12px 14px;box-shadow:0 10px 28px rgba(26,32,53,.06)}
+.seg button{transition:transform .2s,background-color .2s,border-color .2s,color .2s,box-shadow .2s}
+.seg button:hover{border-color:var(--navy);transform:translateY(-2px);box-shadow:0 6px 14px rgba(26,32,53,.1)}
+.seg button[aria-pressed=true]{background:var(--navy);color:var(--yellow);box-shadow:0 8px 18px rgba(26,32,53,.25)}
+.tools input[type=search]{padding-left:40px;background:#fff url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23555b78' stroke-width='2' stroke-linecap='round'%3E%3Ccircle cx='11' cy='11' r='7'/%3E%3Cpath d='M20 20l-4-4'/%3E%3C/svg%3E") no-repeat 13px center/18px;transition:border-color .2s,box-shadow .2s}
+.tools input[type=search]:focus,.tools select:focus{outline:none;border-color:var(--yellow);box-shadow:0 0 0 4px rgba(235,185,46,.28)}
+.card{position:relative;border-radius:22px;animation:vPop .5s both;transition:transform .25s cubic-bezier(.2,.8,.2,1),border-color .25s,box-shadow .25s}
+.card:nth-child(1){animation-delay:.03s}.card:nth-child(2){animation-delay:.09s}.card:nth-child(3){animation-delay:.15s}.card:nth-child(4){animation-delay:.21s}.card:nth-child(5){animation-delay:.27s}.card:nth-child(n+6){animation-delay:.33s}
+.card:hover{transform:translateY(-8px);border-color:var(--yellow);box-shadow:0 22px 40px rgba(26,32,53,.15)}
+.cover{overflow:hidden}
+.cover.ebook{background:linear-gradient(135deg,#1A2035 0%,#33406f 100%)}
+.cover.video{background:linear-gradient(135deg,#EBB92E 0%,#f6d56b 100%)}
+.cover.bundle{background:linear-gradient(135deg,#2a3350 0%,#4a3b7a 100%)}
+.cover::after{content:"";position:absolute;right:-34px;top:-34px;width:130px;height:130px;border-radius:50%;background:rgba(255,255,255,.12);transition:transform .5s;pointer-events:none}
+.cover::before{content:"";position:absolute;left:-30px;bottom:-40px;width:110px;height:110px;border-radius:50%;background:rgba(255,255,255,.08);pointer-events:none}
+.card:hover .cover::after{transform:scale(1.6)}
+.cover .ic,.cover .badge{z-index:1}.cover .sub,.cover .big{position:relative;z-index:1}
+.cover .ic svg{animation:vFloat 4.5s ease-in-out infinite;filter:drop-shadow(0 6px 8px rgba(0,0,0,.2));transition:transform .35s cubic-bezier(.2,.8,.2,1)}
+.card:hover .cover .ic svg{transform:scale(1.25) rotate(-8deg)}
+.badge{background:var(--yellow);color:var(--navy);box-shadow:0 3px 8px rgba(168,117,0,.2);font-weight:700}
+.cover.video .badge{background:var(--navy);color:var(--yellow)}
+.body h3{transition:color .2s}.card:hover .body h3{color:#a87500}
+.state-empty,.empty{animation:vUp .5s both}
+@media(max-width:640px){.hero{margin:12px 12px 0;border-radius:22px;padding:36px 0 26px}.hero::after{font-size:3rem;right:6%}.tools .row{width:calc(100% - 24px)}}
+@media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
 </style>
 <link rel="stylesheet" href="modivs-mobile.css">
 <link rel="stylesheet" href="modivs-faq.css">
@@ -150,6 +198,7 @@ footer .copy{margin-top:22px;padding-top:16px;border-top:1px solid #34406a;color
 <main>
  <section class="hero">
   <div class="wrap">
+   <span class="pill">📚 Study shop</span>
    <h1>Study material from Modiv’s tutors.</h1>
    <p class="lead">E-books to revise from and video lectures to learn from, made for school classes and exam preparation. Buy once and study at your own pace.</p>
    <ul class="how" aria-label="How buying works">

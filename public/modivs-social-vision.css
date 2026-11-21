@@ -140,7 +140,7 @@
 
 /* illustration motion */
 .sv-flow{animation:svflow 1.6s linear infinite}
-.sv-dot{offset-path:path("M300 150C500 20 700 20 1000 55");offset-rotate:0deg;animation:svtravel 7s ease-in-out infinite}
+.sv-dot{offset-path:path("M312 184C500 20 700 20 1000 55");offset-rotate:0deg;animation:svtravel 7s ease-in-out infinite}
 .sv-dot2{animation-delay:-.35s;opacity:.6}
 .sv-sun,.sv-leaf{transform-box:fill-box;transform-origin:center}
 .sv-sun{animation:svsun 4s ease-in-out infinite}
@@ -153,6 +153,20 @@
 @keyframes svleaf{50%{transform:scale(1.04) translateY(-2px)}}
 @keyframes svbob{50%{transform:translateY(-7px)}}
 @media (prefers-reduced-motion:reduce){.sv-flow,.sv-dot,.sv-sun,.sv-leaf,.sv-l{animation:none}.sv-dot{display:none}}
+
+/* tutor at home + earnings flowing back */
+.sv-coin{offset-path:path("M1051 226C960 262 520 268 288 206");offset-rotate:0deg;animation:svtravel 6s ease-in-out infinite}
+.sv-coin2{animation-delay:-2s}.sv-coin3{animation-delay:-4s}
+.sv-earn,.sv-tutor{transform-box:fill-box}
+.sv-earn{transform-origin:50% 100%;animation:svearn 2s ease-out infinite}
+.sv-tutor{transform-origin:50% 100%;animation:svnod 2.6s ease-in-out infinite}
+.sv-td{animation:svtalk 1.2s ease-in-out infinite}.sv-td2{animation-delay:.2s}.sv-td3{animation-delay:.4s}
+.sv-scr{animation:svglow 2.4s ease-in-out infinite}
+@keyframes svearn{0%{transform:scale(1.2)}30%,100%{transform:scale(1)}}
+@keyframes svnod{50%{transform:translateY(-2px)}}
+@keyframes svtalk{0%,60%,100%{opacity:.25}30%{opacity:1}}
+@keyframes svglow{50%{opacity:.7}}
+@media (prefers-reduced-motion:reduce){.sv-coin{display:none}.sv-earn,.sv-tutor,.sv-td,.sv-scr{animation:none}}
 
 /* ===== page animations (only when the visitor has not asked for reduced motion) ===== */
 .sv-prog{position:fixed;top:0;left:0;width:100%;height:3px;background:#EBB92E;transform-origin:left;transform:scaleX(var(--p,0));z-index:300;pointer-events:none}
