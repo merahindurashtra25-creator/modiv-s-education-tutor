@@ -218,92 +218,19 @@
           submitted_at: now, registered_at: now,
           status: 'pending', approval: 'pending', free: false
         };
-        function saveLocal(p) {
-          try {
-            var leads = jget('modivs_active_leads', []);
-            var sdb = jget('modivs_students_db', []);
-            var idx = leads.findIndex(function (x) { return x.id === p.id; });
-            if (idx > -1) leads[idx] = Object.assign({}, leads[idx], p); else leads.unshift(p);
-            var sIdx = sdb.findIndex(function (x) { return x.id === p.id; });
-            if (sIdx > -1) sdb[sIdx] = Object.assign({}, sdb[sIdx], p); else sdb.unshift(p);
-            localStorage.setItem('modivs_active_leads', JSON.stringify(leads));
-            localStorage.setItem('modivs_students_db', JSON.stringify(sdb));
-            localStorage.setItem('modivs_student_req', JSON.stringify(p));
-            localStorage.setItem('modivs_current_student', JSON.stringify(p));
-            localStorage.setItem('modivs_last_submitted_lead', JSON.stringify(p));
-          } catch (e) { }
-          if (window.ModivsNotifications && typeof window.ModivsNotifications.createNotification === 'function') {
-            try {
-              window.ModivsNotifications.createNotification({
-                title: 'New Quick Requirement: ' + (p.city || city),
-                message: (p.studentName || 'Student') + ' requested ' + (p.subject || '') + ' in ' + (p.area || '') + '.',
-                type: 'lead',
-                actionUrl: 'modivs-active-leads.html'
-              });
-            } catch (ne) { }
-          }
-        }
-
-        function doneSuccess() {
+        fetch('/api/leads', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+          body: JSON.stringify(payload),
+          credentials: 'include'
+        }).then(function (r) {
+          if (!r.ok) throw new Error('HTTP ' + r.status);
           noteSent();
-          S.done = true;
-          S.name = tc(name.value).split(' ')[0];
-          S.phone = ph;
+          S.done = true; S.name = tc(name.value).split(' ')[0]; S.phone = ph;
           render();
-        }
-
-        // Always save locally first so requirement is never lost (GitHub Pages / offline safe)
-        saveLocal(payload);
-
-        // Tier 1: ModivsSync if available
-        if (window.ModivsSync && typeof window.ModivsSync.saveLead === 'function') {
-          window.ModivsSync.saveLead(payload).then(doneSuccess).catch(function () {
-            doneSuccess();
-          });
-          return;
-        }
-
-        // Tier 2: Direct Firestore write with anonymous auth if not signed in
-        var fb = window.EducationBFirebase || window.firebase;
-        var firestore = (fb && fb.db) || (window.firebase && typeof window.firebase.firestore === 'function' ? window.firebase.firestore() : null);
-        var auth = (fb && fb.auth) || (window.firebase && typeof window.firebase.auth === 'function' ? window.firebase.auth() : null);
-
-        function tryFirestore() {
-          if (!firestore) return Promise.reject(new Error('No Firestore'));
-          var authP = Promise.resolve();
-          if (auth && !auth.currentUser && typeof auth.signInAnonymously === 'function') {
-            authP = auth.signInAnonymously().catch(function () { return null; });
-          }
-          return authP.then(function () {
-            var ts = (window.firebase && firebase.firestore && firebase.firestore.FieldValue)
-              ? firebase.firestore.FieldValue.serverTimestamp()
-              : now;
-            var docData = Object.assign({}, payload, { createdAt: ts, updatedAt: ts });
-            return Promise.all([
-              firestore.collection('leads').doc(payload.id).set(docData, { merge: true }),
-              firestore.collection('students').doc(payload.id).set(docData, { merge: true })
-            ]);
-          });
-        }
-
-        // Tier 3: Server API /api/leads
-        function tryApi() {
-          return fetch('/api/leads', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            body: JSON.stringify(payload),
-            credentials: 'include'
-          }).then(function (r) {
-            if (!r.ok) throw new Error('HTTP ' + r.status);
-            return r;
-          });
-        }
-
-        tryFirestore().then(doneSuccess).catch(function () {
-          tryApi().then(doneSuccess).catch(function () {
-            // Local fallback already securely saved the record
-            doneSuccess();
-          });
+        }).catch(function () {
+          send.disabled = false; send.textContent = 'Get tutors for free';
+          err.textContent = 'Could not send right now. Please try again, or call +91 98969 30443.';
         });
       });
       return f;

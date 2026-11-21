@@ -4,8 +4,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js?v=mwoy8cj5-2oklo"></script>
-
+  <script src="modivs.min.js?v=mwpxs6nj-h5qub"></script>
   
 <link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
@@ -61,10 +60,10 @@ button,input,select,textarea{font-family:inherit}
 .dash .dlg .card{background:#fff;border-radius:18px;padding:22px;width:100%;max-width:560px;max-height:calc(100vh - 40px);overflow:auto}
 @media(max-width:640px){.dash .grid2{grid-template-columns:1fr}.dash .kv{grid-template-columns:1fr;gap:2px 0}.dash .kv dd{margin-bottom:8px}.dash .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash .nav{display:flex;overflow-x:auto;gap:6px}.dash .nav button{white-space:nowrap;width:auto}}
 </style>
-<link rel="stylesheet" href="modivs-menu.css?v=mwoy8cj5-2oklo">
-<link rel="stylesheet" href="modivs-mobile.css?v=mwoy8cj5-2oklo">
-<link rel="stylesheet" href="modivs-dashboard.css?v=mwoy8cj5-2oklo">
-<link rel="stylesheet" href="modivs-footer.css?v=mwoy8cj5-2oklo">
+<link rel="stylesheet" href="modivs-menu.css?v=mwpxs6nj-h5qub">
+<link rel="stylesheet" href="modivs-mobile.css?v=mwpxs6nj-h5qub">
+<link rel="stylesheet" href="modivs-dashboard.css?v=mwpxs6nj-h5qub">
+<link rel="stylesheet" href="modivs-footer.css?v=mwpxs6nj-h5qub">
 </head>
 <body class="dash">
 
@@ -97,7 +96,7 @@ button,input,select,textarea{font-family:inherit}
 </script>
 <header class="dh">
  <div class="dh-in">
-  <a class="dh-brand" href="modivs-home.html"><img src="logo.png" alt="Modiv’s Education"></a>
+  <a class="dh-brand" href="/"><img src="logo.png" alt="Modiv’s Education"></a>
   <div class="dh-sp"></div>
   <div class="dh-user">
    <button type="button" class="dh-ub" id="dhUserBtn" aria-haspopup="true" aria-expanded="false" aria-controls="dhMenu">
@@ -105,9 +104,9 @@ button,input,select,textarea{font-family:inherit}
    </button>
    <div class="dh-menu" id="dhMenu" hidden>
     <div class="dh-who"><b id="dhWho">Organization</b><span class="ver">Organization</span></div>
-    <a href="modivs-home.html"><svg class="ic" aria-hidden="true"><use href="#i-home"></use></svg>Home</a>
+    <a href="/"><svg class="ic" aria-hidden="true"><use href="#i-home"></use></svg>Home</a>
     <button type="button" data-view="details"><svg class="ic" aria-hidden="true"><use href="#i-edit"></use></svg>Edit organization details</button>
-    <a href="modivs-guide.html#tutor"><svg class="ic" aria-hidden="true"><use href="#i-help"></use></svg>How to use</a>
+    <a href="/guide#tutor"><svg class="ic" aria-hidden="true"><use href="#i-help"></use></svg>How to use</a>
     <button type="button" class="out" id="logoutTop"><svg class="ic" aria-hidden="true"><use href="#i-out"></use></svg>Log out</button>
    </div>
   </div>
@@ -294,7 +293,7 @@ function matchLeads(o){
 function vLeads(){
  var o=org(),ls=matchLeads(o);
  if(!approved(o))return '<div class="hd"><div><h1 class="pt">Student leads</h1><p class="sub">Requirements that match your subjects and city.</p></div></div>'+approvalBanner(o)+'<section class="box"><div class="empty">Student leads unlock once our team approves your organization.'+(pct(o)<100?'<br><br><button class="b y sm" data-view="details">Complete your details</button>':'')+'</div></section>';
- var h='<div class="hd"><div><h1 class="pt">Student leads</h1><p class="sub">Requirements that match your subjects and city.</p></div><a class="b y" href="modivs-active-leads.html">Open all active leads</a></div><section class="box">';
+ var h='<div class="hd"><div><h1 class="pt">Student leads</h1><p class="sub">Requirements that match your subjects and city.</p></div><a class="b y" href="/active-leads">Open all active leads</a></div><section class="box">';
  if(!(o.subjects||[]).length)h+='<div class="banner"><p>Add the subjects you offer to see better-matched leads.</p><button class="b y sm" data-view="details">Add subjects</button></div>';
  h+=ls.length?ls.slice(0,12).map(function(l){return '<div class="rrow"><span class="pic">'+esc(ModivsDash.initials(l.name))+'</span><div class="info"><b>'+esc((l.subs||[]).join(', ')||'Requirement')+' · '+esc(l.cls||'')+'</b><small>'+esc([l.city,(l.mode||[]).join(', '),l.budget,l.timeSlot].filter(Boolean).join(' · '))+'</small></div></div>'}).join(''):'<div class="empty">No matching leads right now. Check back soon.</div>';
  return h+'</section>'}

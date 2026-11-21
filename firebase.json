@@ -15,5 +15,641 @@
       "firebase-debug.log",
       "firebase-debug.*.log"
     ]
+  },
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "trailingSlash": false,
+    "rewrites": [
+      {
+        "source": "/home",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/index",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/chandigarh",
+        "destination": "/modivs-tutors-chandigarh.html"
+      },
+      {
+        "source": "/mohali",
+        "destination": "/modivs-tutors-mohali.html"
+      },
+      {
+        "source": "/panchkula",
+        "destination": "/modivs-tutors-panchkula.html"
+      },
+      {
+        "source": "/tutors",
+        "destination": "/modivs-tutors.html"
+      },
+      {
+        "source": "/active-leads",
+        "destination": "/modivs-active-leads.html"
+      },
+      {
+        "source": "/leads",
+        "destination": "/modivs-active-leads.html"
+      },
+      {
+        "source": "/find-tutor",
+        "destination": "/modivs-find-tutor.html"
+      },
+      {
+        "source": "/find",
+        "destination": "/modivs-find-tutor.html"
+      },
+      {
+        "source": "/post-requirement",
+        "destination": "/modivs-post-requirement.html"
+      },
+      {
+        "source": "/post",
+        "destination": "/modivs-post-requirement.html"
+      },
+      {
+        "source": "/become-tutor",
+        "destination": "/modivs-become-tutor.html"
+      },
+      {
+        "source": "/teach",
+        "destination": "/modivs-become-tutor.html"
+      },
+      {
+        "source": "/our-vision",
+        "destination": "/modivs-social-vision.html"
+      },
+      {
+        "source": "/blogs",
+        "destination": "/modivs-blogs.html"
+      },
+      {
+        "source": "/blog",
+        "destination": "/modivs-blogs.html"
+      },
+      {
+        "source": "/students-corner",
+        "destination": "/modivs-students-corner.html"
+      },
+      {
+        "source": "/notes",
+        "destination": "/modivs-notes.html"
+      },
+      {
+        "source": "/videos",
+        "destination": "/modivs-videos.html"
+      },
+      {
+        "source": "/shop",
+        "destination": "/modivs-shop.html"
+      },
+      {
+        "source": "/guide",
+        "destination": "/modivs-guide.html"
+      },
+      {
+        "source": "/contact",
+        "destination": "/modivs-contact.html"
+      },
+      {
+        "source": "/contact-us",
+        "destination": "/modivs-contact.html"
+      },
+      {
+        "source": "/login",
+        "destination": "/modivs-education.html"
+      },
+      {
+        "source": "/signin",
+        "destination": "/modivs-education.html"
+      },
+      {
+        "source": "/signup",
+        "destination": "/modivs-signup.html"
+      },
+      {
+        "source": "/demo",
+        "destination": "/modivs-demo.html"
+      },
+      {
+        "source": "/privacy",
+        "destination": "/modivs-privacy-policy.html"
+      },
+      {
+        "source": "/privacy-policy",
+        "destination": "/modivs-privacy-policy.html"
+      },
+      {
+        "source": "/terms",
+        "destination": "/modivs-terms.html"
+      },
+      {
+        "source": "/refunds",
+        "destination": "/modivs-refund-policy.html"
+      },
+      {
+        "source": "/refund-policy",
+        "destination": "/modivs-refund-policy.html"
+      },
+      {
+        "source": "/sitemap",
+        "destination": "/modivs-sitemap.html"
+      },
+      {
+        "source": "/admin",
+        "destination": "/modivs-admin.html"
+      },
+      {
+        "source": "/student-dashboard",
+        "destination": "/modivs-student-dashboard.html"
+      },
+      {
+        "source": "/tutor-dashboard",
+        "destination": "/modivs-tutor-dashboard.html"
+      },
+      {
+        "source": "/parent-dashboard",
+        "destination": "/modivs-parent-dashboard.html"
+      },
+      {
+        "source": "/org-dashboard",
+        "destination": "/modivs-org-dashboard.html"
+      },
+      {
+        "source": "/tutor-profile",
+        "destination": "/modivs-tutor-profile.html"
+      },
+      {
+        "source": "/tutor-edit-profile",
+        "destination": "/modivs-tutor-edit-profile.html"
+      },
+      {
+        "source": "/student-signup",
+        "destination": "/modivs-student-signup.html"
+      },
+      {
+        "source": "/parent-signup",
+        "destination": "/modivs-parent-signup.html"
+      },
+      {
+        "source": "/user-signup",
+        "destination": "/modivs-user-signup.html"
+      },
+      {
+        "source": "/student-registration",
+        "destination": "/modivs-student-registration.html"
+      },
+      {
+        "source": "/parent-registration",
+        "destination": "/modivs-parent-registration.html"
+      },
+      {
+        "source": "/main",
+        "destination": "/index.html"
+      },
+      {
+        "source": "/activeleads",
+        "destination": "/modivs-active-leads.html"
+      },
+      {
+        "source": "/admindashboard",
+        "destination": "/modivs-admin.html"
+      },
+      {
+        "source": "/admin-dashboard",
+        "destination": "/modivs-admin.html"
+      },
+      {
+        "source": "/becometutor",
+        "destination": "/modivs-become-tutor.html"
+      },
+      {
+        "source": "/become-a-modivian-tutor",
+        "destination": "/modivs-become-tutor.html"
+      },
+      {
+        "source": "/become-a-tutor",
+        "destination": "/modivs-become-tutor.html"
+      },
+      {
+        "source": "/becomemodiviantutor",
+        "destination": "/modivs-become-tutor.html"
+      },
+      {
+        "source": "/becomeatutor",
+        "destination": "/modivs-become-tutor.html"
+      },
+      {
+        "source": "/ourvision",
+        "destination": "/modivs-social-vision.html"
+      },
+      {
+        "source": "/social-vision",
+        "destination": "/modivs-social-vision.html"
+      },
+      {
+        "source": "/vision",
+        "destination": "/modivs-social-vision.html"
+      },
+      {
+        "source": "/socialvision",
+        "destination": "/modivs-social-vision.html"
+      },
+      {
+        "source": "/our-social-vision",
+        "destination": "/modivs-social-vision.html"
+      },
+      {
+        "source": "/articles",
+        "destination": "/modivs-blogs.html"
+      },
+      {
+        "source": "/contactus",
+        "destination": "/modivs-contact.html"
+      },
+      {
+        "source": "/support",
+        "destination": "/modivs-contact.html"
+      },
+      {
+        "source": "/help",
+        "destination": "/modivs-contact.html"
+      },
+      {
+        "source": "/book-demo",
+        "destination": "/modivs-demo.html"
+      },
+      {
+        "source": "/education",
+        "destination": "/modivs-education.html"
+      },
+      {
+        "source": "/sign-in",
+        "destination": "/modivs-education.html"
+      },
+      {
+        "source": "/portal",
+        "destination": "/modivs-education.html"
+      },
+      {
+        "source": "/findtutor",
+        "destination": "/modivs-find-tutor.html"
+      },
+      {
+        "source": "/find-a-tutor",
+        "destination": "/modivs-find-tutor.html"
+      },
+      {
+        "source": "/findatutor",
+        "destination": "/modivs-find-tutor.html"
+      },
+      {
+        "source": "/find-a-modivian-tutor",
+        "destination": "/modivs-find-tutor.html"
+      },
+      {
+        "source": "/findamodiviantutor",
+        "destination": "/modivs-find-tutor.html"
+      },
+      {
+        "source": "/how-to-use",
+        "destination": "/modivs-guide.html"
+      },
+      {
+        "source": "/howtouse",
+        "destination": "/modivs-guide.html"
+      },
+      {
+        "source": "/student-tutor-guide",
+        "destination": "/modivs-guide.html"
+      },
+      {
+        "source": "/studenttutorguide",
+        "destination": "/modivs-guide.html"
+      },
+      {
+        "source": "/home-page",
+        "destination": "/modivs-home.html"
+      },
+      {
+        "source": "/homepage",
+        "destination": "/modivs-home.html"
+      },
+      {
+        "source": "/modivs-home",
+        "destination": "/modivs-home.html"
+      },
+      {
+        "source": "/free-notes",
+        "destination": "/modivs-notes.html"
+      },
+      {
+        "source": "/study-notes",
+        "destination": "/modivs-notes.html"
+      },
+      {
+        "source": "/orgdashboard",
+        "destination": "/modivs-org-dashboard.html"
+      },
+      {
+        "source": "/organization-dashboard",
+        "destination": "/modivs-org-dashboard.html"
+      },
+      {
+        "source": "/organizationdashboard",
+        "destination": "/modivs-org-dashboard.html"
+      },
+      {
+        "source": "/parentdashboard",
+        "destination": "/modivs-parent-dashboard.html"
+      },
+      {
+        "source": "/parentdash",
+        "destination": "/modivs-parent-dashboard.html"
+      },
+      {
+        "source": "/parentregistration",
+        "destination": "/modivs-parent-registration.html"
+      },
+      {
+        "source": "/parent-reg",
+        "destination": "/modivs-parent-registration.html"
+      },
+      {
+        "source": "/parentsignup",
+        "destination": "/modivs-parent-signup.html"
+      },
+      {
+        "source": "/parentsign-up",
+        "destination": "/modivs-parent-signup.html"
+      },
+      {
+        "source": "/postrequirement",
+        "destination": "/modivs-post-requirement.html"
+      },
+      {
+        "source": "/post-a-requirement",
+        "destination": "/modivs-post-requirement.html"
+      },
+      {
+        "source": "/postarequirement",
+        "destination": "/modivs-post-requirement.html"
+      },
+      {
+        "source": "/postreq",
+        "destination": "/modivs-post-requirement.html"
+      },
+      {
+        "source": "/privacypolicy",
+        "destination": "/modivs-privacy-policy.html"
+      },
+      {
+        "source": "/refundpolicy",
+        "destination": "/modivs-refund-policy.html"
+      },
+      {
+        "source": "/refund-and-cancellation-policy",
+        "destination": "/modivs-refund-policy.html"
+      },
+      {
+        "source": "/refundandcancellationpolicy",
+        "destination": "/modivs-refund-policy.html"
+      },
+      {
+        "source": "/refund",
+        "destination": "/modivs-refund-policy.html"
+      },
+      {
+        "source": "/cancellation-policy",
+        "destination": "/modivs-refund-policy.html"
+      },
+      {
+        "source": "/store",
+        "destination": "/modivs-shop.html"
+      },
+      {
+        "source": "/modivs-shop",
+        "destination": "/modivs-shop.html"
+      },
+      {
+        "source": "/books",
+        "destination": "/modivs-shop.html"
+      },
+      {
+        "source": "/sign-up",
+        "destination": "/modivs-signup.html"
+      },
+      {
+        "source": "/register",
+        "destination": "/modivs-signup.html"
+      },
+      {
+        "source": "/site-map",
+        "destination": "/modivs-sitemap.html"
+      },
+      {
+        "source": "/studentdashboard",
+        "destination": "/modivs-student-dashboard.html"
+      },
+      {
+        "source": "/studentdash",
+        "destination": "/modivs-student-dashboard.html"
+      },
+      {
+        "source": "/studentregistration",
+        "destination": "/modivs-student-registration.html"
+      },
+      {
+        "source": "/student-parent-registration",
+        "destination": "/modivs-student-registration.html"
+      },
+      {
+        "source": "/studentparentregistration",
+        "destination": "/modivs-student-registration.html"
+      },
+      {
+        "source": "/studentsignup",
+        "destination": "/modivs-student-signup.html"
+      },
+      {
+        "source": "/book-a-demo-class",
+        "destination": "/modivs-student-signup.html"
+      },
+      {
+        "source": "/bookademoclass",
+        "destination": "/modivs-student-signup.html"
+      },
+      {
+        "source": "/demo-class",
+        "destination": "/modivs-student-signup.html"
+      },
+      {
+        "source": "/democlass",
+        "destination": "/modivs-student-signup.html"
+      },
+      {
+        "source": "/studentscorner",
+        "destination": "/modivs-students-corner.html"
+      },
+      {
+        "source": "/free-notes-files-quizzes",
+        "destination": "/modivs-students-corner.html"
+      },
+      {
+        "source": "/freenotesfilesquizzes",
+        "destination": "/modivs-students-corner.html"
+      },
+      {
+        "source": "/terms-and-conditions",
+        "destination": "/modivs-terms.html"
+      },
+      {
+        "source": "/termsandconditions",
+        "destination": "/modivs-terms.html"
+      },
+      {
+        "source": "/terms-of-service",
+        "destination": "/modivs-terms.html"
+      },
+      {
+        "source": "/tutordashboard",
+        "destination": "/modivs-tutor-dashboard.html"
+      },
+      {
+        "source": "/tutordash",
+        "destination": "/modivs-tutor-dashboard.html"
+      },
+      {
+        "source": "/tutoreditprofile",
+        "destination": "/modivs-tutor-edit-profile.html"
+      },
+      {
+        "source": "/edit-tutor-profile",
+        "destination": "/modivs-tutor-edit-profile.html"
+      },
+      {
+        "source": "/edittutorprofile",
+        "destination": "/modivs-tutor-edit-profile.html"
+      },
+      {
+        "source": "/tutorprofile",
+        "destination": "/modivs-tutor-profile.html"
+      },
+      {
+        "source": "/tutor-registration",
+        "destination": "/modivs-tutor-profile.html"
+      },
+      {
+        "source": "/tutorregistration",
+        "destination": "/modivs-tutor-profile.html"
+      },
+      {
+        "source": "/tutors-in-chandigarh",
+        "destination": "/modivs-tutors-chandigarh.html"
+      },
+      {
+        "source": "/tutorsinchandigarh",
+        "destination": "/modivs-tutors-chandigarh.html"
+      },
+      {
+        "source": "/chandigarh-tutors",
+        "destination": "/modivs-tutors-chandigarh.html"
+      },
+      {
+        "source": "/chandigarhtutors",
+        "destination": "/modivs-tutors-chandigarh.html"
+      },
+      {
+        "source": "/home-tuition-near-me-in-chandigarh",
+        "destination": "/modivs-tutors-chandigarh.html"
+      },
+      {
+        "source": "/hometuitionchandigarh",
+        "destination": "/modivs-tutors-chandigarh.html"
+      },
+      {
+        "source": "/tutors-in-mohali",
+        "destination": "/modivs-tutors-mohali.html"
+      },
+      {
+        "source": "/tutorsinmohali",
+        "destination": "/modivs-tutors-mohali.html"
+      },
+      {
+        "source": "/mohali-tutors",
+        "destination": "/modivs-tutors-mohali.html"
+      },
+      {
+        "source": "/mohalitutors",
+        "destination": "/modivs-tutors-mohali.html"
+      },
+      {
+        "source": "/home-tuition-near-me-in-mohali",
+        "destination": "/modivs-tutors-mohali.html"
+      },
+      {
+        "source": "/hometuitionmohali",
+        "destination": "/modivs-tutors-mohali.html"
+      },
+      {
+        "source": "/tutors-in-panchkula",
+        "destination": "/modivs-tutors-panchkula.html"
+      },
+      {
+        "source": "/tutorsinpanchkula",
+        "destination": "/modivs-tutors-panchkula.html"
+      },
+      {
+        "source": "/panchkula-tutors",
+        "destination": "/modivs-tutors-panchkula.html"
+      },
+      {
+        "source": "/panchkulatutors",
+        "destination": "/modivs-tutors-panchkula.html"
+      },
+      {
+        "source": "/home-tuition-near-me-in-panchkula",
+        "destination": "/modivs-tutors-panchkula.html"
+      },
+      {
+        "source": "/hometuitionpanchkula",
+        "destination": "/modivs-tutors-panchkula.html"
+      },
+      {
+        "source": "/browse-tutors",
+        "destination": "/modivs-tutors.html"
+      },
+      {
+        "source": "/browsetutors",
+        "destination": "/modivs-tutors.html"
+      },
+      {
+        "source": "/meet-our-verified-tutors",
+        "destination": "/modivs-tutors.html"
+      },
+      {
+        "source": "/tutor",
+        "destination": "/modivs-tutors.html"
+      },
+      {
+        "source": "/usersignup",
+        "destination": "/modivs-user-signup.html"
+      },
+      {
+        "source": "/usersign-up",
+        "destination": "/modivs-user-signup.html"
+      },
+      {
+        "source": "/video-lectures",
+        "destination": "/modivs-videos.html"
+      }
+    ]
   }
 }

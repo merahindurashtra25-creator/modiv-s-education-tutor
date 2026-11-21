@@ -1,11 +1,11 @@
 /* Modiv's Education - Auto Clean SEO-Friendly Slug Utility
    Generates clean, human-readable, URL-safe slugs for blogs, tutor profiles, leads & pages.
-   Removes hyphens (-) so URLs show in clean title format e.g. "modivs tutors chandigarh".
+   Provides free (hyphen-free) and clear (clean) slugs of all pages according to their title.
    Works in browser (window.ModivsSlug) and Node.js (CommonJS). */
-(function (root, factory) {
-  if (typeof module === 'object' && module.exports) { module.exports = factory(); }
+(function(root, factory){
+  if(typeof module === 'object' && module.exports){ module.exports = factory(); }
   else { root.ModivsSlug = factory(); }
-})(typeof globalThis !== 'undefined' ? globalThis : this, function () {
+})(typeof globalThis !== 'undefined' ? globalThis : this, function(){
   'use strict';
 
   var CHAR_MAP = {
@@ -13,25 +13,33 @@
   };
 
   /**
-   * Cleans any arbitrary string into an SEO-friendly hyphenated slug.
+   * Cleans any arbitrary string into an SEO-friendly slug.
+   * Handles accents (Unicode NFD), punctuation removal, whitespace deduplication,
+   * hyphen trimming, and clean word-boundary truncation.
    */
-  function slugify(text, opts) {
+  function slugify(text, opts){
     opts = opts || {};
     var max = opts.maxLength || 80;
     var str = String(text || '');
 
-    str = str.replace(/[&@%+]/g, function (c) { return ' ' + (CHAR_MAP[c] || '') + ' '; });
+    // Symbol expansions
+    str = str.replace(/[&@%+]/g, function(c){ return ' ' + (CHAR_MAP[c] || '') + ' '; });
+
+    // Normalize unicode accents: é -> e, ñ -> n, etc.
     str = str.normalize ? str.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : str;
 
+    // Convert to lower case, replace non-alphanumeric with hyphens
     str = str.toLowerCase()
       .replace(/[^a-z0-9\s-]/g, ' ')
       .trim()
       .replace(/[\s_]+/g, '-')
       .replace(/-+/g, '-');
 
+    // Trim leading and trailing hyphens
     str = str.replace(/^-+|-+$/g, '');
 
-    if (max && str.length > max) {
+    // Truncate at word boundary if exceeding max length
+    if(max && str.length > max){
       var cut = str.slice(0, max);
       var lastDash = cut.lastIndexOf('-');
       str = (lastDash > 15 ? cut.slice(0, lastDash) : cut).replace(/-+$/g, '');
@@ -41,32 +49,17 @@
   }
 
   /**
-   * Generates a hyphen-free slug with single spaces (e.g. "modivs-tutors-chandigarh" -> "modivs tutors chandigarh").
+   * Generates a free (hyphen-free) clean slug.
+   * e.g. "Find a Tutor" -> "findatutor"
    */
-  function titleSlug(text, opts) {
-    var raw = String(text || '').replace(/\.html?$/i, '');
-    raw = raw.replace(/[&@%+]/g, function (c) { return ' ' + (CHAR_MAP[c] || '') + ' '; });
-    raw = raw.normalize ? raw.normalize('NFD').replace(/[\u0300-\u036f]/g, '') : raw;
-    raw = raw.toLowerCase()
-      .replace(/[-_]+/g, ' ')
-      .replace(/[^a-z0-9\s]/g, ' ')
-      .trim()
-      .replace(/\s+/g, ' ');
-    return raw || (opts && opts.fallback) || 'modivs';
-  }
-
-  /**
-   * Generates a free (hyphen-free and space-free) slug.
-   * e.g. "modivs tutors chandigarh" -> "modivstutorschandigarh"
-   */
-  function freeSlug(text, opts) {
+  function freeSlug(text, opts){
     return slugify(text, opts).replace(/-/g, '');
   }
 
   /**
    * Generates a clean slug from page title by stripping site brand and boilerplate.
    */
-  function pageTitle(title, opts) {
+  function pageTitle(title, opts){
     var s = String(title || '')
       .replace(/\s*[-|·—]\s*Modiv(?:['’]s)?\s*Education.*$/i, '')
       .replace(/^Modiv(?:['’]s)?\s*Education\s*[-|·—]\s*/i, '')
@@ -75,194 +68,208 @@
     return slugify(s || title, opts);
   }
 
-  function blog(title) {
+  /**
+   * Generates a clean blog slug from title.
+   * e.g. "10 Tips for CBSE Board Exams!" -> "10-tips-for-cbse-board-exams"
+   */
+  function blog(title){
     return slugify(title, { maxLength: 85, fallback: 'blog-post' });
   }
 
-  function tutor(t) {
-    if (!t) return 'tutor';
+  /**
+   * Generates a clean tutor SEO slug: name + primary subject + city
+   * e.g. Name: "Dr. Priya Verma", Subject: "Physics", City: "Chandigarh"
+   * -> "dr-priya-verma-physics-chandigarh"
+   */
+  function tutor(t){
+    if(!t) return 'tutor';
     var parts = [];
-    if (t.name) parts.push(t.name);
+    if(t.name) parts.push(t.name);
     var sub = Array.isArray(t.subs) ? t.subs[0] : (t.subject || '');
-    if (sub) parts.push(sub);
-    if (t.city && t.city.toLowerCase() !== 'all') parts.push(t.city);
+    if(sub) parts.push(sub);
+    if(t.city && t.city.toLowerCase() !== 'all') parts.push(t.city);
     return slugify(parts.join(' '), { maxLength: 80, fallback: 'tutor' });
   }
 
-  function lead(l) {
-    if (!l) return 'tuition-lead';
+  /**
+   * Generates a clean tuition lead slug: class/subject/city
+   * e.g. "Class 10 CBSE Maths Tuition in Mohali"
+   */
+  function lead(l){
+    if(!l) return 'tuition-lead';
     var parts = [];
-    if (l.cls || l.class) parts.push('class-' + (l.cls || l.class));
-    if (l.subject || l.sub) parts.push(l.subject || l.sub);
-    if (l.city) parts.push(l.city);
-    return slugify(parts.join(' '), { maxLength: 80, fallback: 'tuition-lead' });
+    if(l.cls || l.class) parts.push('class-' + (l.cls || l.class));
+    if(l.subject || l.sub) parts.push(l.subject || l.sub);
+    if(l.city) parts.push(l.city);
+    return slugify(parts.join(' ') || l.title || 'tuition-lead', { maxLength: 80, fallback: 'tuition-lead' });
   }
 
   /**
-   * Master registry of all site pages with their file, full title, clean titleSlug without hyphens, clear slug, and free slug.
+   * Master registry of all site pages with their file, full title, clear slug, and free slug.
    */
   var PAGES = [
-    { file: 'index.html', title: 'Modiv’s Education – Home', shortTitle: 'Home', titleSlug: 'modivs education', slug: 'home', freeSlug: 'home', aliases: ['index', 'main', 'modivs', 'modivs education home', 'home'] },
-    { file: 'modivs-tutors-chandigarh.html', title: 'Home tuition near me in Chandigarh | Best Home Tutors', shortTitle: 'Tutors in Chandigarh', titleSlug: 'modivs tutors chandigarh', slug: 'tutors-in-chandigarh', freeSlug: 'tutorsinchandigarh', aliases: ['modivs tutors chandigarh', 'tutors in chandigarh', 'home tuition near me in chandigarh', 'chandigarh tutors', 'chandigarhtutors', 'home-tuition-near-me-in-chandigarh', 'chandigarh-tutors', 'hometuitionchandigarh'] },
-    { file: 'modivs-tutors-mohali.html', title: 'Home tuition near me in Mohali | Best Home Tutors', shortTitle: 'Tutors in Mohali', titleSlug: 'modivs tutors mohali', slug: 'tutors-in-mohali', freeSlug: 'tutorsinmohali', aliases: ['modivs tutors mohali', 'tutors in mohali', 'home tuition near me in mohali', 'mohali tutors', 'mohalitutors', 'home-tuition-near-me-in-mohali', 'mohali-tutors', 'hometuitionmohali'] },
-    { file: 'modivs-tutors-panchkula.html', title: 'Home tuition near me in Panchkula | Best Home Tutors', shortTitle: 'Tutors in Panchkula', titleSlug: 'modivs tutors panchkula', slug: 'tutors-in-panchkula', freeSlug: 'tutorsinpanchkula', aliases: ['modivs tutors panchkula', 'tutors in panchkula', 'home tuition near me in panchkula', 'panchkula tutors', 'panchkulatutors', 'home-tuition-near-me-in-panchkula', 'panchkula-tutors', 'hometuitionpanchkula'] },
-    { file: 'modivs-active-leads.html', title: 'Modiv’s Education – Active Leads', shortTitle: 'Active Leads', titleSlug: 'modivs active leads', slug: 'active-leads', freeSlug: 'activeleads', aliases: ['active leads', 'leads', 'active-leads'] },
-    { file: 'modivs-admin.html', title: 'Modiv’s Education – Admin', shortTitle: 'Admin', titleSlug: 'modivs admin', slug: 'admin', freeSlug: 'admin', aliases: ['admin', 'admin dashboard', 'admindashboard', 'admin-dashboard'] },
-    { file: 'modivs-become-tutor.html', title: 'Become a Modivian Tutor · Teach online, at home or in groups · Modiv’s Education', shortTitle: 'Become a Tutor', titleSlug: 'modivs become tutor', slug: 'become-a-modivian-tutor', freeSlug: 'becometutor', aliases: ['become a tutor', 'become tutor', 'become-a-tutor', 'become-tutor', 'becomemodiviantutor', 'becomeatutor'] },
-    { file: 'modivs-find-tutor.html', title: 'Find a Modivian Tutor · Verified home, online & group tutors · Modiv’s Education', shortTitle: 'Find a Tutor', titleSlug: 'modivs find tutor', slug: 'find-a-tutor', freeSlug: 'findtutor', aliases: ['find a tutor', 'find tutor', 'find-a-modivian-tutor', 'find-tutor', 'findatutor', 'findamodiviantutor'] },
-    { file: 'modivs-tutors.html', title: 'Modiv’s Education – Meet our verified tutors', shortTitle: 'Browse Tutors', titleSlug: 'modivs tutors', slug: 'tutors', freeSlug: 'tutors', aliases: ['browse tutors', 'meet our verified tutors', 'meet-our-verified-tutors', 'browse-tutors', 'browsetutors'] },
-    { file: 'modivs-blogs.html', title: 'Blogs – Modiv’s Education', shortTitle: 'Blogs', titleSlug: 'modivs blogs', slug: 'blogs', freeSlug: 'blogs', aliases: ['blogs', 'blog', 'articles'] },
-    { file: 'modivs-contact.html', title: 'Modiv’s Education – Contact us', shortTitle: 'Contact Us', titleSlug: 'modivs contact', slug: 'contact-us', freeSlug: 'contactus', aliases: ['contact us', 'contact', 'support', 'help'] },
-    { file: 'modivs-education.html', title: 'Modiv’s Education', shortTitle: 'Login / Portal', titleSlug: 'modivs education login', slug: 'login', freeSlug: 'login', aliases: ['login', 'signin', 'sign-in', 'portal', 'education'] },
-    { file: 'modivs-shop.html', title: 'Modiv’s Education – Shop', shortTitle: 'Shop', titleSlug: 'modivs shop', slug: 'shop', freeSlug: 'shop', aliases: ['shop', 'store', 'modivs-shop', 'books'] },
-    { file: 'modivs-guide.html', title: 'How to use Modiv’s Education · Student & Tutor guide', shortTitle: 'Guide', titleSlug: 'modivs guide', slug: 'guide', freeSlug: 'guide', aliases: ['guide', 'how to use', 'how-to-use', 'howtouse', 'student-tutor-guide', 'studenttutorguide'] },
-    { file: 'modivs-home.html', title: 'Modiv’s Education – Home', shortTitle: 'Home (Legacy)', titleSlug: 'modivs home', slug: 'modivs-home', freeSlug: 'modivshome', aliases: ['home-page', 'home'] },
-    { file: 'modivs-org-dashboard.html', title: 'Modiv’s Education – Organization dashboard', shortTitle: 'Organization Dashboard', titleSlug: 'modivs org dashboard', slug: 'org-dashboard', freeSlug: 'orgdashboard', aliases: ['organization dashboard', 'org dashboard', 'organization-dashboard', 'organizationdashboard'] },
-    { file: 'modivs-post-requirement.html', title: 'Post a Requirement · Modiv’s Education', shortTitle: 'Post a Requirement', titleSlug: 'modivs post requirement', slug: 'post-requirement', freeSlug: 'postrequirement', aliases: ['post a requirement', 'post requirement', 'post-a-requirement', 'postarequirement', 'postreq'] },
-    { file: 'modivs-privacy-policy.html', title: 'Privacy Policy | Modiv’s Education', shortTitle: 'Privacy Policy', titleSlug: 'modivs privacy policy', slug: 'privacy-policy', freeSlug: 'privacypolicy', aliases: ['privacy policy', 'privacy-policy', 'privacy'] },
-    { file: 'modivs-refund-policy.html', title: 'Refund and Cancellation Policy | Modiv’s Education', shortTitle: 'Refund Policy', titleSlug: 'modivs refund policy', slug: 'refund-policy', freeSlug: 'refundpolicy', aliases: ['refund policy', 'refund-policy', 'refund-and-cancellation-policy', 'refundandcancellationpolicy', 'refund', 'cancellation-policy'] },
-    { file: 'modivs-signup.html', title: 'Sign up · Modiv’s Education', shortTitle: 'Sign Up', titleSlug: 'modivs signup', slug: 'signup', freeSlug: 'signup', aliases: ['sign up', 'signup', 'sign-up', 'register'] },
-    { file: 'modivs-sitemap.html', title: 'Sitemap | Modiv’s Education', shortTitle: 'Sitemap', titleSlug: 'modivs sitemap', slug: 'sitemap', freeSlug: 'sitemap', aliases: ['sitemap', 'site-map'] },
-    { file: 'modivs-social-vision.html', title: 'Our Vision · Her knowledge. Her classroom. Her brighter future. · Modiv’s Education', shortTitle: 'Our Vision', titleSlug: 'modivs our vision', slug: 'our-vision', freeSlug: 'ourvision', aliases: ['our vision', 'social vision', 'our-vision', 'social-vision', 'our-social-vision', 'vision'] },
-    { file: 'modivs-student-dashboard.html', title: 'Modiv’s Education – Student Dashboard', shortTitle: 'Student Dashboard', titleSlug: 'modivs student dashboard', slug: 'student-dashboard', freeSlug: 'studentdashboard', aliases: ['student dashboard', 'student-dashboard', 'studentdash'] },
-    { file: 'modivs-student-registration.html', title: 'Modiv’s Education – Student / Parent registration', shortTitle: 'Student Registration', titleSlug: 'modivs student registration', slug: 'student-registration', freeSlug: 'studentregistration', aliases: ['student registration', 'student-registration', 'student-parent-registration', 'studentparentregistration'] },
-    { file: 'modivs-student-signup.html', title: 'Book a Demo Class · Student / Parent sign up · Modiv’s Education', shortTitle: 'Book a Demo Class', titleSlug: 'modivs student signup', slug: 'student-signup', freeSlug: 'studentsignup', aliases: ['book a demo class', 'book-a-demo-class', 'bookademoclass', 'demo-class', 'democlass', 'student signup'] },
-    { file: 'modivs-students-corner.html', title: 'Students’ Corner – Free Notes, Files & Quizzes – Modiv’s Education', shortTitle: 'Students’ Corner', titleSlug: 'modivs students corner', slug: 'students-corner', freeSlug: 'studentscorner', aliases: ['students corner', 'students-corner', 'free-notes-files-quizzes', 'freenotesfilesquizzes'] },
-    { file: 'modivs-terms.html', title: 'Terms and Conditions | Modiv’s Education', shortTitle: 'Terms & Conditions', titleSlug: 'modivs terms', slug: 'terms', freeSlug: 'terms', aliases: ['terms', 'terms and conditions', 'terms-and-conditions', 'termsandconditions', 'terms-of-service'] },
-    { file: 'modivs-tutor-dashboard.html', title: 'Modiv’s Education – Tutor dashboard', shortTitle: 'Tutor Dashboard', titleSlug: 'modivs tutor dashboard', slug: 'tutor-dashboard', freeSlug: 'tutordashboard', aliases: ['tutor dashboard', 'tutor-dashboard', 'tutordash'] },
-    { file: 'modivs-tutor-edit-profile.html', title: 'Modiv’s Education – Edit tutor profile', shortTitle: 'Edit Tutor Profile', titleSlug: 'modivs tutor edit profile', slug: 'tutor-edit-profile', freeSlug: 'tutoreditprofile', aliases: ['edit tutor profile', 'edit-tutor-profile', 'edittutorprofile'] },
-    { file: 'modivs-tutor-profile.html', title: 'Tutor registration · Modiv’s Education', shortTitle: 'Tutor Profile Registration', titleSlug: 'modivs tutor profile', slug: 'tutor-profile', freeSlug: 'tutorprofile', aliases: ['tutor registration', 'tutor profile', 'tutor-registration', 'tutorregistration'] },
-    { file: 'modivs-user-signup.html', title: 'User Sign Up · Modiv’s Education', shortTitle: 'User Sign Up', titleSlug: 'modivs user signup', slug: 'user-signup', freeSlug: 'usersignup', aliases: ['user signup', 'user-signup', 'usersign-up'] },
-    { file: 'modivs-videos.html', title: 'Modiv’s Education – From Modiv’s Education | Videos', shortTitle: 'Videos', titleSlug: 'modivs videos', slug: 'videos', freeSlug: 'videos', aliases: ['videos', 'video lectures', 'video-lectures'] }
+    { file: 'index.html', title: 'Modiv’s Education – Home', shortTitle: 'Home', slug: 'home', freeSlug: 'home', aliases: ['index', 'main'] },
+    { file: 'modivs-active-leads.html', title: 'Modiv’s Education – Active Leads', shortTitle: 'Active Leads', slug: 'active-leads', freeSlug: 'activeleads', aliases: ['leads'] },
+    { file: 'modivs-admin.html', title: 'Modiv’s Education – Admin', shortTitle: 'Admin', slug: 'admin', freeSlug: 'admin', aliases: ['admindashboard', 'admin-dashboard'] },
+    { file: 'modivs-become-tutor.html', title: 'Become a Modivian Tutor · Teach online, at home or in groups · Modiv’s Education', shortTitle: 'Become a Tutor', slug: 'become-tutor', freeSlug: 'becometutor', aliases: ['become-a-modivian-tutor', 'become-a-tutor', 'teach', 'becomemodiviantutor', 'becomeatutor'] },
+    { file: 'modivs-social-vision.html', title: 'Social Vision · Free & Subsidised Education · Modiv’s Education', shortTitle: 'Our Vision', slug: 'our-vision', freeSlug: 'ourvision', aliases: ['social-vision', 'vision', 'socialvision', 'our-social-vision'] },
+    { file: 'modivs-blogs.html', title: 'Modiv’s Education – Blogs & Articles', shortTitle: 'Blogs', slug: 'blogs', freeSlug: 'blogs', aliases: ['blog', 'articles'] },
+    { file: 'modivs-contact.html', title: 'Contact Us | Modiv’s Education', shortTitle: 'Contact Us', slug: 'contact', freeSlug: 'contact', aliases: ['contact-us', 'contactus', 'support', 'help'] },
+    { file: 'modivs-demo.html', title: 'Book a Demo Class · Modiv’s Education', shortTitle: 'Book a Demo', slug: 'demo', freeSlug: 'demo', aliases: ['book-demo'] },
+    { file: 'modivs-education.html', title: 'Modiv’s Education – Login & Portal', shortTitle: 'Login & Portal', slug: 'login', freeSlug: 'login', aliases: ['education', 'signin', 'sign-in', 'portal'] },
+    { file: 'modivs-find-tutor.html', title: 'Find a Modivian Tutor · Personalized Home & Online Tutoring', shortTitle: 'Find a Tutor', slug: 'find-tutor', freeSlug: 'findtutor', aliases: ['find', 'find-a-tutor', 'findatutor', 'find-a-modivian-tutor', 'findamodiviantutor'] },
+    { file: 'modivs-guide.html', title: 'How to use Modiv’s Education – Student, Parent & Tutor Guide', shortTitle: 'Guide', slug: 'guide', freeSlug: 'guide', aliases: ['how-to-use', 'howtouse', 'student-tutor-guide', 'studenttutorguide'] },
+    { file: 'modivs-home.html', title: 'Modiv’s Education – Home Page', shortTitle: 'Home Page', slug: 'home-page', freeSlug: 'homepage', aliases: ['modivs-home'] },
+    { file: 'modivs-notes.html', title: 'Free Notes & Study Files · Modiv’s Education', shortTitle: 'Free Notes', slug: 'notes', freeSlug: 'notes', aliases: ['free-notes', 'study-notes'] },
+    { file: 'modivs-org-dashboard.html', title: 'Organization Dashboard · Modiv’s Education', shortTitle: 'Organization Dashboard', slug: 'org-dashboard', freeSlug: 'orgdashboard', aliases: ['organization-dashboard', 'organizationdashboard'] },
+    { file: 'modivs-parent-dashboard.html', title: 'Parent Dashboard · Modiv’s Education', shortTitle: 'Parent Dashboard', slug: 'parent-dashboard', freeSlug: 'parentdashboard', aliases: ['parentdash'] },
+    { file: 'modivs-parent-registration.html', title: 'Parent Registration · Modiv’s Education', shortTitle: 'Parent Registration', slug: 'parent-registration', freeSlug: 'parentregistration', aliases: ['parent-reg'] },
+    { file: 'modivs-parent-signup.html', title: 'Parent Sign Up · Modiv’s Education', shortTitle: 'Parent Sign Up', slug: 'parent-signup', freeSlug: 'parentsignup', aliases: ['parentsign-up'] },
+    { file: 'modivs-post-requirement.html', title: 'Post a Tuition Requirement | Modiv’s Education', shortTitle: 'Post a Requirement', slug: 'post-requirement', freeSlug: 'postrequirement', aliases: ['post', 'post-a-requirement', 'postarequirement', 'postreq'] },
+    { file: 'modivs-privacy-policy.html', title: 'Privacy Policy | Modiv’s Education', shortTitle: 'Privacy Policy', slug: 'privacy', freeSlug: 'privacy', aliases: ['privacy-policy', 'privacypolicy'] },
+    { file: 'modivs-refund-policy.html', title: 'Refund and Cancellation Policy | Modiv’s Education', shortTitle: 'Refund Policy', slug: 'refunds', freeSlug: 'refunds', aliases: ['refund-policy', 'refundpolicy', 'refund-and-cancellation-policy', 'refundandcancellationpolicy', 'refund', 'cancellation-policy'] },
+    { file: 'modivs-shop.html', title: 'Modiv’s Education – Shop', shortTitle: 'Shop', slug: 'shop', freeSlug: 'shop', aliases: ['store', 'modivs-shop', 'books'] },
+    { file: 'modivs-signup.html', title: 'Sign up · Modiv’s Education', shortTitle: 'Sign Up', slug: 'signup', freeSlug: 'signup', aliases: ['sign-up', 'register'] },
+    { file: 'modivs-sitemap.html', title: 'Sitemap | Modiv’s Education', shortTitle: 'Sitemap', slug: 'sitemap', freeSlug: 'sitemap', aliases: ['site-map'] },
+    { file: 'modivs-student-dashboard.html', title: 'Modiv’s Education – Student Dashboard', shortTitle: 'Student Dashboard', slug: 'student-dashboard', freeSlug: 'studentdashboard', aliases: ['studentdash'] },
+    { file: 'modivs-student-registration.html', title: 'Modiv’s Education – Student / Parent registration', shortTitle: 'Student Registration', slug: 'student-registration', freeSlug: 'studentregistration', aliases: ['student-parent-registration', 'studentparentregistration'] },
+    { file: 'modivs-student-signup.html', title: 'Book a Demo Class · Student / Parent sign up · Modiv’s Education', shortTitle: 'Book a Demo Class', slug: 'student-signup', freeSlug: 'studentsignup', aliases: ['book-a-demo-class', 'bookademoclass', 'demo-class', 'democlass'] },
+    { file: 'modivs-students-corner.html', title: 'Students’ Corner – Free Notes, Files & Quizzes – Modiv’s Education', shortTitle: 'Students’ Corner', slug: 'students-corner', freeSlug: 'studentscorner', aliases: ['free-notes-files-quizzes', 'freenotesfilesquizzes'] },
+    { file: 'modivs-terms.html', title: 'Terms and Conditions | Modiv’s Education', shortTitle: 'Terms & Conditions', slug: 'terms', freeSlug: 'terms', aliases: ['terms-and-conditions', 'termsandconditions', 'terms-of-service'] },
+    { file: 'modivs-tutor-dashboard.html', title: 'Modiv’s Education – Tutor dashboard', shortTitle: 'Tutor Dashboard', slug: 'tutor-dashboard', freeSlug: 'tutordashboard', aliases: ['tutordash'] },
+    { file: 'modivs-tutor-edit-profile.html', title: 'Modiv’s Education – Edit tutor profile', shortTitle: 'Edit Tutor Profile', slug: 'tutor-edit-profile', freeSlug: 'tutoreditprofile', aliases: ['edit-tutor-profile', 'edittutorprofile'] },
+    { file: 'modivs-tutor-profile.html', title: 'Tutor registration · Modiv’s Education', shortTitle: 'Tutor Profile Registration', slug: 'tutor-profile', freeSlug: 'tutorprofile', aliases: ['tutor-registration', 'tutorregistration'] },
+    { file: 'modivs-tutors-chandigarh.html', title: 'Home tuition near me in Chandigarh | Best Home Tutors', shortTitle: 'Tutors in Chandigarh', slug: 'chandigarh', freeSlug: 'chandigarh', aliases: ['tutors-in-chandigarh', 'tutorsinchandigarh', 'chandigarh-tutors', 'chandigarhtutors', 'home-tuition-near-me-in-chandigarh', 'hometuitionchandigarh'] },
+    { file: 'modivs-tutors-mohali.html', title: 'Home tuition near me in Mohali | Best Home Tutors', shortTitle: 'Tutors in Mohali', slug: 'mohali', freeSlug: 'mohali', aliases: ['tutors-in-mohali', 'tutorsinmohali', 'mohali-tutors', 'mohalitutors', 'home-tuition-near-me-in-mohali', 'hometuitionmohali'] },
+    { file: 'modivs-tutors-panchkula.html', title: 'Home tuition near me in Panchkula | Best Home Tutors', shortTitle: 'Tutors in Panchkula', slug: 'panchkula', freeSlug: 'panchkula', aliases: ['tutors-in-panchkula', 'tutorsinpanchkula', 'panchkula-tutors', 'panchkulatutors', 'home-tuition-near-me-in-panchkula', 'hometuitionpanchkula'] },
+    { file: 'modivs-tutors.html', title: 'Modiv’s Education – Meet our verified tutors', shortTitle: 'Browse Tutors', slug: 'tutors', freeSlug: 'tutors', aliases: ['browse-tutors', 'browsetutors', 'meet-our-verified-tutors', 'tutor'] },
+    { file: 'modivs-user-signup.html', title: 'User Sign Up · Modiv’s Education', shortTitle: 'User Sign Up', slug: 'user-signup', freeSlug: 'usersignup', aliases: ['usersign-up'] },
+    { file: 'modivs-videos.html', title: 'Modiv’s Education – From Modiv’s Education | Videos', shortTitle: 'Videos', slug: 'videos', freeSlug: 'videos', aliases: ['video-lectures'] }
   ];
 
   // Lookup index for fast resolution
   var PAGE_INDEX = {};
-  PAGES.forEach(function (p) {
-    var f = p.file.toLowerCase();
-    PAGE_INDEX[f] = p;
-    PAGE_INDEX[f.replace(/\.html$/, '')] = p;
-    if (p.slug) {
-      PAGE_INDEX[p.slug.toLowerCase()] = p;
-      PAGE_INDEX[p.slug.toLowerCase().replace(/-/g, ' ')] = p;
-    }
-    if (p.freeSlug) {
-      PAGE_INDEX[p.freeSlug.toLowerCase()] = p;
-    }
-    if (p.titleSlug) {
-      PAGE_INDEX[p.titleSlug.toLowerCase()] = p;
-      PAGE_INDEX[p.titleSlug.toLowerCase().replace(/\s+/g, '-')] = p;
-      PAGE_INDEX[p.titleSlug.toLowerCase().replace(/\s+/g, '')] = p;
-    }
-    if (p.shortTitle) {
-      PAGE_INDEX[p.shortTitle.toLowerCase()] = p;
-      PAGE_INDEX[p.shortTitle.toLowerCase().replace(/\s+/g, '-')] = p;
-    }
-    if (p.aliases) {
-      p.aliases.forEach(function (a) {
-        var al = a.toLowerCase();
-        PAGE_INDEX[al] = p;
-        PAGE_INDEX[al.replace(/[-_]+/g, ' ')] = p;
-        PAGE_INDEX[al.replace(/[\s-_]+/g, '')] = p;
-      });
+  PAGES.forEach(function(p){
+    PAGE_INDEX[p.file.toLowerCase()] = p;
+    PAGE_INDEX[p.file.toLowerCase().replace(/\.html$/, '')] = p;
+    PAGE_INDEX[p.slug.toLowerCase()] = p;
+    PAGE_INDEX[p.freeSlug.toLowerCase()] = p;
+    if(p.aliases){
+      p.aliases.forEach(function(a){ PAGE_INDEX[a.toLowerCase()] = p; });
     }
   });
 
   /**
-   * Resolves any slug, titleSlug, filename, or URL to its canonical page object.
+   * Resolves any slug, free-slug, filename or URL to its canonical page object.
    */
-  function resolve(input) {
-    if (!input) return null;
+  function resolve(input){
+    if(!input) return null;
     var raw = String(input).split('?')[0].split('#')[0].trim().toLowerCase();
-    var cleanKey = decodeURIComponent(raw).replace(/^\/+|\/+$/g, '');
+    var cleanKey = raw.replace(/^\/+|\/+$/g, '');
     var baseName = cleanKey.split('/').pop() || cleanKey;
-    var baseNoHtml = baseName.replace(/\.html$/, '');
-
-    return PAGE_INDEX[cleanKey] ||
-      PAGE_INDEX[cleanKey.replace(/[-_]+/g, ' ')] ||
-      PAGE_INDEX[baseName] ||
-      PAGE_INDEX[baseNoHtml] ||
-      PAGE_INDEX[baseNoHtml.replace(/[-_]+/g, ' ')] ||
-      PAGE_INDEX[baseNoHtml.replace(/[-_\s]+/g, '')] ||
-      null;
+    return PAGE_INDEX[cleanKey] || PAGE_INDEX[baseName] || PAGE_INDEX[baseName.replace(/\.html$/, '')] || null;
   }
 
-  function page(identifier) {
+  /**
+   * Looks up page info by file, title, or slug.
+   */
+  function page(identifier){
     return resolve(identifier);
   }
 
   /**
-   * Returns clean title slug (without hyphens) or canonical slug.
+   * Returns clean or free URL slug for a given page identifier.
    */
-  function urlFor(identifier, mode) {
+  function urlFor(identifier, isFree){
     var p = resolve(identifier);
-    if (!p) {
-      if (mode === 'title' || mode === 'clean') return '/' + encodeURI(titleSlug(identifier));
-      if (mode === 'free') return '/' + freeSlug(identifier);
-      return '/' + slugify(identifier);
-    }
-    if (mode === 'free') return '/' + p.freeSlug;
-    if (mode === 'dash') return '/' + p.slug;
-    return '/' + encodeURI(p.titleSlug || p.slug);
+    if(!p) return '/' + (isFree ? freeSlug(identifier) : slugify(identifier));
+    return '/' + (isFree ? p.freeSlug : p.slug);
   }
 
-  function getAllPages() {
+  function getAllPages(){
     return PAGES.slice();
   }
 
-  function isValid(s) {
+  /**
+   * Validates if a string is already a clean slug format (lowercase alphanumeric and hyphens).
+   */
+  function isValid(s){
     return typeof s === 'string' && /^[a-z0-9]+(?:-[a-z0-9]+)*$/.test(s);
   }
 
   /**
-   * Automatically synchronizes the browser address bar on page load
-   * so hyphens are removed and the clean title slug (e.g. "modivs tutors chandigarh") is displayed.
+   * Automatically updates browser address bar to the clean slug if on an .html page,
+   * without reloading or causing flicker. Preserves search params & hash.
    */
-  function autoSyncUrl() {
-    if (typeof window === 'undefined' || !window.location || !window.history || !window.history.replaceState) return;
+  function autoSyncUrl(){
+    if(typeof window === 'undefined' || !window.location || !window.history || !window.history.replaceState) return;
     try {
-      if (window.location.protocol === 'file:') return;
-
+      if(window.location.protocol === 'file:') return;
       var path = window.location.pathname || '';
-      var rawSeg = (path.split('/').pop() || 'index.html').trim();
-      if (!rawSeg || rawSeg === '/') rawSeg = 'index.html';
-      var decodedSeg = decodeURIComponent(rawSeg);
-      var base = path.substring(0, path.lastIndexOf('/') + 1);
-
-      var p = resolve(decodedSeg) || resolve(rawSeg) || resolve(path);
-      var targetSlug = '';
-      if (p && p.titleSlug) {
-        targetSlug = p.titleSlug;
-      } else {
-        targetSlug = titleSlug(decodedSeg);
+      var file = (path.split('/').pop() || 'index.html').toLowerCase();
+      if(!file.endsWith('.html') && !file.endsWith('.htm')) return;
+      var p = resolve(file);
+      if(p && p.slug){
+        var base = path.substring(0, path.lastIndexOf('/') + 1);
+        var targetSlug = (p.slug === 'home' || p.file === 'index.html') ? '' : p.slug;
+        var newPath = base + targetSlug;
+        var newUrl = newPath + (window.location.search || '') + (window.location.hash || '');
+        window.history.replaceState(null, document.title || p.title || '', newUrl);
       }
-
-      if (targetSlug) {
-        var curDecoded = decodeURIComponent(path).replace(/^\/+/, '');
-        var targetDecoded = (base + targetSlug).replace(/^\/+/, '');
-        if (curDecoded !== targetDecoded && !path.endsWith('/' + targetSlug)) {
-          var newUrl = base + encodeURI(targetSlug) + (window.location.search || '') + (window.location.hash || '');
-          window.history.replaceState(null, document.title || (p && p.title) || '', newUrl);
-        }
-      }
-    } catch (e) {
-      // safe fallback
-    }
+    } catch(e){}
   }
 
-  // Auto-run URL cleanup as soon as loaded and on DOMContentLoaded
-  autoSyncUrl();
-  if (typeof document !== 'undefined' && document.readyState === 'loading') {
-    document.addEventListener('DOMContentLoaded', autoSyncUrl);
+  /**
+   * Rewrites internal <a href="*.html"> links on the page to clean slugs,
+   * so user hovers and clicks always see clean, pretty URLs.
+   */
+  function cleanLinks(rootEl){
+    if(typeof document === 'undefined') return;
+    var scope = rootEl || document;
+    try {
+      var links = scope.querySelectorAll('a[href]');
+      for(var i = 0; i < links.length; i++){
+        var a = links[i];
+        var href = a.getAttribute('href');
+        if(!href || href.startsWith('http://') || href.startsWith('https://') || href.startsWith('mailto:') || href.startsWith('tel:') || href.startsWith('#') || href.startsWith('javascript:')) continue;
+        
+        var parts = href.split('#');
+        var baseWithQuery = parts[0];
+        var hash = parts.length > 1 ? '#' + parts[1] : '';
+        
+        var qParts = baseWithQuery.split('?');
+        var pathPart = qParts[0];
+        var query = qParts.length > 1 ? '?' + qParts[1] : '';
+        
+        if(!pathPart.endsWith('.html') && !pathPart.endsWith('.htm')) continue;
+        var targetPage = resolve(pathPart);
+        if(targetPage && targetPage.slug){
+          var newSlug = (targetPage.slug === 'home' || targetPage.file === 'index.html') ? '' : targetPage.slug;
+          var prefix = pathPart.startsWith('/') ? '/' : '';
+          a.setAttribute('href', (prefix + newSlug) || '/' + query + hash);
+        }
+      }
+    } catch(e){}
+  }
+
+  // Auto-run on load and when DOM is ready
+  if(typeof window !== 'undefined'){
+    autoSyncUrl();
+    if(document.readyState === 'loading'){
+      document.addEventListener('DOMContentLoaded', function(){
+        autoSyncUrl();
+        cleanLinks();
+      });
+    } else {
+      cleanLinks();
+    }
   }
 
   return {
     slugify: slugify,
     create: slugify,
-    clean: titleSlug,
-    clear: titleSlug,
-    titleSlug: titleSlug,
-    spaceSlug: titleSlug,
+    clean: slugify,
+    clear: slugify,
     free: freeSlug,
     freeSlug: freeSlug,
     hyphenFree: freeSlug,
@@ -276,6 +283,7 @@
     resolve: resolve,
     urlFor: urlFor,
     isValid: isValid,
-    autoSyncUrl: autoSyncUrl
+    autoSyncUrl: autoSyncUrl,
+    cleanLinks: cleanLinks
   };
 });
