@@ -2180,7 +2180,7 @@
               }
               toast('Google sign-in successful as Student');
               if (!res.isNew) {
-                setTimeout(function () { window.location.href = 'modivs-student-dashboard.html'; }, 400);
+                setTimeout(function () { window.location.href = '/student-dashboard'; }, 400);
               }
             },
             onError: function (err) {
@@ -2528,7 +2528,7 @@
               f.innerHTML = '<div class="ok"><h1>Demo class requested!</h1><p class="sub">Thanks, ' + esc(req.name.split(' ')[0]) + '. Our team will call or WhatsApp you on ' + esc(phone) + ' to arrange your demo class' + (tid ? ' with ' + esc(tutor && tutor.name ? tutor.name : 'tutor #' + tid) : '') + '.</p><div class="nav" style="justify-content:center;gap:12px">' + '<a href="/student-dashboard#enquiries" class="btn" style="text-decoration:none;width:auto;padding:12px 24px;margin:0">Open Student Dashboard &rarr;</a>' + '<a href="/tutors" class="btn ghost" style="text-decoration:none;width:auto;padding:12px 24px;margin:0">Browse tutors</a></div><p class="sub" style="text-align:center;margin-top:14px">Taking you to your dashboard…</p></div>';
               window.scrollTo(0, 0);
               try { if (window.ModivsSessionUI) ModivsSessionUI.refresh() } catch (e) { }
-              setTimeout(function () { window.location.href = 'modivs-student-dashboard.html#enquiries' }, 2500);
+              setTimeout(function () { window.location.href = '/student-dashboard#enquiries' }, 2500);
             });
           });
         }

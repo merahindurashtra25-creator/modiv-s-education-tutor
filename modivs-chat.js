@@ -349,7 +349,7 @@
         type: 'membership_update',
         title: 'Membership Updated',
         description: 'Your ' + mem.planName + ' membership plan is now active.',
-        actionUrl: 'modivs-tutor-dashboard.html#membership'
+        actionUrl: '/tutor-dashboard#membership'
       });
     }
 
@@ -434,7 +434,7 @@
         type: 'coin_update',
         title: amount >= 0 ? 'Coins Credited' : 'Coins Deducted',
         description: (amount >= 0 ? ('+' + amount) : amount) + ' coins: ' + (description || (amount >= 0 ? 'Coins added to your wallet' : 'Coins deducted')),
-        actionUrl: 'modivs-tutor-dashboard.html#wallet'
+        actionUrl: '/tutor-dashboard#wallet'
       });
     }
 

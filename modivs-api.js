@@ -69,7 +69,7 @@
           localStorage.removeItem('modivs_admin_session');
           sessionStorage.clear();
         } catch (e) {}
-        window.location.replace(redirectUrl || 'modivs-education.html#login');
+        window.location.replace(redirectUrl || '/login');
       },
       async session(idToken) {
         return apiFetch('/api/auth?action=session', {

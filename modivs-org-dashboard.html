@@ -76,15 +76,15 @@ button,input,select,textarea{font-family:inherit}
 /* Only organization accounts belong here. */
 (function(){
  var u=null;try{u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
- if(!u||!u.email){location.replace('modivs-education.html#tutor-login');return}
+ if(!u||!u.email){location.replace('/login#tutor-login');return}
  if(!ModivsOrg.isOrg(u.email)){
-  location.replace(u.role==='Tutor'?'modivs-tutor-dashboard.html':(u.role==='Student / Parent'?'modivs-student-dashboard.html':'modivs-home.html'));
+  location.replace(u.role==='Tutor'?'/tutor-dashboard':(u.role==='Student / Parent'?'/student-dashboard':'/'));
   return;
  }
  window.addEventListener('pageshow', function (e) {
   if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
    var cu = null; try { cu = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(err){}
-   if (!cu) location.replace('modivs-education.html#tutor-login');
+   if (!cu) location.replace('/login#tutor-login');
   }
  });
  window.addEventListener('storage', function (e) {

@@ -681,7 +681,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     } catch(e){}
 
     toast('Welcome, Admin! Opening Admin Dashboard...');
-    setTimeout(function(){ window.location.href = 'modivs-admin.html'; }, 400);
+    setTimeout(function(){ window.location.href = '/admin'; }, 400);
   }
 
   // LOGIN FORM SUBMISSION
@@ -968,7 +968,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: 'Tutor', roleKey: 'tutor' }));
           toast((res.isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
           if(!res.isNew){
-            setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 500);
+            setTimeout(function(){ window.location.href = '/tutor-dashboard'; }, 500);
           } else {
             renderStep();
           }
@@ -1813,7 +1813,7 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
       toast('Profile submitted for verification!');
       showDone();
       Promise.race([syncWrite || Promise.resolve(), new Promise(function(r){ setTimeout(r, 2000); })]).then(function(){
-        setTimeout(function(){ window.location.href = 'modivs-tutor-dashboard.html'; }, 1200);
+        setTimeout(function(){ window.location.href = '/tutor-dashboard'; }, 1200);
       });
     }
     var fb2 = window.EducationBFirebase;

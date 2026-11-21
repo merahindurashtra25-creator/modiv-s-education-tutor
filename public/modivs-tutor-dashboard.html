@@ -5,7 +5,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js?v=mwq2t2xn-nxlr2"></script>
+  <script src="modivs.min.js?v=mwqalzif-d3m6h"></script>
   
   <script>(function () { try { var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); if (u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1)) { var h = document.documentElement; h.style.visibility = 'hidden'; window.__mvShow = function () { h.style.visibility = '' }; setTimeout(window.__mvShow, 2500) } } catch (e) { } })();</script>
   <link rel="icon" type="image/png" href="favicon.png">
@@ -1514,10 +1514,10 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwq2t2xn-nxlr2">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwq2t2xn-nxlr2">
-  <link rel="stylesheet" href="modivs-dashboard.css?v=mwq2t2xn-nxlr2">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwq2t2xn-nxlr2">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwqalzif-d3m6h">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwqalzif-d3m6h">
+  <link rel="stylesheet" href="modivs-dashboard.css?v=mwqalzif-d3m6h">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwqalzif-d3m6h">
 </head>
 
 <body class="dash">
@@ -1560,7 +1560,7 @@
           <button type="button" id="dhPhotoBtn"><svg class="ic" aria-hidden="true">
               <use href="#i-user"></use>
             </svg>Change profile photo</button>
-          <a href="modivs-tutor-edit-profile.html"><svg class="ic" aria-hidden="true">
+          <a href="/tutor-edit-profile"><svg class="ic" aria-hidden="true">
               <use href="#i-edit"></use>
             </svg>Edit profile</a>
           <button type="button" id="dhAccountBtn"><svg class="ic" aria-hidden="true">
@@ -2395,7 +2395,7 @@
           if (x[3]) { btn.appendChild(el('span', 'n', x[3])) }
           if (state.view === x[0] || (x[0] === 'settings' && state.view === 'account')) btn.setAttribute('aria-current', 'page');
           btn.addEventListener('click', function () {
-            if (x[0] === 'help') { window.location.href = 'modivs-contact.html'; return }
+            if (x[0] === 'help') { window.location.href = '/contact'; return }
             gotoView(x[0]);
           });
           b.appendChild(btn)
@@ -3600,7 +3600,7 @@
       function editProfile() {
         var t = window.MY_TUTOR || {};
         try { localStorage.setItem('modivs_current_tutor', JSON.stringify(t)); } catch (e) { }
-        window.location.href = 'modivs-tutor-edit-profile.html';
+        window.location.href = '/tutor-edit-profile';
       }
 
       // Application status and tutor profile resolution
@@ -3847,7 +3847,7 @@
                 '<span style="font-size:1.8rem;" aria-hidden="true">📝</span>' +
                 '<div style="flex:1;min-width:240px;"><h3 style="margin:0;font-size:1.05rem;color:var(--navy);">Complete at least 80% of your tutor profile to submit for review. (' + pc.pct + '% completed)</h3>' +
                 '<p style="margin:4px 0 0;font-size:0.88rem;color:var(--muted);">Add your contact details, subjects, qualifications, fees and availability so our admin team can verify and list your profile.</p></div>' +
-                '<a href="modivs-tutor-edit-profile.html" class="b y" style="text-decoration:none;font-size:0.9rem;">Complete my profile &rarr;</a>' +
+                '<a href="/tutor-edit-profile" class="b y" style="text-decoration:none;font-size:0.9rem;">Complete my profile &rarr;</a>' +
                 '</div>';
             } else if (t.status === 'pending' || (t.status !== 'approved' && pc.pct >= 80)) {
               if (pEl) { pEl.textContent = 'Pending Approval'; pEl.style.background = '#ecdfc6'; pEl.style.color = 'var(--navy)'; }
@@ -3873,7 +3873,7 @@
                 '<h3 style="margin:0;font-size:1.05rem;color:var(--bad);">Your application needs changes. Please review the admin feedback and resubmit.</h3>' +
                 '<p style="margin:6px 0 0;font-size:0.9rem;color:var(--navy);background:#fff;padding:8px 12px;border-radius:8px;border:1px dashed var(--bad);">' + feedbackHtml + '</p>' +
                 '</div>' +
-                '<a href="modivs-tutor-edit-profile.html" class="b y" style="text-decoration:none;font-size:0.9rem;">Edit &amp; Resubmit Application &rarr;</a>' +
+                '<a href="/tutor-edit-profile" class="b y" style="text-decoration:none;font-size:0.9rem;">Edit &amp; Resubmit Application &rarr;</a>' +
                 '</div>';
             } else {
               // Approved

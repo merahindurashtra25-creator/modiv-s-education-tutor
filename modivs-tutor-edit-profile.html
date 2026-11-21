@@ -605,7 +605,7 @@ function finishSave(){
     document.getElementById('savebar').classList.add('hide');var _r=document.getElementById('epRail');if(_r)_r.classList.add('hide');
     app.innerHTML='<div class="empty"><div style="font-size:3rem">✅</div><h1 style="color:var(--accent-d)">Profile updated</h1><p class="sub">'+
       (status==='approved'?'Your changes are saved and now show on your profile.':'Your changes are saved and sent to admins for re-verification, because your photo, name or documents changed.')+
-      '</p><a class="btn" href="/tutor-dashboard">Back to dashboard</a> <a class="btn ghost" href="modivs-tutor-edit-profile.html">Keep editing</a><p class="hint" style="margin-top:14px">Taking you to your dashboard in <b id="cd">3</b>s…</p></div>';
+      '</p><a class="btn" href="/tutor-dashboard">Back to dashboard</a> <a class="btn ghost" href="/tutor-edit-profile">Keep editing</a><p class="hint" style="margin-top:14px">Taking you to your dashboard in <b id="cd">3</b>s…</p></div>';
     var n=3,iv=setInterval(function(){n--;var c=document.getElementById('cd');if(c)c.textContent=n;if(n<=0){clearInterval(iv);location.href='/tutor-dashboard'}},1000);
   });
 }

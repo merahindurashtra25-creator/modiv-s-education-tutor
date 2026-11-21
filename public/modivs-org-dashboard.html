@@ -4,7 +4,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js?v=mwq2t2xn-nxlr2"></script>
+  <script src="modivs.min.js?v=mwqalzif-d3m6h"></script>
   
 <link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
@@ -60,10 +60,10 @@ button,input,select,textarea{font-family:inherit}
 .dash .dlg .card{background:#fff;border-radius:18px;padding:22px;width:100%;max-width:560px;max-height:calc(100vh - 40px);overflow:auto}
 @media(max-width:640px){.dash .grid2{grid-template-columns:1fr}.dash .kv{grid-template-columns:1fr;gap:2px 0}.dash .kv dd{margin-bottom:8px}.dash .kpis{grid-template-columns:repeat(2,minmax(0,1fr))}.dash .nav{display:flex;overflow-x:auto;gap:6px}.dash .nav button{white-space:nowrap;width:auto}}
 </style>
-<link rel="stylesheet" href="modivs-menu.css?v=mwq2t2xn-nxlr2">
-<link rel="stylesheet" href="modivs-mobile.css?v=mwq2t2xn-nxlr2">
-<link rel="stylesheet" href="modivs-dashboard.css?v=mwq2t2xn-nxlr2">
-<link rel="stylesheet" href="modivs-footer.css?v=mwq2t2xn-nxlr2">
+<link rel="stylesheet" href="modivs-menu.css?v=mwqalzif-d3m6h">
+<link rel="stylesheet" href="modivs-mobile.css?v=mwqalzif-d3m6h">
+<link rel="stylesheet" href="modivs-dashboard.css?v=mwqalzif-d3m6h">
+<link rel="stylesheet" href="modivs-footer.css?v=mwqalzif-d3m6h">
 </head>
 <body class="dash">
 
@@ -76,15 +76,15 @@ button,input,select,textarea{font-family:inherit}
 /* Only organization accounts belong here. */
 (function(){
  var u=null;try{u=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}catch(e){}
- if(!u||!u.email){location.replace('modivs-education.html#tutor-login');return}
+ if(!u||!u.email){location.replace('/login#tutor-login');return}
  if(!ModivsOrg.isOrg(u.email)){
-  location.replace(u.role==='Tutor'?'modivs-tutor-dashboard.html':(u.role==='Student / Parent'?'modivs-student-dashboard.html':'modivs-home.html'));
+  location.replace(u.role==='Tutor'?'/tutor-dashboard':(u.role==='Student / Parent'?'/student-dashboard':'/'));
   return;
  }
  window.addEventListener('pageshow', function (e) {
   if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
    var cu = null; try { cu = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(err){}
-   if (!cu) location.replace('modivs-education.html#tutor-login');
+   if (!cu) location.replace('/login#tutor-login');
   }
  });
  window.addEventListener('storage', function (e) {

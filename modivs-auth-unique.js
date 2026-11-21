@@ -22,32 +22,32 @@
       name: 'Student',
       displayRole: 'Student / Parent',
       loginHash: '#student-login',
-      dashboardUrl: 'modivs-student-dashboard.html',
-      signupUrl: 'modivs-student-signup.html'
+      dashboardUrl: '/student-dashboard',
+      signupUrl: '/student-signup'
     },
     'tutor': {
       key: 'tutor',
       name: 'Tutor',
       displayRole: 'Tutor',
       loginHash: '#tutor-login',
-      dashboardUrl: 'modivs-tutor-dashboard.html',
-      signupUrl: 'modivs-education.html#tutor-signup'
+      dashboardUrl: '/tutor-dashboard',
+      signupUrl: '/tutor-signup'
     },
     'user': {
       key: 'user',
       name: 'General User',
       displayRole: 'General User',
       loginHash: '#login',
-      dashboardUrl: 'modivs-home.html',
-      signupUrl: 'modivs-signup.html'
+      dashboardUrl: '/',
+      signupUrl: '/signup'
     },
     'admin': {
       key: 'admin',
       name: 'Administrator',
       displayRole: 'Admin',
       loginHash: '#admin-login',
-      dashboardUrl: 'modivs-admin.html',
-      signupUrl: 'modivs-admin.html'
+      dashboardUrl: '/admin',
+      signupUrl: '/admin'
     }
   };
 
@@ -159,7 +159,7 @@
     var message = 'This email address is already registered as a ' + roleLabel + '. Please log in using your existing account.';
     if (k === 'user') message = 'This email address is already associated with an account. You cannot create another account using this email.';
 
-    var loginUrl = 'modivs-education.html' + meta.loginHash + emailParam;
+    var loginUrl = '/login' + meta.loginHash + emailParam;
 
     var html = [
       '<div class="dup-email-box" style="background:#fff7ed;border:1.5px solid #f97316;border-radius:12px;padding:16px;margin:16px 0;font-family:inherit;box-shadow:0 4px 12px rgba(249,115,22,.1)" role="alert">',
@@ -430,7 +430,7 @@
         localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, role: 'Admin', uid: (user && user.uid) || '' }));
       } catch (e) { }
       if (options.onSuccess) options.onSuccess({ role: 'admin', user: user, isNew: false });
-      else window.location.href = 'modivs-admin.html';
+      else window.location.href = '/admin';
       return Promise.resolve({ role: 'admin', user: user });
     }
 

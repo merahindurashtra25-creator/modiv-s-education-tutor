@@ -199,7 +199,31 @@
   }
 
   /**
-   * Automatically updates browser address bar to the clean slug if on an .html page,
+   * Synchronizes meta tags (canonical link and og:url) with the clean slug URL.
+   */
+  function syncMetaUrls(cleanPath){
+    try {
+      if(typeof document === 'undefined') return;
+      var origin = (window.location && window.location.origin) ? window.location.origin : 'https://www.modivians.com';
+      var canonicalUrl = origin + (cleanPath === '/' ? '' : cleanPath);
+      var can = document.querySelector('link[rel="canonical"]');
+      if(can){
+        can.setAttribute('href', canonicalUrl);
+      } else {
+        can = document.createElement('link');
+        can.setAttribute('rel', 'canonical');
+        can.setAttribute('href', canonicalUrl);
+        document.head.appendChild(can);
+      }
+      var og = document.querySelector('meta[property="og:url"]');
+      if(og){
+        og.setAttribute('content', canonicalUrl);
+      }
+    } catch(e){}
+  }
+
+  /**
+   * Automatically updates browser address bar to the clean slug if on a modiv-prefixed or .html page,
    * without reloading or causing flicker. Preserves search params & hash.
    */
   function autoSyncUrl(){
@@ -207,15 +231,21 @@
     try {
       if(window.location.protocol === 'file:') return;
       var path = window.location.pathname || '';
+      var cleanKey = path.replace(/^\/+|\/+$/g, '').toLowerCase();
       var file = (path.split('/').pop() || 'index.html').toLowerCase();
-      if(!file.endsWith('.html') && !file.endsWith('.htm')) return;
-      var p = resolve(file);
+      var p = resolve(cleanKey) || resolve(file);
+      if(!p && (cleanKey.indexOf('modiv') !== -1 || cleanKey.endsWith('.html') || cleanKey.endsWith('.htm'))){
+        var fallback = cleanKey.replace(/^modivs?-?/i, '').replace(/\.html?$/i, '');
+        if(fallback) p = resolve(fallback) || { slug: fallback };
+      }
       if(p && p.slug){
-        var base = path.substring(0, path.lastIndexOf('/') + 1);
-        var targetSlug = (p.slug === 'home' || p.file === 'index.html') ? '' : p.slug;
-        var newPath = base + targetSlug;
-        var newUrl = newPath + (window.location.search || '') + (window.location.hash || '');
-        window.history.replaceState(null, document.title || p.title || '', newUrl);
+        var targetSlug = (p.slug === 'home' || p.file === 'index.html' || p.slug === '') ? '' : p.slug;
+        var newPath = targetSlug ? ('/' + targetSlug) : '/';
+        if(path !== newPath && path !== (newPath + '/') && path !== (newPath.replace(/\/$/, '') || '/')){
+          var newUrl = newPath + (window.location.search || '') + (window.location.hash || '');
+          window.history.replaceState(null, document.title || p.title || '', newUrl);
+        }
+        syncMetaUrls(newPath);
       }
     } catch(e){}
   }
@@ -242,18 +272,21 @@
         var pathPart = qParts[0];
         var query = qParts.length > 1 ? '?' + qParts[1] : '';
         
-        if(!pathPart.endsWith('.html') && !pathPart.endsWith('.htm')) continue;
+        if(!pathPart.endsWith('.html') && !pathPart.endsWith('.htm') && pathPart.indexOf('modiv') === -1) continue;
         var targetPage = resolve(pathPart);
+        if(!targetPage && pathPart.indexOf('modiv') !== -1){
+          var stripped = pathPart.replace(/^\/+/, '').replace(/^modivs?-?/i, '').replace(/\.html?$/i, '');
+          targetPage = resolve(stripped);
+        }
         if(targetPage && targetPage.slug){
-          var newSlug = (targetPage.slug === 'home' || targetPage.file === 'index.html') ? '' : targetPage.slug;
-          var prefix = pathPart.startsWith('/') ? '/' : '';
-          a.setAttribute('href', (prefix + newSlug) || '/' + query + hash);
+          var newSlug = (targetPage.slug === 'home' || targetPage.file === 'index.html' || targetPage.slug === '') ? '' : targetPage.slug;
+          a.setAttribute('href', (newSlug ? ('/' + newSlug) : '/') + query + hash);
         }
       }
     } catch(e){}
   }
 
-  // Auto-run on load and when DOM is ready
+  // Auto-run immediately and when DOM is ready
   if(typeof window !== 'undefined'){
     autoSyncUrl();
     if(document.readyState === 'loading'){

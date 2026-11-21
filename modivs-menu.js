@@ -61,8 +61,8 @@
       ['navLoginBtn','navSignup','navJoin'].forEach(function(id){var x=document.getElementById(id);if(x)x.style.display='none'});
       var acts=hd.querySelector('.acts');
       if(acts&&!acts.querySelector('#mvUser')&&!acts.querySelector('#mvAdmBtn')&&!window.ModivsSessionUI){
-        var dash=document.createElement('a');dash.className='btn y';dash.href='modivs-admin.html';dash.textContent='Admin dashboard';
-        var out=document.createElement('a');out.className='btn o';out.href='index.html';out.textContent='Log out';
+        var dash=document.createElement('a');dash.className='btn y';dash.href='/admin';dash.textContent='Admin dashboard';
+        var out=document.createElement('a');out.className='btn o';out.href='/';out.textContent='Log out';
         out.addEventListener('click',function(e){
           e.preventDefault();
           var pServer = fetch('/api/auth?action=logout', { method: 'POST', credentials: 'include' }).catch(function(){});
@@ -72,12 +72,12 @@
             try{localStorage.removeItem('modivs_admin_session')}catch(e){}
             try{localStorage.removeItem('modivs_auth_user')}catch(e){}
             try{sessionStorage.clear()}catch(e){}
-            window.location.replace('modivs-education.html#login');
+            window.location.replace('/login');
           }).catch(function(){
             try{localStorage.removeItem('modivs_admin_session')}catch(e){}
             try{localStorage.removeItem('modivs_auth_user')}catch(e){}
             try{sessionStorage.clear()}catch(e){}
-            window.location.replace('modivs-education.html#login');
+            window.location.replace('/login');
           });
         });
         acts.insertBefore(dash,b);acts.insertBefore(out,b);

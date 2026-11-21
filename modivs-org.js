@@ -22,7 +22,7 @@
   var REVIEW=['status','reviewNote','reviewedAt','reviewedBy'];
 
   var ModivsOrg={
-    DASH:'modivs-org-dashboard.html',
+    DASH:'/org-dashboard',
     REQ:REQ,
     status:status,
     missing:missing,
@@ -46,7 +46,7 @@
     /* where this account should land after login */
     dashFor:function(email,role){
       if(ModivsOrg.isOrg(email))return ModivsOrg.DASH;
-      return role==='Tutor'?'modivs-tutor-dashboard.html':null},
+      return role==='Tutor'?'/tutor-dashboard':null},
 
     /* ---- Firestore mirror (organization side) ---- */
     push:function(email,opts){

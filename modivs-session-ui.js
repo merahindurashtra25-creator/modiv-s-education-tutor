@@ -101,12 +101,12 @@
       try { localStorage.removeItem('modivs_auth_user'); } catch (e) { }
       try { localStorage.removeItem('modivs_admin_session'); } catch (e) { }
       try { sessionStorage.clear(); } catch (e) { }
-      window.location.replace('modivs-education.html#login');
+      window.location.replace('/login');
     }).catch(function(){
       try { localStorage.removeItem('modivs_auth_user'); } catch (e) { }
       try { localStorage.removeItem('modivs_admin_session'); } catch (e) { }
       try { sessionStorage.clear(); } catch (e) { }
-      window.location.replace('modivs-education.html#login');
+      window.location.replace('/login');
     });
   }
   function hideEl(b) { b.style.setProperty('display', 'none', 'important'); b.setAttribute('aria-hidden', 'true'); b.tabIndex = -1 }
@@ -119,7 +119,7 @@
     ['navLoginBtn', 'navSignup', 'navTutor'].forEach(function (id) { var b = document.getElementById(id); if (b) hideEl(b) })
   }
   function firstName(n) { return String(n || '').trim().split(/\s+/)[0] || 'there' }
-  function tutorDash(u) { try { var o = JSON.parse(localStorage.getItem('modivs_org_profiles') || '{}'); if (o && u && u.email && o[String(u.email).toLowerCase()]) return 'modivs-org-dashboard.html' } catch (e) { } return 'modivs-tutor-dashboard.html' }
+  function tutorDash(u) { try { var o = JSON.parse(localStorage.getItem('modivs_org_profiles') || '{}'); if (o && u && u.email && o[String(u.email).toLowerCase()]) return '/org-dashboard' } catch (e) { } return '/tutor-dashboard' }
   function mount() {
     var old = document.getElementById('mvUser'); if (old) old.remove();
     var oldBtn = document.getElementById('mvAdmBtn'); if (oldBtn) oldBtn.remove();
@@ -144,7 +144,7 @@
       var admBtn = document.createElement('a');
       admBtn.id = 'mvAdmBtn';
       admBtn.className = 'mv-adm-btn';
-      admBtn.href = 'modivs-admin.html';
+      admBtn.href = '/admin';
       admBtn.innerHTML = '👑 <span>Admin dashboard</span>';
       bur ? host.insertBefore(admBtn, bur) : host.appendChild(admBtn);
     }
@@ -169,13 +169,13 @@
     menu.appendChild(who);
 
     if (u.role === 'Admin') {
-      var d = document.createElement('a'); d.href = 'modivs-admin.html'; d.innerHTML = '👑 <b>Admin Dashboard</b>';
-      var leads = document.createElement('a'); leads.href = 'modivs-active-leads.html'; leads.textContent = 'Active Leads';
-      var tutors = document.createElement('a'); tutors.href = 'modivs-tutors.html'; tutors.textContent = 'Tutors Directory';
+      var d = document.createElement('a'); d.href = '/admin'; d.innerHTML = '👑 <b>Admin Dashboard</b>';
+      var leads = document.createElement('a'); leads.href = '/active-leads'; leads.textContent = 'Active Leads';
+      var tutors = document.createElement('a'); tutors.href = '/tutors'; tutors.textContent = 'Tutors Directory';
       var out = document.createElement('button'); out.type = 'button'; out.textContent = 'Log out'; out.addEventListener('click', logout);
       menu.appendChild(d); menu.appendChild(leads); menu.appendChild(tutors); menu.appendChild(out);
     } else {
-      var dash = u.role === 'Tutor' ? tutorDash(u) : (u.role === 'Student / Parent' ? 'modivs-student-dashboard.html' : 'modivs-home.html');
+      var dash = u.role === 'Tutor' ? tutorDash(u) : (u.role === 'Student / Parent' ? '/student-dashboard' : '/');
       var d = document.createElement('a'); d.href = dash; d.textContent = u.role === 'General User' ? 'Home' : 'My dashboard';
       var out = document.createElement('button'); out.type = 'button'; out.textContent = 'Log out'; out.addEventListener('click', logout);
       menu.appendChild(d); menu.appendChild(out);
@@ -197,15 +197,15 @@
     var u = rd('modivs_auth_user', null);
     var p = (location.pathname.split('/').pop() || '').toLowerCase(), h = location.hash || '';
     var dash;
-    if (isAdminSession()) dash = 'modivs-admin.html';
+    if (isAdminSession()) dash = '/admin';
     else {
       var r = normalizeRole((u && (u.role || u.roleKey)) || '');
       if (r === 'Tutor') dash = tutorDash(u);
-      else if (r === 'Student / Parent') dash = 'modivs-student-dashboard.html';
-      else dash = 'modivs-home.html';
+      else if (r === 'Student / Parent') dash = '/student-dashboard';
+      else dash = '/';
     }
-    var isLogin = p === 'modivs-education.html' && /^(|#|#login|#student-login|#tutor-login)$/.test(h);
-    var isSignupPage = p === 'modivs-signup.html' || p === 'modivs-user-signup.html' || (p === 'modivs-student-signup.html' && !!u && normalizeRole(u.role || u.roleKey) === 'Student / Parent');
+    var isLogin = /^(modivs-education\.html|education|login)$/i.test(p) && /^(|#|#login|#student-login|#tutor-login)$/.test(h);
+    var isSignupPage = /^(modivs-signup\.html|signup|modivs-user-signup\.html|user-signup)$/i.test(p) || (/^(modivs-student-signup\.html|student-signup)$/i.test(p) && !!u && normalizeRole(u.role || u.roleKey) === 'Student / Parent');
     if (isLogin || isSignupPage) { location.replace(dash); return true }
     return false
   }
