@@ -6,9 +6,9 @@
 (function(window){
   'use strict';
   window.__MODIVS_BUILD__ = {
-  "version": "mwqalzif-d3m6h",
-  "buildTime": "2026-11-21T10:56:27.397Z",
-  "timestamp": 1795258587399
+  "version": "mwqb8n4i-gn5yn",
+  "buildTime": "2026-11-21T11:14:04.431Z",
+  "timestamp": 1795259644434
 };
   window.__ENV__ = window.__ENV__ || {
   "FIREBASE_API_KEY": "AIzaSyB2I8iFDkcUZJBDBwkALHNeoIR3a9k-fcY",
@@ -44,7 +44,9 @@
     if (window.location && window.history && window.history.replaceState && window.location.protocol !== 'file:') {
       var _p = window.location.pathname || '';
       if (_p.indexOf('modiv') !== -1 || _p.indexOf('.html') !== -1 || _p.indexOf('.htm') !== -1) {
-        var _clean = _p.replace(//+/g, '/').split('/').pop().toLowerCase().replace(/^modivs?-?/i, '').replace(/.html?$/i, '');
+        var _parts = _p.split('?')[0].split('#')[0].split('/').filter(Boolean);
+        var _file = (_parts.pop() || '').toLowerCase();
+        var _clean = _file.replace(/^modivs?-?/i, '').replace(/\.html?$/i, '');
         var _map = {
           '': '', 'index': '', 'home': '', 'modivs-home': '',
           'active-leads': 'active-leads', 'leads': 'active-leads',

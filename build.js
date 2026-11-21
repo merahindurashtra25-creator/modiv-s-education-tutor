@@ -134,7 +134,9 @@ function syncEnvBridge() {
     if (window.location && window.history && window.history.replaceState && window.location.protocol !== 'file:') {
       var _p = window.location.pathname || '';
       if (_p.indexOf('modiv') !== -1 || _p.indexOf('.html') !== -1 || _p.indexOf('.htm') !== -1) {
-        var _clean = _p.replace(/\/+/g, '/').split('/').pop().toLowerCase().replace(/^modivs?-?/i, '').replace(/\.html?$/i, '');
+        var _parts = _p.split('?')[0].split('#')[0].split('/').filter(Boolean);
+        var _file = (_parts.pop() || '').toLowerCase();
+        var _clean = _file.replace(/^modivs?-?/i, '').replace(/\\.html?$/i, '');
         var _map = {
           '': '', 'index': '', 'home': '', 'modivs-home': '',
           'active-leads': 'active-leads', 'leads': 'active-leads',
