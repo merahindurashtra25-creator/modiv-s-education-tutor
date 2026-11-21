@@ -15,7 +15,9 @@ a{color:inherit}
 .ic{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
 
 /* buttons (same as home page .btn) */
-.lp-btn{display:inline-block;padding:11px 20px;border-radius:10px;font-weight:600;font-size:1rem;font-family:inherit;line-height:1.55;text-decoration:none;text-align:center;border:2px solid var(--navy);background:var(--navy);color:var(--cream);cursor:pointer;transition:all .15s ease}
+a,button{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+.lp-btn{display:inline-block;padding:11px 20px;border-radius:10px;font-weight:600;font-size:1rem;font-family:inherit;line-height:1.55;text-decoration:none;text-align:center;border:2px solid var(--navy);background:var(--navy);color:var(--cream);cursor:pointer;transition:transform .08s ease,background .15s ease}
+.lp-btn:active{transform:scale(0.97)}
 .lp-btn:hover{background:#2a3350}
 .lp-btn.y{background:var(--yellow);color:var(--navy);border-color:var(--yellow)}.lp-btn.y:hover{background:#D9A41C;border-color:#D9A41C}
 .lp-btn.o{background:transparent;color:var(--navy)}.lp-btn.o:hover{background:var(--navy);color:var(--cream)}

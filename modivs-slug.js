@@ -398,6 +398,9 @@
         var qParts = baseWithQuery.split('?');
         var pathPart = qParts[0];
         var query = qParts.length > 1 ? '?' + qParts[1] : '';
+
+        // If it already ends with a file extension like .html, no rewrite needed
+        if(/\.html?$/i.test(pathPart)) continue;
         
         // If link starts with a slash or clean slug, resolve to real working file
         var targetReal = resolveToRealFile(pathPart);
@@ -411,12 +414,15 @@
     } catch(e){}
   }
 
-  // Global click delegate for local/file navigation to guarantee no link ever breaks or goes blank
+  // Fast click delegate for local/file navigation fallback:
+  // Only resolves unhandled extensionless links without interrupting native browser clicks
   if(typeof window !== 'undefined'){
     if(isLocalEnvironment()){
       document.addEventListener('click', function(e){
+        // Ignore modified clicks, right clicks, or already handled events
+        if(e.defaultPrevented || e.button !== 0 || e.metaKey || e.ctrlKey || e.shiftKey || e.altKey) return;
         var a = e.target && e.target.closest ? e.target.closest('a[href]') : null;
-        if(!a) return;
+        if(!a || a.target === '_blank' || a.hasAttribute('download')) return;
         var href = a.getAttribute('href');
         if(!href || /^(?:https?:|\/\/|mailto:|tel:|javascript:|#)/i.test(href)) return;
         
@@ -428,6 +434,10 @@
         var pathPart = qParts[0];
         var query = qParts.length > 1 ? '?' + qParts[1] : '';
         
+        // If the path already has a file extension like .html, NEVER intercept!
+        // Let the browser handle native instant navigation with 0ms latency.
+        if(/\.[a-zA-Z0-9]+$/.test(pathPart)) return;
+        
         var realFile = resolveToRealFile(pathPart);
         if(realFile){
           e.preventDefault();
@@ -435,7 +445,7 @@
           var finalHash = hash || (fParts.length > 1 ? '#' + fParts[1] : '');
           window.location.href = fParts[0] + query + finalHash;
         }
-      }, true);
+      });
     }
   }
 
