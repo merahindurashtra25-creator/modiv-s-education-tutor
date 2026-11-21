@@ -1696,15 +1696,17 @@
   </div>
 
   <button class="ask" type="button" id="ask">Ask Me!</button>
-  <dialog id="dlg" aria-labelledby="dt" onclick="if(event.target===this)this.close()">
+  <dialog id="dlg" aria-labelledby="dt" onclick="if(event.target===this)closeRechargeDialog()">
+    <button type="button" class="gx" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.5rem;cursor:pointer;line-height:1;color:var(--navy);" aria-label="Close" onclick="closeRechargeDialog()">&times;</button>
     <h2 id="dt">Recharge coins</h2>
     <p class="sub" style="margin-bottom:10px">Coins unlock student contact details and private messages (<span class="mvCostTxt">10</span> coins per
       inquiry).</p>
     <div class="packs" id="packs"></div>
-    <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="close" onclick="document.getElementById('dlg').close()">Close</button></div>
+    <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="close" onclick="closeRechargeDialog()">Close</button></div>
   </dialog>
 
-  <dialog id="memDlg" aria-labelledby="mdt" onclick="if(event.target===this)this.close()">
+  <dialog id="memDlg" aria-labelledby="mdt" onclick="if(event.target===this)closeMembershipDialog()">
+    <button type="button" class="gx" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.5rem;cursor:pointer;line-height:1;color:var(--navy);" aria-label="Close" onclick="closeMembershipDialog()">&times;</button>
     <h2 id="mdt">Teacher Membership Plans</h2>
     <p class="sub" style="margin-bottom:12px">An active membership plan is required to unlock student inquiries and chat
       in real time.</p>
@@ -1722,7 +1724,7 @@
     </div>
 
     <div class="packs" id="memPacks"></div>
-    <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="closeMem" onclick="document.getElementById('memDlg').close()">Close</button></div>
+    <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="closeMem" onclick="closeMembershipDialog()">Close</button></div>
   </dialog>
 
   <div class="toast hide" id="toast" role="status"></div>
@@ -1936,6 +1938,27 @@
         });
       }
 
+      function closeRechargeDialog() {
+        var d = $('dlg');
+        if (d) { try { d.close(); } catch (e) { } d.removeAttribute('open'); }
+        if (window.history && window.history.replaceState) {
+          try {
+            var u = new URL(window.location.href);
+            if (u.searchParams.has('openLead')) {
+              u.searchParams.delete('openLead');
+              window.history.replaceState({}, document.title, u.toString());
+            }
+          } catch (e) { }
+        }
+      }
+      window.closeRechargeDialog = closeRechargeDialog;
+
+      function closeMembershipDialog() {
+        var d = $('memDlg');
+        if (d) { try { d.close(); } catch (e) { } d.removeAttribute('open'); }
+      }
+      window.closeMembershipDialog = closeMembershipDialog;
+
       function openRecharge() {
         renderRechargePacks();
         var d = $('dlg');
@@ -1943,6 +1966,7 @@
           if (!d.open) d.showModal();
         }
       }
+      window.openRecharge = openRecharge;
 
       var isProcessingPayment = false;
 

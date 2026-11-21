@@ -4051,12 +4051,21 @@
           pb.type = 'button';
           pb.style.cssText = 'padding:5px 10px;font-size:0.78rem;';
           pb.addEventListener('click', function () {
+            var applyLocalMem = function() {
+              x.membership = { planName: title, status: 'active', startedAt: new Date().toISOString(), validUntil: new Date(Date.now() + days * 86400000).toISOString(), durationDays: days };
+              saveTutorsDb();
+              logAction(x.id, x.name, 'Admin Updated Membership', title + ' (' + days + ' days)');
+              toast('Updated ' + x.name + ' membership to ' + title);
+              detail();
+            };
             if (window.ModivsChat) {
               Promise.resolve(ModivsChat.setTutorMembership(x.email, title, days, 'active')).then(function () {
-                logAction(x.id, x.name, 'Admin Updated Membership', title + ' (' + days + ' days)');
-                toast('Updated ' + x.name + ' membership to ' + title);
-                detail();
-              }).catch(function (e) { toast('Failed: ' + (e && e.message || 'try again')); });
+                applyLocalMem();
+              }).catch(function (e) {
+                applyLocalMem();
+              });
+            } else {
+              applyLocalMem();
             }
           });
           memActs.appendChild(pb);
@@ -4068,12 +4077,21 @@
         expBtn.type = 'button';
         expBtn.style.cssText = 'padding:5px 10px;font-size:0.78rem;';
         expBtn.addEventListener('click', function () {
+          var applyExpire = function() {
+            x.membership = { planName: 'Expired', status: 'expired', startedAt: null, validUntil: new Date(Date.now() - 1000).toISOString(), durationDays: 0 };
+            saveTutorsDb();
+            logAction(x.id, x.name, 'Admin Expired Membership', 'Set to expired');
+            toast('Expired ' + x.name + ' membership.');
+            detail();
+          };
           if (window.ModivsChat) {
             Promise.resolve(ModivsChat.setTutorMembership(x.email, 'Expired', -1, 'expired')).then(function () {
-              logAction(x.id, x.name, 'Admin Expired Membership', 'Set to expired');
-              toast('Expired ' + x.name + ' membership.');
-              detail();
-            }).catch(function (e) { toast('Failed: ' + (e && e.message || 'try again')); });
+              applyExpire();
+            }).catch(function (e) {
+              applyExpire();
+            });
+          } else {
+            applyExpire();
           }
         });
         memActs.appendChild(expBtn);

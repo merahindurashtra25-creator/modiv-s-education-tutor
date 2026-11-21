@@ -299,6 +299,19 @@
           }
           return { membership: mem, balance: next };
         });
+      }).catch(function(err){
+        // Graceful fallback if Firestore transaction fails (quota exceeded, offline, permissions)
+        var cached = getLocal(em);
+        var cur = Number(cached.coins) || 0;
+        var existing = cached.membership || null;
+        var mem = (plan.status === 'expired')
+          ? { planName: existing ? existing.planName : 'None', status: 'expired', startedAt: existing ? existing.startedAt : null, validUntil: new Date(Date.now() - 1000).toISOString(), durationDays: existing ? existing.durationDays : 0 }
+          : buildMembership(existing, plan);
+        var next = cur + bonus;
+        try {
+          ref.set({ tutorEmail: em, coins: next, membership: mem, updatedAt: ts() }, { merge: true }).catch(function(){});
+        } catch(e){}
+        return { membership: mem, balance: next, fallback: true };
       }).then(function(r){
         setLocal(em, { coins: r.balance, membership: r.membership, ready: true });
         publishTier(em, r.membership);

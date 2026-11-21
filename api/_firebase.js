@@ -42,10 +42,33 @@ if (!getApps().length) {
 const db = getFirestore(app);
 const auth = getAuth(app);
 
+let messaging = null;
+try {
+  const { getMessaging } = require('firebase-admin/messaging');
+  messaging = getMessaging(app);
+} catch (e) {}
+
+async function sendPushNotification(recipientEmail, { title, body, actionUrl, tag } = {}) {
+  if (!messaging || !recipientEmail) return;
+  try {
+    const cleanMail = String(recipientEmail).trim().toLowerCase();
+    const userDoc = await db.collection('users').doc(cleanMail).get().catch(() => null);
+    if (!userDoc || !userDoc.exists) return;
+    const userData = userDoc.data() || {};
+    const tokens = Array.from(new Set([userData.lastFcmToken, ...(userData.fcmTokens || [])].filter(Boolean)));
+    if (!tokens.length) return;
+    await messaging.sendEachForMulticast({
+      tokens,
+      notification: { title: title || "Modiv’s Education Alert", body: body || "You have a new update." },
+      data: { url: actionUrl || '/', tag: tag || 'modivs-alert', title: title || '', body: body || '' }
+    }).catch(() => {});
+  } catch (e) {}
+}
+
 const admin = {
   firestore: {
     FieldValue
   }
 };
 
-module.exports = { admin, db, auth, FieldValue };
+module.exports = { admin, db, auth, messaging, sendPushNotification, FieldValue };

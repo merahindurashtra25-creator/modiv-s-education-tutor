@@ -7,7 +7,7 @@
  * - Unread message counting and conversation status updates
  */
 
-const { admin, db } = require('./_firebase');
+const { admin, db, sendPushNotification } = require('./_firebase');
 const { verifyAuth, checkCsrf, normalizeEmail } = require('./_auth');
 
 module.exports = async function handler(req, res) {
@@ -177,6 +177,15 @@ module.exports = async function handler(req, res) {
         senderName: user.name || req.body.senderName || 'User',
         updatedAt: now
       }, { merge: true }).catch(() => {});
+
+      if (typeof sendPushNotification === 'function') {
+        sendPushNotification(targetEmail, {
+          title: 'New Message from ' + (user.name || req.body.senderName || 'User'),
+          body: text.slice(0, 120),
+          actionUrl: isCallerTutor ? '/modivs-student-dashboard.html#chat' : '/modivs-tutor-dashboard.html#chat',
+          tag: 'modivs-msg-' + safeConv
+        }).catch(() => {});
+      }
     }
 
     return res.status(200).json({ success: true, messageId: msgRef.id });

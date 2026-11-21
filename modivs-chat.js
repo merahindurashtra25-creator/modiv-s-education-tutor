@@ -1441,9 +1441,17 @@
     if (rechBtn) {
       rechBtn.onclick = function () {
         ov.remove();
-        var dlg = document.getElementById('dlg');
-        if (dlg && dlg.showModal) dlg.showModal();
-        else alert('Please use the Recharge button on your dashboard to top up your coin balance.');
+        if (typeof window.openRecharge === 'function') {
+          window.openRecharge();
+        } else {
+          var dlg = document.getElementById('dlg');
+          if (dlg && dlg.showModal) {
+            if (typeof renderRechargePacks === 'function') try { renderRechargePacks(); } catch (e) { }
+            dlg.showModal();
+          } else {
+            alert('Please use the Recharge button on your dashboard to top up your coin balance.');
+          }
+        }
       };
     }
 

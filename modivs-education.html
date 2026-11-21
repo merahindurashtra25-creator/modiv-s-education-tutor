@@ -1869,27 +1869,28 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
       $('lEmail').value = prefillEmail;
       setTimeout(function(){ if($('lPass')) $('lPass').focus(); }, 120);
     }
-    if(hash === '#tutor-login'){
+    var path = (window.location.pathname || '').replace(/\/+$/, '').toLowerCase();
+    if(hash === '#tutor-login' || path === '/tutor-login'){
       show('login');
       setLoginMode('tutor');
-    } else if(hash === '#student-login'){
+    } else if(hash === '#student-login' || path === '/student-login'){
       show('login');
       setLoginMode('student');
-    } else if(hash === '#admin-login'){
+    } else if(hash === '#admin-login' || path === '/admin-login'){
       show('login');
       setLoginMode('student');
       var t = $('loginTitle'), s = $('loginSub');
       if(t) t.textContent = 'Admin Log in';
       if(s) s.textContent = 'Log in with your administrator email or Google account.';
-    } else if(hash === '#tutor-signup' || hash === '#tjoin' || hash === '#org-signup' || hash === '#organization-signup'){
+    } else if(hash === '#tutor-signup' || hash === '#tjoin' || hash === '#org-signup' || hash === '#organization-signup' || path === '/tutor-signup' || path === '/become-tutor' || path === '/tjoin'){
       show('tjoin');
-      if(window.__setJoinType) window.__setJoinType(/^#org/.test(hash) ? 'organization' : 'tutor');
-    } else if(hash === '#tutor-profile'){
+      if(window.__setJoinType) window.__setJoinType((/^#org/.test(hash) || /org/.test(path)) ? 'organization' : 'tutor');
+    } else if(hash === '#tutor-profile' || path === '/tutor-profile'){
       // full profile wizard: only for a tutor who already has an account
       if(existingAcct()) show('signup'); else show('tjoin');
-    } else if(hash === '#student-signup'){
+    } else if(hash === '#student-signup' || path === '/student-signup'){
       window.location.replace('modivs-student-signup.html');
-    } else if(hash === '#signup'){
+    } else if(hash === '#signup' || path === '/signup'){
       // one Sign up entry point: pick student/parent or tutor there
       window.location.replace('modivs-signup.html');
     } else {

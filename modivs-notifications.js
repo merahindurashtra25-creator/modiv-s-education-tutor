@@ -120,11 +120,26 @@
       try {
         var askedKey = 'modivs_push_prompted_' + em;
         var lastPrompted = Number(localStorage.getItem(askedKey)) || 0;
-        if (Date.now() - lastPrompted > 6 * 3600 * 1000) {
-          localStorage.setItem(askedKey, Date.now());
-          setTimeout(function() {
-            requestPushPermission(em).catch(function(){});
-          }, 2500);
+        if (Date.now() - lastPrompted > 24 * 3600 * 1000) {
+          if (document.getElementById('mvPushPromptBanner')) return;
+          var bar = document.createElement('div');
+          bar.id = 'mvPushPromptBanner';
+          bar.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);z-index:99999;background:#1A2035;color:#fff;padding:12px 18px;border-radius:14px;box-shadow:0 10px 35px rgba(0,0,0,0.35);display:flex;align-items:center;gap:12px;font-size:0.88rem;max-width:min(520px,94vw);';
+          bar.innerHTML = '<span>🔔 Enable instant notifications on this device for new student leads &amp; chat messages.</span>' +
+            '<button type="button" id="mvEnablePushBtn" style="background:#EBB92E;color:#1A2035;font-weight:700;border:none;padding:7px 14px;border-radius:8px;cursor:pointer;white-space:nowrap;">Turn On</button>' +
+            '<button type="button" id="mvDismissPushBtn" style="background:transparent;color:#aaa;border:none;cursor:pointer;font-size:1.3rem;line-height:1;" aria-label="Dismiss">&times;</button>';
+          document.body.appendChild(bar);
+          bar.querySelector('#mvEnablePushBtn').onclick = function() {
+            localStorage.setItem(askedKey, Date.now());
+            bar.remove();
+            requestPushPermission(em).then(function() {
+              showLocalPush('Notifications Enabled! 🎉', 'You will now receive alerts on this device for new leads and messages.');
+            }).catch(function(){});
+          };
+          bar.querySelector('#mvDismissPushBtn').onclick = function() {
+            localStorage.setItem(askedKey, Date.now());
+            bar.remove();
+          };
         }
       } catch(e){}
     }
