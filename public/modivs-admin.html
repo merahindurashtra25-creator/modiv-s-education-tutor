@@ -25,23 +25,23 @@
         var email = (s && s.email) || (u && u.email) || '';
         var isAdmin = (s && s.isAdmin === true) || (u && (u.role === 'Admin' || u.roleKey === 'admin')) || (email && ADMIN_EMAILS.indexOf(String(email).toLowerCase()) !== -1);
         if (!isAdmin) {
-          window.location.replace('modivs-education.html#login');
+          window.location.replace('/login#login');
         } else if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
           window.addEventListener('pageshow', function (e) {
             if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
               var cs = null;
               try { cs = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null'); } catch(err){}
-              if (!cs) window.location.replace('modivs-education.html#login');
+              if (!cs) window.location.replace('/login#login');
             }
           });
           window.addEventListener('storage', function (e) {
             if (e.key === 'modivs_admin_session' && !e.newValue) {
-              window.location.replace('modivs-education.html#login');
+              window.location.replace('/login#login');
             }
           });
         }
       } catch (e) {
-        window.location.replace('modivs-education.html#login');
+        window.location.replace('/login#login');
       }
     })();
   </script>
@@ -1590,7 +1590,7 @@
             } catch (e) { }
             if (!navigator.onLine) return;
             try { localStorage.removeItem('modivs_admin_session'); } catch (e) { }
-            window.location.replace('modivs-education.html#login');
+            window.location.replace('/login#login');
             return;
           }
           user.getIdTokenResult().then(function (idResult) {
@@ -1604,7 +1604,7 @@
             var isSessionAdmin = (s && s.isAdmin === true) || (u && (u.role === 'Admin' || u.roleKey === 'admin'));
             if (!isClaimsAdmin && !isEmailAdmin && !isSessionAdmin) {
               try { localStorage.removeItem('modivs_admin_session'); } catch (e) { }
-              window.location.replace('modivs-education.html#login');
+              window.location.replace('/login#login');
             } else {
               try {
                 localStorage.setItem('modivs_admin_session', JSON.stringify({ email: email || (s && s.email) || '', isAdmin: true }));
@@ -1627,7 +1627,7 @@
       }
     })();
   </script>
-  <script src="modivs.min.js?v=mwqbnroe-kfldq"></script>
+  <script src="modivs.min.js?v=mwqc3tja-a3xh2"></script>
   
   
   <script>function admUnlockCost() { return (window.ModivsWallet && ModivsWallet.getUnlockCost) ? ModivsWallet.getUnlockCost() : 10; }</script>
@@ -1638,9 +1638,9 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwqbnroe-kfldq">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwqbnroe-kfldq">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwqbnroe-kfldq">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwqc3tja-a3xh2">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwqc3tja-a3xh2">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwqc3tja-a3xh2">
 </head>
 
 <body>
@@ -2965,7 +2965,7 @@
           '</div>' +
           '<div class="admin-form-group">' +
           '<label for="notifActionUrl">Click Action URL (Optional)</label>' +
-          '<input type="text" id="notifActionUrl" placeholder="e.g. modivs-become-tutor.html#pricing or #chat">' +
+          '<input type="text" id="notifActionUrl" placeholder="e.g. /become-tutor#pricing or #chat">' +
           '</div>' +
           '</div>' +
           '<div class="admin-form-group">' +
@@ -4498,7 +4498,7 @@
           }
 
           act('✏️ Change / Edit Tutor Data', 'o', function () {
-            window.open('modivs-tutors.html#edit=' + encodeURIComponent(x.email || x.id), '_blank');
+            window.open('/tutors#edit=' + encodeURIComponent(x.email || x.id), '_blank');
           });
 
           act('🆔 Edit Tutor ID', 'o', function () {
@@ -4593,7 +4593,7 @@
           var eb = el('button', 'b o', '✏️ Change / Complete Tutor Data');
           eb.type = 'button';
           eb.addEventListener('click', function () {
-            window.open('modivs-tutors.html#edit=' + encodeURIComponent(x.email || x.id), '_blank');
+            window.open('/tutors#edit=' + encodeURIComponent(x.email || x.id), '_blank');
           });
           incAct.appendChild(eb);
 
@@ -5522,12 +5522,12 @@
           try { localStorage.removeItem('modivs_admin_session'); } catch(e){}
           try { localStorage.removeItem('modivs_auth_user'); } catch(e){}
           try { sessionStorage.clear(); } catch(e){}
-          window.location.replace('modivs-education.html#login');
+          window.location.replace('/login#login');
         }).catch(function(){
           try { localStorage.removeItem('modivs_admin_session'); } catch(e){}
           try { localStorage.removeItem('modivs_auth_user'); } catch(e){}
           try { sessionStorage.clear(); } catch(e){}
-          window.location.replace('modivs-education.html#login');
+          window.location.replace('/login#login');
         });
       });
 

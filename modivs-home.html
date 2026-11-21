@@ -656,7 +656,7 @@ section .ht-h{max-width:100%}
     var fx=el('div','htc-facts');[['cap','Classes',clsRange(t)],['pin','City',t.city||'Online'],['brief','Experience',+t.years>0?t.years+'+ Years':'Fresher']].forEach(function(f){var d=el('div','htc-f');d.innerHTML=hs(f[0]);var w=el('div');w.appendChild(el('small','',f[1]));w.appendChild(el('b','',f[2]));d.appendChild(w);fx.appendChild(d)});c.appendChild(fx);
     var fe=el('div','htc-fee','₹'+(t.fee||'—'));fe.appendChild(el('small','','/hr'));c.appendChild(fe);
     var bt=el('div','htc-btns'),vp=el('a','btn o','View Profile');vp.href='/tutors#tutor='+encodeURIComponent(String(t.id||t.email||t.name));bt.appendChild(vp);
-    var en=el('a','btn y','Enquire Now');en.href=(au2&&au2.role==='Student / Parent')?'modivs-student-dashboard.html':'modivs-student-signup.html'+(t.id?'?tutor='+encodeURIComponent((function(){var p=String(t.displayId||t.tutId||(window.ModivsIds&&t.email?ModivsIds.peek('tut',String(t.email).toLowerCase()):'')||'').replace(/^TUT(?=\d)/,'MOD-TUT');return p||t.id})()):'');bt.appendChild(en);c.appendChild(bt);
+    var en=el('a','btn y','Enquire Now');en.href=(au2&&au2.role==='Student / Parent')?'/student-dashboard':'/student-signup'+(t.id?'?tutor='+encodeURIComponent((function(){var p=String(t.displayId||t.tutId||(window.ModivsIds&&t.email?ModivsIds.peek('tut',String(t.email).toLowerCase()):'')||'').replace(/^TUT(?=\d)/,'MOD-TUT');return p||t.id})()):'');bt.appendChild(en);c.appendChild(bt);
     box.appendChild(c);
    });
   }
@@ -825,9 +825,9 @@ section .ht-h{max-width:100%}
  var findForm = document.getElementById('find');
 
  if(authUser && authUser.role === 'Student / Parent'){
-  if(heroFind){ heroFind.href = 'modivs-student-dashboard.html'; heroFind.textContent = 'Go to Dashboard'; }
+  if(heroFind){ heroFind.href = '/student-dashboard'; heroFind.textContent = 'Go to Dashboard'; }
  } else if(authUser && authUser.role === 'Tutor'){
-  var tDash = 'modivs-tutor-dashboard.html'; try{ var orgs = JSON.parse(localStorage.getItem('modivs_org_profiles') || '{}'); if(authUser.email && orgs[String(authUser.email).toLowerCase()]) tDash = 'modivs-org-dashboard.html'; }catch(e){}
+  var tDash = '/tutor-dashboard'; try{ var orgs = JSON.parse(localStorage.getItem('modivs_org_profiles') || '{}'); if(authUser.email && orgs[String(authUser.email).toLowerCase()]) tDash = '/org-dashboard'; }catch(e){}
   if(heroFind){ heroFind.href = tDash; heroFind.textContent = 'Go to Dashboard'; }
   var ff = document.getElementById('footFindTutor'); if(ff && ff.parentNode){ ff.parentNode.style.display = 'none'; }
   if(regTutor){ regTutor.href = tDash; regTutor.textContent = 'Go to Dashboard'; }
@@ -837,7 +837,7 @@ section .ht-h{max-width:100%}
   // Signed in: no Log in / Sign up buttons. The profile picture / avatar menu (modivs-session-ui.js) has Dashboard and Log out.
   ['navLoginBtn','navSignup'].forEach(function(id){var b=document.getElementById(id);if(b)b.style.display='none'});
   var fs=document.getElementById('footSignup'); if(fs && fs.parentNode){ fs.parentNode.style.display='none'; }
-  if(regTutor && authUser && authUser.role === 'Student / Parent'){ regTutor.href = 'modivs-student-dashboard.html'; regTutor.textContent = 'Go to Dashboard'; }
+  if(regTutor && authUser && authUser.role === 'Student / Parent'){ regTutor.href = '/student-dashboard'; regTutor.textContent = 'Go to Dashboard'; }
  }
 
  if(findForm){

@@ -4,7 +4,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js?v=mwqbnroe-kfldq"></script>
+  <script src="modivs.min.js?v=mwqc3tja-a3xh2"></script>
   
 <link rel="icon" type="image/png" href="favicon.png">
 <meta charset="utf-8">
@@ -24,14 +24,14 @@
     var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function(e){ return e.trim().toLowerCase(); });
     var isAdmin = (admin && (admin.isAdmin === true || (admin.email && adminEmails.indexOf(admin.email.toLowerCase()) !== -1))) || (u && (u.role === 'Admin' || u.roleKey === 'admin' || (u.email && adminEmails.indexOf(String(u.email).toLowerCase()) !== -1)));
     if (isAdmin) {
-      window.location.replace('modivs-admin.html');
+      window.location.replace('/admin');
       return;
     }
     if (u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1)) {
-      window.location.replace('modivs-tutor-dashboard.html');
+      window.location.replace('/tutor-dashboard');
       return;
     } else if (!isStudent) {
-      window.location.replace('modivs-education.html#student-login');
+      window.location.replace('/login#student-login');
       return;
     }
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
@@ -40,12 +40,12 @@
         if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
           var cu = null;
           try { cu = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(err){}
-          if (!cu) window.location.replace('modivs-education.html#student-login');
+          if (!cu) window.location.replace('/login#student-login');
         }
       });
       window.addEventListener('storage', function (e) {
         if (e.key === 'modivs_auth_user' && !e.newValue) {
-          window.location.replace('modivs-education.html#student-login');
+          window.location.replace('/login#student-login');
         }
       });
     }
@@ -131,10 +131,10 @@ dialog h2{margin:0 0 4px}
 
 
 
-<link rel="stylesheet" href="modivs-menu.css?v=mwqbnroe-kfldq">
-<link rel="stylesheet" href="modivs-mobile.css?v=mwqbnroe-kfldq">
-<link rel="stylesheet" href="modivs-dashboard.css?v=mwqbnroe-kfldq">
-<link rel="stylesheet" href="modivs-footer.css?v=mwqbnroe-kfldq">
+<link rel="stylesheet" href="modivs-menu.css?v=mwqc3tja-a3xh2">
+<link rel="stylesheet" href="modivs-mobile.css?v=mwqc3tja-a3xh2">
+<link rel="stylesheet" href="modivs-dashboard.css?v=mwqc3tja-a3xh2">
+<link rel="stylesheet" href="modivs-footer.css?v=mwqc3tja-a3xh2">
 </head>
 <body class="dash">
 
@@ -724,12 +724,12 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
       try { localStorage.removeItem('modivs_auth_user'); } catch(e){}
       try { localStorage.removeItem('modivs_admin_session'); } catch(e){}
       try { sessionStorage.clear(); } catch(e){}
-      window.location.replace('modivs-education.html#student-login');
+      window.location.replace('/login#student-login');
     }).catch(function(){
       try { localStorage.removeItem('modivs_auth_user'); } catch(e){}
       try { localStorage.removeItem('modivs_admin_session'); } catch(e){}
       try { sessionStorage.clear(); } catch(e){}
-      window.location.replace('modivs-education.html#student-login');
+      window.location.replace('/login#student-login');
     });
   });
 

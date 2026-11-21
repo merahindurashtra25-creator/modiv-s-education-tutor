@@ -422,14 +422,14 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 
   var MENU = {
     'Tutor': {
-      'Profile': [['Create or edit profile','Photo, bio, subjects','modivs-tutor-edit-profile.html'],['Qualifications & experience','Degrees and teaching history','modivs-tutor-edit-profile.html'],['Fees & availability','Rates, hours, online, offline & group tuitions','modivs-tutor-edit-profile.html'],['Verification & publishing','Submit your profile for review','modivs-tutor-edit-profile.html']],
-      'Students': [['Tutoring requests','Accept or decline incoming requests','modivs-tutor-dashboard.html'],['Class schedule','Upcoming and past classes','modivs-tutor-dashboard.html']],
-      'Account': [['Messages','Talk to students and parents','modivs-tutor-dashboard.html'],['Reviews & payments','Ratings and earnings','modivs-tutor-dashboard.html'],['Settings','Password and notifications','modivs-tutor-dashboard.html']]
+      'Profile': [['Create or edit profile','Photo, bio, subjects','/tutor-edit-profile'],['Qualifications & experience','Degrees and teaching history','/tutor-edit-profile'],['Fees & availability','Rates, hours, online, offline & group tuitions','/tutor-edit-profile'],['Verification & publishing','Submit your profile for review','/tutor-edit-profile']],
+      'Students': [['Tutoring requests','Accept or decline incoming requests','/tutor-dashboard'],['Class schedule','Upcoming and past classes','/tutor-dashboard']],
+      'Account': [['Messages','Talk to students and parents','/tutor-dashboard'],['Reviews & payments','Ratings and earnings','/tutor-dashboard'],['Settings','Password and notifications','/tutor-dashboard']]
     },
     'Student / Parent': {
-      'Find a tutor': [['Search tutors','Filter by subject, fee, online/offline & group tuitions','modivs-student-dashboard.html'],['Shortlist','Tutors you saved','modivs-student-dashboard.html'],['Learning requirements','Tell us what you need','modivs-student-registration.html']],
-      'Requests': [['My tutoring requests','Track sent requests','modivs-student-dashboard.html'],['Class schedule','Book and manage classes','modivs-student-dashboard.html']],
-      'Account': [['Messages','Talk to your tutors','modivs-student-dashboard.html'],['Reviews & payments','Rate tutors and view payments','modivs-student-dashboard.html'],['Settings','Password and notifications','modivs-student-dashboard.html']]
+      'Find a tutor': [['Search tutors','Filter by subject, fee, online/offline & group tuitions','/student-dashboard'],['Shortlist','Tutors you saved','/student-dashboard'],['Learning requirements','Tell us what you need','/student-registration']],
+      'Requests': [['My tutoring requests','Track sent requests','/student-dashboard'],['Class schedule','Book and manage classes','/student-dashboard']],
+      'Account': [['Messages','Talk to your tutors','/student-dashboard'],['Reviews & payments','Rate tutors and view payments','/student-dashboard'],['Settings','Password and notifications','/student-dashboard']]
     }
   };
 
@@ -460,7 +460,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     bad($('lEmail'), true);
     msg.innerHTML = '<div class="noacc"><b>Oops, looks like you’re new here!</b>' +
       '<span>We couldn’t find any account for <em></em>. No worries, signing up only takes a minute.</span>' +
-      '<a class="noacc-btn" href="' + (tutor ? 'modivs-education.html#tutor-signup' : 'modivs-student-signup.html') + '">' +
+      '<a class="noacc-btn" href="' + (tutor ? '/login#tutor-signup' : '/student-signup') + '">' +
       (tutor ? 'Create my tutor profile' : 'Sign up free') + ' →</a></div>';
     msg.querySelector('em').textContent = mail;
   }
@@ -468,8 +468,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   function setSignupLink(kind){
     var a = $('signupLink');
     if(!a) return;
-    if(kind === 'tutor'){ a.textContent = 'Become a Modivian Tutor'; a.setAttribute('href', 'modivs-education.html#tutor-signup'); return; }
-    a.textContent = 'Sign up as a Student / Parent'; a.setAttribute('href', 'modivs-student-signup.html');
+    if(kind === 'tutor'){ a.textContent = 'Become a Modivian Tutor'; a.setAttribute('href', '/login#tutor-signup'); return; }
+    a.textContent = 'Sign up as a Student / Parent'; a.setAttribute('href', '/student-signup');
   }
 
   var SIDE = {
@@ -487,7 +487,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       var ICO = {"join": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><circle cx=\"9\" cy=\"8\" r=\"4\"/><path d=\"M2 21a7 7 0 0 1 14 0\"/><path d=\"M19 8v6M16 11h6\"/></svg>", "demo": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"5\" width=\"18\" height=\"16\" rx=\"2\"/><path d=\"M16 3v4M8 3v4M3 10h18\"/><path d=\"m9 15 2 2 4-4\"/></svg>", "learn": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M2 5a2 2 0 0 1 2-1h5a3 3 0 0 1 3 3v14a2 2 0 0 0-2-2H2z\"/><path d=\"M22 5a2 2 0 0 0-2-1h-5a3 3 0 0 0-3 3v14a2 2 0 0 1 2-2h8z\"/></svg>", "prof": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><circle cx=\"9\" cy=\"11\" r=\"2.5\"/><path d=\"M5.5 17a3.5 3.5 0 0 1 7 0\"/><path d=\"M15 9h3M15 13h3\"/></svg>", "lead": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9\"/><path d=\"M10.3 21a1.9 1.9 0 0 0 3.4 0\"/></svg>", "earn": "<svg viewBox=\"0 0 24 24\" aria-hidden=\"true\"><path d=\"M6 4h12M6 9h12\"/><path d=\"M9 4c3.5 0 6 1.8 6 5s-2.5 5-6 5H6l8 7\"/></svg>"};
       var steps = {"student": [["Sign up free", "join"], ["Book a demo class", "demo"], ["Start learning", "learn"]], "tutor": [["Create your tutor profile", "prof"], ["Start getting leads", "lead"], ["Start earning", "earn"]]}[mode === 'tutor' ? 'tutor' : 'student'];
       if($('tjoinHead')) $('tjoinHead').textContent = (mode === 'tutor' ? 'Hey Tutor!' : 'Hey Student / Parent!') + ' New to Modiv’s?';
-      tj.href = mode === 'tutor' ? 'modivs-education.html#tutor-signup' : 'modivs-student-signup.html';
+      tj.href = mode === 'tutor' ? '/login#tutor-signup' : '/student-signup';
       tt.innerHTML = steps.map(function(x, i){ return '<span class="tj-step" style="--d:' + i + '"><em>' + (i + 1) + '</em><span class="tj-ic">' + ICO[x[1]] + '</span><span class="tj-lb">' + x[0] + '</span></span>'; }).join('');
     }
   }
@@ -601,7 +601,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     return ADMIN_EMAILS.indexOf(String(em).trim().toLowerCase()) !== -1;
   }
   // Exchange the Firebase ID token for the server session cookie (modivs_session) so /api/auth?action=me
-  // recognises the admin on modivs-admin.html. Without this the admin page logs you out a few seconds after loading.
+  // recognises the admin on /admin. Without this the admin page logs you out a few seconds after loading.
   function handleAdminLoginSuccess(email, displayName, uid){
     var done = false;
     function go(){ if(done) return; done = true; finishAdminLogin(email, displayName, uid); }
@@ -749,7 +749,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           try { localStorage.setItem('modivs_admin_session', JSON.stringify(adminData)); } catch(e){}
         }
         toast('Welcome back, ' + name.split(' ')[0] + '!');
-        var dest = (role === 'Tutor' ? ((window.ModivsOrg && ModivsOrg.isOrg(emailVal)) ? 'modivs-org-dashboard.html' : 'modivs-tutor-dashboard.html') : (role === 'Student / Parent' ? 'modivs-student-dashboard.html' : ((role === 'Admin' || isAdminEmail(emailVal)) ? 'modivs-admin.html' : 'modivs-home.html')));
+        var dest = (role === 'Tutor' ? ((window.ModivsOrg && ModivsOrg.isOrg(emailVal)) ? '/org-dashboard' : '/tutor-dashboard') : (role === 'Student / Parent' ? '/student-dashboard' : ((role === 'Admin' || isAdminEmail(emailVal)) ? '/admin' : '/')));
         setTimeout(function(){ window.location.href = dest; }, 500);
       }
 
@@ -823,8 +823,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: actualRole, roleKey: res.role }));
           if(actualRole === 'Tutor' && res.isNew) ensureTutorStub(mail, name);
           toast((res.isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
-          var dest = actualRole === 'Tutor' ? ((window.ModivsOrg && ModivsOrg.isOrg(mail)) ? 'modivs-org-dashboard.html' : 'modivs-tutor-dashboard.html')
-                                            : (actualRole === 'Student / Parent' ? (res.isNew ? 'modivs-student-registration.html' : 'modivs-student-dashboard.html') : (actualRole === 'Admin' ? 'modivs-admin.html' : 'modivs-home.html'));
+          var dest = actualRole === 'Tutor' ? ((window.ModivsOrg && ModivsOrg.isOrg(mail)) ? '/org-dashboard' : '/tutor-dashboard')
+                                            : (actualRole === 'Student / Parent' ? (res.isNew ? '/student-registration' : '/student-dashboard') : (actualRole === 'Admin' ? '/admin' : '/'));
           setTimeout(function(){ window.location.href = dest; }, 500);
         },
         onError: function(err){
@@ -923,9 +923,9 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       }
       localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: actualRole }));
       toast((isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
-      var dest = actualRole === 'Admin' ? 'modivs-admin.html'
-               : (actualRole === 'Tutor' ? ((window.ModivsOrg && ModivsOrg.isOrg(mail)) ? 'modivs-org-dashboard.html' : 'modivs-tutor-dashboard.html')
-               : (isNew ? 'modivs-student-registration.html' : 'modivs-student-dashboard.html'));
+      var dest = actualRole === 'Admin' ? '/admin'
+               : (actualRole === 'Tutor' ? ((window.ModivsOrg && ModivsOrg.isOrg(mail)) ? '/org-dashboard' : '/tutor-dashboard')
+               : (isNew ? '/student-registration' : '/student-dashboard'));
       setTimeout(function(){ window.location.href = dest; }, 500);
     }).catch(function(err){
       if(btn) btn.disabled = false;
@@ -983,7 +983,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
   });
 
   // a new tutor is sent to the complete-your-profile page (the dashboard opens once 80% of the profile is done)
-  var TUTOR_PROFILE_URL = 'modivs-education.html?profile=1#tutor-profile';
+  var TUTOR_PROFILE_URL = '/login?profile=1#tutor-profile';
   // ===== TUTOR SIGN UP (short): name + email + password, then straight to the dashboard =====
   // Creates an "incomplete" tutor record; the tutor completes the profile from the dashboard (#tutor-profile wizard).
   function ensureTutorStub(mail, name, uid){
@@ -1039,7 +1039,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     // ---- Tutor / Organization switch ----
     var jType = 'tutor';
     function isOrgJoin(){ return jType === 'organization'; }
-    function joinDash(){ return isOrgJoin() ? 'modivs-org-dashboard.html' : TUTOR_PROFILE_URL; }
+    function joinDash(){ return isOrgJoin() ? '/org-dashboard' : TUTOR_PROFILE_URL; }
     function setJoinType(t){
       jType = (t === 'organization') ? 'organization' : 'tutor';
       var org = isOrgJoin();
@@ -1168,7 +1168,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: 'Tutor', roleKey: 'tutor', provider: 'google' })); }catch(x){}
           if(res.isNew){ if(isOrgJoin() && window.ModivsOrg){ ModivsOrg.create(mail, name); } else { ensureTutorStub(mail, name); } }
           toast((res.isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
-          var gDest = (window.ModivsOrg && ModivsOrg.isOrg(mail)) ? 'modivs-org-dashboard.html' : TUTOR_PROFILE_URL;
+          var gDest = (window.ModivsOrg && ModivsOrg.isOrg(mail)) ? '/org-dashboard' : TUTOR_PROFILE_URL;
           setTimeout(function(){ window.location.href = gDest; }, 500);
         },
         onError: function(err){ if(msg && !msg.innerHTML) msg.textContent = err; }
@@ -1847,13 +1847,13 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
         try{localStorage.removeItem('modivs_admin_session');}catch(e){}
         try{sessionStorage.clear();}catch(e){}
         current = null;
-        window.location.replace('modivs-education.html#login');
+        window.location.replace('/login#login');
       }).catch(function(){
         try{localStorage.removeItem('modivs_auth_user');}catch(e){}
         try{localStorage.removeItem('modivs_admin_session');}catch(e){}
         try{sessionStorage.clear();}catch(e){}
         current = null;
-        window.location.replace('modivs-education.html#login');
+        window.location.replace('/login#login');
       });
     });
   }
@@ -1889,10 +1889,10 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
       // full profile wizard: only for a tutor who already has an account
       if(existingAcct()) show('signup'); else show('tjoin');
     } else if(hash === '#student-signup' || path === '/student-signup'){
-      window.location.replace('modivs-student-signup.html');
+      window.location.replace('/student-signup');
     } else if(hash === '#signup' || path === '/signup'){
       // one Sign up entry point: pick student/parent or tutor there
-      window.location.replace('modivs-signup.html');
+      window.location.replace('/signup');
     } else {
       show('login');
       setLoginMode('student');

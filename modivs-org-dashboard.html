@@ -89,7 +89,7 @@ button,input,select,textarea{font-family:inherit}
  });
  window.addEventListener('storage', function (e) {
   if (e.key === 'modivs_auth_user' && !e.newValue) {
-   location.replace('modivs-education.html#tutor-login');
+   location.replace('/login#tutor-login');
   }
  });
 })();
@@ -197,11 +197,11 @@ function doLogout(){
  Promise.all([pServer, pFb]).then(function(){
   try{localStorage.removeItem('modivs_auth_user')}catch(e){}
   try{sessionStorage.clear()}catch(e){}
-  location.replace('modivs-education.html#tutor-login');
+  location.replace('/login#tutor-login');
  }).catch(function(){
   try{localStorage.removeItem('modivs_auth_user')}catch(e){}
   try{sessionStorage.clear()}catch(e){}
-  location.replace('modivs-education.html#tutor-login');
+  location.replace('/login#tutor-login');
  });
 }
 document.addEventListener('click',function(e){if(e.target.closest&&(e.target.closest('#logoutSide')||e.target.closest('#logoutTop'))){e.preventDefault();doLogout()}});

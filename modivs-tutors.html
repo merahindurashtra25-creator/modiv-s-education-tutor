@@ -835,8 +835,8 @@ var au=null;try{au=JSON.parse(localStorage.getItem('modivs_auth_user')||'null')}
 var studentHref='/student-signup';
 if(au&&au.role==='Student / Parent')studentHref='/student-dashboard';
 function getEnquireHref(t){
- if(au&&au.role==='Student / Parent')return 'modivs-student-dashboard.html';
- return 'modivs-student-signup.html'+(t&&t.id?'?tutor='+encodeURIComponent((function(){var p=String(t.displayId||t.tutId||(window.ModivsIds&&t.email?ModivsIds.peek('tut',String(t.email).toLowerCase()):'')||'').replace(/^TUT(?=\d)/,'MOD-TUT');return p||t.id})()):'');
+ if(au&&au.role==='Student / Parent')return '/student-dashboard';
+ return '/student-signup'+(t&&t.id?'?tutor='+encodeURIComponent((function(){var p=String(t.displayId||t.tutId||(window.ModivsIds&&t.email?ModivsIds.peek('tut',String(t.email).toLowerCase()):'')||'').replace(/^TUT(?=\d)/,'MOD-TUT');return p||t.id})()):'');
 }
 if(au&&au.role==='Tutor'){['navJoin','ctaJoin'].forEach(function(i){var a=$(i);a.href='/tutor-dashboard';a.textContent=i==='navJoin'?'My dashboard':'Edit your profile'})}
 

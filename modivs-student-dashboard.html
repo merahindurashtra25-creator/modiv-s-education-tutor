@@ -24,14 +24,14 @@
     var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function(e){ return e.trim().toLowerCase(); });
     var isAdmin = (admin && (admin.isAdmin === true || (admin.email && adminEmails.indexOf(admin.email.toLowerCase()) !== -1))) || (u && (u.role === 'Admin' || u.roleKey === 'admin' || (u.email && adminEmails.indexOf(String(u.email).toLowerCase()) !== -1)));
     if (isAdmin) {
-      window.location.replace('modivs-admin.html');
+      window.location.replace('/admin');
       return;
     }
     if (u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1)) {
-      window.location.replace('modivs-tutor-dashboard.html');
+      window.location.replace('/tutor-dashboard');
       return;
     } else if (!isStudent) {
-      window.location.replace('modivs-education.html#student-login');
+      window.location.replace('/login#student-login');
       return;
     }
     if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
@@ -40,12 +40,12 @@
         if (e.persisted || (window.performance && window.performance.navigation && window.performance.navigation.type === 2)) {
           var cu = null;
           try { cu = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); } catch(err){}
-          if (!cu) window.location.replace('modivs-education.html#student-login');
+          if (!cu) window.location.replace('/login#student-login');
         }
       });
       window.addEventListener('storage', function (e) {
         if (e.key === 'modivs_auth_user' && !e.newValue) {
-          window.location.replace('modivs-education.html#student-login');
+          window.location.replace('/login#student-login');
         }
       });
     }
@@ -724,12 +724,12 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
       try { localStorage.removeItem('modivs_auth_user'); } catch(e){}
       try { localStorage.removeItem('modivs_admin_session'); } catch(e){}
       try { sessionStorage.clear(); } catch(e){}
-      window.location.replace('modivs-education.html#student-login');
+      window.location.replace('/login#student-login');
     }).catch(function(){
       try { localStorage.removeItem('modivs_auth_user'); } catch(e){}
       try { localStorage.removeItem('modivs_admin_session'); } catch(e){}
       try { sessionStorage.clear(); } catch(e){}
-      window.location.replace('modivs-education.html#student-login');
+      window.location.replace('/login#student-login');
     });
   });
 

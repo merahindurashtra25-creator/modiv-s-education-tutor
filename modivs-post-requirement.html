@@ -838,7 +838,7 @@ f.addEventListener('submit',function(e){
                  title:'Requirement Submitted for Review',
                  description:'Your requirement for '+((subs&&subs.join(', '))||'tuition')+' in '+(city||'your area')+' has been submitted and is pending admin approval.',
                  leadId:req.id,
-                 actionUrl:'modivs-student-dashboard.html#enquiries'
+                 actionUrl:'/student-dashboard#enquiries'
                });
              }
              if(tutor&&tutor.email){
@@ -849,7 +849,7 @@ f.addEventListener('submit',function(e){
                  title:'New Student Enquiry',
                  description:req.name+' requested tuition for '+((subs&&subs.join(', '))||'your subject')+'.',
                  leadId:req.id,
-                 actionUrl:'modivs-tutor-dashboard.html#leads'
+                 actionUrl:'/tutor-dashboard#leads'
                });
              }
            }catch(e){}

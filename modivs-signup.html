@@ -86,10 +86,10 @@ body{background:linear-gradient(135deg,#f7faf9 0%,#eaf3f1 55%,#fdf6e7 100%);over
   var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
   var adminEmails=((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function(e){ return e.trim().toLowerCase(); });
   var isAdm = (a && (a.isAdmin === true || (a.email && adminEmails.indexOf(a.email.toLowerCase()) !== -1))) || (u && (u.role === 'Admin' || u.roleKey === 'admin'));
-  if(isAdm)location.replace('modivs-admin.html');
-  else if(u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1))location.replace((window.ModivsOrg&&ModivsOrg.isOrg(u.email))?'modivs-org-dashboard.html':'modivs-tutor-dashboard.html');
-  else if(u && (u.role === 'Student / Parent' || u.roleKey === 'student' || String(u.role).toLowerCase().indexOf('student') > -1))location.replace('modivs-student-dashboard.html');
-  else if(u && (u.role === 'General User' || u.roleKey === 'user'))location.replace('modivs-home.html');
+  if(isAdm)location.replace('/admin');
+  else if(u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1))location.replace((window.ModivsOrg&&ModivsOrg.isOrg(u.email))?'/org-dashboard':'/tutor-dashboard');
+  else if(u && (u.role === 'Student / Parent' || u.roleKey === 'student' || String(u.role).toLowerCase().indexOf('student') > -1))location.replace('/student-dashboard');
+  else if(u && (u.role === 'General User' || u.roleKey === 'user'))location.replace('/');
  }catch(e){}
 })();
 </script>

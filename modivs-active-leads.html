@@ -2196,7 +2196,7 @@
         if (isUnlocked && l.phone) c.appendChild(el('p', 'lc-contact', '📞 Contact: ' + l.phone + (l.email ? ' · ✉ ' + l.email : '')));
         var f = el('div', 'lc-foot'), pa = el('span'); pa.innerHTML = ic('clock'); var ag = ago(l); var upD = l.registered_at ? new Date(l.registered_at) : null, upS = (upD && !isNaN(upD)) ? (' · ' + upD.toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' }) + ', ' + upD.toLocaleTimeString('en-IN', { hour: '2-digit', minute: '2-digit', hour12: true })) : '';
         pa.appendChild(document.createTextNode('Posted ' + ag.charAt(0).toLowerCase() + ag.slice(1) + upS)); f.appendChild(pa); f.appendChild(el('span', 'lc-live', 'Active')); c.appendChild(f);
-        var b = el('div', 'lc-btns'), u = el('a', 'btn nv'); u.href = 'modivs-tutor-dashboard.html?openLead=' + encodeURIComponent(lid) + (isFree(l) ? '&free=1' : '') + '#' + (isUnlocked ? 'requests' : 'leads'); u.className = 'btn nv lc-lock' + (isUnlocked ? ' open' : ''); u.innerHTML = '<span class="lc-li">' + ic(isUnlocked ? 'unlock' : 'lock') + '</span>'; u.appendChild(document.createTextNode(isUnlocked ? 'Open Lead' : (isFree(l) ? 'Unlock Free Lead' : 'Unlock Lead · ' + leadCoins(l) + ' coins'))); u.setAttribute('aria-label', (isUnlocked ? 'Open lead for ' : 'Unlock lead for ') + l.name); b.appendChild(u);
+        var b = el('div', 'lc-btns'), u = el('a', 'btn nv'); u.href = '/tutor-dashboard?openLead=' + encodeURIComponent(lid) + (isFree(l) ? '&free=1' : '') + '#' + (isUnlocked ? 'requests' : 'leads'); u.className = 'btn nv lc-lock' + (isUnlocked ? ' open' : ''); u.innerHTML = '<span class="lc-li">' + ic(isUnlocked ? 'unlock' : 'lock') + '</span>'; u.appendChild(document.createTextNode(isUnlocked ? 'Open Lead' : (isFree(l) ? 'Unlock Free Lead' : 'Unlock Lead · ' + leadCoins(l) + ' coins'))); u.setAttribute('aria-label', (isUnlocked ? 'Open lead for ' : 'Unlock lead for ') + l.name); b.appendChild(u);
         if (!full) { var v = el('button', 'btn o', 'View Details'); v.type = 'button'; v.addEventListener('click', function () { showDetails(l) }); b.appendChild(v) }
         c.appendChild(b);
         if (ADMIN) {
@@ -2614,13 +2614,13 @@
       } catch (e) { }
       var tj = $('tbJoin'), ns = $('needSignup');
       if (u && (u.role === 'Tutor' || u.role === 'tutor' || localStorage.getItem('modivs_current_tutor'))) {
-        if (tj) { tj.href = 'modivs-tutor-dashboard.html'; tj.textContent = 'Go to my dashboard'; }
+        if (tj) { tj.href = '/tutor-dashboard'; tj.textContent = 'Go to my dashboard'; }
         if ($('tbTitle')) $('tbTitle').textContent = 'Ready to unlock leads?';
         if ($('tbText')) $('tbText').textContent = 'Open your dashboard to unlock leads and message students.';
         if ($('needBox')) $('needBox').style.display = 'none';
       } else if (u && (/student|parent/i.test(u.role || ''))) {
         if ($('tutorBox')) $('tutorBox').style.display = 'none';
-        if (ns) { ns.href = 'modivs-student-dashboard.html'; ns.textContent = 'Go to my dashboard'; }
+        if (ns) { ns.href = '/student-dashboard'; ns.textContent = 'Go to my dashboard'; }
       }
       if (ADMIN) {
         if ($('tutorBox')) $('tutorBox').style.display = 'none';
