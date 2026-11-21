@@ -23,10 +23,17 @@
     var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
     var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function(e){ return e.trim().toLowerCase(); });
     var isAdmin = (admin && (admin.isAdmin === true || (admin.email && adminEmails.indexOf(admin.email.toLowerCase()) !== -1))) || (u && (u.role === 'Admin' || u.roleKey === 'admin' || (u.email && adminEmails.indexOf(String(u.email).toLowerCase()) !== -1)));
+    if (isAdmin) {
+      window.location.replace('modivs-admin.html');
+      return;
+    }
     if (u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1)) {
       window.location.replace('modivs-tutor-dashboard.html');
-    } else if (!isStudent && !isAdmin) {
+      return;
+    } else if (!isStudent) {
       window.location.replace('modivs-education.html#student-login');
+      return;
+    }
     } else if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
       // BFCache and multi-tab session protection
       window.addEventListener('pageshow', function (e) {

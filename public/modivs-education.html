@@ -13,7 +13,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="modivs.min.js?v=mwpzkd5a-li2l6"></script>
+<script src="modivs.min.js?v=mwq1369t-q97fl"></script>
 
 
 
@@ -170,11 +170,11 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 @keyframes shake{0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}}
 @media(max-width:520px){.auth-card{padding:26px 20px 24px;border-radius:18px}.auth-form{padding:24px 14px}}
 </style>
-<link rel="stylesheet" href="modivs-auth.css?v=mwpzkd5a-li2l6">
+<link rel="stylesheet" href="modivs-auth.css?v=mwq1369t-q97fl">
 <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="modivs-menu.css?v=mwpzkd5a-li2l6">
-<link rel="stylesheet" href="modivs-mobile.css?v=mwpzkd5a-li2l6">
-<link rel="stylesheet" href="modivs-footer.css?v=mwpzkd5a-li2l6">
+<link rel="stylesheet" href="modivs-menu.css?v=mwq1369t-q97fl">
+<link rel="stylesheet" href="modivs-mobile.css?v=mwq1369t-q97fl">
+<link rel="stylesheet" href="modivs-footer.css?v=mwq1369t-q97fl">
 <style id="tp-theme">
 /* Tutor profile wizard: same cream / navy / yellow theme and card layout as the student "Post a Requirement" page */
 #signup.tp-page{--ink:#1A2035;--line:#eadfc9;--y:#EBB92E;position:relative;display:block;min-height:100vh;overflow:hidden;padding:34px 18px 56px;background:#FEF7EA;color:#1A2035}
@@ -624,8 +624,9 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     go();
   }
   function finishAdminLogin(email, displayName, uid){
+    var cleanMail = String(email || '').trim().toLowerCase();
     var adminData = {
-      email: email,
+      email: cleanMail,
       name: displayName || 'Admin',
       role: 'Admin',
       roleKey: 'admin',
@@ -634,25 +635,53 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       logged_in_at: new Date().toISOString()
     };
     try { localStorage.setItem('modivs_admin_session', JSON.stringify(adminData)); } catch(e){}
-    try { localStorage.setItem('modivs_auth_user', JSON.stringify({ name: displayName || 'Admin', email: email, role: 'Admin', roleKey: 'admin', isAdmin: true, uid: uid || '' })); } catch(e){}
+    try { localStorage.setItem('modivs_auth_user', JSON.stringify(adminData)); } catch(e){}
 
-    // Save in Firestore Database ('users' collection)
+    // Purge any existing student or tutor account on this email
+    try {
+      var tDb = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]').filter(function(t){ return String(t.email||'').trim().toLowerCase() !== cleanMail; });
+      localStorage.setItem('modivs_tutors_db', JSON.stringify(tDb));
+      var sDb = JSON.parse(localStorage.getItem('modivs_students_db') || '[]').filter(function(s){ return String(s.email||'').trim().toLowerCase() !== cleanMail; });
+      localStorage.setItem('modivs_students_db', JSON.stringify(sDb));
+      var uDb = JSON.parse(localStorage.getItem('modivs_users') || '[]').filter(function(u){ return String(u.email||'').trim().toLowerCase() !== cleanMail; });
+      uDb.push({ email: cleanMail, name: displayName || 'Admin', role: 'Admin', roleKey: 'admin', uid: uid || '' });
+      localStorage.setItem('modivs_users', JSON.stringify(uDb));
+    } catch(e){}
+
+    // Save/update in Firestore
     try {
       var fb = window.EducationBFirebase;
       if(fb && fb.db && window.firebase){
-        var docId = uid || email.replace(/[^a-zA-Z0-9_-]/g, '_');
+        var docId = uid || cleanMail.replace(/[^a-zA-Z0-9_-]/g, '_');
         fb.db.collection('users').doc(docId).set({
           name: displayName || 'Admin',
-          email: email,
+          email: cleanMail,
           role: 'Admin',
+          admin: true,
           uid: uid || '',
           lastLogin: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).catch(function(){});
+
+        fb.db.collection('accounts').doc(cleanMail).set({
+          email: cleanMail,
+          name: displayName || 'Admin',
+          role: 'Admin',
+          roleKey: 'admin',
+          isAdmin: true,
+          updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        }, { merge: true }).catch(function(){});
+
+        fb.db.collection('tutors').where('email', '==', cleanMail).get().then(function(snap){
+          snap.forEach(function(d){ d.ref.delete().catch(function(){}); });
+        }).catch(function(){});
+        fb.db.collection('students').where('email', '==', cleanMail).get().then(function(snap){
+          snap.forEach(function(d){ d.ref.delete().catch(function(){}); });
+        }).catch(function(){});
       }
     } catch(e){}
 
     toast('Welcome, Admin! Opening Admin Dashboard...');
-    setTimeout(function(){ window.location.href = 'modivs-admin.html'; }, 500);
+    setTimeout(function(){ window.location.href = 'modivs-admin.html'; }, 400);
   }
 
   // LOGIN FORM SUBMISSION
@@ -681,6 +710,13 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
     }
     function proceedLogin(uid){
       var firebaseUid = uid || (window.EducationBFirebase && window.EducationBFirebase.auth.currentUser && window.EducationBFirebase.auth.currentUser.uid) || '';
+      var cleanMail = String(emailVal || '').trim().toLowerCase();
+
+      // Master admin check always takes highest precedence
+      if(isAdminEmail(cleanMail)){
+        handleAdminLoginSuccess(cleanMail, (foundUser && foundUser.name) || 'Admin', firebaseUid);
+        return;
+      }
 
       // Auto-detect registered account across all databases
       var allTutors = []; try { allTutors = JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]'); } catch(err){}

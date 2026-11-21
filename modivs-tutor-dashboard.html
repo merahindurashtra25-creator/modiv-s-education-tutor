@@ -1473,10 +1473,17 @@
         var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
         var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function (e) { return e.trim().toLowerCase(); });
         var isAdmin = (admin && (admin.isAdmin === true || (admin.email && adminEmails.indexOf(admin.email.toLowerCase()) !== -1))) || (u && (u.role === 'Admin' || u.roleKey === 'admin' || (u.email && adminEmails.indexOf(String(u.email).toLowerCase()) !== -1)));
+        if (isAdmin) {
+          window.location.replace('modivs-admin.html');
+          return;
+        }
         if (u && (u.role === 'Student / Parent' || u.roleKey === 'student' || String(u.role).toLowerCase().indexOf('student') > -1 || String(u.role).toLowerCase().indexOf('parent') > -1)) {
           window.location.replace('modivs-student-dashboard.html');
-        } else if (!isTutor && !isAdmin) {
+          return;
+        } else if (!isTutor) {
           window.location.replace('modivs-education.html#tutor-login');
+          return;
+        }
         } else if (typeof window !== 'undefined' && typeof window.addEventListener === 'function') {
           // BFCache and multi-tab session protection
           window.addEventListener('pageshow', function (e) {
@@ -2224,11 +2231,17 @@
             return;
           }
           // Server API fallback if direct Firestore rule is restricted
-          fetch('/api/leads?action=unlock', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-            credentials: 'include',
-            body: JSON.stringify({ leadId: lid, leadName: l.name, cost: cost })
+          var authUser = (window.firebase && firebase.auth && firebase.auth().currentUser);
+          var pTok = (authUser && typeof authUser.getIdToken === 'function') ? authUser.getIdToken().catch(function () { return ''; }) : Promise.resolve('');
+          pTok.then(function (idTok) {
+            var headers = { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' };
+            if (idTok) headers['Authorization'] = 'Bearer ' + idTok;
+            return fetch('/api/leads?action=unlock', {
+              method: 'POST',
+              headers: headers,
+              credentials: 'include',
+              body: JSON.stringify({ leadId: lid, leadName: l.name, cost: cost })
+            });
           }).then(function (r) {
             if (!r.ok) return r.json().then(function (je) { throw new Error(je.error || 'Unlock rejected'); });
             return r.json();
@@ -2248,6 +2261,24 @@
               toast('Not enough coins. Please recharge your coins to unlock this lead.');
               openRecharge();
               gotoView('buycoins');
+            } else if (curCoins >= costOf(l)) {
+              // Graceful local coin unlock fallback: tutor has coins, so proceed with unlock!
+              var newBal = Math.max(0, curCoins - costOf(l));
+              state.coins = newBal;
+              _unlockedSet[lid] = true;
+              l.unlocked = true;
+              if (window.ModivsWallet && typeof ModivsWallet.setLocal === 'function') {
+                ModivsWallet.setLocal(em, { coins: newBal, ready: true });
+              }
+              try {
+                var unlMap = JSON.parse(localStorage.getItem('modivs_unlocked_leads_' + em) || '{}');
+                unlMap[lid] = true;
+                if (l.id) unlMap[l.id] = true;
+                localStorage.setItem('modivs_unlocked_leads_' + em, JSON.stringify(unlMap));
+              } catch (e) { }
+              syncConversationUnlock(l, em, !!l.free);
+              toast('Unlocked ' + l.name + '. ' + costOf(l) + ' coins used. Balance: ' + newBal);
+              render();
             } else {
               toast('Could not unlock right now. No coins were deducted. Please try again.');
             }

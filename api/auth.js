@@ -126,7 +126,7 @@ module.exports = async function handler(req, res) {
         uid: user.uid,
         email: user.email,
         name: accData.name || user.name,
-        role: accData.role || (user.isAdmin ? 'Admin' : 'General User'),
+        role: user.isAdmin ? 'Admin' : (accData.role || 'General User'),
         displayId: accData.displayId || accData.tutId || accData.stuId || '',
         isAdmin: user.isAdmin,
         emailVerified: user.emailVerified,
@@ -157,7 +157,7 @@ module.exports = async function handler(req, res) {
           uid: decoded.uid,
           email,
           name: accData.name || decoded.name || email.split('@')[0],
-          role: accData.role || (isAdmin ? 'Admin' : 'General User'),
+          role: isAdmin ? 'Admin' : (accData.role || 'General User'),
           displayId: accData.displayId || accData.tutId || accData.stuId || '',
           isAdmin
         }
@@ -191,7 +191,7 @@ module.exports = async function handler(req, res) {
           uid: authResult.localId,
           email,
           name: accData.name || authResult.displayName || email.split('@')[0],
-          role: accData.role || (isAdmin ? 'Admin' : 'General User'),
+          role: isAdmin ? 'Admin' : (accData.role || 'General User'),
           displayId: accData.displayId || accData.tutId || accData.stuId || '',
           isAdmin
         }

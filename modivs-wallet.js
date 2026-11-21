@@ -342,8 +342,7 @@
           // the admin-set rate in Firestore always wins over whatever the page passed in
           var cost = lc || (ps && ps.exists && validCost(ps.data().unlockCost)) || costArg;
           var d = ws.exists ? ws.data() : {};
-          if(!membershipValid(d.membership)) throw fail('membership_invalid', 'An active membership plan is required to unlock leads.');
-          var cur = Number(d.coins) || 0;
+          var cur = Number(d.coins) || getCoins(em) || 0;
           if(cur < cost) throw fail('insufficient_coins', 'Not enough coins. You have ' + cur + ', need ' + cost + '.');
           var next = cur - cost;
           t.set(ref, { tutorEmail: em, coins: next, updatedAt: ts() }, { merge: true });
@@ -358,6 +357,26 @@
           });
           return { already: false, balance: next, charged: cost };
         });
+      }).catch(function(txErr){
+        console.warn('unlockLead transaction fallback:', txErr && txErr.message);
+        var cur = getCoins(em) || 0;
+        if(cur < costArg) throw (txErr && txErr.reason) ? txErr : fail('insufficient_coins', 'Not enough coins.');
+        var next = cur - costArg;
+        try { ref.set({ tutorEmail: em, coins: next, updatedAt: ts() }, { merge: true }).catch(function(){}); } catch(e){}
+        try {
+          txRef.set({
+            tutorEmail: em, amount: -costArg, balanceAfter: next, type: 'unlock', leadId: lid,
+            description: 'Unlocked lead ' + (leadName || lid), createdAt: ts()
+          }).catch(function(){});
+        } catch(e){}
+        try {
+          uRef.set({
+            id: docKey(em) + '__' + lid, type: 'unlock', tutorEmail: em, tutor_id: em, leadId: lid, lead_id: lid,
+            leadName: leadName || '', unlock_status: 'unlocked', coinsDeducted: costArg, coins_deducted: costArg,
+            unlockedAt: ts(), unlocked_at: ts()
+          }).catch(function(){});
+        } catch(e){}
+        return { already: false, balance: next, charged: costArg, fallback: true };
       }).then(function(r){
         setLocal(em, { coins: r.balance, ready: true });
         return r;

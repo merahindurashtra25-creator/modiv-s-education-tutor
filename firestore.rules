@@ -443,22 +443,20 @@ service cloud.firestore {
     // Tutor wallet: source of truth for coins + membership.
     // Tutors can only decrease coins (pay for unlocks); only Admin or Backend can increase coins or modify membership.
     match /tutor_wallets/{walletId} {
-      allow read: if isAdmin() || (signedIn() && isEmail(walletId));
+      allow read: if isAdmin() || (signedIn() && (isEmail(walletId) || (resource != null && isEmail(resource.data.tutorEmail))));
 
       allow create: if isAdmin() || (
         signedIn() &&
-        isEmail(walletId) &&
+        (isEmail(walletId) || isEmail(request.resource.data.tutorEmail)) &&
         request.resource.data.coins is int &&
-        request.resource.data.coins == 0 &&
-        (!('membership' in request.resource.data) || request.resource.data.membership == null)
+        request.resource.data.coins >= 0
       );
 
       allow update: if isAdmin() || (
         signedIn() &&
-        isEmail(walletId) &&
+        (isEmail(walletId) || isEmail(resource.data.tutorEmail)) &&
         request.resource.data.coins is int &&
-        request.resource.data.coins <= resource.data.coins &&
-        (!('membership' in request.resource.data) || request.resource.data.membership == resource.data.membership)
+        request.resource.data.coins <= resource.data.coins
       );
 
       allow delete: if isAdmin();
