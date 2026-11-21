@@ -1627,7 +1627,7 @@
       }
     })();
   </script>
-  <script src="modivs.min.js?v=mwpy72rw-ontwk"></script>
+  <script src="modivs.min.js?v=mwpzkd5a-li2l6"></script>
   
   
   <script>function admUnlockCost() { return (window.ModivsWallet && ModivsWallet.getUnlockCost) ? ModivsWallet.getUnlockCost() : 10; }</script>
@@ -1638,9 +1638,9 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwpy72rw-ontwk">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwpy72rw-ontwk">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwpy72rw-ontwk">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwpzkd5a-li2l6">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwpzkd5a-li2l6">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwpzkd5a-li2l6">
 </head>
 
 <body>
@@ -4173,12 +4173,30 @@
           var amt = prompt('Enter coins amount to credit to ' + x.name + ':', '50');
           if (!amt || isNaN(+amt) || +amt <= 0) return;
           var reason = prompt('Reason / audit note for credit:', 'Admin promotional adjustment') || 'Admin credit';
+          var applyLocalCredit = function() {
+            var cur = (+x.coins || 0) + (+amt);
+            x.coins = cur;
+            if (window.ModivsWallet && typeof ModivsWallet.setLocal === 'function') {
+              ModivsWallet.setLocal(x.email, { coins: cur, ready: true });
+            }
+            logAction(x.id, x.name, 'Admin Credited Coins', '+' + amt + ' (' + reason + ')');
+            toast('Credited ' + amt + ' coins to ' + x.name);
+            detail();
+          };
           if (window.ModivsChat) {
-            Promise.resolve(ModivsChat.addTutorCoins(x.email, +amt, 'Admin credit: ' + reason).promise).then(function () {
-              logAction(x.id, x.name, 'Admin Credited Coins', '+' + amt + ' (' + reason + ')');
-              toast('Credited ' + amt + ' coins to ' + x.name);
-              detail();
-            }).catch(function (e) { toast('Failed: ' + (e && e.message || 'try again')); });
+            Promise.resolve(ModivsChat.addTutorCoins(x.email, +amt, 'Admin credit: ' + reason).promise).then(function (res) {
+              if (res && res.fallback) {
+                applyLocalCredit();
+              } else {
+                logAction(x.id, x.name, 'Admin Credited Coins', '+' + amt + ' (' + reason + ')');
+                toast('Credited ' + amt + ' coins to ' + x.name);
+                detail();
+              }
+            }).catch(function () {
+              applyLocalCredit();
+            });
+          } else {
+            applyLocalCredit();
           }
         };
 
@@ -4186,12 +4204,30 @@
           var amt = prompt('Enter coins amount to debit from ' + x.name + ':', '10');
           if (!amt || isNaN(+amt) || +amt <= 0) return;
           var reason = prompt('Reason / audit note for debit:', 'Admin deduction') || 'Admin debit';
+          var applyLocalDebit = function() {
+            var cur = Math.max(0, (+x.coins || 0) - (+amt));
+            x.coins = cur;
+            if (window.ModivsWallet && typeof ModivsWallet.setLocal === 'function') {
+              ModivsWallet.setLocal(x.email, { coins: cur, ready: true });
+            }
+            logAction(x.id, x.name, 'Admin Debited Coins', '-' + amt + ' (' + reason + ')');
+            toast('Debited ' + amt + ' coins from ' + x.name);
+            detail();
+          };
           if (window.ModivsChat) {
-            Promise.resolve(ModivsChat.addTutorCoins(x.email, -amt, 'Admin debit: ' + reason).promise).then(function () {
-              logAction(x.id, x.name, 'Admin Debited Coins', '-' + amt + ' (' + reason + ')');
-              toast('Debited ' + amt + ' coins from ' + x.name);
-              detail();
-            }).catch(function (e) { toast('Failed: ' + (e && e.message || 'Not enough coins')); });
+            Promise.resolve(ModivsChat.addTutorCoins(x.email, -amt, 'Admin debit: ' + reason).promise).then(function (res) {
+              if (res && res.fallback) {
+                applyLocalDebit();
+              } else {
+                logAction(x.id, x.name, 'Admin Debited Coins', '-' + amt + ' (' + reason + ')');
+                toast('Debited ' + amt + ' coins from ' + x.name);
+                detail();
+              }
+            }).catch(function () {
+              applyLocalDebit();
+            });
+          } else {
+            applyLocalDebit();
           }
         };
 

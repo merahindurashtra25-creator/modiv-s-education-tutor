@@ -1046,6 +1046,14 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           try{ localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: uid || '', role: 'Tutor', roleKey: 'tutor', provider: 'password' })); }catch(x){}
           if(isOrgJoin() && window.ModivsOrg){ ModivsOrg.create(mail, name); } else { ensureTutorStub(mail, name, uid); }
           toast(isOrgJoin() ? 'Organization account created!' : 'Tutor account created!');
+          if(window.ModivsNotifications){
+            if(typeof ModivsNotifications.createNotification === 'function'){
+              ModivsNotifications.createNotification({ recipientEmail: mail, recipientRole: 'tutor', title: 'Welcome to Modiv’s Education!', description: 'Your tutor account is ready. Complete your profile to get verified.', targetTab: 'profile', type: 'announcement' });
+            }
+            if(typeof ModivsNotifications.autoPromptPushIfEligible === 'function'){
+              ModivsNotifications.autoPromptPushIfEligible(mail);
+            }
+          }
           showJoinDone(name);
         }
         if(window.ModivsAuthUnique){

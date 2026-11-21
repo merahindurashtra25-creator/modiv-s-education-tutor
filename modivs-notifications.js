@@ -89,20 +89,45 @@
   function showLocalPush(title, desc, actionUrl) {
     if (typeof window === 'undefined' || !('Notification' in window) || Notification.permission !== 'granted') return;
     try {
-      if (document.hidden) {
-        var n = new Notification(title || "Modiv’s Education Alert", {
-          body: desc || 'You have a new update.',
-          icon: '/favicon.png',
-          badge: '/favicon.png',
-          data: { url: actionUrl || '/' }
+      var opts = {
+        body: desc || 'You have a new update.',
+        icon: '/favicon.png',
+        badge: '/favicon.png',
+        data: { url: actionUrl || '/' }
+      };
+      if ('serviceWorker' in navigator && navigator.serviceWorker.ready) {
+        navigator.serviceWorker.ready.then(function(reg) {
+          reg.showNotification(title || "Modiv’s Education Alert", opts).catch(function() {
+            try { new Notification(title || "Modiv’s Education Alert", opts); } catch(e){}
+          });
+        }).catch(function() {
+          try { new Notification(title || "Modiv’s Education Alert", opts); } catch(e){}
         });
-        n.onclick = function() {
-          window.focus();
-          if (actionUrl && actionUrl !== '/') window.location.href = actionUrl;
-          n.close();
-        };
+      } else {
+        try { new Notification(title || "Modiv’s Education Alert", opts); } catch(e){}
       }
     } catch(e){}
+  }
+
+  function autoPromptPushIfEligible(userEmail) {
+    var em = cleanEmail(userEmail) || currentUserEmail();
+    if (!em || typeof window === 'undefined' || !('Notification' in window)) return;
+    if (Notification.permission === 'granted') {
+      requestPushPermission(em).catch(function(){});
+      return;
+    }
+    if (Notification.permission === 'default') {
+      try {
+        var askedKey = 'modivs_push_prompted_' + em;
+        var lastPrompted = Number(localStorage.getItem(askedKey)) || 0;
+        if (Date.now() - lastPrompted > 6 * 3600 * 1000) {
+          localStorage.setItem(askedKey, Date.now());
+          setTimeout(function() {
+            requestPushPermission(em).catch(function(){});
+          }, 2500);
+        }
+      } catch(e){}
+    }
   }
 
   function cleanEmail(em) {
@@ -302,7 +327,7 @@
     }
     saveLocalNotifications(recipientEmail, localList);
     emitChange();
-    showLocalPush(notifTitle, notifDesc, '/tutor-dashboard');
+    showLocalPush(doc.title, doc.description, doc.actionUrl || (doc.recipientRole === 'tutor' ? '/tutor-dashboard' : '/student-dashboard'));
 
     if (!firestore) return Promise.resolve(updatedDoc);
 
@@ -430,7 +455,7 @@
     localList.unshift(doc);
     saveLocalNotifications(recipientEmail, localList);
     emitChange();
-    showLocalPush(notifTitle, notifDesc, '/tutor-dashboard');
+    showLocalPush(doc.title, doc.description, doc.actionUrl || (doc.recipientRole === 'tutor' ? '/tutor-dashboard' : '/student-dashboard'));
 
     var firestore = getDb();
     if (!firestore) return Promise.resolve(doc);
@@ -820,6 +845,7 @@
   return {
     VAPID_KEY: VAPID_KEY,
     requestPushPermission: requestPushPermission,
+    autoPromptPushIfEligible: autoPromptPushIfEligible,
     showLocalPush: showLocalPush,
     notifications: getLocalNotifications,
     getLocalNotifications: getLocalNotifications,

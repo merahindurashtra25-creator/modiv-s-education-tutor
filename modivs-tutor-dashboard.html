@@ -1689,15 +1689,15 @@
   </div>
 
   <button class="ask" type="button" id="ask">Ask Me!</button>
-  <dialog id="dlg" aria-labelledby="dt">
+  <dialog id="dlg" aria-labelledby="dt" onclick="if(event.target===this)this.close()">
     <h2 id="dt">Recharge coins</h2>
     <p class="sub" style="margin-bottom:10px">Coins unlock student contact details and private messages (<span class="mvCostTxt">10</span> coins per
       inquiry).</p>
     <div class="packs" id="packs"></div>
-    <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="close">Close</button></div>
+    <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="close" onclick="document.getElementById('dlg').close()">Close</button></div>
   </dialog>
 
-  <dialog id="memDlg" aria-labelledby="mdt">
+  <dialog id="memDlg" aria-labelledby="mdt" onclick="if(event.target===this)this.close()">
     <h2 id="mdt">Teacher Membership Plans</h2>
     <p class="sub" style="margin-bottom:12px">An active membership plan is required to unlock student inquiries and chat
       in real time.</p>
@@ -1715,7 +1715,7 @@
     </div>
 
     <div class="packs" id="memPacks"></div>
-    <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="closeMem">Close</button></div>
+    <div style="text-align:right;margin-top:18px"><button class="b o" type="button" id="closeMem" onclick="document.getElementById('memDlg').close()">Close</button></div>
   </dialog>
 
   <div class="toast hide" id="toast" role="status"></div>
@@ -1917,7 +1917,25 @@
       function freeLeads() { return leads.filter(function (l) { return l.free && !l.unlocked && l.status === 'new' }) }
       function unlockedCount() { return leads.filter(function (l) { return l.unlocked }).length }
 
-      function openRecharge() { $('dlg').showModal() }
+      function renderRechargePacks() {
+        var pk = $('packs'); if (!pk) return;
+        pk.innerHTML = '';
+        PACKS.forEach(function (p) {
+          var b = el('button', 'pack'); b.type = 'button';
+          b.appendChild(el('b', '', p[0] + ' coins'));
+          b.appendChild(el('small', '', p[1]));
+          b.addEventListener('click', function () { recharge(p[0], p[1], b); });
+          pk.appendChild(b);
+        });
+      }
+
+      function openRecharge() {
+        renderRechargePacks();
+        var d = $('dlg');
+        if (d && typeof d.showModal === 'function') {
+          if (!d.open) d.showModal();
+        }
+      }
 
       var isProcessingPayment = false;
 
@@ -3873,13 +3891,18 @@
       }
 
       // Setup Packs & Modal Listeners
-      var pk = $('packs'); if (pk) PACKS.forEach(function (p) { var b = el('button', 'pack'); b.type = 'button'; b.appendChild(el('b', '', p[0] + ' coins')); b.appendChild(el('small', '', p[1])); b.addEventListener('click', function () { recharge(p[0], p[1], b) }); pk.appendChild(b) });
-      var rechBtn = $('rech'); if (rechBtn) rechBtn.addEventListener('click', openRecharge); var clsBtn = $('close'); if (clsBtn) clsBtn.addEventListener('click', function () { $('dlg').close() });
+      renderRechargePacks();
+      var rechBtn = $('rech'); if (rechBtn) rechBtn.addEventListener('click', openRecharge);
+      var clsBtn = $('close'); if (clsBtn) clsBtn.addEventListener('click', function () { $('dlg').close(); });
 
       renderMembershipPacks();
 
       var memBtn = $('memBtn'); if (memBtn) memBtn.addEventListener('click', openMembershipModal);
       var closeMem = $('closeMem'); if (closeMem) closeMem.addEventListener('click', function () { $('memDlg').close(); });
+
+      if (window.ModivsNotifications && typeof ModivsNotifications.autoPromptPushIfEligible === 'function') {
+        ModivsNotifications.autoPromptPushIfEligible(currentTutorEmail ? currentTutorEmail() : null);
+      }
 
       ['editTop', 'editLink'].forEach(function (id) { var e = $(id); if (e) e.addEventListener('click', editProfile) });
       var askBtn = $('ask'); if (askBtn) askBtn.addEventListener('click', function () { window.open('https://wa.me/message/AZVJXD4HG3DOG1', '_blank', 'noopener'); });

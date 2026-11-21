@@ -135,6 +135,10 @@
         "destination": "/modivs-signup.html"
       },
       {
+        "source": "/tutor-signup",
+        "destination": "/modivs-education.html"
+      },
+      {
         "source": "/demo",
         "destination": "/modivs-demo.html"
       },

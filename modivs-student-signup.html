@@ -2143,7 +2143,7 @@
         '  <span>Continue with Google</span>' +
         ' </button>' +
         '</div>' +
-        '<p class="sub" style="margin-top:16px;font-size:.9rem;text-align:center">Already have an account? <a href="/login#student-login" style="color:var(--accent-d);font-weight:600">Log in</a> · <a href="/signup#tutor" style="color:var(--accent-d);font-weight:600">Tutor sign up</a></p>';
+        '<p class="sub" style="margin-top:16px;font-size:.9rem;text-align:center">Already have an account? <a href="/login#student-login" style="color:var(--accent-d);font-weight:600">Log in</a> · <a href="/login#tutor-signup" style="color:var(--accent-d);font-weight:600">Tutor sign up</a></p>';
 
       var stuLocPicker = null;
 
@@ -2454,6 +2454,14 @@
 
               localStorage.setItem('modivs_auth_user', JSON.stringify({ name: req.name, email: email, uid: currentUid, role: 'Student / Parent', roleKey: 'student' }));
               localStorage.setItem('modivs_student_req', JSON.stringify(req));
+              if(window.ModivsNotifications){
+                if(typeof ModivsNotifications.createNotification === 'function'){
+                  ModivsNotifications.createNotification({ recipientEmail: email, recipientRole: 'student', title: 'Welcome to Modiv’s Education!', description: 'Your demo class requirement has been posted successfully.', targetTab: 'leads', type: 'announcement' });
+                }
+                if(typeof ModivsNotifications.autoPromptPushIfEligible === 'function'){
+                  ModivsNotifications.autoPromptPushIfEligible(email);
+                }
+              }
             } catch (err) { }
 
             var cleanFn = (window.ModivsFirebaseSync && ModivsFirebaseSync.cleanPayload) ? ModivsFirebaseSync.cleanPayload : function (obj) {

@@ -42,6 +42,39 @@ messaging.onBackgroundMessage(function(payload) {
   return self.registration.showNotification(title, notificationOptions);
 });
 
+// Generic Push event listener for standard web push
+self.addEventListener('push', function(event) {
+  if (event.data) {
+    try {
+      const data = event.data.json();
+      const notif = data.notification || {};
+      const title = notif.title || data.title || "Modiv’s Education Alert";
+      const body = notif.body || data.body || data.description || "You have a new update.";
+      const clickAction = data.click_action || data.actionUrl || data.url || "/";
+      event.waitUntil(
+        self.registration.showNotification(title, {
+          body: body,
+          icon: "/favicon.png",
+          badge: "/favicon.png",
+          tag: data.tag || "modivs-push",
+          renotify: true,
+          data: { url: clickAction, ...data }
+        })
+      );
+    } catch(e) {
+      const text = event.data.text();
+      event.waitUntil(
+        self.registration.showNotification("Modiv’s Education Alert", {
+          body: text || "You have a new update.",
+          icon: "/favicon.png",
+          badge: "/favicon.png",
+          data: { url: "/" }
+        })
+      );
+    }
+  }
+});
+
 // Handle push notification click
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();

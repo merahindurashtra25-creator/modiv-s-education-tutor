@@ -696,6 +696,9 @@ document.getElementById('guideClose').addEventListener('click',function(){c.hidd
         renderStudentNotifications();
         paintTopCount();
       });
+      if(typeof ModivsNotifications.autoPromptPushIfEligible === 'function'){
+        ModivsNotifications.autoPromptPushIfEligible(user.email);
+      }
     }
     renderStudentNotifications();
   }
