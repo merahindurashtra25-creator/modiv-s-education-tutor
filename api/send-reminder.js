@@ -83,20 +83,25 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
   const accountRef = database.collection('accounts').doc(cleanEmail);
 
   // 1. Transactional check and lock
-  const accountDoc = await accountRef.get();
-  let accountData = accountDoc.exists ? accountDoc.data() : null;
+  let accountData = null;
+  try {
+    const accountDoc = await accountRef.get();
+    accountData = accountDoc.exists ? accountDoc.data() : null;
 
-  // Fallback check in tutors / students
-  if (!accountData) {
-    const tutorSnap = await database.collection('tutors').where('email', '==', cleanEmail).limit(1).get().catch(() => null);
-    if (tutorSnap && !tutorSnap.empty) {
-      accountData = { role: 'tutor', ...tutorSnap.docs[0].data(), email: cleanEmail };
-    } else {
-      const studentSnap = await database.collection('students').where('email', '==', cleanEmail).limit(1).get().catch(() => null);
-      if (studentSnap && !studentSnap.empty) {
-        accountData = { role: 'student', ...studentSnap.docs[0].data(), email: cleanEmail };
+    // Fallback check in tutors / students
+    if (!accountData) {
+      const tutorSnap = await database.collection('tutors').where('email', '==', cleanEmail).limit(1).get().catch(() => null);
+      if (tutorSnap && !tutorSnap.empty) {
+        accountData = { role: 'tutor', ...tutorSnap.docs[0].data(), email: cleanEmail };
+      } else {
+        const studentSnap = await database.collection('students').where('email', '==', cleanEmail).limit(1).get().catch(() => null);
+        if (studentSnap && !studentSnap.empty) {
+          accountData = { role: 'student', ...studentSnap.docs[0].data(), email: cleanEmail };
+        }
       }
     }
+  } catch (dbErr) {
+    console.warn('[send-reminder] Firestore read notice:', dbErr.message);
   }
 
   if (!accountData) {
@@ -135,14 +140,20 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
     (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://www.modivs.com');
 
   // 3. Generate secure continuation link with SHA-256 token hashing
-  const continuationUrl = await generateContinuationToken({
-    email: cleanEmail,
-    role: userRole,
-    baseUrl,
-    expiryDays: 7,
-    db: database,
-    FieldValue
-  });
+  let continuationUrl = `${baseUrl}/login.html`;
+  try {
+    continuationUrl = await generateContinuationToken({
+      email: cleanEmail,
+      role: userRole,
+      baseUrl,
+      expiryDays: 7,
+      db: database,
+      FieldValue
+    });
+  } catch (tokErr) {
+    console.warn('[send-reminder] Token generation notice, falling back to direct URL:', tokErr.message);
+    continuationUrl = `${baseUrl}/${userRole === 'tutor' ? 'tutor-dashboard' : 'student-dashboard'}`;
+  }
 
   // 4. Generate email template
   const { subject, html, text } = getEmailTemplate({

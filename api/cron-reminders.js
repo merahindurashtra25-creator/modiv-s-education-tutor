@@ -136,7 +136,22 @@ module.exports = async function handler(req, res) {
     return res.status(401).json({ error: 'Unauthorized: Invalid CRON_SECRET.' });
   }
 
-  // 2. Concurrency Lock
+  // 2. Verify backend service account credentials before attempting Firestore operations
+  const hasCredentials = Boolean(
+    (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) ||
+    process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+  );
+
+  if (!hasCredentials) {
+    return res.status(200).json({
+      success: false,
+      configured: false,
+      error: 'Firebase Service Account credentials are not configured in Vercel environment variables. Please add FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY in Vercel Project Settings > Environment Variables to allow the backend to read Firestore and send reminder emails.',
+      remedy: 'Go to Firebase Console -> Project Settings -> Service accounts -> Click "Generate new private key". Copy client_email and private_key into Vercel.'
+    });
+  }
+
+  // 3. Concurrency Lock
   const lock = await acquireCronLock('reminder_worker', 180000);
   if (!lock.acquired) {
     return res.status(200).json({
