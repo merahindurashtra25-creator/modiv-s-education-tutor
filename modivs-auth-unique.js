@@ -208,6 +208,9 @@
     var firestore = db();
 
     if (!mail) return Promise.reject(new Error('Valid email address is required.'));
+    if (ADMIN_EMAILS.indexOf(mail) > -1) {
+      return Promise.reject(new Error('This email is reserved exclusively for platform administration. It cannot be registered as a student or tutor.'));
+    }
 
     var nowIso = new Date().toISOString();
     var accountData = {

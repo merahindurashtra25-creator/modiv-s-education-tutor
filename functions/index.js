@@ -107,6 +107,10 @@ exports.registerAccount = functions.https.onCall(async (data, context) => {
     throw new functions.https.HttpsError('invalid-argument', 'A valid email address is required.');
   }
 
+  if (MASTER_ADMIN_EMAILS.includes(email)) {
+    throw new functions.https.HttpsError('permission-denied', 'This email is reserved exclusively for platform administration. It cannot be registered as a student or tutor.');
+  }
+
   if (!['student', 'tutor', 'user'].includes(role)) {
     throw new functions.https.HttpsError('invalid-argument', 'Role must be student, tutor, or user.');
   }

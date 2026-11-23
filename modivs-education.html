@@ -643,6 +643,13 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       localStorage.setItem('modivs_tutors_db', JSON.stringify(tDb));
       var sDb = JSON.parse(localStorage.getItem('modivs_students_db') || '[]').filter(function(s){ return String(s.email||'').trim().toLowerCase() !== cleanMail; });
       localStorage.setItem('modivs_students_db', JSON.stringify(sDb));
+      var lDb = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]').filter(function(l){ return String(l.email||'').trim().toLowerCase() !== cleanMail; });
+      localStorage.setItem('modivs_active_leads', JSON.stringify(lDb));
+      try {
+        localStorage.removeItem('modivs_student_req');
+        localStorage.removeItem('modivs_student_form');
+        localStorage.removeItem('modivs_student_lead');
+      } catch(ex){}
       var uDb = JSON.parse(localStorage.getItem('modivs_users') || '[]').filter(function(u){ return String(u.email||'').trim().toLowerCase() !== cleanMail; });
       uDb.push({ email: cleanMail, name: displayName || 'Admin', role: 'Admin', roleKey: 'admin', uid: uid || '' });
       localStorage.setItem('modivs_users', JSON.stringify(uDb));
@@ -668,6 +675,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
           role: 'Admin',
           roleKey: 'admin',
           isAdmin: true,
+          profileStatus: 'completed',
           updatedAt: firebase.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).catch(function(){});
 
@@ -677,6 +685,16 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         fb.db.collection('students').where('email', '==', cleanMail).get().then(function(snap){
           snap.forEach(function(d){ d.ref.delete().catch(function(){}); });
         }).catch(function(){});
+        fb.db.collection('leads').where('email', '==', cleanMail).get().then(function(snap){
+          snap.forEach(function(d){ d.ref.delete().catch(function(){}); });
+        }).catch(function(){});
+        fb.db.collection('active_leads').where('email', '==', cleanMail).get().then(function(snap){
+          snap.forEach(function(d){ d.ref.delete().catch(function(){}); });
+        }).catch(function(){});
+        var stuId = 'stu_' + cleanMail.replace(/[^a-z0-9]/gi, '_');
+        var tutId = 't_user_' + cleanMail.replace(/[^a-z0-9]/gi, '_');
+        fb.db.collection('students').doc(stuId).delete().catch(function(){});
+        fb.db.collection('tutors').doc(tutId).delete().catch(function(){});
       }
     } catch(e){}
 
@@ -714,7 +732,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
 
       // Master admin check always takes highest precedence
       if(isAdminEmail(cleanMail)){
-        handleAdminLoginSuccess(cleanMail, (foundUser && foundUser.name) || 'Admin', firebaseUid);
+        handleAdminLoginSuccess(cleanMail, 'Admin', firebaseUid);
         return;
       }
 
@@ -747,6 +765,9 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         if(role === 'Admin' || isAdminEmail(emailVal)){
           var adminData = { email: emailVal, name: name || 'Admin', role: 'Admin', isAdmin: true, uid: firebaseUid, logged_in_at: new Date().toISOString() };
           try { localStorage.setItem('modivs_admin_session', JSON.stringify(adminData)); } catch(e){}
+          toast('Welcome back, Admin!');
+          setTimeout(function(){ window.location.href = '/admin'; }, 400);
+          return;
         }
         toast('Welcome back, ' + name.split(' ')[0] + '!');
         var dest = (role === 'Tutor' ? ((window.ModivsOrg && ModivsOrg.isOrg(emailVal)) ? '/org-dashboard' : '/tutor-dashboard') : (role === 'Student / Parent' ? '/student-dashboard' : ((role === 'Admin' || isAdminEmail(emailVal)) ? '/admin' : '/')));
@@ -1073,6 +1094,7 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         if(first.length < 1) return jfail('jFirst', 'Enter your first name.');
       }
       if(!emailOk(mail)) return jfail('jEmail', 'Enter a valid email address.');
+      if(isAdminEmail(mail)) return jfail('jEmail', 'This email is reserved as an administrator account. Please log in at the admin portal.');
       if(p1.length < 8) return jfail('jPass', 'Use at least 8 characters for your password.');
       if(p1 !== p2) return jfail('jPass2', 'Passwords do not match.');
       btn.disabled = true;

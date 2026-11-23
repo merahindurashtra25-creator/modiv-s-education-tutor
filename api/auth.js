@@ -151,6 +151,32 @@ module.exports = async function handler(req, res) {
       const accData = accDoc.exists ? accDoc.data() : {};
       const isAdmin = Boolean(decoded.admin === true || (email && MASTER_ADMIN_EMAILS.includes(email)));
 
+      if (isAdmin) {
+        const stuDocId = `stu_${email.replace(/[^a-z0-9]/gi, '_')}`;
+        const tutDocId = `t_user_${email.replace(/[^a-z0-9]/gi, '_')}`;
+        await Promise.allSettled([
+          db.collection('accounts').doc(email).set({
+            email,
+            role: 'admin',
+            roleName: 'Admin',
+            isAdmin: true,
+            displayId: '',
+            stuId: admin.firestore.FieldValue.delete(),
+            tutId: admin.firestore.FieldValue.delete(),
+            profileStatus: 'completed',
+            profileCompleted: true,
+            nextReminderAt: null,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          }, { merge: true }),
+          db.collection('students').doc(stuDocId).delete(),
+          db.collection('students').where('email', '==', email).get().then(snap => Promise.all(snap.docs.map(d => d.ref.delete()))),
+          db.collection('tutors').doc(tutDocId).delete(),
+          db.collection('tutors').where('email', '==', email).get().then(snap => Promise.all(snap.docs.map(d => d.ref.delete()))),
+          db.collection('leads').where('email', '==', email).get().then(snap => Promise.all(snap.docs.map(d => d.ref.delete()))),
+          db.collection('active_leads').where('email', '==', email).get().then(snap => Promise.all(snap.docs.map(d => d.ref.delete())))
+        ]);
+      }
+
       return res.status(200).json({
         success: true,
         user: {
@@ -185,6 +211,33 @@ module.exports = async function handler(req, res) {
       const accData = accDoc.exists ? accDoc.data() : {};
       const isAdmin = Boolean(authResult.admin === true || (email && MASTER_ADMIN_EMAILS.includes(email)));
 
+      if (isAdmin) {
+        // Enforce Admin role and purge any rogue student, tutor, or lead records
+        const stuDocId = `stu_${email.replace(/[^a-z0-9]/gi, '_')}`;
+        const tutDocId = `t_user_${email.replace(/[^a-z0-9]/gi, '_')}`;
+        await Promise.allSettled([
+          db.collection('accounts').doc(email).set({
+            email,
+            role: 'admin',
+            roleName: 'Admin',
+            isAdmin: true,
+            displayId: '',
+            stuId: admin.firestore.FieldValue.delete(),
+            tutId: admin.firestore.FieldValue.delete(),
+            profileStatus: 'completed',
+            profileCompleted: true,
+            nextReminderAt: null,
+            updatedAt: admin.firestore.FieldValue.serverTimestamp()
+          }, { merge: true }),
+          db.collection('students').doc(stuDocId).delete(),
+          db.collection('students').where('email', '==', email).get().then(snap => Promise.all(snap.docs.map(d => d.ref.delete()))),
+          db.collection('tutors').doc(tutDocId).delete(),
+          db.collection('tutors').where('email', '==', email).get().then(snap => Promise.all(snap.docs.map(d => d.ref.delete()))),
+          db.collection('leads').where('email', '==', email).get().then(snap => Promise.all(snap.docs.map(d => d.ref.delete()))),
+          db.collection('active_leads').where('email', '==', email).get().then(snap => Promise.all(snap.docs.map(d => d.ref.delete())))
+        ]);
+      }
+
       return res.status(200).json({
         success: true,
         user: {
@@ -212,6 +265,9 @@ module.exports = async function handler(req, res) {
 
     if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
       return res.status(400).json({ error: 'A valid email address is required' });
+    }
+    if (MASTER_ADMIN_EMAILS.includes(email)) {
+      return res.status(403).json({ error: 'This email is reserved exclusively for platform administration. It cannot be registered as a student or tutor.' });
     }
     if (password && password.length < 6) {
       return res.status(400).json({ error: 'Password must be at least 6 characters' });

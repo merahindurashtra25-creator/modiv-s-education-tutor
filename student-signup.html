@@ -2261,6 +2261,10 @@
           case 6: if (!v('name')) return ['name', 'Enter your name.']; if (!rad('avatar')) return ['avatarBox', 'Choose a boy or girl avatar for your requirement.']; break;
           case 7: {
             if (!/^[+0-9\s-]{10,15}$/.test(v('phone'))) return ['phone', 'Enter a valid mobile / WhatsApp number.']; if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v('email'))) return ['email', 'Enter a valid email address.'];
+            var emClean = v('email').trim().toLowerCase();
+            if (['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'].indexOf(emClean) !== -1) {
+              return ['email', 'This email is reserved as an administrator account and cannot be registered as a student.'];
+            }
             var pw = document.getElementById('pass') ? document.getElementById('pass').value : '';
             if (pw !== 'google_authenticated' && pw !== 'already_authenticated') {
               var pwErr = checkPasswordRequirements(pw);
@@ -2362,6 +2366,10 @@
         if (!rad('avatar')) return fail('avatarBox', 'Choose a boy or girl avatar for your requirement.');
         if (!/^[+0-9\s-]{10,15}$/.test(phone)) return fail('phone', 'Enter a valid mobile / WhatsApp number.');
         if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return fail('email', 'Enter a valid email address.');
+        var cleanMail = email.trim().toLowerCase();
+        if (['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'].indexOf(cleanMail) !== -1) {
+          return fail('email', 'This email is reserved as an administrator account and cannot be registered as a student.');
+        }
         if (pass !== 'google_authenticated' && pass !== 'already_authenticated' && document.getElementById('pass')) {
           var pwErr = checkPasswordRequirements(pass);
           if (pwErr) return fail('pass', pwErr);

@@ -20,6 +20,12 @@
 const { admin, db, FieldValue } = require('../lib/firebase-admin');
 const { sendReminderEmailHelper, MILESTONES } = require('./send-reminder');
 
+const MASTER_ADMIN_EMAILS = (process.env.MASTER_ADMIN_EMAILS ? process.env.MASTER_ADMIN_EMAILS.split(',') : [
+  'happinessaggarwal@gmail.com',
+  'divyanshdhimanteam@gmail.com',
+  'luxmankumar628@gmail.com'
+]).map(e => String(e).trim().toLowerCase());
+
 /**
  * Checks if a profile has sufficient data to be marked as completed.
  */
@@ -185,6 +191,9 @@ module.exports = async function handler(req, res) {
     // 4. Process candidate accounts
     for (const [email, record] of candidateMap.entries()) {
       try {
+        if (MASTER_ADMIN_EMAILS.includes(String(email).trim().toLowerCase())) {
+          continue; // Master admin accounts never receive reminder emails
+        }
         const role = record.role || 'student';
         const accountRef = db.collection('accounts').doc(email);
 
