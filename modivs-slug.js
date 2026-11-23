@@ -112,7 +112,7 @@
     { file: 'modivs-active-leads.html', title: 'Modiv’s Education – Active Leads', shortTitle: 'Active Leads', slug: 'active-leads', freeSlug: 'activeleads', aliases: ['leads'] },
     { file: 'modivs-admin.html', title: 'Modiv’s Education – Admin', shortTitle: 'Admin', slug: 'admin', freeSlug: 'admin', aliases: ['admindashboard', 'admin-dashboard'] },
     { file: 'modivs-become-tutor.html', title: 'Become a Modivian Tutor · Teach online, at home or in groups · Modiv’s Education', shortTitle: 'Become a Tutor', slug: 'become-tutor', freeSlug: 'becometutor', aliases: ['become-a-modivian-tutor', 'become-a-tutor', 'teach', 'becomemodiviantutor', 'becomeatutor'] },
-    { file: 'modivs-social-vision.html', title: 'Social Vision · Free & Subsidised Education · Modiv’s Education', shortTitle: 'Our Vision', slug: 'our-vision', freeSlug: 'ourvision', aliases: ['social-vision', 'vision', 'socialvision', 'our-social-vision'] },
+    { file: 'modivs-social-vision.html', title: 'Social Vision · Free & Subsidised Education · Modiv’s Education', shortTitle: 'Modiv’s Vision', slug: 'our-vision', freeSlug: 'ourvision', aliases: ['social-vision', 'vision', 'socialvision', 'our-social-vision'] },
     { file: 'modivs-tuition.html', title: 'Tuition · Home, Online & Group Tuition · Modiv’s Education', shortTitle: 'Tuition', slug: 'tuition', freeSlug: 'tuition', aliases: ['tuitions'] },
     { file: 'modivs-blogs.html', title: 'Modiv’s Education – Blogs & Articles', shortTitle: 'Blogs', slug: 'blogs', freeSlug: 'blogs', aliases: ['blog', 'articles'] },
     { file: 'modivs-contact.html', title: 'Contact Us | Modiv’s Education', shortTitle: 'Contact Us', slug: 'contact', freeSlug: 'contact', aliases: ['contact-us', 'contactus', 'support', 'help'] },
