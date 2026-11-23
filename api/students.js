@@ -253,6 +253,14 @@ module.exports = async function handler(req, res) {
       if (Array.isArray(body[k])) studentData[k] = body[k].flat(Infinity).filter(Boolean);
     });
 
+    const isProfileComplete = Boolean(studentData.cls && studentData.subs && studentData.subs.length > 0);
+    studentData.profileStatus = isProfileComplete ? 'completed' : 'incomplete';
+    studentData.profileCompleted = isProfileComplete;
+    studentData.lastActivityAt = admin.firestore.FieldValue.serverTimestamp();
+    if (isProfileComplete) {
+      studentData.nextReminderAt = null;
+    }
+
     // Clean undefined fields
     Object.keys(studentData).forEach(k => {
       if (studentData[k] === undefined) delete studentData[k];
@@ -264,15 +272,22 @@ module.exports = async function handler(req, res) {
     ];
 
     if (cleanEmail) {
+      const studentAccountPatch = {
+        email: cleanEmail,
+        name: studentData.name,
+        phone: studentData.phone,
+        role: 'student',
+        roleName: 'Student / Parent',
+        profileStatus: isProfileComplete ? 'completed' : 'incomplete',
+        profileCompleted: isProfileComplete,
+        lastActivityAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      };
+      if (isProfileComplete) {
+        studentAccountPatch.nextReminderAt = null;
+      }
       writes.push(
-        db.collection('accounts').doc(cleanEmail).set({
-          email: cleanEmail,
-          name: studentData.name,
-          phone: studentData.phone,
-          role: 'student',
-          roleName: 'Student / Parent',
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).catch(() => {})
+        db.collection('accounts').doc(cleanEmail).set(studentAccountPatch, { merge: true }).catch(() => {})
       );
 
       const studentUid = body.uid || (user && user.uid) || `s_user_${cleanEmail.replace(/[^a-z0-9]/gi, '_')}`;

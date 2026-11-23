@@ -223,6 +223,17 @@ module.exports = async function handler(req, res) {
     }
     updateData.updatedAt = admin.firestore.FieldValue.serverTimestamp();
 
+    const hasSubjects = subs.length > 0 && subs[0] !== 'General';
+    const hasContact = updateData.phone && updateData.phone !== '—';
+    const isProfileComplete = Boolean(hasSubjects && hasContact && updateData.status !== 'incomplete');
+
+    if (isProfileComplete) {
+      updateData.profileStatus = 'completed';
+      updateData.profileCompleted = true;
+      updateData.nextReminderAt = null;
+    }
+    updateData.lastActivityAt = admin.firestore.FieldValue.serverTimestamp();
+
     // Clean undefined fields
     Object.keys(updateData).forEach(k => {
       if (updateData[k] === undefined) delete updateData[k];
@@ -233,21 +244,28 @@ module.exports = async function handler(req, res) {
     ];
 
     if (cleanEmail) {
+      const accountPatch = {
+        email: cleanEmail,
+        role: 'tutor',
+        roleName: 'Tutor',
+        status: updateData.status || 'pending',
+        approval: updateData.status || 'pending',
+        name: updateData.name || '',
+        phone: updateData.phone || '',
+        city: updateData.city || '',
+        area: updateData.area || '',
+        subs: subs,
+        location: updateData.location || { city: updateData.city || '', area: updateData.area || '' },
+        profileStatus: isProfileComplete ? 'completed' : 'incomplete',
+        profileCompleted: isProfileComplete,
+        lastActivityAt: admin.firestore.FieldValue.serverTimestamp(),
+        updatedAt: admin.firestore.FieldValue.serverTimestamp()
+      };
+      if (isProfileComplete) {
+        accountPatch.nextReminderAt = null;
+      }
       writes.push(
-        db.collection('accounts').doc(cleanEmail).set({
-          email: cleanEmail,
-          role: 'tutor',
-          roleName: 'Tutor',
-          status: updateData.status || 'pending',
-          approval: updateData.status || 'pending',
-          name: updateData.name || '',
-          phone: updateData.phone || '',
-          city: updateData.city || '',
-          area: updateData.area || '',
-          subs: subs,
-          location: updateData.location || { city: updateData.city || '', area: updateData.area || '' },
-          updatedAt: admin.firestore.FieldValue.serverTimestamp()
-        }, { merge: true }).catch(() => { })
+        db.collection('accounts').doc(cleanEmail).set(accountPatch, { merge: true }).catch(() => { })
       );
 
       const uid = body.uid || (user && user.uid) || tutorDocId;

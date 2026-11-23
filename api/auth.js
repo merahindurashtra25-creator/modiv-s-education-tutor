@@ -262,6 +262,12 @@ module.exports = async function handler(req, res) {
           phone,
           location,
           displayId: displayId || '',
+          profileStatus: 'incomplete',
+          profileCompleted: false,
+          profileStartedAt: admin.firestore.FieldValue.serverTimestamp(),
+          lastActivityAt: admin.firestore.FieldValue.serverTimestamp(),
+          reminderCount: 0,
+          nextReminderAt: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
           registeredAt: admin.firestore.FieldValue.serverTimestamp(),
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         };
