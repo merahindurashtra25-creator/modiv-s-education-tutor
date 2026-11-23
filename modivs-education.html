@@ -1112,6 +1112,13 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
               ModivsNotifications.autoPromptPushIfEligible(mail);
             }
           }
+          try {
+            fetch('/api/send-reminder?action=welcome', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ email: mail, role: 'tutor', name: name })
+            }).catch(function(){});
+          } catch(ex){}
           showJoinDone(name);
         }
         if(window.ModivsAuthUnique){

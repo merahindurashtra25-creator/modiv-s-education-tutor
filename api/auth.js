@@ -361,6 +361,25 @@ module.exports = async function handler(req, res) {
         return { success: true, email, role, displayId };
       });
 
+      // Dispatch welcome email asynchronously for new registrations
+      if (regResult && !regResult.exists) {
+        try {
+          const { sendWelcomeEmailHelper } = require('./send-reminder');
+          const proto = req.headers['x-forwarded-proto'] || 'https';
+          const host = req.headers.host || '';
+          const originUrl = host ? `${proto}://${host}` : '';
+          sendWelcomeEmailHelper({
+            email,
+            role,
+            name,
+            displayId: regResult.displayId || '',
+            originUrl
+          }).catch(err => console.warn('[auth] Welcome email delivery notice:', err.message));
+        } catch (e) {
+          console.warn('[auth] Welcome email init notice:', e.message);
+        }
+      }
+
       return res.status(200).json(regResult);
     } catch (err) {
       return res.status(400).json({ error: err.message });

@@ -405,6 +405,18 @@
       }
     }).then(function () {
       syncLocalStorage();
+      try {
+        fetch('/api/send-reminder?action=welcome', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            email: mail,
+            role: roleKey,
+            name: accountData.name,
+            displayId: accountData.displayId || ''
+          })
+        }).catch(function () { });
+      } catch (ex) { }
       return { success: true, email: mail, role: roleKey, roleName: meta.name, displayId: accountData.displayId || '' };
     });
   }

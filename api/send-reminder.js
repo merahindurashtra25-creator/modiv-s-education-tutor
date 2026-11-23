@@ -11,7 +11,7 @@
 
 const nodemailer = require('nodemailer');
 const { admin, db, FieldValue } = require('../lib/firebase-admin');
-const { getEmailTemplate } = require('../lib/email-templates');
+const { getEmailTemplate, getWelcomeEmailTemplate } = require('../lib/email-templates');
 const {
   generateContinuationToken,
   consumeContinuationToken,
@@ -257,6 +257,88 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
 }
 
 /**
+ * Reusable helper to send welcome email upon new user / tutor / student registration.
+ */
+async function sendWelcomeEmailHelper({ email, role = 'student', name = '', displayId = '', originUrl = '', dbOverride = null }) {
+  const database = dbOverride || db;
+  const cleanEmail = String(email || '').trim().toLowerCase();
+  if (!cleanEmail || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(cleanEmail)) {
+    throw new Error('A valid email address is required.');
+  }
+
+  // Prevent sending welcome email to master admin accounts
+  const MASTER_ADMIN_EMAILS = (process.env.MASTER_ADMIN_EMAILS ? process.env.MASTER_ADMIN_EMAILS.split(',') : [
+    'happinessaggarwal@gmail.com',
+    'divyanshdhimanteam@gmail.com',
+    'luxmankumar628@gmail.com'
+  ]).map(e => String(e).trim().toLowerCase());
+
+  if (MASTER_ADMIN_EMAILS.includes(cleanEmail)) {
+    return { success: false, skipped: true, message: 'Welcome email skipped for administrator account.' };
+  }
+
+  const accountRef = database.collection('accounts').doc(cleanEmail);
+  const accountDoc = await accountRef.get().catch(() => null);
+  const accData = (accountDoc && accountDoc.exists) ? (accountDoc.data() || {}) : {};
+
+  // Check idempotency - avoid duplicate welcome emails
+  if (accData.welcomeEmailSent === true) {
+    return { success: true, duplicate: true, message: 'Welcome email was already delivered.', email: cleanEmail };
+  }
+
+  const resolvedRole = role || accData.role || 'student';
+  const resolvedName = name || accData.name || cleanEmail.split('@')[0];
+  const resolvedDisplayId = displayId || accData.displayId || accData.stuId || accData.tutId || '';
+
+  const { subject, html, text } = getWelcomeEmailTemplate({
+    role: resolvedRole,
+    recipientName: resolvedName,
+    displayId: resolvedDisplayId,
+    email: cleanEmail,
+    originUrl: originUrl || 'https://www.modivs.com'
+  });
+
+  const smtp = createSmtpTransporter();
+  let messageId = 'simulated_' + Date.now();
+
+  if (smtp && smtp.configured) {
+    const fromAddress = process.env.SMTP_FROM || `Modiv’s Education <${smtp.user}>`;
+    const mailOptions = {
+      from: fromAddress,
+      to: cleanEmail,
+      subject,
+      text,
+      html,
+      headers: {
+        'X-Entity-Ref-ID': `welcome_${cleanEmail}_${Date.now()}`
+      }
+    };
+
+    const info = await smtp.transporter.sendMail(mailOptions);
+    messageId = info.messageId || messageId;
+  } else {
+    console.log(`[send-reminder] SMTP not configured. Welcome email simulated to ${cleanEmail}`);
+  }
+
+  // Record welcome email dispatch in Firestore
+  await accountRef.set({
+    welcomeEmailSent: true,
+    welcomeEmailSentAt: FieldValue.serverTimestamp(),
+    welcomeMessageId: messageId,
+    lastActivityAt: FieldValue.serverTimestamp()
+  }, { merge: true }).catch(() => {});
+
+  return {
+    success: true,
+    messageId,
+    email: cleanEmail,
+    role: resolvedRole,
+    type: 'welcome',
+    deliveredAt: new Date().toISOString()
+  };
+}
+
+/**
  * Serverless API handler
  */
 module.exports = async function handler(req, res) {
@@ -296,6 +378,31 @@ module.exports = async function handler(req, res) {
 
     // Safely redirect user to their role-specific profile page
     return res.redirect(302, destination);
+  }
+
+  // --- FEATURE: Welcome Email Dispatch ---
+  const actionParam = String(req.query.action || (req.body && req.body.action) || '').toLowerCase();
+  if (actionParam === 'welcome' && (req.method === 'POST' || req.method === 'GET')) {
+    const payload = req.method === 'POST' ? (req.body || {}) : req.query;
+    const { email, role, name, displayId } = payload;
+    if (!email) return res.status(400).json({ error: 'Missing required field: email' });
+
+    const proto = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers.host || '';
+    const originUrl = host ? `${proto}://${host}` : '';
+
+    try {
+      const result = await sendWelcomeEmailHelper({
+        email,
+        role,
+        name,
+        displayId,
+        originUrl
+      });
+      return res.status(200).json(result);
+    } catch (e) {
+      return res.status(500).json({ error: e.message });
+    }
   }
 
   // --- Authentication Check for Sending Reminders ---
@@ -353,5 +460,6 @@ module.exports = async function handler(req, res) {
 };
 
 module.exports.sendReminderEmailHelper = sendReminderEmailHelper;
+module.exports.sendWelcomeEmailHelper = sendWelcomeEmailHelper;
 module.exports.createSmtpTransporter = createSmtpTransporter;
 module.exports.MILESTONES = MILESTONES;
