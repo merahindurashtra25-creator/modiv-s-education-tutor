@@ -11,7 +11,7 @@
 
 const nodemailer = require('nodemailer');
 const { admin, db, FieldValue } = require('../lib/firebase-admin');
-const { getEmailTemplate, getWelcomeEmailTemplate } = require('../lib/email-templates');
+const { getEmailTemplate, getWelcomeEmailTemplate, getAdminBulkReminderTemplate } = require('../lib/email-templates');
 const {
   generateContinuationToken,
   consumeContinuationToken,
@@ -19,6 +19,12 @@ const {
   ALLOWED_HOSTS
 } = require('../lib/token-manager');
 const { verifyAuth } = require('./_auth');
+
+const MASTER_ADMIN_EMAILS = (process.env.MASTER_ADMIN_EMAILS ? process.env.MASTER_ADMIN_EMAILS.split(',') : [
+  'happinessaggarwal@gmail.com',
+  'divyanshdhimanteam@gmail.com',
+  'luxmankumar628@gmail.com'
+]).map(e => String(e).trim().toLowerCase());
 
 // Timing milestones (in milliseconds)
 const MILESTONES = {
@@ -350,6 +356,335 @@ async function sendWelcomeEmailHelper({ email, role = 'student', name = '', disp
 }
 
 /**
+ * Admin: Fetch users with profile completion metrics and reminder status
+ */
+async function handleAdminFetchUsers({ req, res, user, db, FieldValue }) {
+  try {
+    const usersMap = new Map();
+
+    // 1. Fetch from accounts collection
+    try {
+      const accSnap = await db.collection('accounts').get();
+      accSnap.docs.forEach(doc => {
+        const data = doc.data() || {};
+        const email = String(doc.id || data.email || '').trim().toLowerCase();
+        if (email && !MASTER_ADMIN_EMAILS.includes(email)) {
+          const isComplete = Boolean(data.profileCompleted === true || data.profileStatus === 'completed' || data.status === 'approved');
+          usersMap.set(email, {
+            email,
+            uid: data.uid || '',
+            name: data.name || data.displayName || email.split('@')[0],
+            role: data.role || 'user',
+            profileCompleted: isComplete,
+            profileStatus: isComplete ? 'completed' : 'incomplete',
+            createdAt: data.createdAt ? (data.createdAt.toDate ? data.createdAt.toDate().toISOString() : data.createdAt) : null,
+            lastReminderSentAt: data.lastReminderSentAt || null,
+            reminderCount: Number(data.reminderCount) || 0,
+            emailStatus: data.lastEmailStatus || (data.lastReminderSentAt ? 'sent' : 'not_sent')
+          });
+        }
+      });
+    } catch (e) {
+      console.warn('[handleAdminFetchUsers] Accounts query notice:', e.message);
+    }
+
+    // 2. Merge students metadata
+    try {
+      const stuSnap = await db.collection('students').get();
+      stuSnap.docs.forEach(doc => {
+        const data = doc.data() || {};
+        const email = String(data.email || '').trim().toLowerCase();
+        if (email && !MASTER_ADMIN_EMAILS.includes(email)) {
+          const isComplete = Boolean(data.profileCompleted === true || data.status === 'approved' || (data.cls && (data.subs || data.subjects)));
+          if (usersMap.has(email)) {
+            const u = usersMap.get(email);
+            u.role = 'student';
+            if (data.name) u.name = data.name;
+            if (isComplete) { u.profileCompleted = true; u.profileStatus = 'completed'; }
+          } else {
+            usersMap.set(email, {
+              email,
+              uid: data.uid || doc.id,
+              name: data.name || data.studentName || email.split('@')[0],
+              role: 'student',
+              profileCompleted: isComplete,
+              profileStatus: isComplete ? 'completed' : 'incomplete',
+              createdAt: data.createdAt || null,
+              lastReminderSentAt: data.lastReminderSentAt || null,
+              reminderCount: Number(data.reminderCount) || 0,
+              emailStatus: data.lastEmailStatus || (data.lastReminderSentAt ? 'sent' : 'not_sent')
+            });
+          }
+        }
+      });
+    } catch (e) {
+      console.warn('[handleAdminFetchUsers] Students query notice:', e.message);
+    }
+
+    // 3. Merge tutors metadata
+    try {
+      const tutSnap = await db.collection('tutors').get();
+      tutSnap.docs.forEach(doc => {
+        const data = doc.data() || {};
+        const email = String(data.email || '').trim().toLowerCase();
+        if (email && !MASTER_ADMIN_EMAILS.includes(email)) {
+          const isComplete = Boolean(data.profileCompleted === true || data.status === 'approved' || data.approval === 'approved');
+          if (usersMap.has(email)) {
+            const u = usersMap.get(email);
+            u.role = 'tutor';
+            if (data.name) u.name = data.name;
+            if (isComplete) { u.profileCompleted = true; u.profileStatus = 'completed'; }
+          } else {
+            usersMap.set(email, {
+              email,
+              uid: data.uid || doc.id,
+              name: data.name || data.tutorName || email.split('@')[0],
+              role: 'tutor',
+              profileCompleted: isComplete,
+              profileStatus: isComplete ? 'completed' : 'incomplete',
+              createdAt: data.createdAt || null,
+              lastReminderSentAt: data.lastReminderSentAt || null,
+              reminderCount: Number(data.reminderCount) || 0,
+              emailStatus: data.lastEmailStatus || (data.lastReminderSentAt ? 'sent' : 'not_sent')
+            });
+          }
+        }
+      });
+    } catch (e) {
+      console.warn('[handleAdminFetchUsers] Tutors query notice:', e.message);
+    }
+
+    const usersList = Array.from(usersMap.values());
+    const total = usersList.length;
+    const completed = usersList.filter(u => u.profileCompleted).length;
+    const incomplete = total - completed;
+    const pendingReminders = usersList.filter(u => !u.profileCompleted && u.reminderCount < 3).length;
+    const sentEmails = usersList.reduce((acc, u) => acc + (u.reminderCount || 0), 0);
+
+    let failedEmails = 0;
+    try {
+      const histSnap = await db.collection('admin_email_history').where('status', '==', 'failed').get();
+      failedEmails = histSnap.size || 0;
+    } catch (e) {}
+
+    return res.status(200).json({
+      success: true,
+      stats: {
+        totalRegistered: total,
+        completedProfiles: completed,
+        incompleteProfiles: incomplete,
+        pendingReminders,
+        sentEmails,
+        failedEmails
+      },
+      users: usersList
+    });
+  } catch (err) {
+    console.error('[handleAdminFetchUsers] Error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+}
+
+/**
+ * Admin: One-click bulk reminder email dispatcher
+ */
+async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl }) {
+  const { emails = [], campaignName = 'Admin Bulk Reminder' } = req.body || {};
+  if (!Array.isArray(emails) || emails.length === 0) {
+    return res.status(400).json({ error: 'No recipient emails provided.' });
+  }
+
+  const cleanEmails = Array.from(new Set(emails.map(e => String(e).trim().toLowerCase()).filter(Boolean)));
+  const totalSelected = cleanEmails.length;
+  const campaignId = 'bulk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
+
+  const eligible = [];
+  const excluded = [];
+
+  for (const email of cleanEmails) {
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || MASTER_ADMIN_EMAILS.includes(email)) {
+      excluded.push({ email, reason: 'Invalid or admin email' });
+      continue;
+    }
+
+    let accountData = null;
+    try {
+      const doc = await db.collection('accounts').doc(email).get().catch(() => null);
+      if (doc && doc.exists) accountData = doc.data();
+    } catch (e) {}
+
+    const isComplete = accountData && (accountData.profileCompleted === true || accountData.profileStatus === 'completed');
+    if (isComplete) {
+      excluded.push({ email, reason: 'Profile already completed' });
+      continue;
+    }
+    if (accountData && accountData.optOutReminders === true) {
+      excluded.push({ email, reason: 'User opted out of reminders' });
+      continue;
+    }
+
+    eligible.push({
+      email,
+      uid: (accountData && accountData.uid) || '',
+      name: (accountData && (accountData.name || accountData.displayName)) || email.split('@')[0],
+      role: (accountData && accountData.role) || 'student'
+    });
+  }
+
+  const eligibleCount = eligible.length;
+  const excludedCount = excluded.length;
+
+  if (eligibleCount === 0) {
+    return res.status(200).json({
+      success: true,
+      totalSelected,
+      eligibleCount: 0,
+      excludedCount,
+      sentCount: 0,
+      failedCount: 0,
+      excluded,
+      results: []
+    });
+  }
+
+  const transporterObj = createSmtpTransporter();
+  let sentCount = 0;
+  let failedCount = 0;
+  const results = [];
+
+  for (const item of eligible) {
+    const idempotencyKey = `bulk_${campaignId}_${item.email}`;
+    const reminderRef = db.collection('email_reminders').doc(idempotencyKey);
+
+    // Prevent duplicate sends caused by repeated clicks
+    let alreadySent = false;
+    try {
+      const existingReminder = await reminderRef.get();
+      if (existingReminder && existingReminder.exists && existingReminder.data().state === 'sent') {
+        alreadySent = true;
+      }
+    } catch (e) {}
+
+    if (alreadySent) {
+      results.push({ email: item.email, status: 'skipped', reason: 'Duplicate: already sent in campaign' });
+      continue;
+    }
+
+    // Set sending state
+    await reminderRef.set({
+      idempotencyKey,
+      email: item.email,
+      campaignId,
+      campaignName,
+      state: 'sending',
+      initiatedBy: user.email,
+      updatedAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
+    }, { merge: true }).catch(() => {});
+
+    let mailSuccess = false;
+    let errorMessage = null;
+
+    try {
+      if (!transporterObj) {
+        console.warn(`[AdminBulk] SMTP not configured. Simulating send to ${item.email}`);
+        mailSuccess = true;
+      } else {
+        const loginUrl = `${originUrl || 'https://www.modivs.com'}/login.html`;
+        const { subject, html, text } = getAdminBulkReminderTemplate(item.name, item.role, loginUrl);
+        const info = await transporterObj.transporter.sendMail({
+          from: `"Modiv’s Education" <${transporterObj.user}>`,
+          to: item.email,
+          subject,
+          html,
+          text
+        });
+        if (info && info.accepted && info.accepted.length > 0) {
+          mailSuccess = true;
+        } else {
+          errorMessage = 'SMTP did not accept recipient address.';
+        }
+      }
+    } catch (err) {
+      errorMessage = err.message || 'SMTP transmission error';
+      console.error(`[AdminBulk] Failed to send to ${item.email}:`, err);
+    }
+
+    const outcomeStatus = mailSuccess ? 'sent' : 'failed';
+    if (mailSuccess) sentCount++; else failedCount++;
+
+    // Update reminder lock state
+    await reminderRef.update({
+      state: outcomeStatus,
+      errorMessage,
+      sentAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
+    }).catch(() => {});
+
+    // Update account doc
+    await db.collection('accounts').doc(item.email).set({
+      lastReminderSentAt: new Date().toISOString(),
+      reminderCount: FieldValue.increment ? FieldValue.increment(1) : 1,
+      lastEmailStatus: outcomeStatus
+    }, { merge: true }).catch(() => {});
+
+    // Save to admin_email_history
+    await db.collection('admin_email_history').add({
+      recipientEmail: item.email,
+      recipientUid: item.uid || '',
+      userType: item.role || 'student',
+      subject: "Complete Your Modiv's Education Profile",
+      reminderType: 'admin_bulk',
+      sentAt: new Date().toISOString(),
+      status: outcomeStatus,
+      errorMessage,
+      adminEmail: user.email,
+      campaignId,
+      campaignName
+    }).catch(() => {});
+
+    results.push({ email: item.email, status: outcomeStatus, error: errorMessage });
+
+    // Polite delay between outbound SMTP calls to prevent throttling
+    await new Promise(r => setTimeout(r, 150));
+  }
+
+  return res.status(200).json({
+    success: true,
+    totalSelected,
+    eligibleCount,
+    excludedCount,
+    sentCount,
+    failedCount,
+    excluded,
+    results
+  });
+}
+
+/**
+ * Admin: Fetch email dispatch history
+ */
+async function handleAdminFetchHistory({ req, res, user, db }) {
+  try {
+    let history = [];
+    try {
+      const snap = await db.collection('admin_email_history')
+        .orderBy('sentAt', 'desc')
+        .limit(100)
+        .get();
+      history = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+    } catch (idxErr) {
+      const snap = await db.collection('admin_email_history').limit(100).get();
+      history = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      history.sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0));
+    }
+
+    return res.status(200).json({ success: true, history });
+  } catch (err) {
+    console.error('[handleAdminFetchHistory] Error:', err);
+    return res.status(500).json({ error: err.message });
+  }
+}
+
+/**
  * Serverless API handler
  */
 module.exports = async function handler(req, res) {
@@ -413,6 +748,34 @@ module.exports = async function handler(req, res) {
       return res.status(200).json(result);
     } catch (e) {
       return res.status(500).json({ error: e.message });
+    }
+  }
+
+  // --- FEATURE: Admin Bulk Reminder Operations ---
+  if (['admin-fetch-users', 'admin-bulk-send', 'admin-fetch-history', 'admin-single-send'].includes(actionParam)) {
+    const user = await verifyAuth(req).catch(() => null);
+    if (!user || !user.isAdmin) {
+      return res.status(403).json({ error: 'Forbidden: Admin access required.' });
+    }
+
+    const proto = req.headers['x-forwarded-proto'] || 'https';
+    const host = req.headers.host || '';
+    const originUrl = host ? `${proto}://${host}` : '';
+
+    if (actionParam === 'admin-fetch-users') {
+      return await handleAdminFetchUsers({ req, res, user, db, FieldValue });
+    }
+    if (actionParam === 'admin-bulk-send') {
+      return await handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl });
+    }
+    if (actionParam === 'admin-fetch-history') {
+      return await handleAdminFetchHistory({ req, res, user, db });
+    }
+    if (actionParam === 'admin-single-send') {
+      const targetEmail = req.body && req.body.email;
+      if (!targetEmail) return res.status(400).json({ error: 'Missing recipient email.' });
+      req.body.emails = [targetEmail];
+      return await handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl });
     }
   }
 
