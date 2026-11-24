@@ -120,6 +120,22 @@ function createSmtpTransporter(opts = {}) {
 }
 
 /**
+ * Resolve clean ASCII From/Reply-To aligned with the authenticated SMTP account
+ * so Gmail/SPF/DKIM never flag a cross-domain sender mismatch as spam.
+ */
+function resolveFromAddress(smtp) {
+  const authUser = (smtp && smtp.user) || 'merahindurashtra25@gmail.com';
+  const rawFrom = String(process.env.SMTP_FROM || '').trim().replace(/^["']|["']$/g, '');
+  const match = rawFrom.match(/<([^>]+)>/);
+  const configuredEmail = (match ? match[1] : (rawFrom.includes('@') ? rawFrom : '')).trim().toLowerCase();
+  const isGmailSmtp = !smtp || !smtp.host || smtp.host.includes('gmail');
+  if (isGmailSmtp || !configuredEmail || configuredEmail === authUser.toLowerCase()) {
+    return `"Modiv's Education" <${authUser}>`;
+  }
+  return rawFrom;
+}
+
+/**
  * Send email with automatic DNS resolution & port fallback (465 <-> 587)
  */
 async function sendMailWithFallback(smtp, mailOptions) {
@@ -222,26 +238,25 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
     };
   }
 
-  // 2. Resolve Base URL
-  const baseUrl = originUrl ||
-    process.env.APP_URL ||
-    process.env.NEXT_PUBLIC_BASE_URL ||
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}` : 'https://www.modivs.com');
+  // 2. Resolve canonical Base URL (avoid preview subdomains or redirect chains in emails)
+  const canonicalBase = (originUrl && /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(originUrl))
+    ? originUrl
+    : (process.env.APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.modivs.com');
 
   // 3. Generate secure continuation link with SHA-256 token hashing
-  let continuationUrl = `${baseUrl}/login.html`;
+  let continuationUrl = `${canonicalBase}/login`;
   try {
     continuationUrl = await generateContinuationToken({
       email: cleanEmail,
       role: userRole,
-      baseUrl,
+      baseUrl: canonicalBase,
       expiryDays: 7,
       db: database,
       FieldValue
     });
   } catch (tokErr) {
     console.warn('[send-reminder] Token generation notice, falling back to direct URL:', tokErr.message);
-    continuationUrl = `${baseUrl}/${userRole === 'tutor' ? 'tutor-dashboard' : 'student-dashboard'}`;
+    continuationUrl = `${canonicalBase}/${userRole === 'tutor' ? 'tutor-dashboard' : 'student-dashboard'}`;
   }
 
   // 4. Generate email template
@@ -258,27 +273,17 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
   const smtp = createSmtpTransporter();
   let messageId = 'simulated-' + Date.now();
   let emailSent = false;
-  let fromAddress = process.env.SMTP_FROM || `"Modiv’s Education" <${(smtp && smtp.user) || 'merahindurashtra25@gmail.com'}>`;
+  let fromAddress = resolveFromAddress(smtp);
 
   if (smtp && smtp.configured) {
     try {
       const mailOptions = {
         from: fromAddress,
-        replyTo: `"Modiv’s Education Support" <${(smtp && smtp.user) || 'merahindurashtra25@gmail.com'}>`,
+        replyTo: fromAddress,
         to: cleanEmail,
         subject,
         html,
-        text,
-        headers: {
-          'X-Priority': '3',
-          'X-MSMail-Priority': 'Normal',
-          'Importance': 'Normal',
-          'List-Unsubscribe': `<mailto:${(smtp && smtp.user) || 'merahindurashtra25@gmail.com'}?subject=unsubscribe>, <${continuationUrl}?action=unsubscribe>`,
-          'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-          'Feedback-ID': 'reminder:account:modivs',
-          'X-Auto-Response-Suppress': 'OOF, AutoReply',
-          'Auto-Submitted': 'auto-generated'
-        }
+        text
       };
       const info = await sendMailWithFallback(smtp, mailOptions);
       messageId = info.messageId || messageId;
@@ -424,16 +429,14 @@ async function sendWelcomeEmailHelper({ email, role = 'student', name = '', disp
   let messageId = 'simulated_' + Date.now();
 
   if (smtp && smtp.configured) {
-    const fromAddress = process.env.SMTP_FROM || `Modiv’s Education <${smtp.user}>`;
+    const fromAddress = resolveFromAddress(smtp);
     const mailOptions = {
       from: fromAddress,
+      replyTo: fromAddress,
       to: cleanEmail,
       subject,
       text,
-      html,
-      headers: {
-        'X-Entity-Ref-ID': `welcome_${cleanEmail}_${Date.now()}`
-      }
+      html
     };
 
     const info = await sendMailWithFallback(smtp, mailOptions);
@@ -796,26 +799,20 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
         if (!transporterObj) {
           errorMessage = 'SMTP credentials (SMTP_USER / SMTP_PASS) are missing in Vercel Environment Variables.';
         } else {
-          const loginUrl = `${originUrl || 'https://www.modivs.com'}/login.html`;
+          const canonicalBase = (originUrl && /^https?:\/\/(localhost|127\.0\.0\.1)/i.test(originUrl))
+            ? originUrl
+            : (process.env.APP_URL || process.env.NEXT_PUBLIC_BASE_URL || 'https://www.modivs.com');
+          const loginUrl = `${canonicalBase.replace(/\/+$/, '')}/login`;
           const { subject, html, text } = getAdminBulkReminderTemplate(item.name, item.role, loginUrl);
-          
+          const fromAddress = resolveFromAddress(transporterObj);
+
           const mailOptions = {
-            from: process.env.SMTP_FROM || `"Modiv’s Education" <${transporterObj.user}>`,
-            replyTo: `"Modiv’s Education Support" <${transporterObj.user}>`,
+            from: fromAddress,
+            replyTo: fromAddress,
             to: item.email,
             subject,
             html,
-            text,
-            headers: {
-              'X-Priority': '3',
-              'X-MSMail-Priority': 'Normal',
-              'Importance': 'Normal',
-              'List-Unsubscribe': `<mailto:${transporterObj.user}?subject=unsubscribe>, <${loginUrl}?action=unsubscribe>`,
-              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-              'Feedback-ID': 'reminder:bulk:modivs',
-              'X-Auto-Response-Suppress': 'OOF, AutoReply',
-              'Auto-Submitted': 'auto-generated'
-            }
+            text
           };
 
           const info = await sendMailWithFallback(transporterObj, mailOptions);
