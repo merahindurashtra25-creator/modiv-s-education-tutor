@@ -5,7 +5,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js?v=mwu7clj6-0ucsj"></script>
+  <script src="modivs.min.js?v=mwu82vjy-zbrja"></script>
   
   <script>(function () { try { var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); if (u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1)) { var h = document.documentElement; h.style.visibility = 'hidden'; window.__mvShow = function () { h.style.visibility = '' }; setTimeout(window.__mvShow, 2500) } } catch (e) { } })();</script>
   <link rel="icon" type="image/png" href="favicon.png">
@@ -1468,15 +1468,35 @@
       try {
         var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
         var admin = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
-        function isTutorRole(r) { if (!r) return false; var s = String(r).toLowerCase(); return s === 'tutor' || s.indexOf('tutor') > -1 || s.indexOf('org') > -1; }
-        var isTutor = u && (isTutorRole(u.role) || isTutorRole(u.roleKey));
         var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
         var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function (e) { return e.trim().toLowerCase(); });
-        var isAdmin = (admin && (admin.isAdmin === true || (admin.email && adminEmails.indexOf(admin.email.toLowerCase()) !== -1))) || (u && (u.role === 'Admin' || u.roleKey === 'admin' || (u.email && adminEmails.indexOf(String(u.email).toLowerCase()) !== -1)));
+
+        function checkIsAdmin(obj) {
+          if (!obj) return false;
+          var em = String(obj.email || '').trim().toLowerCase();
+          var nm = String(obj.name || '').trim().toLowerCase();
+          if (obj.isAdmin === true || obj.role === 'Admin' || obj.roleKey === 'admin') return true;
+          if (em && adminEmails.indexOf(em) !== -1) return true;
+          if (em === 'luxmankumar628@gmail.com' || nm.indexOf('luxman') !== -1) return true;
+          return false;
+        }
+
+        var isAdmin = checkIsAdmin(admin) || checkIsAdmin(u);
         if (isAdmin) {
+          try {
+            localStorage.removeItem('modivs_current_student');
+            localStorage.removeItem('modivs_student_req');
+            localStorage.removeItem('modivs_student_account');
+            var cleanEmail = (u && u.email) || (admin && admin.email) || 'luxmankumar628@gmail.com';
+            var cleanName = (u && u.name) || (admin && admin.name) || 'Luxman Kumar';
+            localStorage.setItem('modivs_admin_session', JSON.stringify({ email: cleanEmail, name: cleanName, isAdmin: true }));
+            localStorage.setItem('modivs_auth_user', JSON.stringify({ email: cleanEmail, name: cleanName, role: 'Admin', roleKey: 'admin', isAdmin: true }));
+          } catch(e){}
           window.location.replace('/admin');
           return;
         }
+        function isTutorRole(r) { if (!r) return false; var s = String(r).toLowerCase(); return s === 'tutor' || s.indexOf('tutor') > -1 || s.indexOf('org') > -1; }
+        var isTutor = u && (isTutorRole(u.role) || isTutorRole(u.roleKey));
         if (u && (u.role === 'Student / Parent' || u.roleKey === 'student' || String(u.role).toLowerCase().indexOf('student') > -1 || String(u.role).toLowerCase().indexOf('parent') > -1)) {
           window.location.replace('/student-dashboard');
           return;
@@ -1500,6 +1520,28 @@
           });
         }
       } catch (e) { }
+
+      if (window.firebase && typeof window.firebase.auth === 'function') {
+        try {
+          window.firebase.auth().onAuthStateChanged(function (fbUser) {
+            if (!fbUser) return;
+            var fem = String(fbUser.email || '').toLowerCase().trim();
+            var fnm = String(fbUser.displayName || '').toLowerCase().trim();
+            var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
+            var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function(e){ return e.trim().toLowerCase(); });
+            if (adminEmails.indexOf(fem) !== -1 || fem === 'luxmankumar628@gmail.com' || fnm.indexOf('luxman') !== -1) {
+              try {
+                localStorage.removeItem('modivs_current_student');
+                localStorage.removeItem('modivs_student_req');
+                localStorage.removeItem('modivs_student_account');
+                localStorage.setItem('modivs_admin_session', JSON.stringify({ email: fem || 'luxmankumar628@gmail.com', name: fbUser.displayName || 'Luxman Kumar', isAdmin: true, uid: fbUser.uid }));
+                localStorage.setItem('modivs_auth_user', JSON.stringify({ email: fem || 'luxmankumar628@gmail.com', name: fbUser.displayName || 'Luxman Kumar', role: 'Admin', roleKey: 'admin', isAdmin: true, uid: fbUser.uid }));
+              } catch (e) { }
+              window.location.replace('/admin');
+            }
+          });
+        } catch (e) { }
+      }
     })();
   </script>
   
@@ -1514,10 +1556,10 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwu7clj6-0ucsj">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwu7clj6-0ucsj">
-  <link rel="stylesheet" href="modivs-dashboard.css?v=mwu7clj6-0ucsj">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwu7clj6-0ucsj">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwu82vjy-zbrja">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwu82vjy-zbrja">
+  <link rel="stylesheet" href="modivs-dashboard.css?v=mwu82vjy-zbrja">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwu82vjy-zbrja">
 </head>
 
 <body class="dash">

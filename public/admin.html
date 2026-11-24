@@ -1607,6 +1607,11 @@
               window.location.replace('/login#login');
             } else {
               try {
+                localStorage.removeItem('modivs_current_student');
+                localStorage.removeItem('modivs_student_req');
+                localStorage.removeItem('modivs_student_account');
+                localStorage.removeItem('modivs_student_form');
+                localStorage.removeItem('modivs_student_lead');
                 localStorage.setItem('modivs_admin_session', JSON.stringify({ email: email || (s && s.email) || '', isAdmin: true }));
                 localStorage.setItem('modivs_auth_user', JSON.stringify({ email: email || (u && u.email) || '', role: 'Admin', name: user.displayName || (u && u.name) || 'Admin', uid: user.uid }));
               } catch (e) { }
@@ -1618,6 +1623,11 @@
             var isSessionAdmin = (s && s.isAdmin === true) || (u && (u.role === 'Admin' || u.roleKey === 'admin'));
             if (isSessionAdmin || (email && ADMIN_EMAILS.indexOf(email) > -1)) {
               try {
+                localStorage.removeItem('modivs_current_student');
+                localStorage.removeItem('modivs_student_req');
+                localStorage.removeItem('modivs_student_account');
+                localStorage.removeItem('modivs_student_form');
+                localStorage.removeItem('modivs_student_lead');
                 localStorage.setItem('modivs_admin_session', JSON.stringify({ email: email || (s && s.email) || '', isAdmin: true }));
                 localStorage.setItem('modivs_auth_user', JSON.stringify({ email: email || (u && u.email) || '', role: 'Admin', name: user.displayName || (u && u.name) || 'Admin', uid: user.uid }));
               } catch (e) { }
@@ -1627,7 +1637,7 @@
       }
     })();
   </script>
-  <script src="modivs.min.js?v=mwu7clj6-0ucsj"></script>
+  <script src="modivs.min.js?v=mwu82vjy-zbrja"></script>
   
   
   <script>function admUnlockCost() { return (window.ModivsWallet && ModivsWallet.getUnlockCost) ? ModivsWallet.getUnlockCost() : 10; }</script>
@@ -1638,9 +1648,9 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwu7clj6-0ucsj">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwu7clj6-0ucsj">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwu7clj6-0ucsj">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwu82vjy-zbrja">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwu82vjy-zbrja">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwu82vjy-zbrja">
 </head>
 
 <body>

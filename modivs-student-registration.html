@@ -465,6 +465,13 @@ function render(){
          gBtn.disabled = true;
          gBtn.textContent = 'Connecting with Google…';
          ModivsAuth.continueWithGoogle('student').then(function(res){
+           var uMail = (res && res.user && res.user.email) ? res.user.email.toLowerCase() : (res.email || '');
+           var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
+           var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function(e){ return e.trim().toLowerCase(); });
+           if (res && (res.role === 'admin' || (uMail && adminEmails.indexOf(uMail) > -1) || uMail === 'luxmankumar628@gmail.com')) {
+             location.replace('/admin');
+             return;
+           }
            if(res.isExisting){
              if(res.role === 'student'){
                location.href = '/student-dashboard';

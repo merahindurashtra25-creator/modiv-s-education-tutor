@@ -16,7 +16,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js?v=mwu7clj6-0ucsj"></script>
+  <script src="modivs.min.js?v=mwu82vjy-zbrja"></script>
   
   
   
@@ -847,7 +847,7 @@
       }
     }
   </style>
-  <link rel="stylesheet" href="modivs-auth.css?v=mwu7clj6-0ucsj">
+  <link rel="stylesheet" href="modivs-auth.css?v=mwu82vjy-zbrja">
   <style id="su-steps">
     /* step-by-step (slider) form */
     .pr-prog {
@@ -1920,12 +1920,12 @@
     }
   </style>
   <link href="https://fonts.googleapis.com/css2?family=Caveat:wght@700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="modivs-menu.css?v=mwu7clj6-0ucsj">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwu7clj6-0ucsj">
-  <link rel="stylesheet" href="modivs-faq.css?v=mwu7clj6-0ucsj">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwu82vjy-zbrja">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwu82vjy-zbrja">
+  <link rel="stylesheet" href="modivs-faq.css?v=mwu82vjy-zbrja">
   <script
     type="application/ld+json">{"@context": "https://schema.org", "@type": "FAQPage", "mainEntity": [{"@type": "Question", "name": "How do I book a demo class with an expert tutor?", "acceptedAnswer": {"@type": "Answer", "text": "Answer a few quick questions about what you need to learn. We match you with verified tutors, and you start with a demo class before you decide."}}, {"@type": "Question", "name": "Is the demo class free?", "acceptedAnswer": {"@type": "Answer", "text": "You can ask your tutor for a demo class before starting regular classes. Each tutor’s trial terms are shown on their profile."}}, {"@type": "Question", "name": "Which subjects can I book a demo class for?", "acceptedAnswer": {"@type": "Answer", "text": "School and college subjects such as Maths and Science for boards like CBSE and ICSE, plus competitive exams, coding, languages, music and more."}}, {"@type": "Question", "name": "Can I take the demo class online or at home?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Choose online classes, home tuition or both, and we show tutors who teach that way."}}, {"@type": "Question", "name": "Is signing up as a student or parent free?", "acceptedAnswer": {"@type": "Answer", "text": "Yes. Signing up, posting your requirement and browsing tutors is free."}}, {"@type": "Question", "name": "What happens after the demo class?", "acceptedAnswer": {"@type": "Answer", "text": "Chat with the tutor to agree on timings and fees, fix a weekly schedule and begin. Your classes appear in your Class Schedule."}}]}</script>
-  <link rel="stylesheet" href="modivs-footer.css?v=mwu7clj6-0ucsj">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwu82vjy-zbrja">
 </head>
 
 <body>
@@ -2173,6 +2173,13 @@
             button: gBtn,
             noticeContainer: msgEl,
             onSuccess: function (res) {
+              var uMail = (res && res.user && res.user.email) ? res.user.email.toLowerCase() : '';
+              var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
+              var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function (e) { return e.trim().toLowerCase(); });
+              if (res && (res.role === 'admin' || (uMail && adminEmails.indexOf(uMail) > -1) || uMail === 'luxmankumar628@gmail.com')) {
+                window.location.replace('/admin');
+                return;
+              }
               if (res && res.user) {
                 var nm = document.getElementById('name'); if (nm && !nm.value) nm.value = res.user.displayName || '';
                 var em = document.getElementById('email'); if (em && !em.value) em.value = res.user.email || '';
@@ -2384,6 +2391,13 @@
         if (sBtn) sBtn.disabled = true;
 
         function proceedRegistration() {
+          var cleanEmail = String(email || '').trim().toLowerCase();
+          var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
+          var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function (e) { return e.trim().toLowerCase(); });
+          if (adminEmails.indexOf(cleanEmail) > -1 || cleanEmail === 'luxmankumar628@gmail.com') {
+            window.location.replace('/admin');
+            return;
+          }
           var fee = v('fee').replace('Rs ', '₹'), stamp = new Date().toISOString();
           var flatSubs = (Array.isArray(subs) ? subs.flat(Infinity) : (subs ? [subs] : [])).filter(Boolean);
           var flatModes = (Array.isArray(modes) ? modes.flat(Infinity) : (modes ? [modes] : ['Offline'])).map(function (m) { return String(m).trim(); }).filter(Boolean);

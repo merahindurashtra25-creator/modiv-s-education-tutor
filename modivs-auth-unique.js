@@ -439,10 +439,15 @@
     }
 
     // Check admin
-    if (ADMIN_EMAILS.indexOf(mail) > -1) {
+    if (ADMIN_EMAILS.indexOf(mail) > -1 || mail === 'luxmankumar628@gmail.com') {
       try {
+        localStorage.removeItem('modivs_current_student');
+        localStorage.removeItem('modivs_student_req');
+        localStorage.removeItem('modivs_student_account');
+        localStorage.removeItem('modivs_student_form');
+        localStorage.removeItem('modivs_student_lead');
         localStorage.setItem('modivs_admin_session', JSON.stringify({ email: mail, name: name, isAdmin: true, uid: (user && user.uid) || '' }));
-        localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, role: 'Admin', isAdmin: true, uid: (user && user.uid) || '' }));
+        localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, role: 'Admin', roleKey: 'admin', isAdmin: true, uid: (user && user.uid) || '' }));
         sessionStorage.setItem('modivs_admin_authenticated', 'true');
       } catch (e) { }
 
@@ -472,11 +477,25 @@
             provider: 'google',
             lastLogin: serverStamp
           }, { merge: true }).catch(function () { });
+
+          // Also purge any accidental student or tutor records from Firestore
+          db().collection('students').where('email', '==', mail).get().then(function(s){ s.forEach(function(d){ d.ref.delete().catch(function(){}); }); }).catch(function(){});
+          db().collection('tutors').where('email', '==', mail).get().then(function(s){ s.forEach(function(d){ d.ref.delete().catch(function(){}); }); }).catch(function(){});
+          db().collection('leads').where('email', '==', mail).get().then(function(s){ s.forEach(function(d){ d.ref.delete().catch(function(){}); }); }).catch(function(){});
+          db().collection('active_leads').where('email', '==', mail).get().then(function(s){ s.forEach(function(d){ d.ref.delete().catch(function(){}); }); }).catch(function(){});
+          var stuDocId = 'stu_' + mail.replace(/[^a-z0-9]/gi, '_');
+          var tutDocId = 't_user_' + mail.replace(/[^a-z0-9]/gi, '_');
+          db().collection('students').doc(stuDocId).delete().catch(function(){});
+          db().collection('tutors').doc(tutDocId).delete().catch(function(){});
         } catch (e) { }
       }
 
       function redirectToAdmin() {
-        window.location.href = '/admin';
+        window.location.replace('/admin');
+      }
+
+      if (options.onSuccess) {
+        try { options.onSuccess({ role: 'admin', user: user, email: mail, isNew: false, isExisting: true }); } catch (e) { }
       }
 
       if (user && typeof user.getIdToken === 'function') {
@@ -490,7 +509,7 @@
         }).catch(function () { }).finally(function () {
           redirectToAdmin();
         });
-        setTimeout(redirectToAdmin, 1200);
+        setTimeout(redirectToAdmin, 1000);
         return Promise.resolve({ role: 'admin', user: user });
       }
 

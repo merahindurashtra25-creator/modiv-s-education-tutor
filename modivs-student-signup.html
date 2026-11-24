@@ -2173,6 +2173,13 @@
             button: gBtn,
             noticeContainer: msgEl,
             onSuccess: function (res) {
+              var uMail = (res && res.user && res.user.email) ? res.user.email.toLowerCase() : '';
+              var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
+              var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function (e) { return e.trim().toLowerCase(); });
+              if (res && (res.role === 'admin' || (uMail && adminEmails.indexOf(uMail) > -1) || uMail === 'luxmankumar628@gmail.com')) {
+                window.location.replace('/admin');
+                return;
+              }
               if (res && res.user) {
                 var nm = document.getElementById('name'); if (nm && !nm.value) nm.value = res.user.displayName || '';
                 var em = document.getElementById('email'); if (em && !em.value) em.value = res.user.email || '';
@@ -2384,6 +2391,13 @@
         if (sBtn) sBtn.disabled = true;
 
         function proceedRegistration() {
+          var cleanEmail = String(email || '').trim().toLowerCase();
+          var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
+          var adminEmails = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function (e) { return e.trim().toLowerCase(); });
+          if (adminEmails.indexOf(cleanEmail) > -1 || cleanEmail === 'luxmankumar628@gmail.com') {
+            window.location.replace('/admin');
+            return;
+          }
           var fee = v('fee').replace('Rs ', '₹'), stamp = new Date().toISOString();
           var flatSubs = (Array.isArray(subs) ? subs.flat(Infinity) : (subs ? [subs] : [])).filter(Boolean);
           var flatModes = (Array.isArray(modes) ? modes.flat(Infinity) : (modes ? [modes] : ['Offline'])).map(function (m) { return String(m).trim(); }).filter(Boolean);

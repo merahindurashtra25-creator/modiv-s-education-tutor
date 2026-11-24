@@ -646,6 +646,8 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
       var lDb = JSON.parse(localStorage.getItem('modivs_active_leads') || '[]').filter(function(l){ return String(l.email||'').trim().toLowerCase() !== cleanMail; });
       localStorage.setItem('modivs_active_leads', JSON.stringify(lDb));
       try {
+        localStorage.removeItem('modivs_current_student');
+        localStorage.removeItem('modivs_student_account');
         localStorage.removeItem('modivs_student_req');
         localStorage.removeItem('modivs_student_form');
         localStorage.removeItem('modivs_student_lead');
