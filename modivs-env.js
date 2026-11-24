@@ -6,9 +6,9 @@
 (function(window){
   'use strict';
   window.__MODIVS_BUILD__ = {
-  "version": "mwuj56xp-yv6iz",
-  "buildTime": "2026-11-24T10:06:25.110Z",
-  "timestamp": 1795514785117
+  "version": "mwuju43n-2gdrm",
+  "buildTime": "2026-11-24T10:25:47.836Z",
+  "timestamp": 1795515947843
 };
   window.__ENV__ = window.__ENV__ || {
   "FIREBASE_API_KEY": "AIzaSyB2I8iFDkcUZJBDBwkALHNeoIR3a9k-fcY",
