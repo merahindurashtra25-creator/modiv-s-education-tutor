@@ -6047,7 +6047,7 @@
           });
         })
           .then(function (res) {
-            if (res && res.success && (res.sentCount > 0 || !res.failedCount)) {
+            if (res && res.success && res.sentCount > 0) {
               toast('✓ Reminder email sent successfully to ' + email + '!');
               if (btnEl) { btnEl.textContent = '✓ Sent!'; btnEl.style.background = '#10b981'; }
             } else if (res && res.failedCount > 0) {
@@ -6055,7 +6055,8 @@
               toast('Could not send email: ' + errMsg);
               if (btnEl) { btnEl.textContent = prevText || '✉ Remind'; btnEl.disabled = false; }
             } else {
-              toast('Result: ' + ((res && res.results && res.results[0] && res.results[0].reason) || 'Processed'));
+              var skipMsg = (res && res.excluded && res.excluded[0] && res.excluded[0].reason) || (res && res.results && res.results[0] && res.results[0].reason) || (res && res.error) || 'Processed';
+              toast('Result: ' + skipMsg);
               if (btnEl) { btnEl.textContent = prevText || '✉ Remind'; btnEl.disabled = false; }
             }
             fetchEmailRemindersData();

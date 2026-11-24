@@ -69,8 +69,11 @@ async function resolveHostIp(host) {
   if (!host || /^\d+\.\d+\.\d+\.\d+$/.test(host)) return host;
   try {
     return await new Promise((resolve) => {
+      const timer = setTimeout(() => resolve(host), 2500);
       dns.lookup(host, { family: 4 }, (err, address) => {
-        resolve(address || host);
+        clearTimeout(timer);
+        if (address) return resolve(address);
+        dns.lookup(host, (err2, address2) => resolve(address2 || host));
       });
     });
   } catch (_) {
@@ -89,7 +92,7 @@ function createSmtpTransporter(opts = {}) {
   let pass = opts.pass || process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
 
   if (!user || !pass) {
-    return null; // Signals simulation mode if credentials not configured
+    return null; // Signals missing credentials if not configured
   }
 
   user = String(user).trim().replace(/^["']|["']$/g, '');
@@ -103,10 +106,10 @@ function createSmtpTransporter(opts = {}) {
     secure: isSecure,
     requireTLS: !isSecure,
     auth: { user, pass },
-    connectionTimeout: 15000,
-    greetingTimeout: 15000,
-    socketTimeout: 20000,
-    dnsTimeout: 15000,
+    connectionTimeout: 8000,
+    greetingTimeout: 8000,
+    socketTimeout: 12000,
+    dnsTimeout: 8000,
     tls: {
       servername: host,
       rejectUnauthorized: false
@@ -297,10 +300,12 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
         error: smtpErr.message
       });
 
-      await accountRef.set({
-        reminderHistory: existingHistory,
-        lastActivityAt: FieldValue.serverTimestamp()
-      }, { merge: true }).catch(() => { });
+      if (hasCredentials && database) {
+        await database.collection('accounts').doc(cleanEmail).set({
+          reminderHistory: existingHistory,
+          lastActivityAt: FieldValue ? FieldValue.serverTimestamp() : new Date().toISOString()
+        }, { merge: true }).catch(() => { });
+      }
 
       throw new Error(`SMTP Delivery Failed: ${smtpErr.message}`);
     }
@@ -797,11 +802,11 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
 
       let mailSuccess = false;
       let errorMessage = null;
+      let messageId = null;
 
       try {
         if (!transporterObj) {
-          console.warn(`[AdminBulk] SMTP not configured. Simulating send to ${item.email}`);
-          mailSuccess = true;
+          errorMessage = 'SMTP credentials (SMTP_USER / SMTP_PASS) are missing in Vercel Environment Variables.';
         } else {
           const loginUrl = `${originUrl || 'https://www.modivs.com'}/login.html`;
           const { subject, html, text } = getAdminBulkReminderTemplate(item.name, item.role, loginUrl);
@@ -828,6 +833,7 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
           const info = await sendMailWithFallback(transporterObj, mailOptions);
           if (info && (info.messageId || (info.accepted && info.accepted.length > 0) || info.simulated)) {
             mailSuccess = true;
+            messageId = info.messageId || null;
           } else {
             errorMessage = 'SMTP did not accept recipient address.';
           }
@@ -870,7 +876,7 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
         } catch (e) { }
       }
 
-      results.push({ email: item.email, status: outcomeStatus, error: errorMessage });
+      results.push({ email: item.email, status: outcomeStatus, messageId, error: errorMessage });
 
       // Polite delay between outbound SMTP calls to prevent throttling
       await new Promise(r => setTimeout(r, 100));
@@ -1026,7 +1032,14 @@ module.exports = async function handler(req, res) {
         const verified = await smtp.transporter.verify();
         return res.status(200).json({ success: true, verified: Boolean(verified), host: smtp.host, port: smtp.port, user: smtp.user });
       } catch (err) {
-        return res.status(200).json({ success: false, error: err.message, code: err.code || 'ESMTP' });
+        try {
+          const fallbackPort = smtp.port === 465 ? 587 : 465;
+          const fb = createSmtpTransporter({ host: smtp.host, port: fallbackPort, resolvedIp: ip });
+          const verifiedFb = fb && await fb.transporter.verify();
+          return res.status(200).json({ success: true, verified: Boolean(verifiedFb), host: fb.host, port: fb.port, user: fb.user, fallbackUsed: true });
+        } catch (fbErr) {
+          return res.status(200).json({ success: false, error: err.message, code: err.code || 'ESMTP', fallbackError: fbErr.message });
+        }
       }
     }
 
