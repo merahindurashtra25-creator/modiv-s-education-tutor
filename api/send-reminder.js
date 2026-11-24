@@ -49,6 +49,14 @@ function checkRateLimit(key, maxLimit = 10, windowMs = 60000) {
   return entry.count <= maxLimit;
 }
 
+// Global safety handler to prevent Vercel node process termination on unhandled rejections
+if (!global.__unhandledRejectionSilencerInstalled) {
+  global.__unhandledRejectionSilencerInstalled = true;
+  process.on('unhandledRejection', (reason) => {
+    console.warn('[send-reminder] Unhandled rejection intercepted:', (reason && reason.message) || reason);
+  });
+}
+
 /**
  * Configure Nodemailer transporter using Gmail SMTP
  */
@@ -56,19 +64,28 @@ function createSmtpTransporter() {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
   const port = Number(process.env.SMTP_PORT) || 465;
   const secure = process.env.SMTP_SECURE === 'false' ? false : (port === 465);
-  const user = process.env.SMTP_USER || process.env.GMAIL_USER || process.env.EMAIL_USER || 'merahindurashtra25@gmail.com';
-  const pass = process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
+  let user = process.env.SMTP_USER || process.env.GMAIL_USER || process.env.EMAIL_USER || 'merahindurashtra25@gmail.com';
+  let pass = process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
 
   if (!user || !pass) {
     return null; // Signals simulation mode if credentials not configured
   }
+
+  user = String(user).trim().replace(/^["']|["']$/g, '');
+  pass = String(pass).trim().replace(/^["']|["']$/g, '');
 
   return {
     transporter: nodemailer.createTransport({
       host,
       port,
       secure,
-      auth: { user, pass }
+      auth: { user, pass },
+      connectionTimeout: 4000,
+      greetingTimeout: 4000,
+      socketTimeout: 6000,
+      tls: {
+        rejectUnauthorized: false
+      }
     }),
     user,
     configured: true
@@ -680,8 +697,14 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
     let sentCount = 0;
     let failedCount = 0;
     const results = [];
+    const startTime = Date.now();
+    const MAX_TIME_MS = 8000; // 8s deadline to avoid Vercel Serverless Function timeout
 
     for (const item of eligible) {
+      if (Date.now() - startTime > MAX_TIME_MS) {
+        console.warn(`[AdminBulk] Approaching execution deadline. Finishing batch with ${sentCount} sent.`);
+        break;
+      }
       const idempotencyKey = `bulk_${campaignId}_${item.email}`;
 
       if (hasCredentials && db) {
@@ -854,6 +877,9 @@ module.exports = async function handler(req, res) {
       return res.status(200).end();
     }
 
+    if (typeof req.body === 'string') {
+      try { req.body = JSON.parse(req.body); } catch (_) { req.body = {}; }
+    }
     const query = req.query || {};
     const body = req.body || {};
 

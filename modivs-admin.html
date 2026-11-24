@@ -6168,7 +6168,11 @@
               return JSON.parse(rawText);
             } catch (jsonErr) {
               if (res.ok) return { success: true, sentCount: selected.length, failedCount: 0, results: [] };
-              throw new Error('Server returned ' + res.status + ': ' + (rawText.slice(0, 120) || 'Unknown error'));
+              var cleanMsg = (rawText || '').replace(/<[^>]*>?/gm, '').trim();
+              if (cleanMsg.indexOf('FUNCTION_INVOCATION_FAILED') !== -1) {
+                cleanMsg = 'Serverless timeout or SMTP host unreachable. Check Vercel SMTP variables.';
+              }
+              throw new Error(cleanMsg.slice(0, 140) || ('HTTP ' + res.status));
             }
           });
         })
