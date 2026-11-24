@@ -357,15 +357,15 @@ function render(){
       localStorage.setItem('modivs_active_leads', JSON.stringify(leadsDb));
 
       // Global Unique Email registration in centralized accounts collection
-      if(window.ModivsAuth && ModivsAuth.registerAccount){
-        ModivsAuth.registerAccount({
-          email: D.email,
-          role: 'student',
-          name: D.regName,
-          phone: D.phone,
-          location: locData
-        }).catch(function(e){ console.warn('registerAccount sync error', e); });
-      }
+      var regAcctPromise = (window.ModivsAuth && ModivsAuth.registerAccount)
+        ? ModivsAuth.registerAccount({
+            email: D.email,
+            role: 'student',
+            name: D.regName,
+            phone: D.phone,
+            location: locData
+          }).catch(function(e){ console.warn('registerAccount sync error', e); })
+        : Promise.resolve();
 
       // Sync to Firebase if connected
       if(window.ModivsFirebaseSync){
@@ -409,16 +409,18 @@ function render(){
           if(!firestore) return;
           var uDoc = Object.assign({}, userDoc, { uid: uid || userDoc.uid });
           if(uDoc.uid) firestore.collection('users').doc(uDoc.uid).set(uDoc, { merge: true }).catch(function(){});
-          firestore.collection('accounts').doc(D.email.toLowerCase()).set({
-            email: D.email.toLowerCase(),
-            name: D.regName,
-            phone: D.phone,
-            city: D.city,
-            location: locData,
-            role: 'student',
-            roleName: 'Student / Parent',
-            updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
-          }, { merge: true }).catch(function(){});
+          regAcctPromise.then(function(){
+            firestore.collection('accounts').doc(D.email.toLowerCase()).set({
+              email: D.email.toLowerCase(),
+              name: D.regName,
+              phone: D.phone,
+              city: D.city,
+              location: locData,
+              role: 'student',
+              roleName: 'Student / Parent',
+              updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+            }, { merge: true }).catch(function(){});
+          });
           firestore.collection('students').doc(studentReq.id).set(studentReq, { merge: true }).catch(function(){});
           firestore.collection('leads').doc(studentReq.id).set(lead, { merge: true }).catch(function(){});
         };

@@ -712,8 +712,19 @@ f.addEventListener('submit',function(e){
 
       var lead=Object.assign({},req,{status:'pending',approval:'pending',free:false,leadBadge:'',approvedAt:'',liveAt:''});
 
-      // Step 2: Direct parallel write without blocking serial transaction
-      var regPromise=Promise.resolve();
+      // Step 2: Register new student account atomically (triggers welcome email once)
+      var isNewAccountPost=!acctState.exists&&!isAuth&&!isCurrentAuthMatching&&Boolean(email);
+      var regPromise=(isNewAccountPost&&window.ModivsAuth&&ModivsAuth.registerAccount)
+        ? ModivsAuth.registerAccount({
+            email:email,
+            role:'student',
+            name:studentName,
+            phone:phone,
+            location:locData,
+            uid:currentUid||'',
+            provider:pass?'password':'requirement'
+          }).catch(function(e){console.warn('registerAccount notice:',e);})
+        : Promise.resolve();
 
       // Always update local session for this student
       try{

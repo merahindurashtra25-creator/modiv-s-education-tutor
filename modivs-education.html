@@ -1114,17 +1114,27 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
               ModivsNotifications.autoPromptPushIfEligible(mail);
             }
           }
-          try {
-            fetch('/api/send-reminder?action=welcome', {
-              method: 'POST',
-              headers: { 'Content-Type': 'application/json' },
-              body: JSON.stringify({ email: mail, role: 'tutor', name: name })
-            }).catch(function(){});
-          } catch(ex){}
-          showJoinDone(name);
+          if (window._mvJoinRegOk) {
+            window._mvJoinRegOk = false;
+            showJoinDone(name);
+            return;
+          }
+          var wp = (window.ModivsAuthUnique && ModivsAuthUnique.sendWelcomeEmail)
+            ? ModivsAuthUnique.sendWelcomeEmail({ email: mail, role: 'tutor', name: name })
+            : Promise.race([
+                fetch('/api/send-reminder?action=welcome', {
+                  method: 'POST',
+                  headers: { 'Content-Type': 'application/json' },
+                  keepalive: true,
+                  body: JSON.stringify({ email: mail, role: 'tutor', name: name })
+                }).catch(function(){}),
+                new Promise(function(r){ setTimeout(r, 3000); })
+              ]);
+          wp.then(function(){ showJoinDone(name); });
         }
+        window._mvJoinRegOk = false;
         if(window.ModivsAuthUnique){
-          ModivsAuthUnique.registerAccountAtomic({ email: mail, role: 'tutor', name: name, uid: uid || '', provider: 'password' }).then(done).catch(function(err){ console.warn(err); done(); });
+          ModivsAuthUnique.registerAccountAtomic({ email: mail, role: 'tutor', name: name, uid: uid || '', provider: 'password' }).then(function(){ window._mvJoinRegOk = true; done(); }).catch(function(err){ console.warn(err); done(); });
         } else {
           try{
             if(!users.some(function(u){ return String(u.email).toLowerCase() === mail; })) users.push({ name: name, email: mail, uid: uid || '', role: 'Tutor', roleKey: 'tutor' });

@@ -369,22 +369,22 @@ module.exports = async function handler(req, res) {
         return { success: true, email, role, displayId };
       });
 
-      // Dispatch welcome email asynchronously for new registrations
+      // Await welcome email delivery before responding so Vercel does not freeze mid-SMTP
       if (regResult && !regResult.exists) {
         try {
           const { sendWelcomeEmailHelper } = require('./send-reminder');
           const proto = req.headers['x-forwarded-proto'] || 'https';
           const host = req.headers.host || '';
           const originUrl = host ? `${proto}://${host}` : '';
-          sendWelcomeEmailHelper({
+          await sendWelcomeEmailHelper({
             email,
             role,
             name,
             displayId: regResult.displayId || '',
             originUrl
-          }).catch(err => console.warn('[auth] Welcome email delivery notice:', err.message));
+          });
         } catch (e) {
-          console.warn('[auth] Welcome email init notice:', e.message);
+          console.warn('[auth] Welcome email delivery notice:', e.message);
         }
       }
 

@@ -305,8 +305,15 @@ module.exports = async function handler(req, res) {
       if (isProfileComplete) {
         accountPatch.nextReminderAt = null;
       }
+      const accRef = db.collection('accounts').doc(cleanEmail);
+      let isNewAccount = false;
       writes.push(
-        db.collection('accounts').doc(cleanEmail).set(accountPatch, { merge: true }).catch(() => { })
+        db.runTransaction(async (tx) => {
+          const snap = await tx.get(accRef);
+          tx.set(accRef, snap.exists ? accountPatch : { ...accountPatch, createdAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+          return !snap.exists;
+        }).then((created) => { isNewAccount = Boolean(created); })
+          .catch(() => accRef.set(accountPatch, { merge: true }).catch(() => { }))
       );
 
       const uid = body.uid || (user && user.uid) || tutorDocId;
@@ -321,6 +328,24 @@ module.exports = async function handler(req, res) {
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).catch(() => { })
       );
+
+      await Promise.all(writes);
+      if (isNewAccount && !isAdmin) {
+        try {
+          const { sendWelcomeEmailHelper } = require('./send-reminder');
+          const originUrl = req.headers.host ? `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}` : '';
+          await sendWelcomeEmailHelper({
+            email: cleanEmail,
+            role: 'tutor',
+            name: updateData.name || '',
+            displayId: updateData.displayId || updateData.tutId || '',
+            originUrl
+          });
+        } catch (e) {
+          console.warn('[tutors] Welcome email delivery notice:', e.message);
+        }
+      }
+      return res.status(200).json({ success: true, message: 'Tutor record stored successfully', tutor: updateData });
     }
 
     await Promise.all(writes);

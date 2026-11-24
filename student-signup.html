@@ -2420,8 +2420,9 @@
             status: 'pending', approval: 'pending', free: false, leadBadge: '', approvedAt: '', liveAt: '', submitted_at: stamp, sent: 'Just now', registered_at: stamp, by: 'Student / Parent'
           };
 
+          var regAcctPromise = Promise.resolve();
           if (window.ModivsAuthUnique) {
-            ModivsAuthUnique.registerAccountAtomic({
+            regAcctPromise = ModivsAuthUnique.registerAccountAtomic({
               email: email,
               role: 'student',
               name: req.name,
@@ -2500,7 +2501,7 @@
             var cleanLead = cleanFn(lead);
             var cleanReq = cleanFn(req);
 
-            var writes = [];
+            var writes = [regAcctPromise];
             if (window.ModivsFirebaseSync) {
               if (typeof ModivsFirebaseSync.saveStudent === 'function') {
                 writes.push(ModivsFirebaseSync.saveStudent(cleanReq).catch(function (e) { console.warn('Sync saveStudent notice:', e); }));
@@ -2531,10 +2532,12 @@
               if (tid) {
                 writes.push(F.collection('demoRequests').doc(req.id).set({ tutorId: tid, studentId: req.id, name: req.name, phone: phone, email: email, subs: flatSubs, city: city, requested_at: stamp }).catch(function () { }));
               }
-              writes.push(F.collection('accounts').doc(email).set(cleanFn({
-                email: email, role: 'student', roleName: 'Student / Parent', name: req.name, phone: phone, location: cleanLoc, city: city, uid: currentUid,
-                updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : stamp
-              }), { merge: true }));
+              writes.push(regAcctPromise.then(function () {
+                return F.collection('accounts').doc(email).set(cleanFn({
+                  email: email, role: 'student', roleName: 'Student / Parent', name: req.name, phone: phone, location: cleanLoc, city: city, uid: currentUid,
+                  updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : stamp
+                }), { merge: true });
+              }));
               if (currentUid) {
                 writes.push(F.collection('users').doc(currentUid).set(cleanFn({
                   uid: currentUid, name: req.name, email: email, phone: phone, city: city, location: cleanLoc, role: 'Student / Parent', roleKey: 'student',

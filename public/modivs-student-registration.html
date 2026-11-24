@@ -12,7 +12,7 @@
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-<script src="modivs.min.js?v=mwv3nw3q-3a422"></script>
+<script src="modivs.min.js?v=mwv5e6fc-uteh0"></script>
 
 
 
@@ -112,9 +112,9 @@ try{var _as=JSON.parse(localStorage.getItem('modivs_admin_session')||'null');var
 
 
 
-<link rel="stylesheet" href="modivs-menu.css?v=mwv3nw3q-3a422">
-<link rel="stylesheet" href="modivs-mobile.css?v=mwv3nw3q-3a422">
-<link rel="stylesheet" href="modivs-footer.css?v=mwv3nw3q-3a422">
+<link rel="stylesheet" href="modivs-menu.css?v=mwv5e6fc-uteh0">
+<link rel="stylesheet" href="modivs-mobile.css?v=mwv5e6fc-uteh0">
+<link rel="stylesheet" href="modivs-footer.css?v=mwv5e6fc-uteh0">
 </head>
 <body>
 <header class="mv-header">
@@ -357,15 +357,15 @@ function render(){
       localStorage.setItem('modivs_active_leads', JSON.stringify(leadsDb));
 
       // Global Unique Email registration in centralized accounts collection
-      if(window.ModivsAuth && ModivsAuth.registerAccount){
-        ModivsAuth.registerAccount({
-          email: D.email,
-          role: 'student',
-          name: D.regName,
-          phone: D.phone,
-          location: locData
-        }).catch(function(e){ console.warn('registerAccount sync error', e); });
-      }
+      var regAcctPromise = (window.ModivsAuth && ModivsAuth.registerAccount)
+        ? ModivsAuth.registerAccount({
+            email: D.email,
+            role: 'student',
+            name: D.regName,
+            phone: D.phone,
+            location: locData
+          }).catch(function(e){ console.warn('registerAccount sync error', e); })
+        : Promise.resolve();
 
       // Sync to Firebase if connected
       if(window.ModivsFirebaseSync){
@@ -409,16 +409,18 @@ function render(){
           if(!firestore) return;
           var uDoc = Object.assign({}, userDoc, { uid: uid || userDoc.uid });
           if(uDoc.uid) firestore.collection('users').doc(uDoc.uid).set(uDoc, { merge: true }).catch(function(){});
-          firestore.collection('accounts').doc(D.email.toLowerCase()).set({
-            email: D.email.toLowerCase(),
-            name: D.regName,
-            phone: D.phone,
-            city: D.city,
-            location: locData,
-            role: 'student',
-            roleName: 'Student / Parent',
-            updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
-          }, { merge: true }).catch(function(){});
+          regAcctPromise.then(function(){
+            firestore.collection('accounts').doc(D.email.toLowerCase()).set({
+              email: D.email.toLowerCase(),
+              name: D.regName,
+              phone: D.phone,
+              city: D.city,
+              location: locData,
+              role: 'student',
+              roleName: 'Student / Parent',
+              updatedAt: (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString()
+            }, { merge: true }).catch(function(){});
+          });
           firestore.collection('students').doc(studentReq.id).set(studentReq, { merge: true }).catch(function(){});
           firestore.collection('leads').doc(studentReq.id).set(lead, { merge: true }).catch(function(){});
         };

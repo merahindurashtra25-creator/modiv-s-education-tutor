@@ -313,8 +313,15 @@ module.exports = async function handler(req, res) {
       if (isProfileComplete) {
         studentAccountPatch.nextReminderAt = null;
       }
+      const accRef = db.collection('accounts').doc(cleanEmail);
+      let isNewAccount = false;
       writes.push(
-        db.collection('accounts').doc(cleanEmail).set(studentAccountPatch, { merge: true }).catch(() => {})
+        db.runTransaction(async (tx) => {
+          const snap = await tx.get(accRef);
+          tx.set(accRef, snap.exists ? studentAccountPatch : { ...studentAccountPatch, createdAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
+          return !snap.exists;
+        }).then((created) => { isNewAccount = Boolean(created); })
+          .catch(() => accRef.set(studentAccountPatch, { merge: true }).catch(() => {}))
       );
 
       const studentUid = body.uid || (user && user.uid) || `s_user_${cleanEmail.replace(/[^a-z0-9]/gi, '_')}`;
@@ -331,6 +338,24 @@ module.exports = async function handler(req, res) {
           updatedAt: admin.firestore.FieldValue.serverTimestamp()
         }, { merge: true }).catch(() => {})
       );
+
+      await Promise.all(writes);
+      if (isNewAccount && !isAdmin) {
+        try {
+          const { sendWelcomeEmailHelper } = require('./send-reminder');
+          const originUrl = req.headers.host ? `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}` : '';
+          await sendWelcomeEmailHelper({
+            email: cleanEmail,
+            role: 'student',
+            name: studentData.name || '',
+            displayId: studentData.displayId || studentData.stuId || '',
+            originUrl
+          });
+        } catch (e) {
+          console.warn('[students] Welcome email delivery notice:', e.message);
+        }
+      }
+      return res.status(200).json({ success: true, student: studentData });
     }
 
     await Promise.all(writes);

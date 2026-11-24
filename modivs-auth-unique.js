@@ -198,6 +198,26 @@
         uid: string (optional)
       }
   */
+  function sendWelcomeEmail(opts) {
+    if (!opts || !opts.email || typeof fetch !== 'function') return Promise.resolve();
+    try {
+      var req = fetch('/api/send-reminder?action=welcome', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        keepalive: true,
+        body: JSON.stringify({
+          email: opts.email,
+          role: opts.role || 'student',
+          name: opts.name || '',
+          displayId: opts.displayId || ''
+        })
+      }).catch(function () { });
+      return Promise.race([req, new Promise(function (resolve) { setTimeout(resolve, 4000); })]);
+    } catch (ex) {
+      return Promise.resolve();
+    }
+  }
+
   function registerAccountAtomic(opts) {
     var mail = normalizeEmail(opts.email);
     var roleKey = normalizeRoleKey(opts.role);
@@ -405,19 +425,13 @@
       }
     }).then(function () {
       syncLocalStorage();
-      try {
-        fetch('/api/send-reminder?action=welcome', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            email: mail,
-            role: roleKey,
-            name: accountData.name,
-            displayId: accountData.displayId || ''
-          })
-        }).catch(function () { });
-      } catch (ex) { }
-      return { success: true, email: mail, role: roleKey, roleName: meta.name, displayId: accountData.displayId || '' };
+      var resObj = { success: true, email: mail, role: roleKey, roleName: meta.name, displayId: accountData.displayId || '' };
+      return sendWelcomeEmail({
+        email: mail,
+        role: roleKey,
+        name: accountData.name,
+        displayId: accountData.displayId || ''
+      }).then(function () { return resObj; });
     });
   }
 
@@ -858,6 +872,7 @@
     checkEmailRole: checkEmailExists,
     registerAccountAtomic: registerAccountAtomic,
     registerAccount: registerAccountAtomic,
+    sendWelcomeEmail: sendWelcomeEmail,
     renderDuplicateNotice: renderDuplicateNotice,
     continueWithGoogle: continueWithGoogle,
     ROLE_META: ROLE_META,
