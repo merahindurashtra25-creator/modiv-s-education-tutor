@@ -940,22 +940,15 @@ module.exports = async function handler(req, res) {
 
     // --- FEATURE: Secure Continuation Token Consumption ---
     if (query.action === 'continue') {
+      const renderContinueError = (pageTitle, heading, msg, href, linkLabel) => `<!DOCTYPE html><html><head><title>${pageTitle} · Modiv’s Education</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:sans-serif;padding:40px;text-align:center;color:#1A2035;background:#FEF7EA;} .card{max-width:480px;margin:40px auto;background:#fff;padding:32px;border-radius:12px;border:1px solid #eadfc9;border-top:4px solid #EBB92E;box-shadow:0 4px 16px rgba(26,32,53,0.06);} h2{color:#1A2035;} a{display:inline-block;margin-top:8px;padding:10px 18px;border-radius:8px;background:#EBB92E;color:#1A2035;font-weight:700;text-decoration:none;}</style></head><body><div class="card"><h2>${heading}</h2><p>${msg}</p><p><a href="${href}">${linkLabel}</a></p></div></body></html>`;
       const rawToken = query.token;
       if (!rawToken) {
-        return res.status(400).send(`
-        <!DOCTYPE html>
-        <html><head><title>Invalid Link · Modiv’s Education</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:sans-serif;padding:40px;text-align:center;color:#1e293b;background:#f8fafc;} .card{max-width:480px;margin:40px auto;background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.06);border:1px solid #e2e8f0;} h2{color:#0b1a30;} a{color:#0f766e;font-weight:700;text-decoration:none;}</style></head>
-        <body><div class="card"><h2>Invalid Link</h2><p>This continuation link is missing a valid security token.</p><p><a href="/index.html">Return to Modiv’s Education Home &rarr;</a></p></div></body></html>
-      `);
+        return res.status(400).send(renderContinueError('Invalid Link', 'Invalid Link', 'This continuation link is missing a valid security token.', '/index.html', 'Return to Modiv’s Education Home &rarr;'));
       }
 
       const consumeResult = await consumeContinuationToken({ rawToken, db, FieldValue });
       if (!consumeResult.valid) {
-        return res.status(403).send(`
-        <!DOCTYPE html>
-        <html><head><title>Link Expired · Modiv’s Education</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:sans-serif;padding:40px;text-align:center;color:#1e293b;background:#f8fafc;} .card{max-width:480px;margin:40px auto;background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.06);border:1px solid #e2e8f0;} h2{color:#0b1a30;} a{color:#0f766e;font-weight:700;text-decoration:none;}</style></head>
-        <body><div class="card"><h2>Link Expired or Already Used</h2><p>${consumeResult.error || 'For security, profile continuation links are single-use and expire after 7 days.'}</p><p><a href="/modivs-education.html#login">Log in to resume your profile &rarr;</a></p></div></body></html>
-      `);
+        return res.status(403).send(renderContinueError('Link Expired', 'Link Expired or Already Used', consumeResult.error || 'For security, profile continuation links are single-use and expire after 7 days.', '/modivs-education.html#login', 'Log in to resume your profile &rarr;'));
       }
 
       const destination = consumeResult.destination || '/index.html';
