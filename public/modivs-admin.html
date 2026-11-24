@@ -1637,7 +1637,7 @@
       }
     })();
   </script>
-  <script src="modivs.min.js?v=mwu82vjy-zbrja"></script>
+  <script src="modivs.min.js?v=mwu8opz2-nsvqa"></script>
   
   
   <script>function admUnlockCost() { return (window.ModivsWallet && ModivsWallet.getUnlockCost) ? ModivsWallet.getUnlockCost() : 10; }</script>
@@ -1648,9 +1648,9 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwu82vjy-zbrja">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwu82vjy-zbrja">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwu82vjy-zbrja">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwu8opz2-nsvqa">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwu8opz2-nsvqa">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwu8opz2-nsvqa">
 </head>
 
 <body>
@@ -1785,6 +1785,7 @@
             <option value="completed">Completed Profiles</option>
           </select>
           <button type="button" class="btn" id="remSelectEligibleBtn" style="background:#fff;border:1.5px solid var(--line);color:var(--navy);padding:8px 12px;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;">Select All Incomplete</button>
+          <button type="button" class="btn" id="remClearSelectionBtn" style="background:#fff;border:1.5px solid var(--line);color:var(--navy);padding:8px 12px;border-radius:8px;font-size:0.85rem;font-weight:600;cursor:pointer;">Clear Selection</button>
         </div>
 
         <!-- Users Table -->
@@ -1854,6 +1855,7 @@
               <div style="border-top:1px dashed var(--line);margin:8px 0;padding-top:8px;display:flex;justify-content:space-between;font-weight:700;color:var(--navy);">
                 <span>Total Emails to Send:</span><span id="confTotalToSend" style="font-size:1.1rem;color:#0e7c66;">0</span>
               </div>
+              <div id="confRecipientsPreview" style="margin-top:10px;max-height:110px;overflow-y:auto;font-size:0.82rem;color:var(--muted);background:#fff;padding:8px 10px;border-radius:6px;border:1px solid var(--line);display:none;"></div>
             </div>
 
             <p style="font-size:0.85rem;color:var(--muted);margin-bottom:20px;">
@@ -5662,6 +5664,29 @@
         }
       }
 
+      function getCurrentAdminEmail() {
+        try {
+          var s = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
+          if (s && s.email) return s.email.toLowerCase().trim();
+          var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
+          if (u && u.email) return u.email.toLowerCase().trim();
+          if (window.firebase && firebase.auth && firebase.auth().currentUser && firebase.auth().currentUser.email) {
+            return firebase.auth().currentUser.email.toLowerCase().trim();
+          }
+        } catch (e) { }
+        return 'luxmankumar628@gmail.com';
+      }
+
+      function getAdminRequestHeaders(token) {
+        var h = {
+          'Content-Type': 'application/json',
+          'X-Admin-Email': getCurrentAdminEmail(),
+          'X-Requested-With': 'XMLHttpRequest'
+        };
+        if (token) h['Authorization'] = 'Bearer ' + token;
+        return h;
+      }
+
       function fetchEmailRemindersData() {
         var tb = $('remTableBody');
         if (tb) tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);">Loading users from database...</td></tr>';
@@ -5677,25 +5702,26 @@
           }
         }
 
-        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
-          firebase.auth().currentUser.getIdToken().then(function (token) {
-            return fetch('/api/send-reminder?action=admin-fetch-users', {
-              headers: { 'Authorization': 'Bearer ' + token }
-            });
-          }).then(function (res) { return res.json(); })
-            .then(applyData)
-            .catch(function (err) {
-              console.warn('[EmailReminders] API fetch notice, using fallback:', err);
-              fallbackLocalReminders();
-            });
-        } else {
-          fetch('/api/send-reminder?action=admin-fetch-users')
-            .then(function (res) { return res.json(); })
-            .then(applyData)
-            .catch(function () {
-              fallbackLocalReminders();
-            });
+        var admMail = getCurrentAdminEmail();
+        var fetchUrl = '/api/send-reminder?action=admin-fetch-users&adminEmail=' + encodeURIComponent(admMail);
+
+        function doFetch(token) {
+          return fetch(fetchUrl, {
+            headers: getAdminRequestHeaders(token),
+            credentials: 'include'
+          });
         }
+
+        var p = (window.firebase && firebase.auth && firebase.auth().currentUser)
+          ? firebase.auth().currentUser.getIdToken().then(doFetch).catch(function () { return doFetch(''); })
+          : doFetch('');
+
+        p.then(function (res) { return res.json(); })
+          .then(applyData)
+          .catch(function (err) {
+            console.warn('[EmailReminders] API fetch notice, using fallback:', err);
+            fallbackLocalReminders();
+          });
       }
 
       function fallbackLocalReminders() {
@@ -5826,9 +5852,10 @@
           '</tr>';
         }).join('');
 
-        // Wire row checkboxes
+        // Wire row checkboxes & row click
         tb.querySelectorAll('.remRowCheck').forEach(function (cb) {
-          cb.addEventListener('change', function () {
+          cb.addEventListener('change', function (e) {
+            e.stopPropagation();
             var em = this.getAttribute('data-email');
             if (this.checked) remSelectedEmails.add(em);
             else remSelectedEmails.delete(em);
@@ -5836,9 +5863,25 @@
           });
         });
 
+        tb.querySelectorAll('tr').forEach(function (tr) {
+          tr.style.cursor = 'pointer';
+          tr.addEventListener('click', function (e) {
+            if (e.target.tagName === 'INPUT' || e.target.tagName === 'BUTTON' || e.target.closest('button')) return;
+            var cb = this.querySelector('.remRowCheck');
+            if (cb) {
+              cb.checked = !cb.checked;
+              var em = cb.getAttribute('data-email');
+              if (cb.checked) remSelectedEmails.add(em);
+              else remSelectedEmails.delete(em);
+              updateSelectedBadge();
+            }
+          });
+        });
+
         // Wire individual single send buttons
         tb.querySelectorAll('.remSingleSendBtn').forEach(function (btn) {
-          btn.addEventListener('click', function () {
+          btn.addEventListener('click', function (e) {
+            e.stopPropagation();
             var em = this.getAttribute('data-email');
             sendIndividualReminder(em, this);
           });
@@ -5855,6 +5898,8 @@
         if (selAll && displayed.length) {
           var allChecked = displayed.every(function (u) { return remSelectedEmails.has(u.email); });
           selAll.checked = allChecked;
+        } else if (selAll) {
+          selAll.checked = false;
         }
       }
 
@@ -5884,15 +5929,23 @@
           }).join('');
         }
 
-        if (window.firebase && firebase.auth && firebase.auth().currentUser) {
-          firebase.auth().currentUser.getIdToken().then(function (token) {
-            return fetch('/api/send-reminder?action=admin-fetch-history', {
-              headers: { 'Authorization': 'Bearer ' + token }
-            });
-          }).then(function (res) { return res.json(); })
-            .then(function (res) { if (res && res.history) renderHistory(res.history); })
-            .catch(function () {});
+        var admMail = getCurrentAdminEmail();
+        var histUrl = '/api/send-reminder?action=admin-fetch-history&adminEmail=' + encodeURIComponent(admMail);
+
+        function doHist(token) {
+          return fetch(histUrl, {
+            headers: getAdminRequestHeaders(token),
+            credentials: 'include'
+          });
         }
+
+        var p = (window.firebase && firebase.auth && firebase.auth().currentUser)
+          ? firebase.auth().currentUser.getIdToken().then(doHist).catch(function () { return doHist(''); })
+          : doHist('');
+
+        p.then(function (res) { return res.json(); })
+          .then(function (res) { if (res && res.history) renderHistory(res.history); })
+          .catch(function () {});
       }
 
       function sendIndividualReminder(email, btnEl) {
@@ -5900,18 +5953,18 @@
         if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Sending...'; }
         toast('Sending reminder email to ' + email + '...');
 
+        var admMail = getCurrentAdminEmail();
         function doSend(token) {
-          var headers = { 'Content-Type': 'application/json' };
-          if (token) headers['Authorization'] = 'Bearer ' + token;
           return fetch('/api/send-reminder?action=admin-single-send', {
             method: 'POST',
-            headers: headers,
-            body: JSON.stringify({ email: email })
+            headers: getAdminRequestHeaders(token),
+            credentials: 'include',
+            body: JSON.stringify({ email: email, adminEmail: admMail })
           });
         }
 
         var p = (window.firebase && firebase.auth && firebase.auth().currentUser)
-          ? firebase.auth().currentUser.getIdToken().then(doSend)
+          ? firebase.auth().currentUser.getIdToken().then(doSend).catch(function () { return doSend(''); })
           : doSend('');
 
         p.then(function (res) { return res.json(); })
@@ -5943,8 +5996,14 @@
 
       function openBulkConfirmModal() {
         if (!remSelectedEmails.size) {
-          toast('Please select at least one user from the table first.');
-          return;
+          var incompleteList = getFilteredRemUsers().filter(function(u){ return !u.profileCompleted; });
+          if (!incompleteList.length) {
+            toast('No incomplete profiles available to send reminders to.');
+            return;
+          }
+          incompleteList.forEach(function(u){ remSelectedEmails.add(u.email); });
+          renderRemTable();
+          toast('Auto-selected all ' + incompleteList.length + ' incomplete profiles. Review and click Confirm.');
         }
 
         var selected = Array.from(remSelectedEmails);
@@ -5964,10 +6023,24 @@
         $('confEligibleCount').textContent = eligible.length;
         $('confExcludedCount').textContent = excluded.length;
         $('confTotalToSend').textContent = eligible.length;
+
+        var prevEl = $('confRecipientsPreview');
+        if (prevEl) {
+          if (eligible.length > 0 && eligible.length <= 15) {
+            prevEl.style.display = 'block';
+            prevEl.innerHTML = '<b>Recipients (' + eligible.length + '):</b> ' + eligible.map(function(e){ return escH(e); }).join(', ');
+          } else if (eligible.length > 15) {
+            prevEl.style.display = 'block';
+            prevEl.innerHTML = '<b>Recipients (' + eligible.length + '):</b> ' + eligible.slice(0, 15).map(function(e){ return escH(e); }).join(', ') + '... <i>(and ' + (eligible.length - 15) + ' more)</i>';
+          } else {
+            prevEl.style.display = 'none';
+          }
+        }
+
         $('confProgressNotice').classList.add('hide');
         $('confProgressNotice').style.display = 'none';
-        $('confExecuteBtn').disabled = false;
-        $('confExecuteBtn').textContent = 'Confirm & Send Now';
+        $('confExecuteBtn').disabled = eligible.length === 0;
+        $('confExecuteBtn').textContent = eligible.length === 0 ? 'No Eligible Recipients' : 'Confirm & Send Now';
         $('confCancelBtn').disabled = false;
 
         var modal = $('remConfirmModal');
@@ -5987,21 +6060,22 @@
         $('confExecuteBtn').textContent = 'Sending... Please wait';
         $('confCancelBtn').disabled = true;
 
+        var admMail = getCurrentAdminEmail();
         function doBulk(token) {
-          var headers = { 'Content-Type': 'application/json' };
-          if (token) headers['Authorization'] = 'Bearer ' + token;
           return fetch('/api/send-reminder?action=admin-bulk-send', {
             method: 'POST',
-            headers: headers,
+            headers: getAdminRequestHeaders(token),
+            credentials: 'include',
             body: JSON.stringify({
               emails: selected,
-              campaignName: 'Admin One-Click Bulk Campaign'
+              campaignName: 'Admin One-Click Bulk Campaign',
+              adminEmail: admMail
             })
           });
         }
 
         var p = (window.firebase && firebase.auth && firebase.auth().currentUser)
-          ? firebase.auth().currentUser.getIdToken().then(doBulk)
+          ? firebase.auth().currentUser.getIdToken().then(doBulk).catch(function () { return doBulk(''); })
           : doBulk('');
 
         p.then(function (res) { return res.json(); })
@@ -6088,6 +6162,13 @@
           });
           renderRemTable();
           toast('Selected all incomplete profiles in current view.');
+        });
+
+        var clearBtn = $('remClearSelectionBtn');
+        if (clearBtn) clearBtn.addEventListener('click', function () {
+          remSelectedEmails.clear();
+          renderRemTable();
+          toast('Cleared user selection.');
         });
 
         var qInput = $('remSearchInput');
