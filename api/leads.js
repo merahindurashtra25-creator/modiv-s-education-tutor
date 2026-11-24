@@ -8,7 +8,7 @@
  * - DELETE: Remove or archive lead records
  */
 
-const { admin, db, auth, hasCredentials } = require('./_firebase');
+const { admin, db, auth, hasCredentials, restFetchCollection, restFetchDocument } = require('./_firebase');
 const { verifyAuth, checkCsrf, normalizeEmail, MASTER_ADMIN_EMAILS } = require('./_auth');
 
 // Per-inquiry unlock rate set by the admin on the lead itself (leads/{id}.unlockCost). Falls back to the global rate.
@@ -36,7 +36,26 @@ module.exports = async function handler(req, res) {
 
     if (!hasCredentials) {
       if (req.method === 'GET') {
-        return res.status(200).json({ success: true, leads: [] });
+        const { id, email, uid, limit = 100 } = req.query || {};
+        if (id) {
+          let lead = await restFetchDocument('leads', id);
+          if (!lead) lead = await restFetchDocument('students', id);
+          if (lead) return res.status(200).json({ lead });
+          return res.status(404).json({ error: 'Lead not found' });
+        }
+        let list = await restFetchCollection('leads', { limit: Number(limit) || 100 });
+        if (!list.length) {
+          list = await restFetchCollection('students', { limit: Number(limit) || 100 });
+        }
+        if (email) {
+          const em = String(email).trim().toLowerCase();
+          list = list.filter(l => String(l.email || l.studentEmail || '').toLowerCase() === em);
+        }
+        if (uid) {
+          const u = String(uid).trim();
+          list = list.filter(l => String(l.uid || l.studentUid || '').trim() === u);
+        }
+        return res.status(200).json({ success: true, leads: list });
       }
       return res.status(200).json({ success: true, message: 'Server credentials not configured; client-side Firestore handles operations.' });
     }

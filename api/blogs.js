@@ -1,4 +1,4 @@
-const { admin, db, hasCredentials } = require('./_firebase');
+const { admin, db, hasCredentials, restFetchCollection, restFetchDocument } = require('./_firebase');
 const { verifyAuth, checkCsrf } = require('./_auth');
 
 function toSlug(t) {
@@ -15,7 +15,20 @@ module.exports = async function handler(req, res) {
 
   if (!hasCredentials) {
     if (req.method === 'GET') {
-      return res.status(200).json({ success: true, blogs: [] });
+      const { id, slug, limit = 50 } = req.query || {};
+      if (id) {
+        const blog = await restFetchDocument('blogs', id);
+        if (blog) return res.status(200).json({ blog });
+        return res.status(404).json({ error: 'Blog not found' });
+      }
+      let list = await restFetchCollection('blogs', { limit: Number(limit) || 50 });
+      if (slug) {
+        const s = String(slug).toLowerCase();
+        const found = list.find(b => String(b.slug || b.id || '').toLowerCase() === s);
+        if (found) return res.status(200).json({ blog: found });
+        return res.status(404).json({ error: 'Blog not found' });
+      }
+      return res.status(200).json({ success: true, blogs: list });
     }
     return res.status(200).json({ success: true, message: 'Server credentials not configured' });
   }

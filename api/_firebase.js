@@ -6,6 +6,7 @@
  */
 
 const { admin, db, auth, FieldValue, hasCredentials, getFirebaseAdminApp } = require('../lib/firebase-admin');
+const { restFetchCollection, restFetchDocument } = require('../lib/firestore-rest');
 
 const app = getFirebaseAdminApp();
 
@@ -32,4 +33,4 @@ async function sendPushNotification(recipientEmail, { title, body, actionUrl, ta
   } catch (e) {}
 }
 
-module.exports = { admin, db, auth, messaging, sendPushNotification, FieldValue, hasCredentials };
+module.exports = { admin, db, auth, messaging, sendPushNotification, FieldValue, hasCredentials, restFetchCollection, restFetchDocument };

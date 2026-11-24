@@ -7,7 +7,7 @@
  * - Authenticated tutor profile updates and verification status management
  */
 
-const { admin, db, auth, hasCredentials } = require('./_firebase');
+const { admin, db, auth, hasCredentials, restFetchCollection, restFetchDocument } = require('./_firebase');
 const { verifyAuth, checkCsrf, normalizeEmail, MASTER_ADMIN_EMAILS } = require('./_auth');
 
 module.exports = async function handler(req, res) {
@@ -18,7 +18,37 @@ module.exports = async function handler(req, res) {
 
     if (!hasCredentials) {
       if (req.method === 'GET') {
-        return res.status(200).json({ success: true, tutors: [] });
+        const { id, slug, city, subject, email, limit = 50 } = req.query || {};
+        if (id) {
+          const doc = await restFetchDocument('tutors', id);
+          if (doc) return res.status(200).json({ tutor: doc });
+          return res.status(404).json({ error: 'Tutor not found' });
+        }
+        let list = await restFetchCollection('tutors', { limit: Number(limit) || 100 });
+        if (email) {
+          const em = String(email).trim().toLowerCase();
+          const found = list.find(t => String(t.email || '').toLowerCase() === em);
+          if (found) return res.status(200).json({ tutor: found });
+          return res.status(404).json({ error: 'Tutor not found' });
+        }
+        if (slug) {
+          const s = String(slug).toLowerCase();
+          const found = list.find(t => String(t.slug || t.id || t.displayId || '').toLowerCase() === s);
+          if (found) return res.status(200).json({ tutor: found });
+          return res.status(404).json({ error: 'Tutor not found' });
+        }
+        if (city) {
+          const c = String(city).trim().toLowerCase();
+          list = list.filter(t => String(t.city || '').toLowerCase() === c);
+        }
+        if (subject) {
+          const sub = String(subject).trim().toLowerCase();
+          list = list.filter(t => {
+            const subs = Array.isArray(t.subjects) ? t.subjects : String(t.subjects || '').split(',');
+            return subs.some(s => s.trim().toLowerCase().includes(sub));
+          });
+        }
+        return res.status(200).json({ success: true, tutors: list });
       }
       return res.status(200).json({ success: true, message: 'Server credentials not configured; client-side Firestore handles operations.' });
     }
