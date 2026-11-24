@@ -127,6 +127,20 @@
     return best;
   }
 
+  function findCityCoords(query) {
+    if (!query) return { lat: 30.7333, lon: 76.7794, city: 'Chandigarh', state: 'Chandigarh', country: 'India' };
+    var q = String(query).trim().toLowerCase();
+    for (var i = 0; i < CITIES_DB.length; i++) {
+      if (CITIES_DB[i].city.toLowerCase() === q) return CITIES_DB[i];
+    }
+    for (var j = 0; j < CITIES_DB.length; j++) {
+      if (q.indexOf(CITIES_DB[j].city.toLowerCase()) > -1 || CITIES_DB[j].city.toLowerCase().indexOf(q) > -1) {
+        return CITIES_DB[j];
+      }
+    }
+    return { lat: 30.7333, lon: 76.7794, city: query, state: 'Punjab', country: 'India' };
+  }
+
   function fetchWithTimeout(url, ms) {
     ms = ms || 3500;
     if (typeof AbortController === 'undefined') {
@@ -854,12 +868,6 @@
 
   // Detect current location using browser Geolocation API
   function detectCurrentLocation(callback, triggerBtn) {
-    if (!navigator.geolocation) {
-      alert('Geolocation is not supported by your browser. Please type your city.');
-      if (callback) callback(null);
-      return;
-    }
-
     var originalHTML = '';
     if (triggerBtn) {
       originalHTML = triggerBtn.innerHTML;
@@ -867,24 +875,62 @@
       triggerBtn.innerHTML = '<span class="loc-spinner"></span> <span>Detecting…</span>';
     }
 
+    function resetBtn() {
+      if (triggerBtn) {
+        triggerBtn.disabled = false;
+        triggerBtn.innerHTML = originalHTML;
+      }
+    }
+
+    function fallbackResolution() {
+      var activeCity = (document.getElementById('city') && document.getElementById('city').value) ||
+                        (document.getElementById('mvLocSearchInput') && document.getElementById('mvLocSearchInput').value) ||
+                        (document.getElementById('mvManualCity') && document.getElementById('mvManualCity').value) ||
+                        'Chandigarh';
+      var coords = findCityCoords(activeCity);
+      var fallbackLoc = {
+        city: coords.city || activeCity,
+        state: coords.state || 'Punjab',
+        country: coords.country || 'India',
+        area: (document.getElementById('area') && document.getElementById('area').value) || '',
+        formattedAddress: [coords.city || activeCity, coords.state || 'Punjab', 'India'].filter(Boolean).join(', '),
+        latitude: coords.lat || 30.7333,
+        longitude: coords.lon || 76.7794,
+        osmId: null,
+        osmType: null
+      };
+      resetBtn();
+      if (callback) callback(fallbackLoc);
+    }
+
+    if (!navigator.geolocation) {
+      fallbackResolution();
+      return;
+    }
+
+    var handled = false;
+    var timer = setTimeout(function () {
+      if (!handled) {
+        handled = true;
+        fallbackResolution();
+      }
+    }, 8000);
+
     navigator.geolocation.getCurrentPosition(
       function (pos) {
+        if (handled) return;
+        handled = true;
+        clearTimeout(timer);
         var lat = pos.coords.latitude;
         var lon = pos.coords.longitude;
         reverseGeocode(lat, lon)
           .then(function (loc) {
-            if (triggerBtn) {
-              triggerBtn.disabled = false;
-              triggerBtn.innerHTML = originalHTML;
-            }
+            resetBtn();
             if (callback) callback(loc);
           })
           .catch(function (err) {
             console.warn('Reverse geocode fallback:', err);
-            if (triggerBtn) {
-              triggerBtn.disabled = false;
-              triggerBtn.innerHTML = originalHTML;
-            }
+            resetBtn();
             var nearest = findNearestCity(lat, lon) || { city: 'Chandigarh', state: 'Chandigarh', country: 'India' };
             var full = [nearest.city, nearest.state, nearest.country].filter(Boolean).join(', ');
             var fallbackLoc = {
@@ -902,17 +948,13 @@
           });
       },
       function (err) {
+        if (handled) return;
+        handled = true;
+        clearTimeout(timer);
         console.warn('Geolocation access notice:', err);
-        if (triggerBtn) {
-          triggerBtn.disabled = false;
-          triggerBtn.innerHTML = originalHTML;
-        }
-        var msg = 'Location access was not granted. Please search and select your city manually.';
-        if (err.code === 1) msg = 'Location permission was denied. Please select your city from the search box.';
-        alert(msg);
-        if (callback) callback(null);
+        fallbackResolution();
       },
-      { enableHighAccuracy: true, timeout: 12000, maximumAge: 60000 }
+      { enableHighAccuracy: false, timeout: 7000, maximumAge: 300000 }
     );
   }
 
@@ -1040,11 +1082,15 @@
       var cVal = (manualCity ? manualCity.value.trim() : '') || (getTargetInput(options.cityInputId || options.cityInput) ? getTargetInput(options.cityInputId || options.cityInput).value : '');
       var aVal = (manualArea ? manualArea.value.trim() : '') || (getTargetInput(options.areaInputId || options.areaInput) ? getTargetInput(options.areaInputId || options.areaInput).value : '');
       if (cVal || aVal) {
+        var coords = findCityCoords(cVal || 'Chandigarh');
         var loc = {
           city: cVal,
           area: aVal,
-          country: 'India',
-          formattedAddress: [aVal, cVal].filter(Boolean).join(', ')
+          state: coords.state || '',
+          country: coords.country || 'India',
+          latitude: coords.lat,
+          longitude: coords.lon,
+          formattedAddress: [aVal, cVal, coords.state, coords.country].filter(Boolean).join(', ')
         };
         applyLocation(loc, false);
       }
@@ -1151,7 +1197,9 @@
     reverseGeocode: reverseGeocode,
     detectCurrentLocation: detectCurrentLocation,
     attachLocationPicker: attachLocationPicker,
-    formatLocationForSave: formatLocationForSave
+    formatLocationForSave: formatLocationForSave,
+    findCityCoords: findCityCoords,
+    CITIES_DB: CITIES_DB
   };
 
   // Replace legacy ModivsLocation with OpenStreetMap Photon engine
@@ -1160,7 +1208,9 @@
     detectCurrentLocation: detectCurrentLocation,
     reverseGeocode: reverseGeocode,
     attachLocationPicker: attachLocationPicker,
-    formatLocationForSave: formatLocationForSave
+    formatLocationForSave: formatLocationForSave,
+    findCityCoords: findCityCoords,
+    CITIES_DB: CITIES_DB
   };
 
 })(window);

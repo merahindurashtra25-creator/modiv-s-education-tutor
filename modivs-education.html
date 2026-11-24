@@ -1486,12 +1486,22 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
           label: 'Your GPS location (required)',
           onLocationChange: function(loc){
             var prev = W.location || {};
-            if(loc && typeof loc.latitude !== 'number' && typeof loc.lat !== 'number' && (typeof prev.latitude === 'number' || typeof prev.lat === 'number')){
-              loc = Object.assign({}, loc, { latitude: prev.latitude != null ? prev.latitude : prev.lat, longitude: prev.longitude != null ? prev.longitude : prev.lng });
+            var lat = loc && (loc.latitude != null ? loc.latitude : loc.lat);
+            var lon = loc && (loc.longitude != null ? loc.longitude : loc.lng);
+            if(lat == null && prev.latitude != null) lat = prev.latitude;
+            if(lon == null && prev.longitude != null) lon = prev.longitude;
+            var numLat = Number(lat);
+            var numLng = Number(lon);
+            if(!isFinite(numLat) || !isFinite(numLng)){
+              var cCoords = (window.ModivsLocation && typeof ModivsLocation.findCityCoords === 'function')
+                ? ModivsLocation.findCityCoords((loc && loc.city) || W.city)
+                : { lat: 30.7333, lon: 76.7794 };
+              numLat = cCoords.lat;
+              numLng = cCoords.lon;
             }
-            W.location = loc;
-            if(loc.city) W.city = loc.city;
-            if(loc.area) W.area = loc.area;
+            W.location = Object.assign({}, loc, { latitude: numLat, longitude: numLng });
+            if(loc && loc.city) W.city = loc.city;
+            if(loc && loc.area) W.area = loc.area;
           }
         });
         var hlp = document.querySelector('#tutorLocPicker .mv-loc-helper span'); if(hlp) hlp.textContent = 'GPS location is required. City and area are optional.';
@@ -1533,7 +1543,32 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
       W.phone = getPhone('phone'); W.altPhone = getPhone('altPhone'); W.waSame = !!(w && w.checked); W.whatsapp = W.waSame ? W.phone : getPhone('whatsapp');
     }
     if(pg === 'loc'){
-      W.city = ModivsPlaces.canon('city', tv('city')); W.area = ModivsPlaces.canon('area', tv('area'), W.city);
+      W.city = ModivsPlaces.canon('city', tv('city'));
+      W.area = ModivsPlaces.canon('area', tv('area'), W.city);
+      var L = W.location || {};
+      var numLat = Number(L.latitude != null ? L.latitude : L.lat);
+      var numLng = Number(L.longitude != null ? L.longitude : L.lng);
+      var hasCoords = isFinite(numLat) && isFinite(numLng) && (numLat !== 0 || numLng !== 0);
+      var cName = W.city || tv('city') || (L && L.city) || tv('mvLocSearchInput') || tv('mvManualCity') || 'Chandigarh';
+      if(!hasCoords){
+        var cCoords = (window.ModivsLocation && typeof ModivsLocation.findCityCoords === 'function')
+          ? ModivsLocation.findCityCoords(cName)
+          : { lat: 30.7333, lon: 76.7794 };
+        W.location = Object.assign({}, L, {
+          city: W.city || cName,
+          area: W.area || '',
+          country: 'India',
+          latitude: cCoords.lat || 30.7333,
+          longitude: cCoords.lon || 76.7794
+        });
+      } else {
+        W.location = Object.assign({}, L, {
+          city: W.city || cName,
+          area: W.area || '',
+          latitude: numLat,
+          longitude: numLng
+        });
+      }
     }
     if(pg === 'personal'){
       W.gender = tv('gender'); W.dob = tv('dob');
@@ -1579,8 +1614,25 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
     }
     if(pg === 'loc'){
       var L = W.location || {};
-      var hasGps = (typeof L.latitude === 'number' && typeof L.longitude === 'number') || (typeof L.lat === 'number' && typeof L.lng === 'number');
-      if(!hasGps) return tfail('mvLocBtn', 'Please share your GPS location: tap “Use Current Location” (or search and pick your place on the map).');
+      var numLat = Number(L.latitude != null ? L.latitude : L.lat);
+      var numLng = Number(L.longitude != null ? L.longitude : L.lng);
+      var hasGps = isFinite(numLat) && isFinite(numLng) && (numLat !== 0 || numLng !== 0);
+      var hasCity = Boolean(W.city || tv('city') || (L && L.city) || tv('mvLocSearchInput') || tv('mvManualCity'));
+      if(!hasGps && hasCity){
+        var cName = W.city || tv('city') || (L && L.city) || tv('mvLocSearchInput') || tv('mvManualCity');
+        var cCoords = (window.ModivsLocation && typeof ModivsLocation.findCityCoords === 'function')
+          ? ModivsLocation.findCityCoords(cName)
+          : { lat: 30.7333, lon: 76.7794 };
+        W.location = Object.assign({}, L, {
+          city: W.city || cName,
+          area: W.area || '',
+          country: 'India',
+          latitude: cCoords.lat || 30.7333,
+          longitude: cCoords.lon || 76.7794
+        });
+        hasGps = true;
+      }
+      if(!hasGps && !hasCity) return tfail('mvLocBtn', 'Please choose your city or tap “Use Current Location”.');
     }
     if(pg === 'personal'){
       if(!W.gender) return tfail('gender', 'Select your gender.');

@@ -10,7 +10,7 @@
  */
 
 const nodemailer = require('nodemailer');
-const { admin, db, FieldValue } = require('../lib/firebase-admin');
+const { admin, db, FieldValue, hasCredentials, restFetchCollection } = require('./_firebase');
 const { getEmailTemplate, getWelcomeEmailTemplate, getAdminBulkReminderTemplate } = require('../lib/email-templates');
 const {
   generateContinuationToken,
@@ -463,6 +463,90 @@ async function handleAdminFetchUsers({ req, res, user, db, FieldValue }) {
       });
     } catch (e) {
       console.warn('[handleAdminFetchUsers] Tutors query notice:', e.message);
+    }
+
+    // 4. REST fallback if Admin SDK has no credentials or returned 0 users
+    if (!hasCredentials || usersMap.size === 0) {
+      try {
+        const [restAccs, restStudents, restTutors] = await Promise.all([
+          restFetchCollection('accounts', { limit: 200 }).catch(() => []),
+          restFetchCollection('students', { limit: 200 }).catch(() => []),
+          restFetchCollection('tutors', { limit: 200 }).catch(() => [])
+        ]);
+
+        (restAccs || []).forEach(data => {
+          const email = String(data.id || data.email || '').trim().toLowerCase();
+          if (email && !MASTER_ADMIN_EMAILS.includes(email) && !usersMap.has(email)) {
+            const isComplete = Boolean(data.profileCompleted === true || data.profileStatus === 'completed' || data.status === 'approved' || data.approval === 'approved');
+            usersMap.set(email, {
+              email,
+              uid: data.uid || '',
+              name: data.name || data.displayName || email.split('@')[0],
+              role: data.role || 'user',
+              profileCompleted: isComplete,
+              profileStatus: isComplete ? 'completed' : 'incomplete',
+              createdAt: data.createdAt || null,
+              lastReminderSentAt: data.lastReminderSentAt || null,
+              reminderCount: Number(data.reminderCount) || 0,
+              emailStatus: data.lastEmailStatus || (data.lastReminderSentAt ? 'sent' : 'not_sent')
+            });
+          }
+        });
+
+        (restStudents || []).forEach(data => {
+          const email = String(data.email || '').trim().toLowerCase();
+          if (email && !MASTER_ADMIN_EMAILS.includes(email)) {
+            const isComplete = Boolean(data.profileCompleted === true || data.status === 'approved' || (data.cls && (data.subs || data.subjects)));
+            if (usersMap.has(email)) {
+              const u = usersMap.get(email);
+              u.role = 'student';
+              if (data.name) u.name = data.name;
+              if (isComplete) { u.profileCompleted = true; u.profileStatus = 'completed'; }
+            } else {
+              usersMap.set(email, {
+                email,
+                uid: data.uid || data.id,
+                name: data.name || data.studentName || email.split('@')[0],
+                role: 'student',
+                profileCompleted: isComplete,
+                profileStatus: isComplete ? 'completed' : 'incomplete',
+                createdAt: data.createdAt || data.registered_at || null,
+                lastReminderSentAt: data.lastReminderSentAt || null,
+                reminderCount: Number(data.reminderCount) || 0,
+                emailStatus: data.lastEmailStatus || (data.lastReminderSentAt ? 'sent' : 'not_sent')
+              });
+            }
+          }
+        });
+
+        (restTutors || []).forEach(data => {
+          const email = String(data.email || '').trim().toLowerCase();
+          if (email && !MASTER_ADMIN_EMAILS.includes(email)) {
+            const isComplete = Boolean(data.profileCompleted === true || data.status === 'approved' || data.approval === 'approved');
+            if (usersMap.has(email)) {
+              const u = usersMap.get(email);
+              u.role = 'tutor';
+              if (data.name) u.name = data.name;
+              if (isComplete) { u.profileCompleted = true; u.profileStatus = 'completed'; }
+            } else {
+              usersMap.set(email, {
+                email,
+                uid: data.uid || data.id,
+                name: data.name || data.tutorName || email.split('@')[0],
+                role: 'tutor',
+                profileCompleted: isComplete,
+                profileStatus: isComplete ? 'completed' : 'incomplete',
+                createdAt: data.createdAt || data.submitted_at || null,
+                lastReminderSentAt: data.lastReminderSentAt || null,
+                reminderCount: Number(data.reminderCount) || 0,
+                emailStatus: data.lastEmailStatus || (data.lastReminderSentAt ? 'sent' : 'not_sent')
+              });
+            }
+          }
+        });
+      } catch (restErr) {
+        console.warn('[handleAdminFetchUsers] REST query notice:', restErr.message);
+      }
     }
 
     const usersList = Array.from(usersMap.values());

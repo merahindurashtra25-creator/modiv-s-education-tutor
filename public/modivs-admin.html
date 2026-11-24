@@ -1637,7 +1637,7 @@
       }
     })();
   </script>
-  <script src="modivs.min.js?v=mwudrk1u-32nyv"></script>
+  <script src="modivs.min.js?v=mwufxryy-nk18z"></script>
   
   
   <script>function admUnlockCost() { return (window.ModivsWallet && ModivsWallet.getUnlockCost) ? ModivsWallet.getUnlockCost() : 10; }</script>
@@ -1648,9 +1648,9 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwudrk1u-32nyv">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwudrk1u-32nyv">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwudrk1u-32nyv">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwufxryy-nk18z">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwufxryy-nk18z">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwufxryy-nk18z">
 </head>
 
 <body>
@@ -4497,9 +4497,16 @@
           });
         } else {
           var incBox = el('div', '');
-          incBox.style.cssText = 'background:#f8f9fa;border:1.5px dashed var(--muted);border-radius:10px;padding:12px 14px;margin:14px 0;';
+          incBox.style.cssText = 'background:#f8f9fa;border:1.5px dashed var(--muted);border-radius:10px;padding:14px;margin:14px 0;';
           incBox.appendChild(el('b', '', 'Account Status: Profile Incomplete'));
           incBox.appendChild(el('p', 'sub', 'This tutor registered on the platform but has not yet completed all steps of the profile creation and document submission wizard.'));
+          var remBtn = el('button', 'btn primary', '✉ Send Reminder Email Direct (1-Click)');
+          remBtn.type = 'button';
+          remBtn.style.cssText = 'margin-top:10px;display:inline-flex;align-items:center;gap:6px;font-size:0.88rem;cursor:pointer;';
+          remBtn.addEventListener('click', function () {
+            sendIndividualReminder(x.email, remBtn);
+          });
+          incBox.appendChild(remBtn);
           d.appendChild(incBox);
         }
 
@@ -5692,9 +5699,18 @@
         if (tb) tb.innerHTML = '<tr><td colspan="9" style="text-align:center;padding:30px;color:var(--muted);">Loading users from database...</td></tr>';
 
         function applyData(data) {
-          if (data && data.success && Array.isArray(data.users)) {
+          if (data && data.success && Array.isArray(data.users) && data.users.length > 0) {
             remUsers = data.users || [];
-            remStats = data.stats;
+            mergeLocalReminders(remUsers);
+            var comp = remUsers.filter(function (u) { return u.profileCompleted; }).length;
+            remStats = {
+              totalRegistered: remUsers.length,
+              completedProfiles: comp,
+              incompleteProfiles: remUsers.length - comp,
+              pendingReminders: remUsers.filter(function (u) { return !u.profileCompleted && (u.reminderCount || 0) < 3; }).length,
+              sentEmails: remUsers.reduce(function (a, b) { return a + (b.reminderCount || 0); }, 0),
+              failedEmails: (data.stats && data.stats.failedEmails) || 0
+            };
             renderRemStats(remStats);
             renderRemTable();
           } else {
@@ -5724,58 +5740,114 @@
           });
       }
 
-      function fallbackLocalReminders() {
-        var map = new Map();
-        (students || []).forEach(function (s) {
-          var em = String(s.email || '').trim().toLowerCase();
-          if (em && !em.includes('luxmankumar628') && !em.includes('happinessaggarwal') && !em.includes('divyanshdhiman')) {
-            var isComp = Boolean(s.approval === 'approved' || s.status === 'approved' || (s.cls && (s.subs || s.subjects)));
-            map.set(em, {
-              email: em,
-              name: s.name || s.studentName || em.split('@')[0],
-              role: 'student',
-              profileCompleted: isComp,
-              profileStatus: isComp ? 'completed' : 'incomplete',
-              createdAt: s.registered_at || s.sent || null,
-              lastReminderSentAt: s.lastReminderSentAt || null,
-              reminderCount: Number(s.reminderCount) || 0,
-              emailStatus: s.lastEmailStatus || (s.lastReminderSentAt ? 'sent' : 'not_sent')
-            });
-          }
-        });
-        (tutors || []).forEach(function (t) {
-          var em = String(t.email || '').trim().toLowerCase();
-          if (em && !em.includes('luxmankumar628') && !em.includes('happinessaggarwal') && !em.includes('divyanshdhiman')) {
-            var isComp = Boolean(t.status === 'approved' || t.approval === 'approved' || cntCompleted([t]) > 0);
-            if (map.has(em)) {
-              var u = map.get(em);
-              u.role = 'tutor';
-              if (t.name) u.name = t.name;
-              if (isComp) { u.profileCompleted = true; u.profileStatus = 'completed'; }
-            } else {
-              map.set(em, {
-                email: em,
-                name: t.name || t.tutorName || em.split('@')[0],
-                role: 'tutor',
-                profileCompleted: isComp,
-                profileStatus: isComp ? 'completed' : 'incomplete',
-                createdAt: t.registered_at || null,
-                lastReminderSentAt: t.lastReminderSentAt || null,
-                reminderCount: Number(t.reminderCount) || 0,
-                emailStatus: t.lastEmailStatus || (t.lastReminderSentAt ? 'sent' : 'not_sent')
-              });
+      function mergeLocalReminders(targetList) {
+        var existingEmails = new Set((targetList || []).map(function(u){ return String(u.email||'').trim().toLowerCase(); }));
+        var adminMails = ['luxmankumar628', 'happinessaggarwal', 'divyanshdhiman'];
+        function isAdmin(em) { return adminMails.some(function(m){ return em.indexOf(m) > -1; }); }
+
+        // Check modivs_users (Registered accounts)
+        try {
+          var uList = JSON.parse(localStorage.getItem('modivs_users') || '[]');
+          uList.forEach(function (u) {
+            var em = String(u.email || '').trim().toLowerCase();
+            if (em && !isAdmin(em)) {
+              var isComp = Boolean(u.profileCompleted === true || u.status === 'approved');
+              var role = (u.role || 'user').toLowerCase();
+              if (existingEmails.has(em)) {
+                var found = targetList.find(function(x){ return x.email === em; });
+                if (found && !isComp) { found.profileCompleted = false; found.profileStatus = 'incomplete'; }
+              } else {
+                targetList.push({
+                  email: em,
+                  name: u.name || em.split('@')[0],
+                  role: role,
+                  profileCompleted: isComp,
+                  profileStatus: isComp ? 'completed' : 'incomplete',
+                  createdAt: u.created_at || null,
+                  lastReminderSentAt: null,
+                  reminderCount: 0,
+                  emailStatus: 'not_sent'
+                });
+                existingEmails.add(em);
+              }
             }
-          }
-        });
-        remUsers = Array.from(map.values());
+          });
+        } catch(e) {}
+
+        // Check modivs_tutors_db & modivs_submitted_tutors & tutors
+        try {
+          var tList = (tutors || [])
+            .concat(JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]'))
+            .concat(JSON.parse(localStorage.getItem('modivs_submitted_tutors') || '[]'));
+          tList.forEach(function (t) {
+            var em = String(t.email || '').trim().toLowerCase();
+            if (em && !isAdmin(em)) {
+              var isComp = Boolean(t.status === 'approved' || t.approval === 'approved' || (t.headline && t.headline.indexOf('incomplete') < 0 && t.fee > 0));
+              if (existingEmails.has(em)) {
+                var found = targetList.find(function(x){ return x.email === em; });
+                if (found && !isComp) { found.profileCompleted = false; found.profileStatus = 'incomplete'; }
+              } else {
+                targetList.push({
+                  email: em,
+                  name: t.name || t.tutorName || em.split('@')[0],
+                  role: 'tutor',
+                  profileCompleted: isComp,
+                  profileStatus: isComp ? 'completed' : 'incomplete',
+                  createdAt: t.submitted_at || t.registered_at || null,
+                  lastReminderSentAt: t.lastReminderSentAt || null,
+                  reminderCount: Number(t.reminderCount) || 0,
+                  emailStatus: t.lastEmailStatus || (t.lastReminderSentAt ? 'sent' : 'not_sent')
+                });
+                existingEmails.add(em);
+              }
+            }
+          });
+        } catch(e) {}
+
+        // Check students
+        try {
+          var sList = (students || []).concat(JSON.parse(localStorage.getItem('modivs_students_db') || '[]'));
+          sList.forEach(function (s) {
+            var em = String(s.email || '').trim().toLowerCase();
+            if (em && !isAdmin(em)) {
+              var isComp = Boolean(s.approval === 'approved' || s.status === 'approved' || (s.cls && (s.subs || s.subjects)));
+              if (existingEmails.has(em)) {
+                var found = targetList.find(function(x){ return x.email === em; });
+                if (found && !isComp) { found.profileCompleted = false; found.profileStatus = 'incomplete'; }
+              } else {
+                targetList.push({
+                  email: em,
+                  name: s.name || s.studentName || em.split('@')[0],
+                  role: 'student',
+                  profileCompleted: isComp,
+                  profileStatus: isComp ? 'completed' : 'incomplete',
+                  createdAt: s.registered_at || s.sent || null,
+                  lastReminderSentAt: s.lastReminderSentAt || null,
+                  reminderCount: Number(s.reminderCount) || 0,
+                  emailStatus: s.lastEmailStatus || (s.lastReminderSentAt ? 'sent' : 'not_sent')
+                });
+                existingEmails.add(em);
+              }
+            }
+          });
+        } catch(e) {}
+      }
+
+      function fallbackLocalReminders() {
+        remUsers = [];
+        mergeLocalReminders(remUsers);
         var comp = remUsers.filter(function (u) { return u.profileCompleted; }).length;
         remStats = {
           totalRegistered: remUsers.length,
           completedProfiles: comp,
           incompleteProfiles: remUsers.length - comp,
-          pendingReminders: remUsers.filter(function (u) { return !u.profileCompleted; }).length,
+          pendingReminders: remUsers.filter(function (u) { return !u.profileCompleted && (u.reminderCount || 0) < 3; }).length,
           sentEmails: remUsers.reduce(function (a, b) { return a + (b.reminderCount || 0); }, 0),
           failedEmails: 0
+        };
+        renderRemStats(remStats);
+        renderRemTable();
+      }
         };
         renderRemStats(remStats);
         renderRemTable();
@@ -5847,7 +5919,7 @@
             '<td style="padding:12px 14px;font-size:0.85rem;color:var(--muted);">' + lastRemStr + '</td>' +
             '<td style="padding:12px 14px;">' + emailStatusBadge + '</td>' +
             '<td style="padding:12px 14px;text-align:center;">' +
-              '<button type="button" class="btn remSingleSendBtn" data-email="' + escH(u.email) + '" style="background:#fff;border:1.5px solid var(--line);color:var(--navy);padding:4px 10px;border-radius:6px;font-size:0.8rem;font-weight:600;cursor:pointer;">✉ Remind</button>' +
+              '<button type="button" class="btn remSingleSendBtn" data-email="' + escH(u.email) + '" title="Send reminder email directly (1-click)" style="background:#0f766e;color:#fff;border:none;padding:5px 12px;border-radius:6px;font-size:0.82rem;font-weight:600;cursor:pointer;white-space:nowrap;">✉ Remind Now</button>' +
             '</td>' +
           '</tr>';
         }).join('');
@@ -5950,6 +6022,7 @@
 
       function sendIndividualReminder(email, btnEl) {
         if (!email) return;
+        var prevText = btnEl ? btnEl.textContent : '';
         if (btnEl) { btnEl.disabled = true; btnEl.textContent = 'Sending...'; }
         toast('Sending reminder email to ' + email + '...');
 
@@ -5970,21 +6043,26 @@
         p.then(function (res) { return res.json(); })
           .then(function (res) {
             if (res && res.success && res.sentCount > 0) {
-              toast('Reminder email sent successfully to ' + email + '!');
+              toast('✓ Reminder email sent successfully to ' + email + '!');
+              if (btnEl) { btnEl.textContent = '✓ Sent!'; btnEl.style.background = '#10b981'; }
             } else if (res && res.failedCount > 0) {
               var errMsg = (res.results && res.results[0] && res.results[0].error) || 'Failed to send';
               toast('Could not send email: ' + errMsg);
+              if (btnEl) { btnEl.textContent = prevText || '✉ Remind'; btnEl.disabled = false; }
             } else {
               toast('Result: ' + ((res && res.results && res.results[0] && res.results[0].reason) || 'Processed'));
+              if (btnEl) { btnEl.textContent = prevText || '✉ Remind'; btnEl.disabled = false; }
             }
             fetchEmailRemindersData();
             fetchEmailHistory();
           }).catch(function (err) {
             toast('Error sending reminder: ' + err.message);
+            if (btnEl) { btnEl.textContent = prevText || '✉ Remind'; btnEl.disabled = false; }
           }).finally(function () {
-            if (btnEl) { btnEl.disabled = false; btnEl.textContent = '✉ Remind'; }
+            if (btnEl && btnEl.textContent === 'Sending...') { btnEl.disabled = false; btnEl.textContent = prevText || '✉ Remind'; }
           });
       }
+      window.sendIndividualReminder = sendIndividualReminder;
 
       function closeBulkConfirmModal() {
         var modal = $('remConfirmModal');
