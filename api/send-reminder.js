@@ -19,13 +19,7 @@ const {
   isSafeRedirectUrl,
   ALLOWED_HOSTS
 } = require('../lib/token-manager');
-const { verifyAuth } = require('./_auth');
-
-const MASTER_ADMIN_EMAILS = (process.env.MASTER_ADMIN_EMAILS ? process.env.MASTER_ADMIN_EMAILS.split(',') : [
-  'happinessaggarwal@gmail.com',
-  'divyanshdhimanteam@gmail.com',
-  'luxmankumar628@gmail.com'
-]).map(e => String(e).trim().toLowerCase());
+const { verifyAuth, MASTER_ADMIN_EMAILS } = require('./_auth');
 
 // Timing milestones (in milliseconds)
 const MILESTONES = {
@@ -393,12 +387,6 @@ async function sendWelcomeEmailHelper({ email, role = 'student', name = '', disp
   }
 
   // Prevent sending welcome email to master admin accounts
-  const MASTER_ADMIN_EMAILS = (process.env.MASTER_ADMIN_EMAILS ? process.env.MASTER_ADMIN_EMAILS.split(',') : [
-    'happinessaggarwal@gmail.com',
-    'divyanshdhimanteam@gmail.com',
-    'luxmankumar628@gmail.com'
-  ]).map(e => String(e).trim().toLowerCase());
-
   if (MASTER_ADMIN_EMAILS.includes(cleanEmail)) {
     return { success: false, skipped: true, message: 'Welcome email skipped for administrator account.' };
   }

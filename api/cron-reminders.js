@@ -19,12 +19,7 @@
 
 const { admin, db, FieldValue } = require('../lib/firebase-admin');
 const { sendReminderEmailHelper, MILESTONES } = require('./send-reminder');
-
-const MASTER_ADMIN_EMAILS = (process.env.MASTER_ADMIN_EMAILS ? process.env.MASTER_ADMIN_EMAILS.split(',') : [
-  'happinessaggarwal@gmail.com',
-  'divyanshdhimanteam@gmail.com',
-  'luxmankumar628@gmail.com'
-]).map(e => String(e).trim().toLowerCase());
+const { MASTER_ADMIN_EMAILS } = require('./_auth');
 
 /**
  * Checks if a profile has sufficient data to be marked as completed.

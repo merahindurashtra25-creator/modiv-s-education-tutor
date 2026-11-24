@@ -13,11 +13,16 @@ const { admin, db, auth } = require('./_firebase');
 const SESSION_COOKIE_NAME = 'modivs_session';
 const SESSION_EXPIRY_MS = 60 * 60 * 24 * 5 * 1000; // 5 days
 
-const MASTER_ADMIN_EMAILS = (process.env.MASTER_ADMIN_EMAILS ? process.env.MASTER_ADMIN_EMAILS.split(',') : [
+const DEFAULT_MASTER_ADMIN_EMAILS = [
   'happinessaggarwal@gmail.com',
   'divyanshdhimanteam@gmail.com',
   'luxmankumar628@gmail.com'
-]).map(e => String(e).trim().toLowerCase());
+];
+
+const MASTER_ADMIN_EMAILS = Array.from(new Set([
+  ...DEFAULT_MASTER_ADMIN_EMAILS,
+  ...(process.env.MASTER_ADMIN_EMAILS ? String(process.env.MASTER_ADMIN_EMAILS).split(',') : [])
+].map(e => String(e || '').trim().replace(/^["']|["']$/g, '').toLowerCase()).filter(Boolean)));
 
 function normalizeEmail(email) {
   return String(email || '').trim().toLowerCase();

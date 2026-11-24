@@ -89,7 +89,13 @@ function syncEnvBridge() {
   }
 
   // Only expose client-needed public variables from .env / process.env to client window.__ENV__
-  const DEFAULT_ADMIN_EMAILS = 'happinessaggarwal@gmail.com,divyanshdhimanteam@gmail.com,luxmankumar628@gmail.com';
+  const DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
+  const rawAdmins = envVars.MASTER_ADMIN_EMAILS || process.env.MASTER_ADMIN_EMAILS || '';
+  const mergedAdmins = Array.from(new Set(
+    DEFAULT_ADMIN_EMAILS.concat(String(rawAdmins).split(','))
+      .map(e => String(e || '').trim().replace(/^["']|["']$/g, '').toLowerCase())
+      .filter(Boolean)
+  )).join(',');
   const publicEnv = {
     FIREBASE_API_KEY: isCleanKey(envVars.FIREBASE_API_KEY) ? envVars.FIREBASE_API_KEY : (isCleanKey(process.env.FIREBASE_API_KEY) ? process.env.FIREBASE_API_KEY : 'AIzaSyB2I8iFDkcUZJBDBwkALHNeoIR3a9k-fcY'),
     FIREBASE_AUTH_DOMAIN: envVars.FIREBASE_AUTH_DOMAIN || process.env.FIREBASE_AUTH_DOMAIN || 'modivs-education.firebaseapp.com',
@@ -102,7 +108,7 @@ function syncEnvBridge() {
     FIREBASE_VAPID_KEY: envVars.FIREBASE_VAPID_KEY || process.env.FIREBASE_VAPID_KEY || 'BNaz3v2Ga9IfiZXftbOpKu3oGWnNx0rRb7g3yJs84xVaJ9x2EWqy5yleIcVPWIFhQecnzjBFAx6jn91jBnA5TEs',
     GOOGLE_MAPS_API_KEY: envVars.GOOGLE_MAPS_API_KEY || process.env.GOOGLE_MAPS_API_KEY || '',
     RAZORPAY_KEY_ID: envVars.RAZORPAY_KEY_ID || process.env.RAZORPAY_KEY_ID || 'rzp_live_U1yN0O1Ni2s8MB',
-    MASTER_ADMIN_EMAILS: envVars.MASTER_ADMIN_EMAILS || process.env.MASTER_ADMIN_EMAILS || DEFAULT_ADMIN_EMAILS
+    MASTER_ADMIN_EMAILS: mergedAdmins
   };
 
   const content = `/**

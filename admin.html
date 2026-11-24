@@ -18,7 +18,7 @@
   <script>
     (function () {
       var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
-      var ADMIN_EMAILS = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function(e){ return e.trim().toLowerCase(); });
+      var ADMIN_EMAILS = DEFAULT_ADMIN_EMAILS.concat((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return String(e || '').trim().toLowerCase(); }).filter(Boolean);
       try {
         var s = JSON.parse(localStorage.getItem('modivs_admin_session') || 'null');
         var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null');
@@ -1575,7 +1575,7 @@
         }
       }
       var DEFAULT_ADMIN_EMAILS = ['happinessaggarwal@gmail.com', 'divyanshdhimanteam@gmail.com', 'luxmankumar628@gmail.com'];
-      var ADMIN_EMAILS = ((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : DEFAULT_ADMIN_EMAILS).map(function(e){ return e.trim().toLowerCase(); });
+      var ADMIN_EMAILS = DEFAULT_ADMIN_EMAILS.concat((typeof window !== "undefined" && window.__ENV__ && window.__ENV__.MASTER_ADMIN_EMAILS) ? window.__ENV__.MASTER_ADMIN_EMAILS.split(",") : []).map(function(e){ return String(e || '').trim().toLowerCase(); }).filter(Boolean);
       if (window.EducationBFirebase && window.EducationBFirebase.auth) {
         window.EducationBFirebase.auth.onAuthStateChanged(function (user) {
           if (!user || user.isAnonymous) {
