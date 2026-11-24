@@ -5,7 +5,7 @@
   "trailingSlash": false,
   "functions": {
     "api/*.js": {
-      "maxDuration": 15
+      "maxDuration": 60
     }
   },
   "headers": [
@@ -38,7 +38,7 @@
         },
         {
           "key": "Content-Security-Policy",
-          "value": "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://*.googleapis.com https://*.firebaseio.com https://*.firebasestorage.app https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://maps.googleapis.com https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com https://*.firebaseapp.com https://accounts.google.com https://*.google.com https://apis.google.com; img-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.gstatic.com https://maps.googleapis.com https://*.firebaseapp.com https://checkout.razorpay.com https://*.razorpay.com https://apis.google.com https://accounts.google.com https://*.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https: blob: data: https://api.razorpay.com https://checkout.razorpay.com https://*.firebaseapp.com https://accounts.google.com https://*.google.com;"
+          "value": "default-src 'self' https: data: blob: 'unsafe-inline' 'unsafe-eval'; connect-src 'self' https://modivs-chat.happinessaggarwal.workers.dev https://*.googleapis.com https://*.firebaseio.com https://*.firebasestorage.app https://identitytoolkit.googleapis.com https://securetoken.googleapis.com wss://*.firebaseio.com https://maps.googleapis.com https://api.razorpay.com https://lumberjack.razorpay.com https://*.razorpay.com https://*.firebaseapp.com https://accounts.google.com https://*.google.com https://apis.google.com; img-src 'self' https: data: blob:; script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.gstatic.com https://maps.googleapis.com https://*.firebaseapp.com https://checkout.razorpay.com https://*.razorpay.com https://apis.google.com https://accounts.google.com https://*.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; frame-src 'self' https: blob: data: https://api.razorpay.com https://checkout.razorpay.com https://*.firebaseapp.com https://accounts.google.com https://*.google.com;"
         }
       ]
     },

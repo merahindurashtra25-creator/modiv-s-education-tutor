@@ -24,7 +24,7 @@ try {
       }
     });
   }
-} catch (e) {}
+} catch (e) { }
 
 const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_U1yN0O1Ni2s8MB';
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'JdIeruGBet4kfiH9c1DYgMob';
@@ -40,7 +40,7 @@ const normalizeEmail = email => String(email || '').trim().toLowerCase();
 const ID_KIND_CONFIG = {
   tut: { prefix: 'TUT', start: 301 },
   stu: { prefix: 'STU', start: 101 },
-  ld:  { prefix: 'LD',  start: 201 }
+  ld: { prefix: 'LD', start: 201 }
 };
 
 /**

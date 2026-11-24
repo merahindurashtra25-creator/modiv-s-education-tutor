@@ -206,7 +206,7 @@ function copyToPublic() {
   // Clean up any raw individual JS files from previous builds so source files are never exposed (keep service worker)
   const existingFiles = fs.readdirSync(publicDir);
   for (const f of existingFiles) {
-    if (f.endsWith('.js') && f !== 'modivs.min.js' && f !== 'firebase-messaging-sw.js') {
+    if (f.endsWith('.js') && f !== 'modivs.min.js' && f !== 'firebase-messaging-sw.js' && f !== 'chat-widget.js') {
       try { fs.unlinkSync(path.join(publicDir, f)); } catch (e) { }
     }
   }
@@ -289,6 +289,12 @@ function copyToPublic() {
   // Copy bundled minified script to public
   if (fs.existsSync('modivs.min.js')) {
     fs.copyFileSync('modivs.min.js', path.join(publicDir, 'modivs.min.js'));
+    count++;
+  }
+
+  // Copy the chat assistant widget (loaded by a <script src="chat-widget.js"> tag, not part of the bundle)
+  if (fs.existsSync('chat-widget.js')) {
+    fs.copyFileSync('chat-widget.js', path.join(publicDir, 'chat-widget.js'));
     count++;
   }
 

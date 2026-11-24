@@ -9,6 +9,7 @@
  * 5. Strict rate-limiting and authorization (CRON_SECRET or Admin session)
  */
 
+const dns = require('dns');
 const nodemailer = require('nodemailer');
 const { admin, db, FieldValue, hasCredentials, restFetchCollection, restFetchDocument } = require('./_firebase');
 const { getEmailTemplate, getWelcomeEmailTemplate, getAdminBulkReminderTemplate } = require('../lib/email-templates');
@@ -61,13 +62,31 @@ if (!global.__unhandledRejectionSilencerInstalled) {
 }
 
 /**
- * Configure Nodemailer transporter using Gmail SMTP
+ * Fast DNS pre-resolver using OS getaddrinfo (via dns.lookup) to bypass
+ * Nodemailer c-ares DNS resolution timeouts in serverless/cloud environments.
  */
-function createSmtpTransporter() {
-  const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  let port = Number(process.env.SMTP_PORT) || 587;
-  let user = process.env.SMTP_USER || process.env.GMAIL_USER || process.env.EMAIL_USER || 'merahindurashtra25@gmail.com';
-  let pass = process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
+async function resolveHostIp(host) {
+  if (!host || /^\d+\.\d+\.\d+\.\d+$/.test(host)) return host;
+  try {
+    return await new Promise((resolve) => {
+      dns.lookup(host, { family: 4 }, (err, address) => {
+        resolve(address || host);
+      });
+    });
+  } catch (_) {
+    return host;
+  }
+}
+
+/**
+ * Configure Nodemailer transporter with robust serverless timeouts,
+ * explicit port configuration (465 SSL / 587 STARTTLS), and SNI support.
+ */
+function createSmtpTransporter(opts = {}) {
+  const host = opts.host || process.env.SMTP_HOST || 'smtp.gmail.com';
+  let port = Number(opts.port || process.env.SMTP_PORT) || 465;
+  let user = opts.user || process.env.SMTP_USER || process.env.GMAIL_USER || process.env.EMAIL_USER || 'merahindurashtra25@gmail.com';
+  let pass = opts.pass || process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
 
   if (!user || !pass) {
     return null; // Signals simulation mode if credentials not configured
@@ -76,31 +95,64 @@ function createSmtpTransporter() {
   user = String(user).trim().replace(/^["']|["']$/g, '');
   pass = String(pass).trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
 
-  const isGmail = host.includes('gmail') || !process.env.SMTP_HOST;
-  const transportConfig = isGmail
-    ? {
-        service: 'gmail',
-        auth: { user, pass },
-        connectionTimeout: 3500,
-        greetingTimeout: 3500,
-        socketTimeout: 4000
-      }
-    : {
-        host,
-        port,
-        secure: (port === 465),
-        auth: { user, pass },
-        connectionTimeout: 3500,
-        greetingTimeout: 3500,
-        socketTimeout: 4000,
-        tls: { rejectUnauthorized: false }
-      };
+  const isSecure = (port === 465) || (String(process.env.SMTP_SECURE).toLowerCase() === 'true' && port !== 587);
+
+  const transportConfig = {
+    host: opts.resolvedIp || host,
+    port,
+    secure: isSecure,
+    requireTLS: !isSecure,
+    auth: { user, pass },
+    connectionTimeout: 15000,
+    greetingTimeout: 15000,
+    socketTimeout: 20000,
+    dnsTimeout: 15000,
+    tls: {
+      servername: host,
+      rejectUnauthorized: false
+    }
+  };
 
   return {
     transporter: nodemailer.createTransport(transportConfig),
     user,
-    configured: true
+    configured: true,
+    port,
+    host
   };
+}
+
+/**
+ * Send email with automatic DNS resolution & port fallback (465 <-> 587)
+ */
+async function sendMailWithFallback(smtp, mailOptions) {
+  if (!smtp || !smtp.configured) {
+    return { simulated: true, messageId: 'simulated_' + Date.now() };
+  }
+
+  const host = smtp.host || 'smtp.gmail.com';
+  const resolvedIp = await resolveHostIp(host);
+  const primaryTransporter = (resolvedIp && resolvedIp !== host)
+    ? createSmtpTransporter({ host, port: smtp.port, resolvedIp })
+    : smtp;
+
+  try {
+    const info = await primaryTransporter.transporter.sendMail(mailOptions);
+    return info;
+  } catch (primaryErr) {
+    console.warn(`[send-reminder] Primary SMTP port ${primaryTransporter.port} failed: ${primaryErr.message}. Attempting fallback port...`);
+    try {
+      const fallbackPort = primaryTransporter.port === 465 ? 587 : 465;
+      const fallbackSmtp = createSmtpTransporter({ host, port: fallbackPort, resolvedIp });
+      if (fallbackSmtp) {
+        const info = await fallbackSmtp.transporter.sendMail(mailOptions);
+        return info;
+      }
+    } catch (fallbackErr) {
+      console.warn(`[send-reminder] Fallback SMTP failed: ${fallbackErr.message}`);
+    }
+    throw primaryErr;
+  }
 }
 
 /**
@@ -213,7 +265,7 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
 
   if (smtp && smtp.configured) {
     try {
-      const info = await smtp.transporter.sendMail({
+      const mailOptions = {
         from: fromAddress,
         replyTo: `"Modiv’s Education Support" <${(smtp && smtp.user) || 'merahindurashtra25@gmail.com'}>`,
         to: cleanEmail,
@@ -230,7 +282,8 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
           'X-Auto-Response-Suppress': 'OOF, AutoReply',
           'Auto-Submitted': 'auto-generated'
         }
-      });
+      };
+      const info = await sendMailWithFallback(smtp, mailOptions);
       messageId = info.messageId || messageId;
       emailSent = true;
     } catch (smtpErr) {
@@ -390,7 +443,7 @@ async function sendWelcomeEmailHelper({ email, role = 'student', name = '', disp
       }
     };
 
-    const info = await smtp.transporter.sendMail(mailOptions);
+    const info = await sendMailWithFallback(smtp, mailOptions);
     messageId = info.messageId || messageId;
   } else {
     console.log(`[send-reminder] SMTP not configured. Welcome email simulated to ${cleanEmail}`);
@@ -637,7 +690,7 @@ async function handleAdminFetchUsers({ req, res, user, db, FieldValue }) {
  */
 async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, reqAdminEmail }) {
   const startTime = Date.now();
-  const MAX_TIME_MS = 6000; // 6s strict deadline to comfortably beat Vercel's 10s ceiling
+  const MAX_TIME_MS = 45000; // 45s execution limit for serverless batch processing
 
   try {
     const { emails = [], campaignName = 'Admin Bulk Reminder', forceSend = true } = req.body || {};
@@ -753,8 +806,8 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
           const loginUrl = `${originUrl || 'https://www.modivs.com'}/login.html`;
           const { subject, html, text } = getAdminBulkReminderTemplate(item.name, item.role, loginUrl);
           
-          const sendPromise = transporterObj.transporter.sendMail({
-            from: `"Modiv’s Education" <${transporterObj.user}>`,
+          const mailOptions = {
+            from: process.env.SMTP_FROM || `"Modiv’s Education" <${transporterObj.user}>`,
             replyTo: `"Modiv’s Education Support" <${transporterObj.user}>`,
             to: item.email,
             subject,
@@ -770,14 +823,10 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
               'X-Auto-Response-Suppress': 'OOF, AutoReply',
               'Auto-Submitted': 'auto-generated'
             }
-          });
+          };
 
-          const timeoutPromise = new Promise((_, reject) => 
-            setTimeout(() => reject(new Error('SMTP timeout: mail server did not respond within 3s')), 3000)
-          );
-
-          const info = await Promise.race([sendPromise, timeoutPromise]);
-          if (info && (info.messageId || (info.accepted && info.accepted.length > 0))) {
+          const info = await sendMailWithFallback(transporterObj, mailOptions);
+          if (info && (info.messageId || (info.accepted && info.accepted.length > 0) || info.simulated)) {
             mailSuccess = true;
           } else {
             errorMessage = 'SMTP did not accept recipient address.';
@@ -793,38 +842,38 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
 
       if (hasCredentials && db) {
         try {
-          await db.collection('email_reminders').doc(idempotencyKey).update({
-            state: outcomeStatus,
-            errorMessage,
-            sentAt: FieldValue && FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
-          }).catch(() => { });
-
-          await db.collection('accounts').doc(item.email).set({
-            lastReminderSentAt: new Date().toISOString(),
-            reminderCount: FieldValue && FieldValue.increment ? FieldValue.increment(1) : 1,
-            lastEmailStatus: outcomeStatus
-          }, { merge: true }).catch(() => { });
-
-          await db.collection('admin_email_history').add({
-            recipientEmail: item.email,
-            recipientUid: item.uid || '',
-            userType: item.role || 'student',
-            subject: "Complete Your Modiv's Education Profile",
-            reminderType: 'admin_bulk',
-            sentAt: new Date().toISOString(),
-            status: outcomeStatus,
-            errorMessage,
-            adminEmail: senderAdminEmail,
-            campaignId,
-            campaignName
-          }).catch(() => { });
+          await Promise.allSettled([
+            db.collection('email_reminders').doc(idempotencyKey).set({
+              state: outcomeStatus,
+              errorMessage: errorMessage || null,
+              sentAt: FieldValue && FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
+            }, { merge: true }),
+            db.collection('accounts').doc(item.email).set({
+              lastReminderSentAt: new Date().toISOString(),
+              reminderCount: FieldValue && FieldValue.increment ? FieldValue.increment(mailSuccess ? 1 : 0) : (mailSuccess ? 1 : 0),
+              lastEmailStatus: outcomeStatus
+            }, { merge: true }),
+            db.collection('admin_email_history').add({
+              recipientEmail: item.email,
+              recipientUid: item.uid || '',
+              userType: item.role || 'student',
+              subject: "Complete Your Modiv's Education Profile",
+              reminderType: 'admin_bulk',
+              sentAt: new Date().toISOString(),
+              status: outcomeStatus,
+              errorMessage: errorMessage || null,
+              adminEmail: senderAdminEmail,
+              campaignId,
+              campaignName
+            })
+          ]);
         } catch (e) { }
       }
 
       results.push({ email: item.email, status: outcomeStatus, error: errorMessage });
 
       // Polite delay between outbound SMTP calls to prevent throttling
-      await new Promise(r => setTimeout(r, 200));
+      await new Promise(r => setTimeout(r, 100));
     }
 
     return res.status(200).json({
@@ -1044,4 +1093,7 @@ module.exports = async function handler(req, res) {
 module.exports.sendReminderEmailHelper = sendReminderEmailHelper;
 module.exports.sendWelcomeEmailHelper = sendWelcomeEmailHelper;
 module.exports.createSmtpTransporter = createSmtpTransporter;
+module.exports.sendMailWithFallback = sendMailWithFallback;
 module.exports.MILESTONES = MILESTONES;
+module.exports.maxDuration = 60;
+module.exports.config = { maxDuration: 60 };

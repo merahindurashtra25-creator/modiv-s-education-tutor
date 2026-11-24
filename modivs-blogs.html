@@ -423,5 +423,6 @@ var av=document.getElementById('articleView');
 function u(){if(!av||av.hidden){b.style.transform='scaleX(0)';return}var h=document.documentElement.scrollHeight-innerHeight;b.style.transform='scaleX('+(h>0?Math.min(1,scrollY/h):0)+')'}
 addEventListener('scroll',u,{passive:true});addEventListener('hashchange',u);setInterval(u,400);u()}catch(e){}})();
 </script>
+<script src="chat-widget.js" data-endpoint="https://modivs-chat.happinessaggarwal.workers.dev" defer></script>
 </body>
 </html>
