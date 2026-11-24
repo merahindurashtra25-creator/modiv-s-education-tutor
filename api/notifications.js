@@ -1,15 +1,20 @@
-const { admin, db } = require('./_firebase');
+const { admin, db, hasCredentials } = require('./_firebase');
 const { verifyAuth, checkCsrf } = require('./_auth');
 
 module.exports = async function handler(req, res) {
-  if (!checkCsrf(req)) {
-    return res.status(403).json({ error: 'CSRF validation failed' });
-  }
+  try {
+    if (!checkCsrf(req)) {
+      return res.status(403).json({ error: 'CSRF validation failed' });
+    }
 
-  const user = await verifyAuth(req);
-  if (!user) {
-    return res.status(401).json({ error: 'Authentication required' });
-  }
+    if (!hasCredentials) {
+      return res.status(200).json({ success: true, notifications: [], unreadCount: 0 });
+    }
+
+    const user = await verifyAuth(req);
+    if (!user) {
+      return res.status(401).json({ error: 'Authentication required' });
+    }
 
   const callerEmail = user.email;
 
@@ -62,8 +67,12 @@ module.exports = async function handler(req, res) {
     }
 
     return res.status(400).json({ error: 'id or all=true is required' });
-  }
+    }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (fatalErr) {
+    console.error('[notifications] Fatal error caught:', fatalErr);
+    return res.status(500).json({ error: fatalErr.message || 'Internal server error' });
+  }
 };
 

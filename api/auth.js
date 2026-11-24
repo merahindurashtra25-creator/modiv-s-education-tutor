@@ -104,37 +104,45 @@ function verifyPasswordViaRest(email, password) {
 }
 
 module.exports = async function handler(req, res) {
-  if (!checkCsrf(req)) {
-    return res.status(403).json({ error: 'CSRF validation failed' });
-  }
-
-  const action = String(req.query.action || req.body.action || '').toLowerCase();
-
-  // 1. GET Current Authenticated User (Session verification)
-  if (req.method === 'GET' || action === 'me') {
-    const user = await verifyAuth(req);
-    if (!user) {
-      return res.status(200).json({ authenticated: false, user: null });
+  try {
+    if (!checkCsrf(req)) {
+      return res.status(403).json({ error: 'CSRF validation failed' });
     }
 
-    const accDoc = await db.collection('accounts').doc(user.email).get();
-    const accData = accDoc.exists ? accDoc.data() : {};
+    const query = req.query || {};
+    const body = req.body || {};
+    const action = String(query.action || body.action || '').toLowerCase();
 
-    return res.status(200).json({
-      authenticated: true,
-      user: {
-        uid: user.uid,
-        email: user.email,
-        name: accData.name || user.name,
-        role: user.isAdmin ? 'Admin' : (accData.role || 'General User'),
-        displayId: accData.displayId || accData.tutId || accData.stuId || '',
-        isAdmin: user.isAdmin,
-        emailVerified: user.emailVerified,
-        phone: accData.phone || '',
-        location: accData.location || {}
+    // 1. GET Current Authenticated User (Session verification)
+    if (req.method === 'GET' || action === 'me') {
+      const user = await verifyAuth(req).catch(() => null);
+      if (!user) {
+        return res.status(200).json({ authenticated: false, user: null });
       }
-    });
-  }
+
+      let accData = {};
+      try {
+        const accDoc = await db.collection('accounts').doc(user.email).get();
+        if (accDoc && accDoc.exists) accData = accDoc.data() || {};
+      } catch (dbErr) {
+        console.warn('[auth] Account fetch notice:', dbErr.message);
+      }
+
+      return res.status(200).json({
+        authenticated: true,
+        user: {
+          uid: user.uid,
+          email: user.email,
+          name: accData.name || user.name,
+          role: user.isAdmin ? 'Admin' : (accData.role || 'General User'),
+          displayId: accData.displayId || accData.tutId || accData.stuId || '',
+          isAdmin: user.isAdmin,
+          emailVerified: user.emailVerified,
+          phone: accData.phone || '',
+          location: accData.location || {}
+        }
+      });
+    }
 
   // 2. POST Session Cookie Exchange (e.g. after Google Sign-in or client token verification)
   if (action === 'session' && req.method === 'POST') {
@@ -387,11 +395,15 @@ module.exports = async function handler(req, res) {
   }
 
   // 5. POST Logout
-  if (action === 'logout' && req.method === 'POST') {
-    clearSessionCookie(res);
-    return res.status(200).json({ success: true, message: 'Logged out successfully' });
-  }
+    if (action === 'logout' && req.method === 'POST') {
+      clearSessionCookie(res);
+      return res.status(200).json({ success: true, message: 'Logged out successfully' });
+    }
 
-  return res.status(404).json({ error: 'Unknown auth action' });
+    return res.status(404).json({ error: 'Unknown auth action' });
+  } catch (fatalErr) {
+    console.error('[auth] Fatal handler error caught:', fatalErr);
+    return res.status(500).json({ error: fatalErr.message || 'Internal server error' });
+  }
 };
 

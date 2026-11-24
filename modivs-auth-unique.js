@@ -442,10 +442,59 @@
     if (ADMIN_EMAILS.indexOf(mail) > -1) {
       try {
         localStorage.setItem('modivs_admin_session', JSON.stringify({ email: mail, name: name, isAdmin: true, uid: (user && user.uid) || '' }));
-        localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, role: 'Admin', uid: (user && user.uid) || '' }));
+        localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, role: 'Admin', isAdmin: true, uid: (user && user.uid) || '' }));
+        sessionStorage.setItem('modivs_admin_authenticated', 'true');
       } catch (e) { }
-      if (options.onSuccess) options.onSuccess({ role: 'admin', user: user, isNew: false });
-      else window.location.href = '/admin';
+
+      if (db()) {
+        try {
+          var serverStamp = (window.firebase && firebase.firestore) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString();
+          db().collection('accounts').doc(mail).set({
+            email: mail,
+            name: name,
+            role: 'admin',
+            roleName: 'Admin',
+            isAdmin: true,
+            profileStatus: 'completed',
+            profileCompleted: true,
+            nextReminderAt: null,
+            updatedAt: serverStamp
+          }, { merge: true }).catch(function () { });
+
+          var uid = (user && user.uid) || mail;
+          db().collection('users').doc(uid).set({
+            name: name,
+            email: mail,
+            role: 'Admin',
+            admin: true,
+            isAdmin: true,
+            uid: uid,
+            provider: 'google',
+            lastLogin: serverStamp
+          }, { merge: true }).catch(function () { });
+        } catch (e) { }
+      }
+
+      function redirectToAdmin() {
+        window.location.href = '/admin';
+      }
+
+      if (user && typeof user.getIdToken === 'function') {
+        user.getIdToken(true).then(function (tok) {
+          return fetch('/api/auth?action=session', {
+            method: 'POST',
+            credentials: 'include',
+            headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
+            body: JSON.stringify({ idToken: tok })
+          });
+        }).catch(function () { }).finally(function () {
+          redirectToAdmin();
+        });
+        setTimeout(redirectToAdmin, 1200);
+        return Promise.resolve({ role: 'admin', user: user });
+      }
+
+      redirectToAdmin();
       return Promise.resolve({ role: 'admin', user: user });
     }
 

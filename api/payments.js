@@ -16,11 +16,14 @@ const RAZORPAY_KEY_ID = process.env.RAZORPAY_KEY_ID || 'rzp_live_U1yN0O1Ni2s8MB'
 const RAZORPAY_KEY_SECRET = process.env.RAZORPAY_KEY_SECRET || 'JdIeruGBet4kfiH9c1DYgMob';
 
 module.exports = async function handler(req, res) {
-  if (!checkCsrf(req)) {
-    return res.status(403).json({ error: 'CSRF validation failed' });
-  }
+  try {
+    if (!checkCsrf(req)) {
+      return res.status(403).json({ error: 'CSRF validation failed' });
+    }
 
-  const action = String(req.query.action || req.body.action || '').toLowerCase();
+    const query = req.query || {};
+    const body = req.body || {};
+    const action = String(query.action || body.action || '').toLowerCase();
 
   // 1. Create Razorpay Order
   if (req.method === 'POST' && (action === 'create-order' || action === 'createorder')) {
@@ -126,6 +129,10 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ verified: isValid, paymentId, orderId });
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (fatalErr) {
+    console.error('[payments] Fatal error caught:', fatalErr);
+    return res.status(500).json({ error: fatalErr.message || 'Internal server error' });
+  }
 };
 

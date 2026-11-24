@@ -5,7 +5,7 @@
  * with FCM push notification capabilities for backend functions.
  */
 
-const { admin, db, auth, FieldValue, getFirebaseAdminApp } = require('../lib/firebase-admin');
+const { admin, db, auth, FieldValue, hasCredentials, getFirebaseAdminApp } = require('../lib/firebase-admin');
 
 const app = getFirebaseAdminApp();
 
@@ -32,4 +32,4 @@ async function sendPushNotification(recipientEmail, { title, body, actionUrl, ta
   } catch (e) {}
 }
 
-module.exports = { admin, db, auth, messaging, sendPushNotification, FieldValue };
+module.exports = { admin, db, auth, messaging, sendPushNotification, FieldValue, hasCredentials };

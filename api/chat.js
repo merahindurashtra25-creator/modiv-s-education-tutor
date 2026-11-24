@@ -7,15 +7,20 @@
  * - Unread message counting and conversation status updates
  */
 
-const { admin, db, sendPushNotification } = require('./_firebase');
+const { admin, db, sendPushNotification, hasCredentials } = require('./_firebase');
 const { verifyAuth, checkCsrf, normalizeEmail } = require('./_auth');
 
 module.exports = async function handler(req, res) {
-  if (!checkCsrf(req)) {
-    return res.status(403).json({ error: 'CSRF validation failed' });
-  }
+  try {
+    if (!checkCsrf(req)) {
+      return res.status(403).json({ error: 'CSRF validation failed' });
+    }
 
-  let user = await verifyAuth(req);
+    if (!hasCredentials) {
+      return res.status(200).json({ success: true, conversations: [], messages: [] });
+    }
+
+    let user = await verifyAuth(req).catch(() => null);
   if (!user && req.body && req.body.senderEmail) {
     const sMail = normalizeEmail(req.body.senderEmail);
     if (sMail) {
@@ -208,6 +213,10 @@ module.exports = async function handler(req, res) {
     return res.status(200).json({ success: true });
   }
 
-  return res.status(405).json({ error: 'Method not allowed' });
+    return res.status(405).json({ error: 'Method not allowed' });
+  } catch (fatalErr) {
+    console.error('[chat] Fatal error caught:', fatalErr);
+    return res.status(500).json({ error: fatalErr.message || 'Internal server error' });
+  }
 };
 

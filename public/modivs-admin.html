@@ -1627,7 +1627,7 @@
       }
     })();
   </script>
-  <script src="modivs.min.js?v=mwticz1j-fcesp"></script>
+  <script src="modivs.min.js?v=mwu6z20e-fjd7r"></script>
   
   
   <script>function admUnlockCost() { return (window.ModivsWallet && ModivsWallet.getUnlockCost) ? ModivsWallet.getUnlockCost() : 10; }</script>
@@ -1638,9 +1638,9 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwticz1j-fcesp">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwticz1j-fcesp">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwticz1j-fcesp">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwu6z20e-fjd7r">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwu6z20e-fjd7r">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwu6z20e-fjd7r">
 </head>
 
 <body>
@@ -4018,16 +4018,14 @@
             if (id && adminStudentsMap[id]) delete adminStudentsMap[id];
             if (em && adminStudentsMap[em]) delete adminStudentsMap[em];
 
-            // 2. Add to tombstones so background sync never resurrects it
+            // 2. Add to tombstones (ID only, not email, so user can re-register as fresh new account)
             try {
               var tbLead = JSON.parse(localStorage.getItem('modivs_deleted_leads') || '[]') || [];
               if (id && tbLead.indexOf(id) < 0) tbLead.push(id);
-              if (em && tbLead.indexOf(em) < 0) tbLead.push(em);
               localStorage.setItem('modivs_deleted_leads', JSON.stringify(tbLead));
 
               var tbStu = JSON.parse(localStorage.getItem('modivs_deleted_students') || '[]') || [];
               if (id && tbStu.indexOf(id) < 0) tbStu.push(id);
-              if (em && tbStu.indexOf(em) < 0) tbStu.push(em);
               localStorage.setItem('modivs_deleted_students', JSON.stringify(tbStu));
             } catch (e) { }
 
@@ -4050,9 +4048,13 @@
               if (sReq && ((id && sReq.id === id) || (em && String(sReq.email || '').toLowerCase() === em))) {
                 localStorage.removeItem('modivs_student_req');
               }
+
+              var usList = JSON.parse(localStorage.getItem('modivs_users') || '[]');
+              usList = usList.filter(function (u) { return !(em && String(u.email || '').toLowerCase() === em); });
+              localStorage.setItem('modivs_users', JSON.stringify(usList));
             } catch (e) { }
 
-            // 4. Delete from Firestore directly and broadcast tombstone
+            // 4. Delete from Firestore directly and clean tombstones
             if (window.EducationBFirebase && EducationBFirebase.db) {
               var fdb = EducationBFirebase.db;
               var sStamp = (window.firebase && firebase.firestore && firebase.firestore.FieldValue) ? firebase.firestore.FieldValue.serverTimestamp() : new Date().toISOString();
@@ -4067,11 +4069,10 @@
                 }, { merge: true }).catch(function () {});
               }
               if (em) {
-                fdb.collection('deleted_leads').doc('em_' + em.replace(/[^a-z0-9]/gi, '_')).set({
-                  id: id || '',
-                  email: em,
-                  deletedAt: sStamp
-                }, { merge: true }).catch(function () {});
+                // Delete account and user document completely
+                fdb.collection('accounts').doc(em).delete().catch(function () {});
+                // Clean any email-level tombstone so user can re-register as a brand new account
+                fdb.collection('deleted_leads').doc('em_' + em.replace(/[^a-z0-9]/gi, '_')).delete().catch(function () {});
                 fdb.collection('leads').where('email', '==', em).get().then(function (snap) {
                   snap.forEach(function (d) { d.ref.delete().catch(function () {}); });
                 }).catch(function () {});
@@ -4079,6 +4080,9 @@
                   snap.forEach(function (d) { d.ref.delete().catch(function () {}); });
                 }).catch(function () {});
                 fdb.collection('demoRequests').where('email', '==', em).get().then(function (snap) {
+                  snap.forEach(function (d) { d.ref.delete().catch(function () {}); });
+                }).catch(function () {});
+                fdb.collection('users').where('email', '==', em).get().then(function (snap) {
                   snap.forEach(function (d) { d.ref.delete().catch(function () {}); });
                 }).catch(function () {});
               }
@@ -4090,16 +4094,17 @@
               if (window.ModivsFirebaseSync.deleteStudent) window.ModivsFirebaseSync.deleteStudent(id, em);
             }
             try {
+              var serverDelPayload = JSON.stringify({ id: id, email: em, deleteAccount: true, adminEmail: currentAdminEmail });
               fetch('/api/leads', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                body: JSON.stringify({ id: id, email: em }),
+                body: serverDelPayload,
                 credentials: 'include'
               }).catch(function () {});
               fetch('/api/students', {
                 method: 'DELETE',
                 headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'XMLHttpRequest' },
-                body: JSON.stringify({ id: id, email: em }),
+                body: serverDelPayload,
                 credentials: 'include'
               }).catch(function () {});
             } catch (e) { }
@@ -4644,11 +4649,10 @@
           tutors = tutors.filter(function (t) { return t.id !== id && (!em || String(t.email || '').toLowerCase() !== em); });
           tutorAccounts = tutorAccounts.filter(function (a) { return String(a.email || '').toLowerCase() !== em; });
 
-          // 2. Add to deleted tombstones
+          // 2. Add to deleted tombstones (ID only, not email, so user can re-register as fresh new account)
           try {
             var tt = JSON.parse(localStorage.getItem('modivs_deleted_tutors') || '[]') || [];
             if (id && tt.indexOf(id) < 0) tt.push(id);
-            if (em && tt.indexOf(em) < 0) tt.push(em);
             localStorage.setItem('modivs_deleted_tutors', JSON.stringify(tt));
           } catch (e) { }
 
@@ -4694,7 +4698,7 @@
               fetch('/api/tutors', {
                 method: 'DELETE',
                 headers: delHeaders,
-                body: JSON.stringify({ id: id, email: em, adminEmail: currentAdminEmail }),
+                body: JSON.stringify({ id: id, email: em, deleteAccount: true, adminEmail: currentAdminEmail }),
                 credentials: 'include'
               }).catch(function () {});
             } catch (e) { }

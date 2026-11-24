@@ -7,13 +7,24 @@
  * - Authenticated tutor profile updates and verification status management
  */
 
-const { admin, db } = require('./_firebase');
-const { verifyAuth, checkCsrf } = require('./_auth');
+const { admin, db, auth, hasCredentials } = require('./_firebase');
+const { verifyAuth, checkCsrf, normalizeEmail, MASTER_ADMIN_EMAILS } = require('./_auth');
 
 module.exports = async function handler(req, res) {
-  if (!checkCsrf(req)) {
-    return res.status(403).json({ error: 'CSRF validation failed' });
-  }
+  try {
+    if (!checkCsrf(req)) {
+      return res.status(403).json({ error: 'CSRF validation failed' });
+    }
+
+    if (!hasCredentials) {
+      if (req.method === 'GET') {
+        return res.status(200).json({ success: true, tutors: [] });
+      }
+      return res.status(200).json({ success: true, message: 'Server credentials not configured; client-side Firestore handles operations.' });
+    }
+
+    const query = req.query || {};
+    const body = req.body || {};
 
   // 1. GET Tutors
   if (req.method === 'GET') {
@@ -287,15 +298,14 @@ module.exports = async function handler(req, res) {
   }
 
   // 3. DELETE Tutor (Permanently delete tutor profile & account from Firestore and Auth)
-  if (req.method === 'DELETE' || (req.method === 'POST' && req.body && req.body._method === 'DELETE')) {
-    const user = await verifyAuth(req);
-    const body = req.body || {};
-    const adminEmail = String((user && user.email) || body.adminEmail || req.query.adminEmail || '').trim().toLowerCase();
-    const MASTER_ADMINS = (process.env.MASTER_ADMIN_EMAILS ? process.env.MASTER_ADMIN_EMAILS.split(',') : [
+  if (req.method === 'DELETE' || (req.method === 'POST' && body._method === 'DELETE')) {
+    const user = await verifyAuth(req).catch(() => null);
+    const adminEmail = String((user && user.email) || body.adminEmail || query.adminEmail || '').trim().toLowerCase();
+    const MASTER_ADMINS = MASTER_ADMIN_EMAILS || [
       'happinessaggarwal@gmail.com',
       'divyanshdhimanteam@gmail.com',
       'luxmankumar628@gmail.com'
-    ]).map(e => String(e).trim().toLowerCase());
+    ];
     const isMasterAdmin = Boolean(
       (user && user.isAdmin) ||
       (adminEmail && MASTER_ADMINS.includes(adminEmail))
@@ -304,8 +314,8 @@ module.exports = async function handler(req, res) {
       return res.status(403).json({ error: 'Administrator access required to delete tutors' });
     }
 
-    const tutorId = String(req.query.id || body.id || '').replace(/[\/\\#?]/g, '_').trim();
-    const cleanEmail = normalizeEmail(req.query.email || body.email);
+    const tutorId = String(query.id || body.id || '').replace(/[\/\\#?]/g, '_').trim();
+    const cleanEmail = normalizeEmail(query.email || body.email);
     const docKey = cleanEmail ? cleanEmail.replace(/[^a-z0-9_-]/g, '_') : '';
 
     const deletePromises = [];
@@ -334,17 +344,24 @@ module.exports = async function handler(req, res) {
       );
 
       // Permanently remove Auth user if exists
-      deletePromises.push(
-        admin.auth().getUserByEmail(cleanEmail).then(authU => {
-          return admin.auth().deleteUser(authU.uid).catch(() => {});
-        }).catch(() => {})
-      );
+      const authClient = auth || (admin && (typeof admin.auth === 'function' ? admin.auth() : admin.auth));
+      if (authClient && typeof authClient.getUserByEmail === 'function') {
+        deletePromises.push(
+          authClient.getUserByEmail(cleanEmail).then(authU => {
+            if (authU && authU.uid) return authClient.deleteUser(authU.uid).catch(() => {});
+          }).catch(() => {})
+        );
+      }
     }
 
     await Promise.all(deletePromises);
-    return res.status(200).json({ success: true, message: 'Tutor profile and account permanently deleted from Firestore and Auth' });
+    return res.status(200).json({ success: true, message: 'Tutor profile, account, and authentication record permanently deleted' });
   }
 
   return res.status(405).json({ error: 'Method not allowed' });
+  } catch (fatalErr) {
+    console.error('[tutors] Fatal error caught:', fatalErr);
+    return res.status(500).json({ error: fatalErr.message || 'Internal server error' });
+  }
 };
 

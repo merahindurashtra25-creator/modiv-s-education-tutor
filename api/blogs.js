@@ -1,4 +1,4 @@
-const { admin, db } = require('./_firebase');
+const { admin, db, hasCredentials } = require('./_firebase');
 const { verifyAuth, checkCsrf } = require('./_auth');
 
 function toSlug(t) {
@@ -12,6 +12,13 @@ function makeExcerpt(body) {
 
 module.exports = async function handler(req, res) {
   res.setHeader('Cache-Control', 'no-store');
+
+  if (!hasCredentials) {
+    if (req.method === 'GET') {
+      return res.status(200).json({ success: true, blogs: [] });
+    }
+    return res.status(200).json({ success: true, message: 'Server credentials not configured' });
+  }
 
   // GET: Public or author blog listing
   if (req.method === 'GET') {

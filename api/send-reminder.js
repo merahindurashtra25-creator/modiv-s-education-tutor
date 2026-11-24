@@ -688,18 +688,22 @@ async function handleAdminFetchHistory({ req, res, user, db }) {
  * Serverless API handler
  */
 module.exports = async function handler(req, res) {
-  // CORS
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-cron-secret');
+  try {
+    // CORS
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-cron-secret');
 
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
 
-  // --- FEATURE: Secure Continuation Token Consumption ---
-  if (req.query.action === 'continue') {
-    const rawToken = req.query.token;
+    const query = req.query || {};
+    const body = req.body || {};
+
+    // --- FEATURE: Secure Continuation Token Consumption ---
+    if (query.action === 'continue') {
+      const rawToken = query.token;
     if (!rawToken) {
       return res.status(400).send(`
         <!DOCTYPE html>
@@ -801,20 +805,20 @@ module.exports = async function handler(req, res) {
   }
 
   // Rate limit protection
-  const clientIp = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
+  const clientIp = (req.headers && req.headers['x-forwarded-for']) || (req.socket && req.socket.remoteAddress) || (req.connection && req.connection.remoteAddress) || 'unknown';
   if (!checkRateLimit(clientIp, 30, 60000)) {
     return res.status(429).json({ error: 'Too many requests. Please try again later.' });
   }
 
-  const payload = req.method === 'POST' ? (req.body || {}) : req.query;
+  const payload = req.method === 'POST' ? (req.body || {}) : (req.query || {});
   const { email, role, reminderIndex, force } = payload;
 
   if (!email) {
     return res.status(400).json({ error: 'Missing required field: email' });
   }
 
-  const proto = req.headers['x-forwarded-proto'] || 'https';
-  const host = req.headers.host || '';
+  const proto = (req.headers && req.headers['x-forwarded-proto']) || 'https';
+  const host = (req.headers && req.headers.host) || '';
   const originUrl = host ? `${proto}://${host}` : '';
 
   try {
@@ -830,6 +834,10 @@ module.exports = async function handler(req, res) {
   } catch (error) {
     console.error('[send-reminder] Error:', error);
     return res.status(500).json({ error: error.message });
+  }
+  } catch (fatalErr) {
+    console.error('[send-reminder] Fatal error caught:', fatalErr);
+    return res.status(500).json({ error: fatalErr.message || 'Internal server error' });
   }
 };
 

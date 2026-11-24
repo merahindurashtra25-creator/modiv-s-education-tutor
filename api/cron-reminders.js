@@ -115,68 +115,71 @@ async function releaseCronLock(lockKey = 'reminder_worker', workerId) {
 }
 
 module.exports = async function handler(req, res) {
-  res.setHeader('Access-Control-Allow-Origin', '*');
-  res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
-  res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-cron-secret');
-
-  if (req.method === 'OPTIONS') {
-    return res.status(200).end();
-  }
-
-  // 1. Authenticate Cron Request via CRON_SECRET
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = req.headers.authorization || '';
-  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-  const customHeader = req.headers['x-cron-secret'] || '';
-  const querySecret = req.query.secret || '';
-
-  const isAuthorized = !cronSecret || (bearerToken === cronSecret || customHeader === cronSecret || querySecret === cronSecret);
-
-  if (!isAuthorized) {
-    return res.status(401).json({ error: 'Unauthorized: Invalid CRON_SECRET.' });
-  }
-
-  // 2. Verify backend service account credentials before attempting Firestore operations
-  const hasCredentials = Boolean(
-    (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) ||
-    process.env.FIREBASE_SERVICE_ACCOUNT_KEY
-  );
-
-  if (!hasCredentials) {
-    return res.status(200).json({
-      success: false,
-      configured: false,
-      error: 'Firebase Service Account credentials are not configured in Vercel environment variables. Please add FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY in Vercel Project Settings > Environment Variables to allow the backend to read Firestore and send reminder emails.',
-      remedy: 'Go to Firebase Console -> Project Settings -> Service accounts -> Click "Generate new private key". Copy client_email and private_key into Vercel.'
-    });
-  }
-
-  // 3. Concurrency Lock
-  const lock = await acquireCronLock('reminder_worker', 180000);
-  if (!lock.acquired) {
-    return res.status(200).json({
-      success: true,
-      message: 'Another cron reminder worker is currently executing. Execution skipped to prevent race conditions.'
-    });
-  }
-
-  const proto = req.headers['x-forwarded-proto'] || 'https';
-  const host = req.headers.host || '';
-  const originUrl = host ? `${proto}://${host}` : '';
-
-  const now = Date.now();
-  const results = {
-    timestamp: new Date().toISOString(),
-    scanned: 0,
-    remindersSent: 0,
-    markedNoResponse: 0,
-    completedStopped: 0,
-    pendingNextMilestone: 0,
-    errors: [],
-    details: []
-  };
-
+  let lock = { acquired: false };
   try {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+    res.setHeader('Access-Control-Allow-Methods', 'GET, POST, OPTIONS');
+    res.setHeader('Access-Control-Allow-Headers', 'Content-Type, Authorization, x-cron-secret');
+
+    if (req.method === 'OPTIONS') {
+      return res.status(200).end();
+    }
+
+    const query = req.query || {};
+
+    // 1. Authenticate Cron Request via CRON_SECRET
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = req.headers.authorization || '';
+    const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const customHeader = req.headers['x-cron-secret'] || '';
+    const querySecret = query.secret || '';
+
+    const isAuthorized = !cronSecret || (bearerToken === cronSecret || customHeader === cronSecret || querySecret === cronSecret);
+
+    if (!isAuthorized) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid CRON_SECRET.' });
+    }
+
+    // 2. Verify backend service account credentials before attempting Firestore operations
+    const hasCredentials = Boolean(
+      (process.env.FIREBASE_CLIENT_EMAIL && process.env.FIREBASE_PRIVATE_KEY) ||
+      process.env.FIREBASE_SERVICE_ACCOUNT_KEY
+    );
+
+    if (!hasCredentials) {
+      return res.status(200).json({
+        success: false,
+        configured: false,
+        error: 'Firebase Service Account credentials are not configured in Vercel environment variables. Please add FIREBASE_CLIENT_EMAIL and FIREBASE_PRIVATE_KEY in Vercel Project Settings > Environment Variables to allow the backend to read Firestore and send reminder emails.',
+        remedy: 'Go to Firebase Console -> Project Settings -> Service accounts -> Click "Generate new private key". Copy client_email and private_key into Vercel.'
+      });
+    }
+
+    // 3. Concurrency Lock
+    lock = await acquireCronLock('reminder_worker', 180000);
+    if (!lock.acquired) {
+      return res.status(200).json({
+        success: true,
+        message: 'Another cron reminder worker is currently executing. Execution skipped to prevent race conditions.'
+      });
+    }
+
+    const proto = (req.headers && req.headers['x-forwarded-proto']) || 'https';
+    const host = (req.headers && req.headers.host) || '';
+    const originUrl = host ? `${proto}://${host}` : '';
+
+    const now = Date.now();
+    const results = {
+      timestamp: new Date().toISOString(),
+      scanned: 0,
+      remindersSent: 0,
+      markedNoResponse: 0,
+      completedStopped: 0,
+      pendingNextMilestone: 0,
+      errors: [],
+      details: []
+    };
+
     // 3. Scan accounts from existing Firestore collection
     const accountsSnap = await db.collection('accounts').limit(250).get();
     const candidateMap = new Map();
