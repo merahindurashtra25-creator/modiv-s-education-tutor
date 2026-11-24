@@ -184,7 +184,14 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
         to: cleanEmail,
         subject,
         html,
-        text
+        text,
+        headers: {
+          'X-Priority': '3',
+          'X-MSMail-Priority': 'Normal',
+          'Importance': 'Normal',
+          'List-Unsubscribe': `<mailto:${smtp.user || 'support@modivs.com'}?subject=unsubscribe>`,
+          'Feedback-ID': 'reminder:account:modivs'
+        }
       });
       messageId = info.messageId || messageId;
       emailSent = true;
@@ -596,7 +603,14 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl }
           to: item.email,
           subject,
           html,
-          text
+          text,
+          headers: {
+            'X-Priority': '3',
+            'X-MSMail-Priority': 'Normal',
+            'Importance': 'Normal',
+            'List-Unsubscribe': `<mailto:${transporterObj.user}?subject=unsubscribe>`,
+            'Feedback-ID': 'reminder:bulk:modivs'
+          }
         });
         if (info && info.accepted && info.accepted.length > 0) {
           mailSuccess = true;

@@ -714,7 +714,7 @@
     }
 
     .hide {
-      display: none
+      display: none !important;
     }
 
     .av {
@@ -1627,7 +1627,7 @@
       }
     })();
   </script>
-  <script src="modivs.min.js?v=mwu6z20e-fjd7r"></script>
+  <script src="modivs.min.js?v=mwu7clj6-0ucsj"></script>
   
   
   <script>function admUnlockCost() { return (window.ModivsWallet && ModivsWallet.getUnlockCost) ? ModivsWallet.getUnlockCost() : 10; }</script>
@@ -1638,9 +1638,9 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwu6z20e-fjd7r">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwu6z20e-fjd7r">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwu6z20e-fjd7r">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwu7clj6-0ucsj">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwu7clj6-0ucsj">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwu7clj6-0ucsj">
 </head>
 
 <body>
@@ -1826,9 +1826,10 @@
         </div>
 
         <!-- Confirmation Modal -->
-        <div id="remConfirmModal" class="hide" style="position:fixed;inset:0;background:rgba(11,26,48,0.6);display:flex;align-items:center;justify-content:center;z-index:99999;backdrop-filter:blur(3px);">
-          <div style="background:#fff;border-radius:16px;max-width:480px;width:90%;padding:28px;box-shadow:0 20px 40px rgba(0,0,0,0.25);border:1px solid var(--line);">
-            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;">
+        <div id="remConfirmModal" class="hide" style="position:fixed;inset:0;background:rgba(11,26,48,0.6);display:none;align-items:center;justify-content:center;z-index:99999;backdrop-filter:blur(3px);">
+          <div style="background:#fff;border-radius:16px;max-width:480px;width:90%;padding:28px;box-shadow:0 20px 40px rgba(0,0,0,0.25);border:1px solid var(--line);position:relative;">
+            <button type="button" id="confCloseX" aria-label="Close" style="position:absolute;top:16px;right:16px;background:none;border:none;font-size:1.5rem;line-height:1;cursor:pointer;color:var(--muted);padding:4px 8px;border-radius:6px;">&times;</button>
+            <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;padding-right:24px;">
               <div style="width:40px;height:40px;border-radius:50%;background:#e6f4ea;color:#0e7c66;display:flex;align-items:center;justify-content:center;font-size:1.3rem;">✉</div>
               <div>
                 <h3 style="margin:0;font-size:1.25rem;font-weight:800;color:var(--navy);">Confirm Bulk Email Dispatch</h3>
@@ -5922,6 +5923,14 @@
           });
       }
 
+      function closeBulkConfirmModal() {
+        var modal = $('remConfirmModal');
+        if (modal) {
+          modal.classList.add('hide');
+          modal.style.display = 'none';
+        }
+      }
+
       function openBulkConfirmModal() {
         if (!remSelectedEmails.size) {
           toast('Please select at least one user from the table first.');
@@ -5946,9 +5955,16 @@
         $('confExcludedCount').textContent = excluded.length;
         $('confTotalToSend').textContent = eligible.length;
         $('confProgressNotice').classList.add('hide');
+        $('confProgressNotice').style.display = 'none';
         $('confExecuteBtn').disabled = false;
         $('confExecuteBtn').textContent = 'Confirm & Send Now';
-        $('remConfirmModal').classList.remove('hide');
+        $('confCancelBtn').disabled = false;
+
+        var modal = $('remConfirmModal');
+        if (modal) {
+          modal.classList.remove('hide');
+          modal.style.display = 'flex';
+        }
       }
 
       function executeBulkSend() {
@@ -5956,6 +5972,7 @@
         if (!selected.length) return;
 
         $('confProgressNotice').classList.remove('hide');
+        $('confProgressNotice').style.display = 'block';
         $('confExecuteBtn').disabled = true;
         $('confExecuteBtn').textContent = 'Sending... Please wait';
         $('confCancelBtn').disabled = true;
@@ -5982,7 +5999,7 @@
             if (res && res.success) {
               toast('Bulk send completed! Sent: ' + res.sentCount + ', Excluded/Skipped: ' + (res.excludedCount || 0) + ', Failed: ' + res.failedCount);
               remSelectedEmails.clear();
-              $('remConfirmModal').classList.add('hide');
+              closeBulkConfirmModal();
               fetchEmailRemindersData();
               fetchEmailHistory();
             } else {
@@ -5992,6 +6009,7 @@
             toast('Network error during bulk send: ' + err.message);
           }).finally(function () {
             $('confProgressNotice').classList.add('hide');
+            $('confProgressNotice').style.display = 'none';
             $('confExecuteBtn').disabled = false;
             $('confExecuteBtn').textContent = 'Confirm & Send Now';
             $('confCancelBtn').disabled = false;
@@ -6010,8 +6028,32 @@
         if (bulkBtn) bulkBtn.addEventListener('click', openBulkConfirmModal);
 
         var cancelBtn = $('confCancelBtn');
-        if (cancelBtn) cancelBtn.addEventListener('click', function () {
-          $('remConfirmModal').classList.add('hide');
+        if (cancelBtn) {
+          cancelBtn.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeBulkConfirmModal();
+          });
+        }
+
+        var closeX = $('confCloseX');
+        if (closeX) {
+          closeX.addEventListener('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            closeBulkConfirmModal();
+          });
+        }
+
+        var remModal = $('remConfirmModal');
+        if (remModal) {
+          remModal.addEventListener('click', function (e) {
+            if (e.target === this) closeBulkConfirmModal();
+          });
+        }
+
+        document.addEventListener('keydown', function (e) {
+          if (e.key === 'Escape') closeBulkConfirmModal();
         });
 
         var execBtn = $('confExecuteBtn');
