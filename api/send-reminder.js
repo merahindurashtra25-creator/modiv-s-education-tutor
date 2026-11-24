@@ -1002,7 +1002,7 @@ module.exports = async function handler(req, res) {
     }
 
   // --- FEATURE: Admin Bulk Reminder Operations ---
-  if (['admin-fetch-users', 'admin-bulk-send', 'admin-fetch-history', 'admin-single-send'].includes(actionParam)) {
+  if (['admin-fetch-users', 'admin-bulk-send', 'admin-fetch-history', 'admin-single-send', 'admin-verify-smtp'].includes(actionParam)) {
     const user = await verifyAuth(req).catch(() => null);
     const reqAdminEmail = String((user && user.email) || (req.body && req.body.adminEmail) || req.query.adminEmail || req.headers['x-admin-email'] || '').trim().toLowerCase();
     const isMasterAdmin = Boolean((user && user.isAdmin) || (reqAdminEmail && MASTER_ADMIN_EMAILS.includes(reqAdminEmail)));
@@ -1014,6 +1014,21 @@ module.exports = async function handler(req, res) {
       const proto = req.headers['x-forwarded-proto'] || 'https';
       const host = req.headers.host || '';
       const originUrl = host ? `${proto}://${host}` : '';
+
+    if (actionParam === 'admin-verify-smtp') {
+      const smtpHost = process.env.SMTP_HOST || 'smtp.gmail.com';
+      const ip = await resolveHostIp(smtpHost);
+      const smtp = createSmtpTransporter({ resolvedIp: ip });
+      if (!smtp || !smtp.configured) {
+        return res.status(200).json({ success: false, configured: false, error: 'SMTP credentials not configured in environment.' });
+      }
+      try {
+        const verified = await smtp.transporter.verify();
+        return res.status(200).json({ success: true, verified: Boolean(verified), host: smtp.host, port: smtp.port, user: smtp.user });
+      } catch (err) {
+        return res.status(200).json({ success: false, error: err.message, code: err.code || 'ESMTP' });
+      }
+    }
 
     if (actionParam === 'admin-fetch-users') {
       return await handleAdminFetchUsers({ req, res, user: adminUser, db, FieldValue });
