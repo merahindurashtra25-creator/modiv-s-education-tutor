@@ -204,7 +204,7 @@
   function syncMetaUrls(cleanPath){
     try {
       if(typeof document === 'undefined') return;
-      var origin = (window.location && window.location.origin) ? window.location.origin : 'https://www.modivians.com';
+      var origin = (window.location && window.location.origin) ? window.location.origin : 'https://www.modivs.com';
       var canonicalUrl = origin + (cleanPath === '/' ? '' : cleanPath);
       var can = document.querySelector('link[rel="canonical"]');
       if(can){

@@ -103,7 +103,7 @@ function checkCsrf(req) {
       url.hostname.endsWith('vercel.app') ||
       url.hostname.endsWith('firebaseapp.com') ||
       url.hostname.endsWith('web.app') ||
-      url.hostname.endsWith('modivians.com') ||
+      url.hostname.endsWith('modivs.com') ||
       url.hostname === 'localhost' ||
       url.hostname === '127.0.0.1';
   } catch (e) {

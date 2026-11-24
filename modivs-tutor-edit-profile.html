@@ -310,9 +310,9 @@ function load(){
 function cityList(){var o={};['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){try{(JSON.parse(localStorage.getItem(k)||'[]')||[]).forEach(function(t){if(t&&t.status==='approved'&&t.city&&!t.is_demo)o[String(t.city).trim()]=1})}catch(e){}});return Object.keys(o).sort()}
 function normCity(c){return String(c||'').replace(/\s+/g,' ').trim().toLowerCase().replace(/(^|[\s-])([a-z])/g,function(m,a,b){return a+b.toUpperCase()})}
 function areaList(city){var o={},c=String(city||'').trim().toLowerCase();['modivs_tutors_db','modivs_submitted_tutors'].forEach(function(k){try{(JSON.parse(localStorage.getItem(k)||'[]')||[]).forEach(function(t){if(t&&t.status==='approved'&&!t.is_demo&&String(t.city||'').trim().toLowerCase()===c){[t.area].concat(String(t.travel||'').split(/[,;\n\/]+/)).forEach(function(a){a=normCity(a);if(a)o[a]=1})}})}catch(e){}});return Object.keys(o).sort()}
-function areaField(val,city){return '<label for="area">Area / locality'+STAR+' <span class="hint">type your locality and the city fills in by itself</span></label>'+ModivsPlaces.fieldHTML({id:'area',kind:'area',val:val,city:city})}
+function areaField(val,city){return '<label for="area">Area / locality <span class="hint">optional · type your locality and the city fills in by itself</span></label>'+ModivsPlaces.fieldHTML({id:'area',kind:'area',val:val,city:city})}
 /* city change refills the area dropdown (handled by modivs-places.js) */
-function cityField(val){return '<label for="city">City'+STAR+' <span class="hint">shown on the site after admin approval</span></label>'+ModivsPlaces.fieldHTML({id:'city',kind:'city',val:val,areaId:'area'})}
+function cityField(val){return '<label for="city">City <span class="hint">optional · shown on the site after admin approval</span></label>'+ModivsPlaces.fieldHTML({id:'city',kind:'city',val:val,areaId:'area'})}
 /* ---------- side rail: jump to any section ---------- */
 var spyBound=false;
 function railActive(id){var r=document.getElementById('epRail');if(!r)return;
@@ -351,12 +351,12 @@ function render(){
   '<label for="email">Email <span class="hint">login email, cannot be changed here</span></label><input id="email" type="email" value="'+esc(D.email)+'" disabled>'+
   phoneField('phone','Mobile number'+STAR,D.phone)+
   phoneField('whatsapp','WhatsApp number'+STAR,D.waSame?D.phone:D.whatsapp,'',D.waSame)+'<label class="check"><input type="checkbox" id="waSame"'+(D.waSame?' checked':'')+'><span>Same as my mobile number</span></label>'+
-  phoneField('altPhone','Alternate phone number'+STAR,D.altPhone)+
+  phoneField('altPhone','Alternate phone number <span class="hint">optional</span>',D.altPhone)+
   cityField(D.city)+areaField(D.area,D.city)+
   '<div id="tutorEditLocPicker"></div>'+
   '<div class="two"><div>'+sel('gender','Gender'+STAR,D.gender,['Female','Male','Other','Prefer not to say'])+'</div><div>'+field('dob','Date of birth'+STAR,D.dob,'date','tutors must be 18 or older','',' max="'+mvMax18()+'"')+'</div></div>'+
   field('headline','Profile headline'+STAR,D.headline,'text','one line','e.g. Maths tutor for classes 9–12 with 8 years’ experience')+
-  '<label for="bio">About you'+STAR+' <span class="hint">at least 80 characters</span></label><textarea id="bio">'+esc(D.bio)+'</textarea>'+
+  '<label for="bio">About you'+STAR+' <span class="hint">at least 50 characters</span></label><textarea id="bio">'+esc(D.bio)+'</textarea>'+
   '<div class="lab">Languages you teach in'+STAR+'</div>'+chips('langs',LANGS,D.langs)+'</section>'+
 
   '<section class="sec"><h2>Academic qualification</h2>'+
@@ -446,16 +446,15 @@ function validate(files){
   if(!D.waSame&&!D.whatsapp)return fail('whatsapp','Enter your WhatsApp number, or tick “Same as my mobile number”.');
   if(!D.waSame&&!validPhone(D.whatsapp))return fail('whatsapp',phoneMsg(D.whatsapp,'WhatsApp number'));
   if(!validPhone(D.phone))return fail('phone',phoneMsg(D.phone,'mobile number'));
-  if(!D.altPhone)return fail('altPhone','Enter your alternate phone number.');
-  if(!validPhone(D.altPhone))return fail('altPhone',phoneMsg(D.altPhone,'alternate phone number'));
-  if(samePhone(D.altPhone,D.phone))return fail('altPhone','Alternate number must be different from your mobile number.');
-  if(!D.city)return fail('city','Select your city.');
-  if(!D.area)return fail('area','Enter your area or locality, for example Model Town.');
+  if(D.altPhone){
+    if(!validPhone(D.altPhone))return fail('altPhone',phoneMsg(D.altPhone,'alternate phone number'));
+    if(samePhone(D.altPhone,D.phone))return fail('altPhone','Alternate number must be different from your mobile number.');
+  }
   if(!D.gender)return fail('gender','Select your gender.');
   if(!D.dob)return fail('dob','Enter your date of birth.');
   if(!mvAge18(D.dob))return fail('dob','Tutors must be at least 18 years old.');
   if(!D.headline)return fail('headline','Add a one-line headline.');
-  if(D.bio.length<80)return fail('bio','Write at least 80 characters about yourself ('+D.bio.length+' so far).');
+  if(D.bio.length<50)return fail('bio','Write at least 50 characters about yourself ('+D.bio.length+' so far).');
   if(!D.langs.length)return fail('bio','Choose at least one language you teach in.');
   var s12=D.school12||{};
   if(!s12.school)return fail('s12_school','Enter your Class 12th school name.');

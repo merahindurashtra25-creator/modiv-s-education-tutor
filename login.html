@@ -1378,12 +1378,12 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
         phoneField('phone','Mobile Number'+STAR, W.phone) +
         phoneField('whatsapp','WhatsApp number'+STAR, W.waSame ? W.phone : W.whatsapp, W.waSame) +
         '<label class="tsu-check" style="margin-top:8px"><input type="checkbox" id="tWaSame"'+(W.waSame ? ' checked' : '')+'><span>Same as my mobile number</span></label>' +
-        phoneField('altPhone','Alternate phone number'+STAR, W.altPhone);
+        phoneField('altPhone','Alternate phone number'+' <span class="hint">optional</span>', W.altPhone);
     }
     if(pg === 'loc'){
       return ''+
-        '<div class="tsu-two"><div><label for="city">City'+STAR+'</label>' + ModivsPlaces.fieldHTML({ id:'city', kind:'city', val:W.city, areaId:'area' }) + '</div>' +
-        '<div><label for="area">Area / locality'+STAR+'</label>' + ModivsPlaces.fieldHTML({ id:'area', kind:'area', val:W.area, city:W.city }) + '</div></div>' +
+        '<div class="tsu-two"><div><label for="city">City'+' <span class="hint">optional</span>'+'</label>' + ModivsPlaces.fieldHTML({ id:'city', kind:'city', val:W.city, areaId:'area' }) + '</div>' +
+        '<div><label for="area">Area / locality'+' <span class="hint">optional</span>'+'</label>' + ModivsPlaces.fieldHTML({ id:'area', kind:'area', val:W.area, city:W.city }) + '</div></div>' +
         '<div id="tutorLocPicker"></div>';
     }
     if(pg === 'personal'){
@@ -1392,7 +1392,7 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
     }
     if(pg === 'about'){
       return tfield('headline','Profile headline'+STAR,'text',W.headline,'e.g. Maths tutor for classes 9–12 with 8 years’ experience','one line') +
-        '<label for="bio">About you'+STAR+' <span class="hint">at least 80 characters</span></label><textarea id="bio">'+esc(W.bio)+'</textarea>' +
+        '<label for="bio">About you'+STAR+' <span class="hint">at least 50 characters</span></label><textarea id="bio">'+esc(W.bio)+'</textarea>' +
         '<div class="lab">Languages you teach in'+STAR+'</div>' + tchips('langs', LANGS, W.langs);
     }
     if(pg === 'subjects'){
@@ -1460,7 +1460,7 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
     var t = function(x){ return typeof x === 'string' && x.trim() !== ''; };
     var checks = [
       !!W.photo, !!W.firstName || !!W.name, t(W.phone), t(W.whatsapp) || !!W.waSame, t(W.altPhone), t(W.city), t(W.gender), t(W.dob),
-      t(W.headline), t(W.bio) && W.bio.trim().length >= 80, W.langs.length > 0,
+      t(W.headline), t(W.bio) && W.bio.trim().length >= 50, W.langs.length > 0,
       t(q.degree) && t(q.inst) && t(q.field) && t(q.year), W.totalYears !== '' && W.totalYears != null && +W.totalYears >= 0 && PAGES.indexOf('quals') + 1 < W.step,
       W.subjects.length > 0, W.levels.length > 0, W.boards.length > 0, W.modes.length > 0 && PAGES.indexOf('subjects') + 1 < W.step, W.formats.length > 0 && PAGES.indexOf('subjects') + 1 < W.step,
       +W.fee > 0, t(W.trial), Object.keys(W.avail || {}).length > 0, t(W.notice), !!(PEND.id || W.idName), !!(PEND.cert || W.certName)
@@ -1483,12 +1483,19 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
           cityInputId: 'city',
           areaInputId: 'area',
           initialLocation: W.location,
+          label: 'Your GPS location (required)',
           onLocationChange: function(loc){
+            var prev = W.location || {};
+            if(loc && typeof loc.latitude !== 'number' && typeof loc.lat !== 'number' && (typeof prev.latitude === 'number' || typeof prev.lat === 'number')){
+              loc = Object.assign({}, loc, { latitude: prev.latitude != null ? prev.latitude : prev.lat, longitude: prev.longitude != null ? prev.longitude : prev.lng });
+            }
             W.location = loc;
             if(loc.city) W.city = loc.city;
             if(loc.area) W.area = loc.area;
           }
         });
+        var hlp = document.querySelector('#tutorLocPicker .mv-loc-helper span'); if(hlp) hlp.textContent = 'GPS location is required. City and area are optional.';
+        var ttl = document.querySelector('#tutorLocPicker .mv-loc-title'); if(ttl) ttl.innerHTML = ttl.innerHTML.replace('Your GPS location (required)', 'Your GPS location <span class="req" aria-hidden="true">*</span>');
       }, 50);
     }
     var m = $('signup'); if(m && !m.classList.contains('hide')) { try{ $('tsuSteps').scrollIntoView({block:'nearest'}); }catch(e){} }
@@ -1565,13 +1572,15 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
       if(!W.waSame && !W.whatsapp) return tfail('whatsapp', 'Enter your WhatsApp number, or tick “Same as my mobile number”.');
       if(!W.waSame && !validPhone(W.whatsapp)) return tfail('whatsapp', phoneMsg(W.whatsapp, 'WhatsApp number'));
       if(!validPhone(W.phone)) return tfail('phone', phoneMsg(W.phone, 'mobile number'));
-      if(!W.altPhone) return tfail('altPhone', 'Enter your alternate phone number.');
-      if(!validPhone(W.altPhone)) return tfail('altPhone', phoneMsg(W.altPhone, 'alternate phone number'));
-      if(samePhone(W.altPhone, W.phone)) return tfail('altPhone', 'Alternate number must be different from your mobile number.');
+      if(W.altPhone){
+        if(!validPhone(W.altPhone)) return tfail('altPhone', phoneMsg(W.altPhone, 'alternate phone number'));
+        if(samePhone(W.altPhone, W.phone)) return tfail('altPhone', 'Alternate number must be different from your mobile number.');
+      }
     }
     if(pg === 'loc'){
-      if(!W.city) return tfail('city', 'Select your city.');
-      if(!W.area) return tfail('area', 'Select your area or locality.');
+      var L = W.location || {};
+      var hasGps = (typeof L.latitude === 'number' && typeof L.longitude === 'number') || (typeof L.lat === 'number' && typeof L.lng === 'number');
+      if(!hasGps) return tfail('mvLocBtn', 'Please share your GPS location: tap “Use Current Location” (or search and pick your place on the map).');
     }
     if(pg === 'personal'){
       if(!W.gender) return tfail('gender', 'Select your gender.');
@@ -1580,7 +1589,7 @@ function mvAge18(d){var b=new Date(d);if(isNaN(b))return false;var t=new Date();
     }
     if(pg === 'about'){
       if(!W.headline) return tfail('headline', 'Add a one-line headline.');
-      if(W.bio.length < 80) return tfail('bio', 'Write at least 80 characters about yourself ('+W.bio.length+' so far).');
+      if(W.bio.length < 50) return tfail('bio', 'Write at least 50 characters about yourself ('+W.bio.length+' so far).');
       if(!W.langs.length) return tfail('', 'Choose at least one language you teach in.');
     }
     if(pg === 'subjects'){

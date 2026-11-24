@@ -3,8 +3,12 @@ Allow: /
 Disallow: /modivs-admin.html
 Disallow: /admin
 Disallow: /modivs-tutor-dashboard.html
+Disallow: /tutor-dashboard
 Disallow: /modivs-student-dashboard.html
+Disallow: /student-dashboard
 Disallow: /modivs-org-dashboard.html
+Disallow: /org-dashboard
 Disallow: /modivs-tutor-edit-profile.html
+Disallow: /tutor-edit-profile
 
-Sitemap: https://www.modivians.com/sitemap.xml
+Sitemap: https://www.modivs.com/sitemap.xml

@@ -213,7 +213,7 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
       await accountRef.set({
         reminderHistory: existingHistory,
         lastActivityAt: FieldValue.serverTimestamp()
-      }, { merge: true }).catch(() => {});
+      }, { merge: true }).catch(() => { });
 
       throw new Error(`SMTP Delivery Failed: ${smtpErr.message}`);
     }
@@ -354,7 +354,7 @@ async function sendWelcomeEmailHelper({ email, role = 'student', name = '', disp
     welcomeEmailSentAt: FieldValue.serverTimestamp(),
     welcomeMessageId: messageId,
     lastActivityAt: FieldValue.serverTimestamp()
-  }, { merge: true }).catch(() => {});
+  }, { merge: true }).catch(() => { });
 
   return {
     success: true,
@@ -476,7 +476,7 @@ async function handleAdminFetchUsers({ req, res, user, db, FieldValue }) {
     try {
       const histSnap = await db.collection('admin_email_history').where('status', '==', 'failed').get();
       failedEmails = histSnap.size || 0;
-    } catch (e) {}
+    } catch (e) { }
 
     return res.status(200).json({
       success: true,
@@ -522,7 +522,7 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl }
     try {
       const doc = await db.collection('accounts').doc(email).get().catch(() => null);
       if (doc && doc.exists) accountData = doc.data();
-    } catch (e) {}
+    } catch (e) { }
 
     const isComplete = accountData && (accountData.profileCompleted === true || accountData.profileStatus === 'completed');
     if (isComplete) {
@@ -574,7 +574,7 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl }
       if (existingReminder && existingReminder.exists && existingReminder.data().state === 'sent') {
         alreadySent = true;
       }
-    } catch (e) {}
+    } catch (e) { }
 
     if (alreadySent) {
       results.push({ email: item.email, status: 'skipped', reason: 'Duplicate: already sent in campaign' });
@@ -592,7 +592,7 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl }
       state: 'sending',
       initiatedBy: senderAdminEmail,
       updatedAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
-    }, { merge: true }).catch(() => {});
+    }, { merge: true }).catch(() => { });
 
     let mailSuccess = false;
     let errorMessage = null;
@@ -641,14 +641,14 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl }
       state: outcomeStatus,
       errorMessage,
       sentAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
-    }).catch(() => {});
+    }).catch(() => { });
 
     // Update account doc
     await db.collection('accounts').doc(item.email).set({
       lastReminderSentAt: new Date().toISOString(),
       reminderCount: FieldValue.increment ? FieldValue.increment(1) : 1,
       lastEmailStatus: outcomeStatus
-    }, { merge: true }).catch(() => {});
+    }, { merge: true }).catch(() => { });
 
     // Save to admin_email_history
     await db.collection('admin_email_history').add({
@@ -663,7 +663,7 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl }
       adminEmail: senderAdminEmail,
       campaignId,
       campaignName
-    }).catch(() => {});
+    }).catch(() => { });
 
     results.push({ email: item.email, status: outcomeStatus, error: errorMessage });
 
@@ -728,56 +728,56 @@ module.exports = async function handler(req, res) {
     // --- FEATURE: Secure Continuation Token Consumption ---
     if (query.action === 'continue') {
       const rawToken = query.token;
-    if (!rawToken) {
-      return res.status(400).send(`
+      if (!rawToken) {
+        return res.status(400).send(`
         <!DOCTYPE html>
         <html><head><title>Invalid Link · Modiv’s Education</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:sans-serif;padding:40px;text-align:center;color:#1e293b;background:#f8fafc;} .card{max-width:480px;margin:40px auto;background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.06);border:1px solid #e2e8f0;} h2{color:#0b1a30;} a{color:#0f766e;font-weight:700;text-decoration:none;}</style></head>
         <body><div class="card"><h2>Invalid Link</h2><p>This continuation link is missing a valid security token.</p><p><a href="/index.html">Return to Modiv’s Education Home &rarr;</a></p></div></body></html>
       `);
-    }
+      }
 
-    const consumeResult = await consumeContinuationToken({ rawToken, db, FieldValue });
-    if (!consumeResult.valid) {
-      return res.status(403).send(`
+      const consumeResult = await consumeContinuationToken({ rawToken, db, FieldValue });
+      if (!consumeResult.valid) {
+        return res.status(403).send(`
         <!DOCTYPE html>
         <html><head><title>Link Expired · Modiv’s Education</title><meta name="viewport" content="width=device-width, initial-scale=1.0"><style>body{font-family:sans-serif;padding:40px;text-align:center;color:#1e293b;background:#f8fafc;} .card{max-width:480px;margin:40px auto;background:#fff;padding:32px;border-radius:12px;box-shadow:0 4px 16px rgba(0,0,0,0.06);border:1px solid #e2e8f0;} h2{color:#0b1a30;} a{color:#0f766e;font-weight:700;text-decoration:none;}</style></head>
         <body><div class="card"><h2>Link Expired or Already Used</h2><p>${consumeResult.error || 'For security, profile continuation links are single-use and expire after 7 days.'}</p><p><a href="/modivs-education.html#login">Log in to resume your profile &rarr;</a></p></div></body></html>
       `);
+      }
+
+      const destination = consumeResult.destination || '/index.html';
+      if (!isSafeRedirectUrl(destination)) {
+        return res.redirect(302, '/index.html');
+      }
+
+      // Safely redirect user to their role-specific profile page
+      return res.redirect(302, destination);
     }
 
-    const destination = consumeResult.destination || '/index.html';
-    if (!isSafeRedirectUrl(destination)) {
-      return res.redirect(302, '/index.html');
+    // --- FEATURE: Welcome Email Dispatch ---
+    const actionParam = String(req.query.action || (req.body && req.body.action) || '').toLowerCase();
+    if (actionParam === 'welcome' && (req.method === 'POST' || req.method === 'GET')) {
+      const payload = req.method === 'POST' ? (req.body || {}) : req.query;
+      const { email, role, name, displayId } = payload;
+      if (!email) return res.status(400).json({ error: 'Missing required field: email' });
+
+      const proto = req.headers['x-forwarded-proto'] || 'https';
+      const host = req.headers.host || '';
+      const originUrl = host ? `${proto}://${host}` : '';
+
+      try {
+        const result = await sendWelcomeEmailHelper({
+          email,
+          role,
+          name,
+          displayId,
+          originUrl
+        });
+        return res.status(200).json(result);
+      } catch (e) {
+        return res.status(500).json({ error: e.message });
+      }
     }
-
-    // Safely redirect user to their role-specific profile page
-    return res.redirect(302, destination);
-  }
-
-  // --- FEATURE: Welcome Email Dispatch ---
-  const actionParam = String(req.query.action || (req.body && req.body.action) || '').toLowerCase();
-  if (actionParam === 'welcome' && (req.method === 'POST' || req.method === 'GET')) {
-    const payload = req.method === 'POST' ? (req.body || {}) : req.query;
-    const { email, role, name, displayId } = payload;
-    if (!email) return res.status(400).json({ error: 'Missing required field: email' });
-
-    const proto = req.headers['x-forwarded-proto'] || 'https';
-    const host = req.headers.host || '';
-    const originUrl = host ? `${proto}://${host}` : '';
-
-    try {
-      const result = await sendWelcomeEmailHelper({
-        email,
-        role,
-        name,
-        displayId,
-        originUrl
-      });
-      return res.status(200).json(result);
-    } catch (e) {
-      return res.status(500).json({ error: e.message });
-    }
-  }
 
   // --- FEATURE: Admin Bulk Reminder Operations ---
   if (['admin-fetch-users', 'admin-bulk-send', 'admin-fetch-history', 'admin-single-send'].includes(actionParam)) {
@@ -789,9 +789,9 @@ module.exports = async function handler(req, res) {
     }
 
     const adminUser = user || { email: reqAdminEmail || 'luxmankumar628@gmail.com', isAdmin: true };
-    const proto = req.headers['x-forwarded-proto'] || 'https';
-    const host = req.headers.host || '';
-    const originUrl = host ? `${proto}://${host}` : '';
+      const proto = req.headers['x-forwarded-proto'] || 'https';
+      const host = req.headers.host || '';
+      const originUrl = host ? `${proto}://${host}` : '';
 
     if (actionParam === 'admin-fetch-users') {
       return await handleAdminFetchUsers({ req, res, user: adminUser, db, FieldValue });
@@ -810,58 +810,58 @@ module.exports = async function handler(req, res) {
     }
   }
 
-  // --- Authentication Check for Sending Reminders ---
-  const cronSecret = process.env.CRON_SECRET;
-  const authHeader = req.headers.authorization || '';
-  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
-  const customHeader = req.headers['x-cron-secret'] || '';
-  const querySecret = req.query.secret || '';
+    // --- Authentication Check for Sending Reminders ---
+    const cronSecret = process.env.CRON_SECRET;
+    const authHeader = req.headers.authorization || '';
+    const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
+    const customHeader = req.headers['x-cron-secret'] || '';
+    const querySecret = req.query.secret || '';
 
-  const isCronAuthorized = cronSecret && (token === cronSecret || customHeader === cronSecret || querySecret === cronSecret);
-  let isAdminAuthorized = false;
+    const isCronAuthorized = cronSecret && (token === cronSecret || customHeader === cronSecret || querySecret === cronSecret);
+    let isAdminAuthorized = false;
 
-  if (!isCronAuthorized) {
-    const user = await verifyAuth(req).catch(() => null);
-    if (user && user.isAdmin) {
-      isAdminAuthorized = true;
+    if (!isCronAuthorized) {
+      const user = await verifyAuth(req).catch(() => null);
+      if (user && user.isAdmin) {
+        isAdminAuthorized = true;
+      }
     }
-  }
 
-  if (cronSecret && !isCronAuthorized && !isAdminAuthorized) {
-    return res.status(401).json({ error: 'Unauthorized: Invalid CRON_SECRET or Admin credentials.' });
-  }
+    if (cronSecret && !isCronAuthorized && !isAdminAuthorized) {
+      return res.status(401).json({ error: 'Unauthorized: Invalid CRON_SECRET or Admin credentials.' });
+    }
 
-  // Rate limit protection
-  const clientIp = (req.headers && req.headers['x-forwarded-for']) || (req.socket && req.socket.remoteAddress) || (req.connection && req.connection.remoteAddress) || 'unknown';
-  if (!checkRateLimit(clientIp, 30, 60000)) {
-    return res.status(429).json({ error: 'Too many requests. Please try again later.' });
-  }
+    // Rate limit protection
+    const clientIp = (req.headers && req.headers['x-forwarded-for']) || (req.socket && req.socket.remoteAddress) || (req.connection && req.connection.remoteAddress) || 'unknown';
+    if (!checkRateLimit(clientIp, 30, 60000)) {
+      return res.status(429).json({ error: 'Too many requests. Please try again later.' });
+    }
 
-  const payload = req.method === 'POST' ? (req.body || {}) : (req.query || {});
-  const { email, role, reminderIndex, force } = payload;
+    const payload = req.method === 'POST' ? (req.body || {}) : (req.query || {});
+    const { email, role, reminderIndex, force } = payload;
 
-  if (!email) {
-    return res.status(400).json({ error: 'Missing required field: email' });
-  }
+    if (!email) {
+      return res.status(400).json({ error: 'Missing required field: email' });
+    }
 
-  const proto = (req.headers && req.headers['x-forwarded-proto']) || 'https';
-  const host = (req.headers && req.headers.host) || '';
-  const originUrl = host ? `${proto}://${host}` : '';
+    const proto = (req.headers && req.headers['x-forwarded-proto']) || 'https';
+    const host = (req.headers && req.headers.host) || '';
+    const originUrl = host ? `${proto}://${host}` : '';
 
-  try {
-    const result = await sendReminderEmailHelper({
-      email,
-      role,
-      reminderIndex: Number(reminderIndex) || 1,
-      force: Boolean(force),
-      originUrl
-    });
+    try {
+      const result = await sendReminderEmailHelper({
+        email,
+        role,
+        reminderIndex: Number(reminderIndex) || 1,
+        force: Boolean(force),
+        originUrl
+      });
 
-    return res.status(200).json(result);
-  } catch (error) {
-    console.error('[send-reminder] Error:', error);
-    return res.status(500).json({ error: error.message });
-  }
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error('[send-reminder] Error:', error);
+      return res.status(500).json({ error: error.message });
+    }
   } catch (fatalErr) {
     console.error('[send-reminder] Fatal error caught:', fatalErr);
     return res.status(500).json({ error: fatalErr.message || 'Internal server error' });
