@@ -6179,7 +6179,11 @@
         .then(function (res) {
           if (res && res.success) {
             var sent = res.sentCount != null ? res.sentCount : selected.length;
-            toast('✓ Emails dispatched! Sent: ' + sent + (res.failedCount ? (', Failed: ' + res.failedCount) : ''));
+            if (res.failedCount && !sent && res.results && res.results[0] && res.results[0].error) {
+              toast('Notice: ' + res.results[0].error);
+            } else {
+              toast('✓ Emails dispatched! Sent: ' + sent + (res.failedCount ? (', Failed: ' + res.failedCount) : ''));
+            }
             remSelectedEmails.clear();
             closeBulkConfirmModal();
             fetchEmailRemindersData();

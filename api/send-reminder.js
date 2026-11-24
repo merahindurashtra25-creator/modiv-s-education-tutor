@@ -49,11 +49,14 @@ function checkRateLimit(key, maxLimit = 10, windowMs = 60000) {
   return entry.count <= maxLimit;
 }
 
-// Global safety handler to prevent Vercel node process termination on unhandled rejections
+// Global safety handlers to prevent Vercel node process termination on unhandled rejections or uncaught exceptions
 if (!global.__unhandledRejectionSilencerInstalled) {
   global.__unhandledRejectionSilencerInstalled = true;
   process.on('unhandledRejection', (reason) => {
     console.warn('[send-reminder] Unhandled rejection intercepted:', (reason && reason.message) || reason);
+  });
+  process.on('uncaughtException', (err) => {
+    console.warn('[send-reminder] Uncaught exception intercepted:', (err && err.message) || err);
   });
 }
 
@@ -62,8 +65,7 @@ if (!global.__unhandledRejectionSilencerInstalled) {
  */
 function createSmtpTransporter() {
   const host = process.env.SMTP_HOST || 'smtp.gmail.com';
-  const port = Number(process.env.SMTP_PORT) || 465;
-  const secure = process.env.SMTP_SECURE === 'false' ? false : (port === 465);
+  let port = Number(process.env.SMTP_PORT) || 587;
   let user = process.env.SMTP_USER || process.env.GMAIL_USER || process.env.EMAIL_USER || 'merahindurashtra25@gmail.com';
   let pass = process.env.SMTP_PASS || process.env.GMAIL_PASS || process.env.GMAIL_APP_PASSWORD || process.env.EMAIL_PASS;
 
@@ -72,21 +74,30 @@ function createSmtpTransporter() {
   }
 
   user = String(user).trim().replace(/^["']|["']$/g, '');
-  pass = String(pass).trim().replace(/^["']|["']$/g, '');
+  pass = String(pass).trim().replace(/^["']|["']$/g, '').replace(/\s+/g, '');
+
+  const isGmail = host.includes('gmail') || !process.env.SMTP_HOST;
+  const transportConfig = isGmail
+    ? {
+        service: 'gmail',
+        auth: { user, pass },
+        connectionTimeout: 3500,
+        greetingTimeout: 3500,
+        socketTimeout: 4000
+      }
+    : {
+        host,
+        port,
+        secure: (port === 465),
+        auth: { user, pass },
+        connectionTimeout: 3500,
+        greetingTimeout: 3500,
+        socketTimeout: 4000,
+        tls: { rejectUnauthorized: false }
+      };
 
   return {
-    transporter: nodemailer.createTransport({
-      host,
-      port,
-      secure,
-      auth: { user, pass },
-      connectionTimeout: 4000,
-      greetingTimeout: 4000,
-      socketTimeout: 6000,
-      tls: {
-        rejectUnauthorized: false
-      }
-    }),
+    transporter: nodemailer.createTransport(transportConfig),
     user,
     configured: true
   };
@@ -625,6 +636,9 @@ async function handleAdminFetchUsers({ req, res, user, db, FieldValue }) {
  * Admin: One-click bulk reminder email dispatcher
  */
 async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, reqAdminEmail }) {
+  const startTime = Date.now();
+  const MAX_TIME_MS = 6000; // 6s strict deadline to comfortably beat Vercel's 10s ceiling
+
   try {
     const { emails = [], campaignName = 'Admin Bulk Reminder', forceSend = true } = req.body || {};
     if (!Array.isArray(emails) || emails.length === 0) {
@@ -649,10 +663,6 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
         try {
           const doc = await db.collection('accounts').doc(email).get().catch(() => null);
           if (doc && doc.exists) accountData = doc.data();
-        } catch (e) { }
-      } else {
-        try {
-          accountData = await restFetchDocument('accounts', email).catch(() => null);
         } catch (e) { }
       }
 
@@ -697,12 +707,10 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
     let sentCount = 0;
     let failedCount = 0;
     const results = [];
-    const startTime = Date.now();
-    const MAX_TIME_MS = 8000; // 8s deadline to avoid Vercel Serverless Function timeout
 
     for (const item of eligible) {
       if (Date.now() - startTime > MAX_TIME_MS) {
-        console.warn(`[AdminBulk] Approaching execution deadline. Finishing batch with ${sentCount} sent.`);
+        console.warn(`[AdminBulk] Approaching deadline (${Date.now() - startTime}ms). Returning completed batch.`);
         break;
       }
       const idempotencyKey = `bulk_${campaignId}_${item.email}`;
@@ -744,7 +752,8 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
         } else {
           const loginUrl = `${originUrl || 'https://www.modivs.com'}/login.html`;
           const { subject, html, text } = getAdminBulkReminderTemplate(item.name, item.role, loginUrl);
-          const info = await transporterObj.transporter.sendMail({
+          
+          const sendPromise = transporterObj.transporter.sendMail({
             from: `"Modiv’s Education" <${transporterObj.user}>`,
             replyTo: `"Modiv’s Education Support" <${transporterObj.user}>`,
             to: item.email,
@@ -762,6 +771,12 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
               'Auto-Submitted': 'auto-generated'
             }
           });
+
+          const timeoutPromise = new Promise((_, reject) => 
+            setTimeout(() => reject(new Error('SMTP timeout: mail server did not respond within 3s')), 3000)
+          );
+
+          const info = await Promise.race([sendPromise, timeoutPromise]);
           if (info && (info.messageId || (info.accepted && info.accepted.length > 0))) {
             mailSuccess = true;
           } else {
@@ -770,7 +785,7 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, 
         }
       } catch (err) {
         errorMessage = err.message || 'SMTP transmission error';
-        console.error(`[AdminBulk] Failed to send to ${item.email}:`, err);
+        console.error(`[AdminBulk] Failed to send to ${item.email}:`, err.message);
       }
 
       const outcomeStatus = mailSuccess ? 'sent' : 'failed';
