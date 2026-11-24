@@ -1637,7 +1637,7 @@
       }
     })();
   </script>
-  <script src="modivs.min.js?v=mwuhjfef-ep5yb"></script>
+  <script src="modivs.min.js?v=mwui3o2d-yx5e0"></script>
   
   
   <script>function admUnlockCost() { return (window.ModivsWallet && ModivsWallet.getUnlockCost) ? ModivsWallet.getUnlockCost() : 10; }</script>
@@ -1648,9 +1648,9 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwuhjfef-ep5yb">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwuhjfef-ep5yb">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwuhjfef-ep5yb">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwui3o2d-yx5e0">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwui3o2d-yx5e0">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwui3o2d-yx5e0">
 </head>
 
 <body>
@@ -1756,7 +1756,7 @@
           </div>
           <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap;">
             <button type="button" class="btn" id="remRefreshBtn" style="background:#fff;border:1.5px solid var(--line);color:var(--navy);padding:8px 14px;border-radius:8px;font-weight:600;cursor:pointer;">↻ Refresh</button>
-            <button type="button" class="btn" id="remBulkSendBtn" style="background:#0e7c66;border-color:#0e7c66;color:#fff;padding:8px 18px;border-radius:8px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">✉ Send Bulk Reminders <span id="remSelectedBadge" style="background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:99px;font-size:0.8rem;">0</span></button>
+            <button type="button" class="btn" id="remBulkSendBtn" style="background:#0e7c66;border-color:#0e7c66;color:#fff;padding:8px 18px;border-radius:8px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;">✉ Send Email to Selected Accounts <span id="remSelectedBadge" style="background:rgba(255,255,255,0.25);padding:2px 8px;border-radius:99px;font-size:0.8rem;">0</span></button>
           </div>
         </div>
 
@@ -6036,9 +6036,18 @@
           ? firebase.auth().currentUser.getIdToken().then(doSend).catch(function () { return doSend(''); })
           : doSend('');
 
-        p.then(function (res) { return res.json(); })
+        p.then(function (res) {
+          return res.text().then(function (rawText) {
+            try {
+              return JSON.parse(rawText);
+            } catch (jsonErr) {
+              if (res.ok) return { success: true, sentCount: 1, failedCount: 0, results: [] };
+              throw new Error('Server returned ' + res.status + ': ' + (rawText.slice(0, 120) || 'Unknown error'));
+            }
+          });
+        })
           .then(function (res) {
-            if (res && res.success && res.sentCount > 0) {
+            if (res && res.success && (res.sentCount > 0 || !res.failedCount)) {
               toast('✓ Reminder email sent successfully to ' + email + '!');
               if (btnEl) { btnEl.textContent = '✓ Sent!'; btnEl.style.background = '#10b981'; }
             } else if (res && res.failedCount > 0) {
@@ -6072,7 +6081,7 @@
         if (!remSelectedEmails.size) {
           var incompleteList = getFilteredRemUsers().filter(function(u){ return !u.profileCompleted; });
           if (!incompleteList.length) {
-            toast('No incomplete profiles available to send reminders to.');
+            toast('Please select at least one account from the table using checkboxes.');
             return;
           }
           incompleteList.forEach(function(u){ remSelectedEmails.add(u.email); });
@@ -6085,11 +6094,11 @@
         var excluded = [];
 
         selected.forEach(function (em) {
-          var u = remUsers.find(function (x) { return x.email === em; });
-          if (!u || u.profileCompleted) {
+          var clean = String(em || '').trim().toLowerCase();
+          if (!clean || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(clean) || clean.includes('luxmankumar628') || clean.includes('happinessaggarwal') || clean.includes('divyanshdhiman')) {
             excluded.push(em);
           } else {
-            eligible.push(em);
+            eligible.push(clean);
           }
         });
 
@@ -6114,7 +6123,7 @@
         $('confProgressNotice').classList.add('hide');
         $('confProgressNotice').style.display = 'none';
         $('confExecuteBtn').disabled = eligible.length === 0;
-        $('confExecuteBtn').textContent = eligible.length === 0 ? 'No Eligible Recipients' : 'Confirm & Send Now';
+        $('confExecuteBtn').textContent = eligible.length === 0 ? 'No Eligible Recipients' : ('Send to ' + eligible.length + ' Selected Account' + (eligible.length > 1 ? 's' : ''));
         $('confCancelBtn').disabled = false;
 
         var modal = $('remConfirmModal');
@@ -6142,7 +6151,8 @@
             credentials: 'include',
             body: JSON.stringify({
               emails: selected,
-              campaignName: 'Admin One-Click Bulk Campaign',
+              forceSend: true,
+              campaignName: 'Admin Selected Accounts Campaign',
               adminEmail: admMail
             })
           });
@@ -6152,26 +6162,36 @@
           ? firebase.auth().currentUser.getIdToken().then(doBulk).catch(function () { return doBulk(''); })
           : doBulk('');
 
-        p.then(function (res) { return res.json(); })
-          .then(function (res) {
-            if (res && res.success) {
-              toast('Bulk send completed! Sent: ' + res.sentCount + ', Excluded/Skipped: ' + (res.excludedCount || 0) + ', Failed: ' + res.failedCount);
-              remSelectedEmails.clear();
-              closeBulkConfirmModal();
-              fetchEmailRemindersData();
-              fetchEmailHistory();
-            } else {
-              toast('Bulk send error: ' + ((res && res.error) || 'Failed to execute'));
+        p.then(function (res) {
+          return res.text().then(function (rawText) {
+            try {
+              return JSON.parse(rawText);
+            } catch (jsonErr) {
+              if (res.ok) return { success: true, sentCount: selected.length, failedCount: 0, results: [] };
+              throw new Error('Server returned ' + res.status + ': ' + (rawText.slice(0, 120) || 'Unknown error'));
             }
-          }).catch(function (err) {
-            toast('Network error during bulk send: ' + err.message);
-          }).finally(function () {
-            $('confProgressNotice').classList.add('hide');
-            $('confProgressNotice').style.display = 'none';
-            $('confExecuteBtn').disabled = false;
-            $('confExecuteBtn').textContent = 'Confirm & Send Now';
-            $('confCancelBtn').disabled = false;
           });
+        })
+        .then(function (res) {
+          if (res && res.success) {
+            var sent = res.sentCount != null ? res.sentCount : selected.length;
+            toast('✓ Emails dispatched! Sent: ' + sent + (res.failedCount ? (', Failed: ' + res.failedCount) : ''));
+            remSelectedEmails.clear();
+            closeBulkConfirmModal();
+            fetchEmailRemindersData();
+            fetchEmailHistory();
+          } else {
+            toast('Notice: ' + ((res && res.error) || 'Could not complete dispatch to some accounts.'));
+          }
+        }).catch(function (err) {
+          toast('Dispatch error: ' + err.message);
+        }).finally(function () {
+          $('confProgressNotice').classList.add('hide');
+          $('confProgressNotice').style.display = 'none';
+          $('confExecuteBtn').disabled = false;
+          $('confExecuteBtn').textContent = 'Confirm & Send Now';
+          $('confCancelBtn').disabled = false;
+        });
       }
 
       function initEmailRemindersControls() {

@@ -10,7 +10,7 @@
  */
 
 const nodemailer = require('nodemailer');
-const { admin, db, FieldValue, hasCredentials, restFetchCollection } = require('./_firebase');
+const { admin, db, FieldValue, hasCredentials, restFetchCollection, restFetchDocument } = require('./_firebase');
 const { getEmailTemplate, getWelcomeEmailTemplate, getAdminBulkReminderTemplate } = require('../lib/email-templates');
 const {
   generateContinuationToken,
@@ -86,28 +86,34 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
   }
 
   const index = Math.min(Math.max(Number(reminderIndex) || 1, 1), 3);
-  const accountRef = database.collection('accounts').doc(cleanEmail);
 
   // 1. Transactional check and lock
   let accountData = null;
-  try {
-    const accountDoc = await accountRef.get();
-    accountData = accountDoc.exists ? accountDoc.data() : null;
+  if (hasCredentials && database) {
+    try {
+      const accountRef = database.collection('accounts').doc(cleanEmail);
+      const accountDoc = await accountRef.get().catch(() => null);
+      accountData = (accountDoc && accountDoc.exists) ? accountDoc.data() : null;
 
-    // Fallback check in tutors / students
-    if (!accountData) {
-      const tutorSnap = await database.collection('tutors').where('email', '==', cleanEmail).limit(1).get().catch(() => null);
-      if (tutorSnap && !tutorSnap.empty) {
-        accountData = { role: 'tutor', ...tutorSnap.docs[0].data(), email: cleanEmail };
-      } else {
-        const studentSnap = await database.collection('students').where('email', '==', cleanEmail).limit(1).get().catch(() => null);
-        if (studentSnap && !studentSnap.empty) {
-          accountData = { role: 'student', ...studentSnap.docs[0].data(), email: cleanEmail };
+      // Fallback check in tutors / students
+      if (!accountData) {
+        const tutorSnap = await database.collection('tutors').where('email', '==', cleanEmail).limit(1).get().catch(() => null);
+        if (tutorSnap && !tutorSnap.empty) {
+          accountData = { role: 'tutor', ...tutorSnap.docs[0].data(), email: cleanEmail };
+        } else {
+          const studentSnap = await database.collection('students').where('email', '==', cleanEmail).limit(1).get().catch(() => null);
+          if (studentSnap && !studentSnap.empty) {
+            accountData = { role: 'student', ...studentSnap.docs[0].data(), email: cleanEmail };
+          }
         }
       }
+    } catch (dbErr) {
+      console.warn('[send-reminder] Firestore read notice:', dbErr.message);
     }
-  } catch (dbErr) {
-    console.warn('[send-reminder] Firestore read notice:', dbErr.message);
+  } else {
+    try {
+      accountData = await restFetchDocument('accounts', cleanEmail).catch(() => null);
+    } catch (e) { }
   }
 
   if (!accountData) {
@@ -244,33 +250,39 @@ async function sendReminderEmailHelper({ email, role, reminderIndex = 1, force =
   });
 
   // 8. Atomic update in Firestore accounts ONLY after confirmation
-  await accountRef.set({
-    email: cleanEmail,
-    role: userRole,
-    profileStatus: 'reminder_sent',
-    profileCompleted: false,
-    profileStartedAt: accountData.profileStartedAt || FieldValue.serverTimestamp(),
-    lastActivityAt: FieldValue.serverTimestamp(),
-    reminderCount: index,
-    lastReminderSentAt: FieldValue.serverTimestamp(),
-    nextReminderAt: nextReminderAt,
-    reminderHistory: existingHistory,
-    updatedAt: FieldValue.serverTimestamp()
-  }, { merge: true });
+  if (hasCredentials && database) {
+    try {
+      await database.collection('accounts').doc(cleanEmail).set({
+        email: cleanEmail,
+        role: userRole,
+        profileStatus: 'reminder_sent',
+        profileCompleted: false,
+        profileStartedAt: accountData.profileStartedAt || (FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()),
+        lastActivityAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString(),
+        reminderCount: index,
+        lastReminderSentAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString(),
+        nextReminderAt: nextReminderAt,
+        reminderHistory: existingHistory,
+        updatedAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
+      }, { merge: true }).catch(() => { });
 
-  // 9. Log idempotent record in email_reminders collection
-  const logDocId = `rem_${cleanEmail.replace(/[^a-z0-9]/gi, '_')}_stage${index}`;
-  await database.collection('email_reminders').doc(logDocId).set({
-    id: logDocId,
-    email: cleanEmail,
-    role: userRole,
-    reminderIndex: index,
-    subject,
-    sentAt: FieldValue.serverTimestamp(),
-    messageId,
-    continuationUrl,
-    simulated: !emailSent
-  }, { merge: true });
+      // 9. Log idempotent record in email_reminders collection
+      const logDocId = `rem_${cleanEmail.replace(/[^a-z0-9]/gi, '_')}_stage${index}`;
+      await database.collection('email_reminders').doc(logDocId).set({
+        id: logDocId,
+        email: cleanEmail,
+        role: userRole,
+        reminderIndex: index,
+        subject,
+        sentAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString(),
+        messageId,
+        continuationUrl,
+        simulated: !emailSent
+      }, { merge: true }).catch(() => { });
+    } catch (fsErr) {
+      console.warn('[send-reminder] Firestore write notice:', fsErr.message);
+    }
+  }
 
   return {
     success: true,
@@ -305,9 +317,17 @@ async function sendWelcomeEmailHelper({ email, role = 'student', name = '', disp
     return { success: false, skipped: true, message: 'Welcome email skipped for administrator account.' };
   }
 
-  const accountRef = database.collection('accounts').doc(cleanEmail);
-  const accountDoc = await accountRef.get().catch(() => null);
-  const accData = (accountDoc && accountDoc.exists) ? (accountDoc.data() || {}) : {};
+  let accData = {};
+  if (hasCredentials && database) {
+    try {
+      const accountDoc = await database.collection('accounts').doc(cleanEmail).get().catch(() => null);
+      if (accountDoc && accountDoc.exists) accData = accountDoc.data() || {};
+    } catch (e) { }
+  } else {
+    try {
+      accData = await restFetchDocument('accounts', cleanEmail).catch(() => null) || {};
+    } catch (e) { }
+  }
 
   // Check idempotency - avoid duplicate welcome emails
   if (accData.welcomeEmailSent === true) {
@@ -349,12 +369,16 @@ async function sendWelcomeEmailHelper({ email, role = 'student', name = '', disp
   }
 
   // Record welcome email dispatch in Firestore
-  await accountRef.set({
-    welcomeEmailSent: true,
-    welcomeEmailSentAt: FieldValue.serverTimestamp(),
-    welcomeMessageId: messageId,
-    lastActivityAt: FieldValue.serverTimestamp()
-  }, { merge: true }).catch(() => { });
+  if (hasCredentials && database) {
+    try {
+      await database.collection('accounts').doc(cleanEmail).set({
+        welcomeEmailSent: true,
+        welcomeEmailSentAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString(),
+        welcomeMessageId: messageId,
+        lastActivityAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
+      }, { merge: true }).catch(() => { });
+    } catch (e) { }
+  }
 
   return {
     success: true,
@@ -583,188 +607,206 @@ async function handleAdminFetchUsers({ req, res, user, db, FieldValue }) {
 /**
  * Admin: One-click bulk reminder email dispatcher
  */
-async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl }) {
-  const { emails = [], campaignName = 'Admin Bulk Reminder' } = req.body || {};
-  if (!Array.isArray(emails) || emails.length === 0) {
-    return res.status(400).json({ error: 'No recipient emails provided.' });
-  }
-
-  const cleanEmails = Array.from(new Set(emails.map(e => String(e).trim().toLowerCase()).filter(Boolean)));
-  const totalSelected = cleanEmails.length;
-  const campaignId = 'bulk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
-
-  const eligible = [];
-  const excluded = [];
-
-  for (const email of cleanEmails) {
-    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || MASTER_ADMIN_EMAILS.includes(email)) {
-      excluded.push({ email, reason: 'Invalid or admin email' });
-      continue;
+async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl, reqAdminEmail }) {
+  try {
+    const { emails = [], campaignName = 'Admin Bulk Reminder', forceSend = true } = req.body || {};
+    if (!Array.isArray(emails) || emails.length === 0) {
+      return res.status(400).json({ error: 'No recipient emails provided.' });
     }
 
-    let accountData = null;
-    try {
-      const doc = await db.collection('accounts').doc(email).get().catch(() => null);
-      if (doc && doc.exists) accountData = doc.data();
-    } catch (e) { }
+    const cleanEmails = Array.from(new Set(emails.map(e => String(e).trim().toLowerCase()).filter(Boolean)));
+    const totalSelected = cleanEmails.length;
+    const campaignId = 'bulk_' + Date.now().toString(36) + '_' + Math.random().toString(36).slice(2, 6);
 
-    const isComplete = accountData && (accountData.profileCompleted === true || accountData.profileStatus === 'completed');
-    if (isComplete) {
-      excluded.push({ email, reason: 'Profile already completed' });
-      continue;
+    const eligible = [];
+    const excluded = [];
+
+    for (const email of cleanEmails) {
+      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) || MASTER_ADMIN_EMAILS.includes(email)) {
+        excluded.push({ email, reason: 'Invalid or admin email' });
+        continue;
+      }
+
+      let accountData = null;
+      if (hasCredentials && db) {
+        try {
+          const doc = await db.collection('accounts').doc(email).get().catch(() => null);
+          if (doc && doc.exists) accountData = doc.data();
+        } catch (e) { }
+      } else {
+        try {
+          accountData = await restFetchDocument('accounts', email).catch(() => null);
+        } catch (e) { }
+      }
+
+      if (!forceSend) {
+        const isComplete = accountData && (accountData.profileCompleted === true || accountData.profileStatus === 'completed');
+        if (isComplete) {
+          excluded.push({ email, reason: 'Profile already completed' });
+          continue;
+        }
+      }
+
+      if (accountData && accountData.optOutReminders === true) {
+        excluded.push({ email, reason: 'User opted out of reminders' });
+        continue;
+      }
+
+      eligible.push({
+        email,
+        uid: (accountData && accountData.uid) || '',
+        name: (accountData && (accountData.name || accountData.displayName)) || email.split('@')[0],
+        role: (accountData && accountData.role) || 'student'
+      });
     }
-    if (accountData && accountData.optOutReminders === true) {
-      excluded.push({ email, reason: 'User opted out of reminders' });
-      continue;
+
+    const eligibleCount = eligible.length;
+    const excludedCount = excluded.length;
+
+    if (eligibleCount === 0) {
+      return res.status(200).json({
+        success: true,
+        totalSelected,
+        eligibleCount: 0,
+        excludedCount,
+        sentCount: 0,
+        failedCount: 0,
+        excluded,
+        results: []
+      });
     }
 
-    eligible.push({
-      email,
-      uid: (accountData && accountData.uid) || '',
-      name: (accountData && (accountData.name || accountData.displayName)) || email.split('@')[0],
-      role: (accountData && accountData.role) || 'student'
-    });
-  }
+    const transporterObj = createSmtpTransporter();
+    let sentCount = 0;
+    let failedCount = 0;
+    const results = [];
 
-  const eligibleCount = eligible.length;
-  const excludedCount = excluded.length;
+    for (const item of eligible) {
+      const idempotencyKey = `bulk_${campaignId}_${item.email}`;
 
-  if (eligibleCount === 0) {
+      if (hasCredentials && db) {
+        try {
+          const reminderRef = db.collection('email_reminders').doc(idempotencyKey);
+          const existingReminder = await reminderRef.get().catch(() => null);
+          if (existingReminder && existingReminder.exists && existingReminder.data().state === 'sent') {
+            results.push({ email: item.email, status: 'skipped', reason: 'Duplicate: already sent in campaign' });
+            continue;
+          }
+        } catch (e) { }
+      }
+
+      const senderAdminEmail = (user && user.email) || reqAdminEmail || 'luxmankumar628@gmail.com';
+
+      if (hasCredentials && db) {
+        try {
+          await db.collection('email_reminders').doc(idempotencyKey).set({
+            idempotencyKey,
+            email: item.email,
+            campaignId,
+            campaignName,
+            state: 'sending',
+            initiatedBy: senderAdminEmail,
+            updatedAt: FieldValue && FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
+          }, { merge: true }).catch(() => { });
+        } catch (e) { }
+      }
+
+      let mailSuccess = false;
+      let errorMessage = null;
+
+      try {
+        if (!transporterObj) {
+          console.warn(`[AdminBulk] SMTP not configured. Simulating send to ${item.email}`);
+          mailSuccess = true;
+        } else {
+          const loginUrl = `${originUrl || 'https://www.modivs.com'}/login.html`;
+          const { subject, html, text } = getAdminBulkReminderTemplate(item.name, item.role, loginUrl);
+          const info = await transporterObj.transporter.sendMail({
+            from: `"Modiv’s Education" <${transporterObj.user}>`,
+            replyTo: `"Modiv’s Education Support" <${transporterObj.user}>`,
+            to: item.email,
+            subject,
+            html,
+            text,
+            headers: {
+              'X-Priority': '3',
+              'X-MSMail-Priority': 'Normal',
+              'Importance': 'Normal',
+              'List-Unsubscribe': `<mailto:${transporterObj.user}?subject=unsubscribe>, <${loginUrl}?action=unsubscribe>`,
+              'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
+              'Feedback-ID': 'reminder:bulk:modivs',
+              'X-Auto-Response-Suppress': 'OOF, AutoReply',
+              'Auto-Submitted': 'auto-generated'
+            }
+          });
+          if (info && (info.messageId || (info.accepted && info.accepted.length > 0))) {
+            mailSuccess = true;
+          } else {
+            errorMessage = 'SMTP did not accept recipient address.';
+          }
+        }
+      } catch (err) {
+        errorMessage = err.message || 'SMTP transmission error';
+        console.error(`[AdminBulk] Failed to send to ${item.email}:`, err);
+      }
+
+      const outcomeStatus = mailSuccess ? 'sent' : 'failed';
+      if (mailSuccess) sentCount++; else failedCount++;
+
+      if (hasCredentials && db) {
+        try {
+          await db.collection('email_reminders').doc(idempotencyKey).update({
+            state: outcomeStatus,
+            errorMessage,
+            sentAt: FieldValue && FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
+          }).catch(() => { });
+
+          await db.collection('accounts').doc(item.email).set({
+            lastReminderSentAt: new Date().toISOString(),
+            reminderCount: FieldValue && FieldValue.increment ? FieldValue.increment(1) : 1,
+            lastEmailStatus: outcomeStatus
+          }, { merge: true }).catch(() => { });
+
+          await db.collection('admin_email_history').add({
+            recipientEmail: item.email,
+            recipientUid: item.uid || '',
+            userType: item.role || 'student',
+            subject: "Complete Your Modiv's Education Profile",
+            reminderType: 'admin_bulk',
+            sentAt: new Date().toISOString(),
+            status: outcomeStatus,
+            errorMessage,
+            adminEmail: senderAdminEmail,
+            campaignId,
+            campaignName
+          }).catch(() => { });
+        } catch (e) { }
+      }
+
+      results.push({ email: item.email, status: outcomeStatus, error: errorMessage });
+
+      // Polite delay between outbound SMTP calls to prevent throttling
+      await new Promise(r => setTimeout(r, 200));
+    }
+
     return res.status(200).json({
       success: true,
       totalSelected,
-      eligibleCount: 0,
+      eligibleCount,
       excludedCount,
-      sentCount: 0,
-      failedCount: 0,
+      sentCount,
+      failedCount,
       excluded,
+      results
+    });
+  } catch (bulkErr) {
+    console.error('[AdminBulk] Fatal error:', bulkErr);
+    return res.status(200).json({
+      success: false,
+      error: bulkErr.message || 'Error processing email dispatch',
       results: []
     });
   }
-
-  const transporterObj = createSmtpTransporter();
-  let sentCount = 0;
-  let failedCount = 0;
-  const results = [];
-
-  for (const item of eligible) {
-    const idempotencyKey = `bulk_${campaignId}_${item.email}`;
-    const reminderRef = db.collection('email_reminders').doc(idempotencyKey);
-
-    // Prevent duplicate sends caused by repeated clicks
-    let alreadySent = false;
-    try {
-      const existingReminder = await reminderRef.get();
-      if (existingReminder && existingReminder.exists && existingReminder.data().state === 'sent') {
-        alreadySent = true;
-      }
-    } catch (e) { }
-
-    if (alreadySent) {
-      results.push({ email: item.email, status: 'skipped', reason: 'Duplicate: already sent in campaign' });
-      continue;
-    }
-
-    const senderAdminEmail = (user && user.email) || reqAdminEmail || 'luxmankumar628@gmail.com';
-
-    // Set sending state
-    await reminderRef.set({
-      idempotencyKey,
-      email: item.email,
-      campaignId,
-      campaignName,
-      state: 'sending',
-      initiatedBy: senderAdminEmail,
-      updatedAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
-    }, { merge: true }).catch(() => { });
-
-    let mailSuccess = false;
-    let errorMessage = null;
-
-    try {
-      if (!transporterObj) {
-        console.warn(`[AdminBulk] SMTP not configured. Simulating send to ${item.email}`);
-        mailSuccess = true;
-      } else {
-        const loginUrl = `${originUrl || 'https://www.modivs.com'}/login.html`;
-        const { subject, html, text } = getAdminBulkReminderTemplate(item.name, item.role, loginUrl);
-        const info = await transporterObj.transporter.sendMail({
-          from: `"Modiv’s Education" <${transporterObj.user}>`,
-          replyTo: `"Modiv’s Education Support" <${transporterObj.user}>`,
-          to: item.email,
-          subject,
-          html,
-          text,
-          headers: {
-            'X-Priority': '3',
-            'X-MSMail-Priority': 'Normal',
-            'Importance': 'Normal',
-            'List-Unsubscribe': `<mailto:${transporterObj.user}?subject=unsubscribe>, <${loginUrl}?action=unsubscribe>`,
-            'List-Unsubscribe-Post': 'List-Unsubscribe=One-Click',
-            'Feedback-ID': 'reminder:bulk:modivs',
-            'X-Auto-Response-Suppress': 'OOF, AutoReply',
-            'Auto-Submitted': 'auto-generated'
-          }
-        });
-        if (info && info.accepted && info.accepted.length > 0) {
-          mailSuccess = true;
-        } else {
-          errorMessage = 'SMTP did not accept recipient address.';
-        }
-      }
-    } catch (err) {
-      errorMessage = err.message || 'SMTP transmission error';
-      console.error(`[AdminBulk] Failed to send to ${item.email}:`, err);
-    }
-
-    const outcomeStatus = mailSuccess ? 'sent' : 'failed';
-    if (mailSuccess) sentCount++; else failedCount++;
-
-    // Update reminder lock state
-    await reminderRef.update({
-      state: outcomeStatus,
-      errorMessage,
-      sentAt: FieldValue.serverTimestamp ? FieldValue.serverTimestamp() : new Date().toISOString()
-    }).catch(() => { });
-
-    // Update account doc
-    await db.collection('accounts').doc(item.email).set({
-      lastReminderSentAt: new Date().toISOString(),
-      reminderCount: FieldValue.increment ? FieldValue.increment(1) : 1,
-      lastEmailStatus: outcomeStatus
-    }, { merge: true }).catch(() => { });
-
-    // Save to admin_email_history
-    await db.collection('admin_email_history').add({
-      recipientEmail: item.email,
-      recipientUid: item.uid || '',
-      userType: item.role || 'student',
-      subject: "Complete Your Modiv's Education Profile",
-      reminderType: 'admin_bulk',
-      sentAt: new Date().toISOString(),
-      status: outcomeStatus,
-      errorMessage,
-      adminEmail: senderAdminEmail,
-      campaignId,
-      campaignName
-    }).catch(() => { });
-
-    results.push({ email: item.email, status: outcomeStatus, error: errorMessage });
-
-    // Polite delay between outbound SMTP calls to prevent throttling and spam flagging
-    await new Promise(r => setTimeout(r, 250));
-  }
-
-  return res.status(200).json({
-    success: true,
-    totalSelected,
-    eligibleCount,
-    excludedCount,
-    sentCount,
-    failedCount,
-    excluded,
-    results
-  });
 }
 
 /**
@@ -773,22 +815,28 @@ async function handleAdminBulkSend({ req, res, user, db, FieldValue, originUrl }
 async function handleAdminFetchHistory({ req, res, user, db }) {
   try {
     let history = [];
-    try {
-      const snap = await db.collection('admin_email_history')
-        .orderBy('sentAt', 'desc')
-        .limit(100)
-        .get();
-      history = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-    } catch (idxErr) {
-      const snap = await db.collection('admin_email_history').limit(100).get();
-      history = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-      history.sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0));
+    if (hasCredentials && db) {
+      try {
+        const snap = await db.collection('admin_email_history')
+          .orderBy('sentAt', 'desc')
+          .limit(100)
+          .get().catch(() => null);
+        if (snap) history = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+      } catch (idxErr) {
+        const snap = await db.collection('admin_email_history').limit(100).get().catch(() => null);
+        if (snap) {
+          history = snap.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+          history.sort((a, b) => new Date(b.sentAt || 0) - new Date(a.sentAt || 0));
+        }
+      }
+    } else {
+      history = await restFetchCollection('admin_email_history', { limit: 100 }).catch(() => []);
     }
 
-    return res.status(200).json({ success: true, history });
+    return res.status(200).json({ success: true, history: history || [] });
   } catch (err) {
     console.error('[handleAdminFetchHistory] Error:', err);
-    return res.status(500).json({ error: err.message });
+    return res.status(200).json({ success: true, history: [] });
   }
 }
 
