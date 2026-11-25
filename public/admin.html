@@ -1637,7 +1637,7 @@
       }
     })();
   </script>
-  <script src="modivs.min.js?v=mwvofu8h-5s6yf"></script>
+  <script src="modivs.min.js?v=mwvs60jp-vnjzi"></script>
   
   
   <script>function admUnlockCost() { return (window.ModivsWallet && ModivsWallet.getUnlockCost) ? ModivsWallet.getUnlockCost() : 10; }</script>
@@ -1648,9 +1648,9 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwvofu8h-5s6yf">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwvofu8h-5s6yf">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwvofu8h-5s6yf">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwvs60jp-vnjzi">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwvs60jp-vnjzi">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwvs60jp-vnjzi">
 </head>
 
 <body>
@@ -1745,6 +1745,38 @@
         </div>
         <p class="cms-sub" id="lgNote"></p>
         <div class="lg-wrap" id="lgBody"></div>
+      </section>
+
+      <!-- CHAT LEADS PANEL -->
+      <section class="box hide" id="chatLeadsPanel" aria-label="Chat Leads">
+        <style>
+          .cl-bar{display:flex;gap:10px;flex-wrap:wrap;align-items:center;margin-bottom:12px}
+          .cl-bar input,.cl-bar select{font:inherit;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;background:var(--card);color:inherit}
+          .cl-bar input{flex:1;min-width:200px}
+          .cl-sum{font-size:.88rem;opacity:.8;margin:0 0 12px}
+          .cl-card{border:1.5px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;background:var(--card)}
+          .cl-top{display:flex;justify-content:space-between;gap:10px;flex-wrap:wrap;align-items:flex-start}
+          .cl-name{font-weight:800;font-size:1.02rem}
+          .cl-meta{font-size:.85rem;opacity:.8;margin-top:2px}
+          .cl-meta a{color:inherit;font-weight:700}
+          .cl-tag{display:inline-block;font-size:.74rem;font-weight:800;border-radius:999px;padding:3px 10px;margin-right:6px;background:#1A2035;color:#fff}
+          .cl-tag.tutor{background:#0e7c66}.cl-tag.live{background:#EBB92E;color:#1A2035}.cl-tag.login{background:#4b2a91}
+          .cl-issue{margin-top:10px;padding:10px 12px;border-radius:10px;background:rgba(235,185,46,.14);font-size:.9rem}
+          .cl-issue b{display:block;margin-bottom:3px}
+          .cl-acts{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;align-items:center}
+          .cl-tr{margin-top:10px;max-height:260px;overflow:auto;border-radius:10px;border:1px solid var(--line);padding:10px;font-size:.86rem;background:rgba(127,127,127,.06)}
+          .cl-tr p{margin:0 0 6px}.cl-tr .u{font-weight:700}
+          .cl-empty{padding:26px;text-align:center;opacity:.75}
+        </style>
+        <div class="cl-bar">
+          <input type="search" id="clQ" placeholder="Search name, mobile, email, issue or subject..." aria-label="Search chat leads">
+          <select id="clRole" aria-label="Role"><option value="all">All roles</option><option value="student">Students / parents</option><option value="tutor">Tutors</option></select>
+          <select id="clStatus" aria-label="Status"><option value="all">All statuses</option><option value="new">New</option><option value="contacted">Contacted</option><option value="resolved">Resolved</option></select>
+          <button type="button" class="cbtn sm" id="clRefresh">Refresh</button>
+          <button type="button" class="cbtn sm" id="clCsv">Export CSV</button>
+        </div>
+        <p class="cl-sum" id="clSum"></p>
+        <div id="clBody"></div>
       </section>
 
       <!-- EMAIL REMINDER MANAGEMENT PANEL -->
@@ -3462,7 +3494,8 @@
           ['Activity', [
             { key: 'ledger', label: 'Activity Ledger', n: unlockCount, icon: 'ledger' },
             { key: 'pricing', label: 'Lead Unlock Rate', n: admUnlockCost() + ' coins', icon: 'bag' },
-            { key: 'chat', label: 'Chat & Inquiries', n: totalChats, icon: 'chat' }
+            { key: 'chat', label: 'Chat & Inquiries', n: totalChats, icon: 'chat' },
+            { key: 'chat_leads', label: 'Chat Leads', n: chatLeadsLoaded ? (chatLeads.filter(function (c) { return clStatusOf(c) === 'new'; }).length + ' new') : '', icon: 'chat' }
           ]],
           ['Content', [
             { key: 'shop', label: 'Shop Items', n: cmsShop.length, icon: 'bag' },
@@ -5615,6 +5648,7 @@
         videos: ['Videos', 'Videos shown on the “From Modiv’s Education” page (More menu).'],
         blogs: ['Blogs', 'Study blogs written by tutors.'],
         reviews: ['Reviews', 'Approve reviews shown on the home page.'],
+        chat_leads: ['Chat Leads', 'Visitors who used the website chat: role, name, mobile number, issue, answers and full conversation.'],
         email_reminders: ['Email Reminder Management', 'Select incomplete student, tutor and user profiles and send reminder emails directly with one click.']
       };
       function setHeading() {
@@ -5624,7 +5658,7 @@
         if (s2) s2.textContent = h[1];
         document.title = h[0] + ' – Modiv’s Education Admin';
       }
-      function isPanel() { return currentSection === 'overview' || currentSection === 'ledger' || currentSection === 'email_reminders'; }
+      function isPanel() { return currentSection === 'overview' || currentSection === 'ledger' || currentSection === 'email_reminders' || currentSection === 'chat_leads'; }
 
       function render() {
         var cms = isCms(), panel = isPanel();
@@ -5634,6 +5668,8 @@
         $('ledger').classList.toggle('hide', currentSection !== 'ledger');
         var remP = $('emailRemindersPanel');
         if (remP) remP.classList.toggle('hide', currentSection !== 'email_reminders');
+        var clP = $('chatLeadsPanel');
+        if (clP) clP.classList.toggle('hide', currentSection !== 'chat_leads');
         setHeading();
         stats();
         recent();
@@ -5641,10 +5677,198 @@
         if (cms) { renderCms(); return; }
         if (currentSection === 'ledger') { renderLedger(); ensureIds(); return; }
         if (currentSection === 'email_reminders') { renderEmailReminders(); return; }
+        if (currentSection === 'chat_leads') { renderChatLeads(); return; }
         if (panel) { ensureIds(); return; }
         list();
         detail();
         ensureIds();
+      }
+
+      // --- Chat Leads (website chat conversations saved in Firestore `chat_leads`) ---
+      var chatLeads = [];
+      var chatLeadsLoaded = false;
+      var chatLeadsLoading = false;
+      var chatLeadsInit = false;
+      var clQuery = '', clRole = 'all', clStatus = 'all';
+      var clOpen = {};
+
+      function clStatusOf(x) { return (x && x.adminStatus) || 'new'; }
+      function clDate(x) {
+        var v = x && (x.updatedAt || x.createdAt);
+        if (!v) return null;
+        if (typeof v.toDate === 'function') return v.toDate();
+        if (v.seconds != null) return new Date(v.seconds * 1000);
+        if (v._seconds != null) return new Date(v._seconds * 1000);
+        var d = new Date(v);
+        return isNaN(d.getTime()) ? null : d;
+      }
+      function clFmt(d) { return d ? d.toLocaleString([], { day: '2-digit', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—'; }
+
+      function loadChatLeads() {
+        if (chatLeadsLoading) return;
+        chatLeadsLoading = true;
+        function done(list) {
+          chatLeads = (list || []).map(function (x) { delete x.token; return x; });
+          chatLeads.sort(function (a, b) { return (clDate(b) || 0) - (clDate(a) || 0); });
+          chatLeadsLoaded = true; chatLeadsLoading = false;
+          try { tabs(); } catch (e) { }
+          if (currentSection === 'chat_leads') drawChatLeads();
+        }
+        function viaApi() {
+          fetch('/api/chat-leads?limit=300', { credentials: 'include' })
+            .then(function (r) { return r.ok ? r.json() : { chats: [] }; })
+            .then(function (j) { done((j && j.chats) || []); })
+            .catch(function () { done([]); });
+        }
+        var fdb = window.EducationBFirebase && window.EducationBFirebase.db;
+        if (!fdb) return viaApi();
+        fdb.collection('chat_leads').limit(500).get().then(function (snap) {
+          var list = [];
+          snap.forEach(function (d) { var x = d.data() || {}; x.id = d.id; list.push(x); });
+          done(list);
+        }).catch(function (err) {
+          if (err && err.code === 'permission-denied') toast('Firebase blocked reading chat leads. Publish the latest firestore.rules and log in again as admin.');
+          viaApi();
+        });
+      }
+
+      function clFiltered() {
+        var q = clQuery.trim().toLowerCase();
+        return chatLeads.filter(function (x) {
+          if (clRole !== 'all' && x.role !== clRole) return false;
+          if (clStatus !== 'all' && clStatusOf(x) !== clStatus) return false;
+          if (!q) return true;
+          var hay = [x.name, x.phone, x.email, x.role, x.agent].concat((x.issues || []).map(function (i) {
+            return [i.issue, i.details].concat(Object.keys(i.answers || {}).map(function (k) { return i.answers[k]; })).join(' ');
+          })).join(' ').toLowerCase();
+          return hay.indexOf(q) > -1;
+        });
+      }
+
+      function clSetStatus(x, status) {
+        var fdb = window.EducationBFirebase && window.EducationBFirebase.db;
+        if (!fdb) { toast('Firebase is not connected, so the status could not be saved.'); return; }
+        fdb.collection('chat_leads').doc(x.id).set({ adminStatus: status }, { merge: true }).then(function () {
+          x.adminStatus = status;
+          logAction(x.id, x.name || 'Chat lead', 'Chat Lead Status', status);
+          try { tabs(); } catch (e) { }
+          drawChatLeads();
+          toast('Marked as ' + status + '.');
+        }).catch(function (err) {
+          toast(err && err.code === 'permission-denied' ? 'Firebase blocked this. Publish firestore.rules and log in again as admin.' : 'Could not save the status.');
+        });
+      }
+
+      function clDelete(x) {
+        if (!confirm('Permanently delete this chat lead' + (x.name ? ' (' + x.name + ')' : '') + ' and its conversation?\n\nThis cannot be undone.')) return;
+        var fdb = window.EducationBFirebase && window.EducationBFirebase.db;
+        function removed() {
+          chatLeads = chatLeads.filter(function (c) { return c.id !== x.id; });
+          logAction(x.id, x.name || 'Chat lead', 'Chat Lead Deleted', 'Deleted by admin');
+          try { tabs(); } catch (e) { }
+          drawChatLeads();
+          toast('Chat lead deleted.');
+        }
+        function viaApi() {
+          fetch('/api/chat-leads?id=' + encodeURIComponent(x.id), { method: 'DELETE', credentials: 'include', headers: { 'X-Requested-With': 'XMLHttpRequest' } })
+            .then(function (r) { if (r.ok) removed(); else toast('Could not delete this chat lead.'); })
+            .catch(function () { toast('Could not delete this chat lead.'); });
+        }
+        if (!fdb) return viaApi();
+        fdb.collection('chat_leads').doc(x.id).delete().then(removed).catch(viaApi);
+      }
+
+      function clCsv() {
+        var rows = [['Date', 'Role', 'Name', 'Mobile', 'Email', 'Logged in', 'Status', 'Issue', 'Answers', 'Details']];
+        clFiltered().forEach(function (x) {
+          var iss = (x.issues && x.issues.length) ? x.issues : [{ issue: '', answers: {}, details: '' }];
+          iss.forEach(function (i) {
+            rows.push([clFmt(clDate(x)), x.role || '', x.name || '', x.phone || '', x.email || '', x.loggedIn ? 'yes' : 'no', clStatusOf(x), i.issue || '',
+              Object.keys(i.answers || {}).map(function (k) { return k + ': ' + i.answers[k]; }).join('; '), i.details || '']);
+          });
+        });
+        var csv = rows.map(function (r) { return r.map(function (c) { return '"' + String(c).replace(/"/g, '""') + '"'; }).join(','); }).join('\r\n');
+        var a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8' }));
+        a.download = 'chat-leads-' + new Date().toISOString().slice(0, 10) + '.csv';
+        document.body.appendChild(a); a.click(); a.remove();
+      }
+
+      function drawChatLeads() {
+        var body = $('clBody'), sum = $('clSum');
+        if (!body) return;
+        body.innerHTML = '';
+        if (!chatLeadsLoaded) { body.appendChild(el('div', 'cl-empty', 'Loading chat leads...')); return; }
+        var list = clFiltered();
+        sum.textContent = list.length + ' of ' + chatLeads.length + ' chat leads' + (chatLeads.length ? ' · ' + chatLeads.filter(function (c) { return clStatusOf(c) === 'new'; }).length + ' new' : '');
+        if (!list.length) { body.appendChild(el('div', 'cl-empty', chatLeads.length ? 'No chat leads match your filters.' : 'No one has used the website chat yet.')); return; }
+        list.forEach(function (x) {
+          var card = el('div', 'cl-card');
+          var top = el('div', 'cl-top');
+          var left = el('div');
+          left.appendChild(el('div', 'cl-name', x.name || 'Unknown visitor'));
+          var meta = el('div', 'cl-meta');
+          if (x.phone) { var a = el('a', '', x.phone); a.href = 'tel:' + x.phone; meta.appendChild(a); } else meta.appendChild(document.createTextNode('No mobile yet'));
+          if (x.email) meta.appendChild(document.createTextNode(' · ' + x.email));
+          meta.appendChild(document.createTextNode(' · ' + clFmt(clDate(x))));
+          left.appendChild(meta);
+          top.appendChild(left);
+          var tags = el('div');
+          tags.appendChild(el('span', 'cl-tag ' + (x.role === 'tutor' ? 'tutor' : ''), x.role === 'tutor' ? 'Tutor' : (x.role === 'student' ? 'Student / Parent' : 'Role not given')));
+          if (x.loggedIn) tags.appendChild(el('span', 'cl-tag login', 'Logged in'));
+          tags.appendChild(el('span', 'cl-tag live', clStatusOf(x)));
+          top.appendChild(tags);
+          card.appendChild(top);
+
+          (x.issues || []).forEach(function (i) {
+            var box = el('div', 'cl-issue');
+            box.appendChild(el('b', '', i.issue || 'Issue'));
+            var ans = Object.keys(i.answers || {}).map(function (k) { return k + ': ' + i.answers[k]; }).join(' · ');
+            if (ans) box.appendChild(el('div', '', ans));
+            if (i.details) box.appendChild(el('div', '', 'Details: ' + i.details));
+            card.appendChild(box);
+          });
+          if (!(x.issues || []).length) card.appendChild(el('div', 'cl-meta', 'Left the chat before choosing an issue.'));
+
+          var acts = el('div', 'cl-acts');
+          var sel = el('select'); sel.setAttribute('aria-label', 'Set status');
+          ['new', 'contacted', 'resolved'].forEach(function (s) { var o = el('option', '', s.charAt(0).toUpperCase() + s.slice(1)); o.value = s; if (clStatusOf(x) === s) o.selected = true; sel.appendChild(o); });
+          sel.style.cssText = 'font:inherit;padding:6px 8px;border-radius:8px;border:1.5px solid var(--line);background:var(--card);color:inherit';
+          sel.addEventListener('change', function () { clSetStatus(x, sel.value); });
+          acts.appendChild(sel);
+          var tb = el('button', 'cbtn sm', clOpen[x.id] ? 'Hide conversation' : 'View conversation (' + ((x.transcript || []).length) + ')');
+          tb.type = 'button';
+          tb.addEventListener('click', function () { clOpen[x.id] = !clOpen[x.id]; drawChatLeads(); });
+          acts.appendChild(tb);
+          var db = el('button', 'cbtn sm del', 'Delete');
+          db.type = 'button';
+          db.addEventListener('click', function () { clDelete(x); });
+          acts.appendChild(db);
+          card.appendChild(acts);
+
+          if (clOpen[x.id]) {
+            var tr = el('div', 'cl-tr');
+            (x.transcript || []).forEach(function (m) {
+              var p = el('p', m.from === 'user' ? 'u' : '', (m.from === 'user' ? (x.name || 'Visitor') : (x.agent || 'Chat')) + ': ' + (m.text || ''));
+              tr.appendChild(p);
+            });
+            card.appendChild(tr);
+          }
+          body.appendChild(card);
+        });
+      }
+
+      function renderChatLeads() {
+        if (!chatLeadsInit) {
+          chatLeadsInit = true;
+          $('clQ').addEventListener('input', function (e) { clQuery = e.target.value; drawChatLeads(); });
+          $('clRole').addEventListener('change', function (e) { clRole = e.target.value; drawChatLeads(); });
+          $('clStatus').addEventListener('change', function (e) { clStatus = e.target.value; drawChatLeads(); });
+          $('clRefresh').addEventListener('click', function () { chatLeadsLoaded = false; drawChatLeads(); loadChatLeads(); });
+          $('clCsv').addEventListener('click', clCsv);
+        }
+        drawChatLeads();
+        if (!chatLeadsLoaded) loadChatLeads();
       }
 
       // --- Email Reminder Management Logic ---

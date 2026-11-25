@@ -37,6 +37,7 @@ const allScripts = [
   'modivs-stories.js',
   'modivs-import-data.js',
   'modivs-menu.js',
+  'modivs-tagline.js',
   'modivs-session-ui.js',
   'modivs-auto-update.js',
   'modivs-social.js',

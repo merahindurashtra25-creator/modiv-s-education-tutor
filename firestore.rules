@@ -318,6 +318,31 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // Guided website chat sessions (role, name, mobile, issue, answers, transcript).
+    // Visitors can create a session and keep updating it with its secret token; only admins read or delete.
+    match /chat_leads/{sessionId} {
+      allow read, delete: if isAdmin();
+      allow create: if request.resource.data.keys().hasOnly([
+          'sessionId','token','role','name','phone','email','uid','loggedIn','agent','page','status',
+          'issues','transcript','closedAt','source','createdAt','updatedAt'
+        ])
+        && request.resource.data.sessionId == sessionId
+        && request.resource.data.token is string && request.resource.data.token.size() >= 16
+        && request.resource.data.get('name', '') is string && request.resource.data.get('name', '').size() <= 80
+        && request.resource.data.get('phone', '') is string && request.resource.data.get('phone', '').size() <= 15
+        && request.resource.data.get('transcript', []).size() <= 120
+        && request.resource.data.get('issues', []).size() <= 20;
+      allow update: if isAdmin() || (
+        request.resource.data.token == resource.data.token
+        && request.resource.data.keys().hasOnly([
+          'sessionId','token','role','name','phone','email','uid','loggedIn','agent','page','status',
+          'issues','transcript','closedAt','source','createdAt','updatedAt'
+        ])
+        && request.resource.data.get('transcript', []).size() <= 120
+        && request.resource.data.get('issues', []).size() <= 20
+      );
+    }
+
     match /demoRequests/{requestId} {
       allow read: if isAdmin() || (
         signedIn() && (
