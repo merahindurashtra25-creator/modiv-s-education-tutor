@@ -21,6 +21,7 @@
   var MAX_CHARS = 400;
   var MAX_SEND = 10;
   var STORE_KEY = 'mvchat_v3';
+  var CHAT_TTL_MS = 10 * 60 * 1000; // 10 minutes
   var AGENTS = ['Priya', 'Anjali', 'Neha', 'Simran', 'Riya', 'Kavya', 'Pooja', 'Ishita', 'Meera', 'Sneha', 'Aarushi', 'Nisha'];
   var END_RE = /^\s*(bye|bye bye|goodbye|good bye|end chat|end|exit|quit|close chat|that'?s all|thats all|no thanks?|nothing else|ok bye|okay bye|thanks,? bye|alvida)\s*[.!]*\s*$/i;
   var WHO_RE = /\b(bot|robot|ai|a\.i\.?|artificial|human|real person|machine|chatgpt|automated)\b/i;
@@ -86,6 +87,7 @@
   var agent = '';
   var busy = false, open = false, ended = false, sid = 0;
   var saveTimer = null;
+  var expiryTimer = null;
 
   function rid(n) {
     var a = 'abcdefghijklmnopqrstuvwxyz0123456789', s = '';
@@ -151,8 +153,36 @@
     return { name: name, phone: phone, email: email, uid: String(u.uid || ''), role: inferRoleFromUser(u, email) };
   }
 
+  function clearStored() {
+    clearTimeout(expiryTimer);
+    expiryTimer = null;
+    try { sessionStorage.removeItem(STORE_KEY); } catch (e) {}
+  }
+
+  function scheduleExpiry(expiresAt) {
+    clearTimeout(expiryTimer);
+    if (!expiresAt) return;
+    var remaining = expiresAt - Date.now();
+    if (remaining <= 0) {
+      expiryTimer = setTimeout(expireChat, 0);
+      return;
+    }
+    expiryTimer = setTimeout(expireChat, remaining);
+  }
+
   function persist() {
-    try { sessionStorage.setItem(STORE_KEY, JSON.stringify({ rec: rec, cur: cur, agent: agent })); } catch (e) {}
+    if (!rec) return;
+    var expiresAt = Date.now() + CHAT_TTL_MS;
+    try {
+      sessionStorage.setItem(STORE_KEY, JSON.stringify({
+        rec: rec,
+        cur: cur,
+        agent: agent,
+        open: open,
+        expiresAt: expiresAt
+      }));
+    } catch (e) {}
+    scheduleExpiry(expiresAt);
   }
 
   // ---------- saving to the database ----------
@@ -620,6 +650,10 @@
     var s = null;
     try { s = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null'); } catch (e) {}
     if (!s || !s.rec || !s.rec.sessionId || !Array.isArray(s.rec.transcript) || !s.rec.transcript.length || !s.agent) return false;
+    if (s.expiresAt && Date.now() > s.expiresAt) {
+      clearStored();
+      return false;
+    }
     var u = knownUser();
     if (u && !s.rec.loggedIn) return false;
     rec = s.rec; cur = s.cur; agent = s.agent;
@@ -627,13 +661,27 @@
     log.innerHTML = '';
     rec.transcript.forEach(function (m) { addMsg(m.from === 'user' ? 'user' : 'assistant', m.text, true); });
     controls();
+    scheduleExpiry(s.expiresAt || (Date.now() + CHAT_TTL_MS));
+    if (s.open) setOpen(true, true);
     return true;
+  }
+
+  function expireChat() {
+    clearStored();
+    sid++;
+    ended = false;
+    confirmBar.classList.remove('mvchat-show');
+    busy = false;
+    form.style.display = '';
+    note.style.display = '';
+    endBtn.style.display = '';
+    start();
   }
 
   function endChat() {
     sid++;
     ended = true;
-    try { sessionStorage.removeItem(STORE_KEY); } catch (e) {}
+    clearStored();
     if (rec && rec.status !== 'closed') { rec.status = 'closed'; rec.closedAt = nowIso(); saveNow(); }
     rec = null; cur = null;
     confirmBar.classList.remove('mvchat-show');
@@ -664,13 +712,22 @@
   yesBtn.addEventListener('click', endChat);
   noBtn.addEventListener('click', function () { confirmBar.classList.remove('mvchat-show'); input.focus(); });
 
-  function setOpen(v) {
+  function setOpen(v, skipPersist) {
     open = v;
     panel.classList.toggle('mvchat-open', v);
     btn.setAttribute('aria-expanded', v ? 'true' : 'false');
     btn.setAttribute('aria-label', v ? 'Close chat' : 'Chat with us');
+    if (!skipPersist && rec && !ended) persist();
     if (v) { scroll(); setTimeout(function () { try { input.focus(); } catch (e) {} }, 50); }
   }
+
+  document.addEventListener('visibilitychange', function () {
+    if (document.visibilityState !== 'visible') return;
+    try {
+      var s = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null');
+      if (s && s.expiresAt && Date.now() > s.expiresAt) expireChat();
+    } catch (e) {}
+  });
 
   btn.addEventListener('click', function () { setOpen(!open); });
   closeBtn.addEventListener('click', function () { setOpen(false); btn.focus(); });
