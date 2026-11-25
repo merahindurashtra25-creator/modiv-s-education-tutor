@@ -290,8 +290,8 @@ function load(){
   }
   // current_tutor holds the full form data; db entry may only hold admin-summary fields
   var base={email:email,name:'',phone:'',altPhone:'',whatsapp:'',waSame:false,photo:'',photoBlur:false,city:'',area:'',gender:'',dob:'',headline:'',bio:'',langs:[],
-    quals:[{degree:'',inst:'',field:'',year:''}],school12:{school:'',board:'',stream:'',year:'',score:''},exp:[],totalYears:'',subjects:[],levels:[],boards:[],modes:['Online'],formats:['1-on-1 Individual tuition'],
-    groupFee:'',maxBatch:'6 students',travel:'',fee:'',trial:'',avail:{},notice:'',idType:'',idName:'',certName:'',status:'pending'};
+    quals:[{degree:'',inst:'',field:'',year:''}],school12:{school:'',board:'',stream:'',year:'',score:''},exp:[],totalYears:'',subjects:[],levels:[],boards:[],modes:[],formats:[],
+    groupFee:'',maxBatch:'',travel:'',fee:'',trial:'',avail:{},notice:'',idType:'',idName:'',certName:'',status:'pending'};
   var d=Object.assign({},base,rec||{},cur||{});
   if(!d.firstName&&!d.lastName&&d.name){var _p=String(d.name).trim().split(/\s+/).filter(Boolean);d.firstName=_p.shift()||'';d.lastName=_p.join(' ')}
   d.firstName=d.firstName||'';d.lastName=d.lastName||'';

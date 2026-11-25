@@ -15,15 +15,19 @@
   if (!ENDPOINT) return;
 
   var MAX_CHARS = 500;
-  var MAX_SEND = 6;
+  var MAX_SEND = 10;
   var STORE_KEY = 'mvchat_v1';
   var GREETING = "Hi! I'm the Modiv's Education assistant. I can help you find a tutor, book a demo class, become a tutor, or reach our team. What do you need?";
-  var CHIPS = ['Find a tutor', 'Book a demo class', 'Become a tutor', 'Contact support'];
+  var CHIPS = ['Find a tutor', 'Book a demo class', 'Become a tutor', 'Tutor membership & coins', 'Free notes & shop', 'Contact support'];
+  var END_RE = /^\s*(bye|bye bye|goodbye|good bye|end chat|end|exit|quit|close chat|that'?s all|thats all|no thanks?|nothing else|ok bye|okay bye|thanks,? bye|alvida)\s*[.!]*\s*$/i;
+  var ENDED_MSG = "Chat ended. Thanks for visiting Modiv's Education! You can start a new chat any time.";
   var FALLBACK = 'Sorry, something went wrong. Please call +91 98969 30443 or email support@modivs.com.';
 
   var messages = [];   // {role:'user'|'assistant', content:string}
   var busy = false;
   var open = false;
+  var ended = false;
+  var sid = 0;          // chat session id; bumped when a chat is ended so late replies are ignored
 
   try {
     var saved = JSON.parse(sessionStorage.getItem(STORE_KEY) || '[]');
@@ -43,14 +47,28 @@
     'background:#1A2035;color:#EBB92E;cursor:pointer;box-shadow:0 6px 20px rgba(26,32,53,.35);display:flex;align-items:center;justify-content:center;transition:transform .15s}' +
     '.mvchat-btn:hover{transform:scale(1.06)}.mvchat-btn:focus-visible{outline:3px solid #EBB92E;outline-offset:3px}' +
     '.mvchat-btn svg{width:28px;height:28px}' +
-    '.mvchat-panel{position:fixed;right:18px;bottom:88px;z-index:2147483000;width:360px;max-width:calc(100vw - 24px);height:520px;max-height:calc(100vh - 110px);' +
+    '.mvchat-panel{position:fixed;right:18px;bottom:88px;z-index:2147483000;width:360px;max-width:calc(100vw - 24px);height:520px;max-height:calc(100vh - 110px);max-height:calc(100dvh - 110px);' +
     'background:#fff;border-radius:16px;box-shadow:0 12px 40px rgba(26,32,53,.3);display:none;flex-direction:column;overflow:hidden;' +
     'font-family:"Plus Jakarta Sans",system-ui,-apple-system,"Segoe UI",sans-serif;font-size:14px;color:#1A2035;border:1px solid #eadfc9}' +
     '.mvchat-panel.mvchat-open{display:flex}' +
     '.mvchat-head{background:#1A2035;color:#fff;padding:12px 14px;display:flex;align-items:center;justify-content:space-between}' +
     '.mvchat-head b{font-size:15px}.mvchat-head small{display:block;color:#EBB92E;font-size:11px;margin-top:2px}' +
     '.mvchat-x{background:none;border:0;color:#fff;font-size:24px;line-height:1;cursor:pointer;padding:2px 6px}' +
-    '.mvchat-log{flex:1;overflow-y:auto;padding:12px;background:#FEF7EA;display:flex;flex-direction:column;gap:8px}' +
+    '.mvchat-actions{display:flex;align-items:center;gap:6px}' +
+    '.mvchat-end{background:transparent;border:1px solid rgba(255,255,255,.55);color:#fff;border-radius:999px;font:inherit;font-size:12px;font-weight:600;padding:4px 10px;cursor:pointer}' +
+    '.mvchat-end:hover{background:#EBB92E;border-color:#EBB92E;color:#1A2035}' +
+    '.mvchat-x:focus-visible,.mvchat-end:focus-visible{outline:2px solid #EBB92E;outline-offset:2px}' +
+    '.mvchat-logwrap{position:relative;flex:1;min-height:0;display:flex;flex-direction:column;background:#FEF7EA}' +
+    '.mvchat-log{flex:1;min-height:0;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;scrollbar-width:thin;scrollbar-color:#d9cfb8 transparent;padding:12px;background:#FEF7EA;display:flex;flex-direction:column;gap:8px;scroll-behavior:smooth}' +
+    '.mvchat-log:focus-visible{outline:2px solid #EBB92E;outline-offset:-2px}' +
+    '.mvchat-log::-webkit-scrollbar{width:8px}.mvchat-log::-webkit-scrollbar-thumb{background:#d9cfb8;border-radius:8px}' +
+    '.mvchat-jump{position:absolute;left:50%;bottom:10px;transform:translateX(-50%);background:#1A2035;color:#fff;border:0;border-radius:999px;padding:6px 14px;font:inherit;font-size:12px;font-weight:600;cursor:pointer;box-shadow:0 4px 14px rgba(26,32,53,.3);display:none;z-index:2}' +
+    '.mvchat-jump.mvchat-show{display:block}.mvchat-jump:hover{background:#EBB92E;color:#1A2035}' +
+    '.mvchat-confirm{display:none;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap;padding:10px 12px;background:#fff4d6;border-top:1px solid #eadfc9;font-size:13px}' +
+    '.mvchat-confirm.mvchat-show{display:flex}' +
+    '.mvchat-confirm button{font:inherit;font-size:13px;font-weight:700;border-radius:8px;padding:6px 12px;cursor:pointer;border:1px solid #1A2035;background:#fff;color:#1A2035}' +
+    '.mvchat-confirm .mvchat-yes{background:#1A2035;color:#fff}' +
+    '.mvchat-newchat{align-self:flex-start;background:#EBB92E;border:0;color:#1A2035;border-radius:999px;padding:8px 16px;font:inherit;font-weight:700;cursor:pointer}' +
     '.mvchat-msg{max-width:86%;padding:9px 12px;border-radius:14px;line-height:1.45;white-space:pre-wrap;word-wrap:break-word;overflow-wrap:anywhere}' +
     '.mvchat-bot{align-self:flex-start;background:#fff;border:1px solid #eadfc9;border-bottom-left-radius:4px}' +
     '.mvchat-me{align-self:flex-end;background:#1A2035;color:#fff;border-bottom-right-radius:4px}' +
@@ -68,8 +86,8 @@
     '.mvchat-send{background:#EBB92E;color:#1A2035;border:0;border-radius:10px;padding:0 14px;font:inherit;font-weight:700;cursor:pointer}' +
     '.mvchat-send:disabled{opacity:.5;cursor:default}' +
     '.mvchat-note{font-size:11px;color:#555b78;text-align:center;padding:0 10px 8px;background:#fff}' +
-    '@media(max-width:480px){.mvchat-panel{right:8px;left:8px;bottom:84px;width:auto;max-width:none;height:calc(100vh - 100px)}.mvchat-btn{right:12px;bottom:12px}}' +
-    '@media(prefers-reduced-motion:reduce){.mvchat-btn,.mvchat-typing i{transition:none;animation:none}}';
+    '@media(max-width:480px){.mvchat-panel{right:8px;left:8px;bottom:84px;width:auto;max-width:none;height:calc(100vh - 100px);height:calc(100dvh - 100px)}.mvchat-btn{right:12px;bottom:12px}}' +
+    '@media(prefers-reduced-motion:reduce){.mvchat-btn,.mvchat-typing i{transition:none;animation:none}.mvchat-log{scroll-behavior:auto}}';
 
   var style = document.createElement('style');
   style.textContent = css;
@@ -99,12 +117,39 @@
   var closeBtn = el('button', 'mvchat-x', '\u00d7');
   closeBtn.type = 'button';
   closeBtn.setAttribute('aria-label', 'Close chat');
+  var endBtn = el('button', 'mvchat-end', 'End chat');
+  endBtn.type = 'button';
+  endBtn.setAttribute('aria-label', 'End this chat and clear the conversation');
+  var actions = el('div', 'mvchat-actions');
+  actions.appendChild(endBtn);
+  actions.appendChild(closeBtn);
   head.appendChild(title);
-  head.appendChild(closeBtn);
+  head.appendChild(actions);
 
   var log = el('div', 'mvchat-log');
   log.setAttribute('role', 'log');
   log.setAttribute('aria-live', 'polite');
+  log.tabIndex = 0;
+  log.setAttribute('aria-label', 'Chat messages. Use the arrow keys or Page Up and Page Down to scroll.');
+  var logWrap = el('div', 'mvchat-logwrap');
+  var jump = el('button', 'mvchat-jump', '\u2193 Latest messages');
+  jump.type = 'button';
+  logWrap.appendChild(log);
+  logWrap.appendChild(jump);
+
+  var confirmBar = el('div', 'mvchat-confirm');
+  confirmBar.setAttribute('role', 'alertdialog');
+  confirmBar.setAttribute('aria-label', 'End chat confirmation');
+  confirmBar.appendChild(el('span', '', 'End this chat? The conversation will be cleared.'));
+  var confirmBtns = el('div');
+  confirmBtns.style.cssText = 'display:flex;gap:6px';
+  var yesBtn = el('button', 'mvchat-yes', 'End chat');
+  yesBtn.type = 'button';
+  var noBtn = el('button', '', 'Keep chatting');
+  noBtn.type = 'button';
+  confirmBtns.appendChild(yesBtn);
+  confirmBtns.appendChild(noBtn);
+  confirmBar.appendChild(confirmBtns);
 
   var form = el('form', 'mvchat-form');
   var input = el('textarea', 'mvchat-input');
@@ -120,7 +165,8 @@
   var note = el('div', 'mvchat-note', 'Automated assistant. For payments or account issues, contact support.');
 
   panel.appendChild(head);
-  panel.appendChild(log);
+  panel.appendChild(logWrap);
+  panel.appendChild(confirmBar);
   panel.appendChild(form);
   panel.appendChild(note);
   document.body.appendChild(panel);
@@ -144,13 +190,22 @@
     if (last < text.length) node.appendChild(document.createTextNode(text.slice(last)));
   }
 
-  function scroll() { log.scrollTop = log.scrollHeight; }
+  function nearBottom() { return log.scrollHeight - log.scrollTop - log.clientHeight < 80; }
+  function updateJump() { jump.classList.toggle('mvchat-show', !nearBottom()); }
+  function scroll(force) {
+    if (force === false && !nearBottom()) { updateJump(); return; }   // reader scrolled up: do not yank them down
+    log.scrollTop = log.scrollHeight;
+    jump.classList.remove('mvchat-show');
+  }
+  log.addEventListener('scroll', updateJump);
+  jump.addEventListener('click', function () { scroll(true); log.focus(); });
 
   function addMsg(role, text) {
     var d = el('div', 'mvchat-msg ' + (role === 'user' ? 'mvchat-me' : 'mvchat-bot'));
     if (role === 'user') d.textContent = text; else fill(d, text);
+    var stick = nearBottom() || role === 'user';
     log.appendChild(d);
-    scroll();
+    scroll(stick ? true : false);
     return d;
   }
 
@@ -187,8 +242,18 @@
 
   function submit(text) {
     text = (text || '').trim().slice(0, MAX_CHARS);
-    if (!text || busy) return;
+    if (!text || busy || ended) return;
     removeChips();
+    if (END_RE.test(text)) {            // "bye", "end chat" ... closes the chat without calling the API
+      addMsg('user', text);
+      input.value = '';
+      input.style.height = 'auto';
+      addMsg('assistant', 'Thanks for chatting! Ending the chat now.');
+      setBusy(true);
+      setTimeout(endChat, 900);
+      return;
+    }
+    var mySid = sid;
     messages.push({ role: 'user', content: text });
     addMsg('user', text);
     persist();
@@ -219,6 +284,7 @@
     }).then(function (reply) {
       if (timer) clearTimeout(timer);
       if (typing.parentNode) typing.parentNode.removeChild(typing);
+      if (mySid !== sid) return;        // the chat was ended while this reply was loading
       messages.push({ role: 'assistant', content: reply });
       addMsg('assistant', reply);
       persist();
@@ -226,6 +292,40 @@
       if (open) input.focus();
     });
   }
+
+  function endChat() {
+    sid++;
+    ended = true;
+    messages = [];
+    try { sessionStorage.removeItem(STORE_KEY); } catch (e) {}
+    confirmBar.classList.remove('mvchat-show');
+    setBusy(false);
+    log.innerHTML = '';
+    addMsg('assistant', ENDED_MSG);
+    var nb = el('button', 'mvchat-newchat', 'Start new chat');
+    nb.type = 'button';
+    nb.addEventListener('click', newChat);
+    log.appendChild(nb);
+    scroll(true);
+    form.style.display = 'none';
+    note.style.display = 'none';
+    endBtn.style.display = 'none';
+    nb.focus();
+  }
+
+  function newChat() {
+    sid++;
+    ended = false;
+    form.style.display = '';
+    note.style.display = '';
+    endBtn.style.display = '';
+    render();
+    input.focus();
+  }
+
+  endBtn.addEventListener('click', function () { confirmBar.classList.add('mvchat-show'); yesBtn.focus(); });
+  yesBtn.addEventListener('click', endChat);
+  noBtn.addEventListener('click', function () { confirmBar.classList.remove('mvchat-show'); input.focus(); });
 
   function setOpen(v) {
     open = v;
@@ -237,7 +337,11 @@
 
   btn.addEventListener('click', function () { setOpen(!open); });
   closeBtn.addEventListener('click', function () { setOpen(false); btn.focus(); });
-  document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && open) { setOpen(false); btn.focus(); } });
+  document.addEventListener('keydown', function (e) {
+    if (e.key !== 'Escape' || !open) return;
+    if (confirmBar.classList.contains('mvchat-show')) { confirmBar.classList.remove('mvchat-show'); input.focus(); return; }
+    setOpen(false); btn.focus();
+  });
   form.addEventListener('submit', function (e) { e.preventDefault(); submit(input.value); });
   input.addEventListener('keydown', function (e) {
     if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); submit(input.value); }

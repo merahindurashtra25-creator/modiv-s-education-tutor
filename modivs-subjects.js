@@ -6,6 +6,7 @@
   var CATS={
     'Academic Subjects (School & College)':['Accountancy','Arts & Humanities','Biology','Business Studies','Chemistry','Commerce','Computer Science','Economics','Engineering Subjects','English','Environmental Science','Geography','Hindi','History','Informatics Practices','Legal Studies','Mathematics','Medical Subjects','Philosophy','Physics','Political Science','Psychology','Punjabi','Sanskrit','Science','Social Science','Sociology','Statistics','Urdu'],
     'Art, Craft & Design':['Art','Calligraphy','Candle & Resin Craft','Clay Modelling','Drawing & Painting','Fashion Designing','Graphic Designing','Handwriting Improvement','Interior Designing','Mehendi Design','Origami & Paper Craft','Sketching','Photography','Video Editing'],
+    'Cooking, Lifestyle & Hobbies':['Baking & Cake Making','Cooking','Gardening','Home Science','Knitting & Crochet','Makeup & Beauty','Sewing & Tailoring','Vastu & Astrology'],
     'Competitive Exam Preparation':['AFCAT','Banking Exams','CA / CS Foundation','CAT / MBA Entrance','CDS','CLAT','CTET / TET','CUET','Defence Exams','GATE','JEE (Main & Advanced)','NDA','NEET (UG / PG)','Olympiads','Railway Exams','SSC Exams','State PSC Exams','UPSC / PCS'],
     'IT, Coding & Technology':['Angular','App Development','Artificial Intelligence','C / C++','Cloud Computing','Coding / Programming','Computer Basics','CSS','Cyber Security','Data Science','DevOps','Digital Marketing','Ethical Hacking','Excel & MS Office','HTML','Java','JavaScript','Machine Learning','Node JS','PHP','Python','React JS','Software Testing','Web Development'],
     'Language Learning':['Arabic','Business English','Chinese (Mandarin)','Duolingo English Test','French','German','IELTS','Italian','Japanese','Korean','Personality & Communication Skills','PTE','Russian','Spanish','Spoken English','TOEFL'],
@@ -15,7 +16,7 @@
   };
   var GROUPS={
     general:['Academic Subjects (School & College)','Competitive Exam Preparation','Preschool & Early Learning'],
-    skill:['Art, Craft & Design','IT, Coding & Technology','Language Learning','Music, Dance & Performing Arts','Sports, Fitness & Wellness']
+    skill:['Art, Craft & Design','Cooking, Lifestyle & Hobbies','IT, Coding & Technology','Language Learning','Music, Dance & Performing Arts','Sports, Fitness & Wellness']
   };
   function groupOf(cat){return GROUPS.skill.indexOf(cat)>-1?'skill':(GROUPS.general.indexOf(cat)>-1?'general':'other')}
   function cmp(a,b){return a.localeCompare(b,'en',{sensitivity:'base'})}
@@ -31,6 +32,7 @@
     ['Preschool & Early Learning',/\b(abacus|phonics|montessori|kindergarten|nursery|preschool|pre-school|toddler|early)\b/i],
     ['Competitive Exam Preparation',/\b(neet|jee|upsc|pcs|ssc|olympiad|clat|cuet|gate|cat|mba|nda|cds|afcat|tet|ctet|ias|banking|railway|entrance|competitive|exam|ntse|kvpy|sat|gre|gmat|ca|cs)\b/i],
     ['IT, Coding & Technology',/\b(cod(e|ing)|program(ming)?|python|java|javascript|html|css|php|sql|react|node|angular|web|software|app|android|ios|data|ai|ml|machine|cyber|hacking|cloud|devops|excel|tally|computer|linux|robotics|iot|blockchain|c\+\+|ui|ux)\b/i],
+    ['Cooking, Lifestyle & Hobbies',/\b(cook\w*|bak(e|ing)|cake|chef|culinary|recipe|garden\w*|sewing|tailor\w*|stitch\w*|knit\w*|crochet|makeup|beauty|hobb(y|ies)|lifestyle|vastu|astrology|home science)\b/i],
     ['Music, Dance & Performing Arts',/\b(music|dance|danc\w*|sing\w*|vocal|guitar|piano|keyboard|drum\w*|tabla|violin|flute|harmonium|ukulele|sitar|acting|theatre|theater|kathak|bharatanatyam|choreograph\w*|instrument\w*|anchor\w*|mimicry|stage)\b/i],
     ['Art, Craft & Design',/\b(art|draw\w*|paint\w*|sketch\w*|craft|design\w*|calligraphy|photograph\w*|video|mehendi|mehndi|pottery|origami|embroidery|knitting|crochet|resin|clay|animation|illustration|rangoli|tattoo)\b/i],
     ['Language Learning',/\b(language|spanish|russian|italian|french|german|japanese|korean|chinese|mandarin|arabic|portuguese|dutch|turkish|spoken|ielts|toefl|pte|duolingo|communication|speaking|accent|grammar|vocabulary|sign language)\b/i],
@@ -55,7 +57,7 @@
 
   // Returns the picker as an HTML string. Categories and subjects are real, visible checkboxes (not chips).
   function picker(name,selected,opts){
-    opts=opts||{};selected=Array.isArray(selected)?selected:[];
+    opts=opts||{};selected=(Array.isArray(selected)?selected:[]).filter(function(s){return String(s).trim().toLowerCase()!=='general'});
     var map={},keys=categories();
     keys.forEach(function(k){map[k]=CATS[k].slice()});
     var other=selected.filter(function(s){return !catOf(s)}).sort(cmp);

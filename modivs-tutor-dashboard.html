@@ -1032,20 +1032,6 @@
       margin: 0 0 4px
     }
 
-    .ask {
-      position: fixed;
-      right: 20px;
-      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-      background: var(--yellow);
-      color: var(--navy);
-      border: 2px solid var(--navy);
-      border-radius: 99px;
-      padding: 12px 20px;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 6px 18px rgba(26, 32, 53, .25)
-    }
-
     /* ---- Free / Premium tutor picker (shown once after admin approval) ---- */
     .mvt {
       position: fixed;
@@ -1343,10 +1329,6 @@
         align-items: center;
         justify-content: flex-start;
         flex-wrap: wrap
-      }
-
-      .ask {
-        bottom: calc(76px + env(safe-area-inset-bottom, 0px))
       }
     }
 
@@ -1737,7 +1719,6 @@
     </main>
   </div>
 
-  <button class="ask" type="button" id="ask">Ask Me!</button>
   <dialog id="dlg" aria-labelledby="dt" onclick="if(event.target===this)closeRechargeDialog()">
     <button type="button" class="gx" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.5rem;cursor:pointer;line-height:1;color:var(--navy);" aria-label="Close" onclick="closeRechargeDialog()">&times;</button>
     <h2 id="dt">Recharge coins</h2>
@@ -4002,7 +3983,6 @@
       }
 
       ['editTop', 'editLink'].forEach(function (id) { var e = $(id); if (e) e.addEventListener('click', editProfile) });
-      var askBtn = $('ask'); if (askBtn) askBtn.addEventListener('click', function () { window.open('https://wa.me/message/AZVJXD4HG3DOG1', '_blank', 'noopener'); });
 
       // Real-Time Incoming Student Inquiries Listener
       var tutorMail = currentTutorEmail();

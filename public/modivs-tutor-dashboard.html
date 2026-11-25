@@ -5,7 +5,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js?v=mwv5e6fc-uteh0"></script>
+  <script src="modivs.min.js?v=mwvob32a-0jqk3"></script>
   
   <script>(function () { try { var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); if (u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1)) { var h = document.documentElement; h.style.visibility = 'hidden'; window.__mvShow = function () { h.style.visibility = '' }; setTimeout(window.__mvShow, 2500) } } catch (e) { } })();</script>
   <link rel="icon" type="image/png" href="favicon.png">
@@ -1032,20 +1032,6 @@
       margin: 0 0 4px
     }
 
-    .ask {
-      position: fixed;
-      right: 20px;
-      bottom: calc(20px + env(safe-area-inset-bottom, 0px));
-      background: var(--yellow);
-      color: var(--navy);
-      border: 2px solid var(--navy);
-      border-radius: 99px;
-      padding: 12px 20px;
-      font-weight: 800;
-      cursor: pointer;
-      box-shadow: 0 6px 18px rgba(26, 32, 53, .25)
-    }
-
     /* ---- Free / Premium tutor picker (shown once after admin approval) ---- */
     .mvt {
       position: fixed;
@@ -1344,10 +1330,6 @@
         justify-content: flex-start;
         flex-wrap: wrap
       }
-
-      .ask {
-        bottom: calc(76px + env(safe-area-inset-bottom, 0px))
-      }
     }
 
     .bf label {
@@ -1556,10 +1538,10 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwv5e6fc-uteh0">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwv5e6fc-uteh0">
-  <link rel="stylesheet" href="modivs-dashboard.css?v=mwv5e6fc-uteh0">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwv5e6fc-uteh0">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwvob32a-0jqk3">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwvob32a-0jqk3">
+  <link rel="stylesheet" href="modivs-dashboard.css?v=mwvob32a-0jqk3">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwvob32a-0jqk3">
 </head>
 
 <body class="dash">
@@ -1737,7 +1719,6 @@
     </main>
   </div>
 
-  <button class="ask" type="button" id="ask">Ask Me!</button>
   <dialog id="dlg" aria-labelledby="dt" onclick="if(event.target===this)closeRechargeDialog()">
     <button type="button" class="gx" style="position:absolute;top:12px;right:14px;background:none;border:none;font-size:1.5rem;cursor:pointer;line-height:1;color:var(--navy);" aria-label="Close" onclick="closeRechargeDialog()">&times;</button>
     <h2 id="dt">Recharge coins</h2>
@@ -4002,7 +3983,6 @@
       }
 
       ['editTop', 'editLink'].forEach(function (id) { var e = $(id); if (e) e.addEventListener('click', editProfile) });
-      var askBtn = $('ask'); if (askBtn) askBtn.addEventListener('click', function () { window.open('https://wa.me/message/AZVJXD4HG3DOG1', '_blank', 'noopener'); });
 
       // Real-Time Incoming Student Inquiries Listener
       var tutorMail = currentTutorEmail();
