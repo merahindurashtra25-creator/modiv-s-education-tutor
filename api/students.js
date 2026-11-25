@@ -314,13 +314,13 @@ module.exports = async function handler(req, res) {
         studentAccountPatch.nextReminderAt = null;
       }
       const accRef = db.collection('accounts').doc(cleanEmail);
-      let isNewAccount = false;
+      let needsWelcome = false;
       writes.push(
         db.runTransaction(async (tx) => {
           const snap = await tx.get(accRef);
           tx.set(accRef, snap.exists ? studentAccountPatch : { ...studentAccountPatch, createdAt: admin.firestore.FieldValue.serverTimestamp() }, { merge: true });
-          return !snap.exists;
-        }).then((created) => { isNewAccount = Boolean(created); })
+          return !snap.exists || (snap.data() || {}).welcomeEmailSent !== true;
+        }).then((shouldSend) => { needsWelcome = Boolean(shouldSend); })
           .catch(() => accRef.set(studentAccountPatch, { merge: true }).catch(() => {}))
       );
 
@@ -340,7 +340,7 @@ module.exports = async function handler(req, res) {
       );
 
       await Promise.all(writes);
-      if (isNewAccount && !isAdmin) {
+      if (needsWelcome && !isAdmin) {
         try {
           const { sendWelcomeEmailHelper } = require('./send-reminder');
           const originUrl = req.headers.host ? `${req.headers['x-forwarded-proto'] || 'https'}://${req.headers.host}` : '';

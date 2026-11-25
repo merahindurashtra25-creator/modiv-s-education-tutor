@@ -945,6 +945,16 @@ input[type=text]:focus,input[type=email]:focus,input[type=password]:focus{border
         try { localStorage.setItem('modivs_admin_session', JSON.stringify({ email: mail, name: name, role: 'Admin', isAdmin: true, uid: u.uid })); }catch(e){}
       }
       localStorage.setItem('modivs_auth_user', JSON.stringify({ name: name, email: mail, uid: u.uid, role: actualRole }));
+      if(isNew && actualRole !== 'Admin' && !isAdminEmail(mail) && typeof fetch === 'function'){
+        try{
+          fetch('/api/send-reminder?action=welcome', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            keepalive: true,
+            body: JSON.stringify({ email: mail, role: actualRole === 'Tutor' ? 'tutor' : 'student', name: name })
+          }).catch(function(){});
+        }catch(e){}
+      }
       toast((isNew ? 'Welcome, ' : 'Welcome back, ') + name.split(' ')[0] + '!');
       var dest = actualRole === 'Admin' ? '/admin'
                : (actualRole === 'Tutor' ? ((window.ModivsOrg && ModivsOrg.isOrg(mail)) ? '/org-dashboard' : '/tutor-dashboard')

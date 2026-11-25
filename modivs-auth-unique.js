@@ -562,12 +562,22 @@
           }
 
           var resPayload = { role: existingRole, user: user, email: mail, isNew: false, isExisting: true, account: checkRes.account };
-          if (options.onSuccess) {
-            options.onSuccess(resPayload);
-          } else if (!options.isLogin && existingRole === roleKey) {
-            window.location.href = existingMeta.dashboardUrl;
-          }
-          return resPayload;
+          var wp = (!checkRes.account || checkRes.account.welcomeEmailSent !== true)
+            ? sendWelcomeEmail({
+                email: mail,
+                role: existingRole,
+                name: (checkRes.account && checkRes.account.name) || name,
+                displayId: (checkRes.account && (checkRes.account.displayId || checkRes.account.tutId || checkRes.account.stuId)) || ''
+              })
+            : Promise.resolve();
+          return wp.then(function () {
+            if (options.onSuccess) {
+              options.onSuccess(resPayload);
+            } else if (!options.isLogin && existingRole === roleKey) {
+              window.location.href = existingMeta.dashboardUrl;
+            }
+            return resPayload;
+          });
         }
 
         // Email exists with a DIFFERENT role: STOP and notify
