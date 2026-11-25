@@ -145,7 +145,7 @@
     { file: 'modivs-tutors-panchkula.html', title: 'Home tuition near me in Panchkula | Best Home Tutors', shortTitle: 'Tutors in Panchkula', slug: 'panchkula', freeSlug: 'panchkula', aliases: ['tutors-in-panchkula', 'tutorsinpanchkula', 'panchkula-tutors', 'panchkulatutors', 'home-tuition-near-me-in-panchkula', 'hometuitionpanchkula'] },
     { file: 'modivs-tutors.html', title: 'Modiv’s Education – Meet our verified tutors', shortTitle: 'Browse Tutors', slug: 'tutors', freeSlug: 'tutors', aliases: ['browse-tutors', 'browsetutors', 'meet-our-verified-tutors', 'tutor'] },
     { file: 'modivs-user-signup.html', title: 'User Sign Up · Modiv’s Education', shortTitle: 'User Sign Up', slug: 'user-signup', freeSlug: 'usersignup', aliases: ['usersign-up'] },
-    { file: 'modivs-videos.html', title: 'Modiv’s Education – From Modiv’s Education | Videos', shortTitle: 'Videos', slug: 'videos', freeSlug: 'videos', aliases: ['video-lectures'] }
+    { file: 'modivs-videos.html', title: 'Modiv’s Education – Modiv’s Testimonials | Videos', shortTitle: 'Videos', slug: 'videos', freeSlug: 'videos', aliases: ['video-lectures'] }
   ];
 
   // Lookup index for fast resolution

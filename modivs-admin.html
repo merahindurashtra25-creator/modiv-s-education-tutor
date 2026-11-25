@@ -5110,7 +5110,7 @@
         });
       }
 
-      // ---------- Videos ("From Modiv's Education" on the home page): add, edit, re-order, delete ----------
+      // ---------- Videos ("Modiv's Testimonials" on the home page): add, edit, re-order, delete ----------
       function saveVids(list, msg) {
         cmsVids = list; editVidId = null;
         cmsRefresh();
@@ -5123,7 +5123,7 @@
         var S = window.ModivsStories, list = cmsVids || [];
         if (!S) { box.innerHTML = '<section class="box"><p class="cms-err">The videos module did not load.</p></section>'; return; }
         box.innerHTML =
-          '<section class="box"><h2>Add a video</h2><p class="cms-sub">Paste a YouTube link. The video plays on the “From Modiv’s Education” page, found under More in the menu bar. New videos appear at the end.</p><form id="vdForm" novalidate>' +
+          '<section class="box"><h2>Add a video</h2><p class="cms-sub">Paste a YouTube link. The video plays on the “Modiv’s Testimonials” page, found under More in the menu bar. New videos appear at the end.</p><form id="vdForm" novalidate>' +
           fld('vUrl', 'YouTube link', '<input id="vUrl" placeholder="https://youtu.be/…" inputmode="url">', 'Any normal YouTube link works (watch, youtu.be or shorts). The video must allow embedding on YouTube.') +
           '<div class="cms-2">' + fld('vName', 'Title <small>(optional)</small>', '<input id="vName" maxlength="100" placeholder="e.g. A message from our founder">') +
           fld('vNote', 'Short line <small>(optional)</small>', '<input id="vNote" maxlength="160" placeholder="e.g. Watch the video">') + '</div>' +
@@ -5645,7 +5645,7 @@
         chat: ['Chat & Inquiries Monitoring', 'Conversations between students and tutors.'],
         shop: ['Shop Items', 'Manage e-books and video lectures.'],
         pricing: ['Lead Unlock Rate', 'Set how many coins a tutor pays to unlock one student lead.'],
-        videos: ['Videos', 'Videos shown on the “From Modiv’s Education” page (More menu).'],
+        videos: ['Videos', 'Videos shown on the “Modiv’s Testimonials” page (More menu).'],
         blogs: ['Blogs', 'Study blogs written by tutors.'],
         reviews: ['Reviews', 'Approve reviews shown on the home page.'],
         chat_leads: ['Chat Leads', 'Visitors who used the website chat: role, name, mobile number, issue, answers and full conversation.'],

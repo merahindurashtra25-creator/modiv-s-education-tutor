@@ -1,4 +1,4 @@
-/* Modiv's Education - "From Modiv's Education" videos (YouTube, played inside the page)
+/* Modiv's Education - "Modiv's Testimonials" videos (YouTube, played inside the page)
    ------------------------------------------------------------------
    The admin adds, edits, re-orders and deletes these videos in the Admin page > "Videos" tab.
    They are saved to Firestore site_content/stories (anyone reads, only admins write; see firestore.rules)
@@ -9,8 +9,8 @@
   'use strict';
   var KEY = 'modivs_story_videos';
   var DEFAULTS = [
-    { id: 'v1', url: 'https://youtu.be/hAQ0uQuJ1tI', name: 'From Modiv’s Education', note: 'Watch the video' },
-    { id: 'v2', url: 'https://youtu.be/-cNWq_uc_JM', name: 'From Modiv’s Education', note: 'Watch the video' }
+    { id: 'v1', url: 'https://youtu.be/hAQ0uQuJ1tI', name: 'Modiv’s Testimonials', note: 'Watch the video' },
+    { id: 'v2', url: 'https://youtu.be/-cNWq_uc_JM', name: 'Modiv’s Testimonials', note: 'Watch the video' }
   ];
 
   function copy(a){ return JSON.parse(JSON.stringify(a)); }
