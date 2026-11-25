@@ -1,14 +1,14 @@
 /*
- * Modiv's Education - guided website chat.
- * Load with:  <script src="chat-widget.js" defer></script>
+ * Modiv's Education - website chat assistant.
+ * Load with:  <script src="chat-widget.js" data-endpoint="https://modivs-chat.happinessaggarwal.workers.dev" defer></script>
  *
- * A scripted, chip-based conversation (no external service):
- *   1. Are you a tutor or a student?
- *   2. Name and mobile number (filled in automatically for logged-in users)
- *   3. What do you need help with? -> a few follow-up questions -> optional details
- * Every step is saved to Firestore collection `chat_leads` through /api/chat-leads
- * (falls back to the browser Firestore SDK when the server has no credentials).
- * Self-contained: no dependencies, all CSS is scoped under .mvchat-*.
+ * Flow:
+ *   - Guest (not logged in): asks Name -> Contact number -> Enquiry topic/question,
+ *     then answers using custom data / AI endpoint and keeps the chat open.
+ *   - Logged-in user: skips Name, Contact number, and Designation (uses login data
+ *     directly for student/tutor) and answers immediately.
+ * Every session is saved to Firestore `chat_leads` via /api/chat-leads (with browser
+ * Firestore SDK fallback). Self-contained, all CSS scoped under .mvchat-*.
  */
 (function () {
   'use strict';
@@ -17,63 +17,72 @@
 
   var script = document.currentScript || document.querySelector('script[src*="chat-widget"]');
   var API = (script && script.getAttribute('data-api')) || '/api/chat-leads';
-  var MAX_CHARS = 300;
-  var STORE_KEY = 'mvchat_v2';
+  var ENDPOINT = (script && script.getAttribute('data-endpoint')) || '';
+  var MAX_CHARS = 400;
+  var MAX_SEND = 10;
+  var STORE_KEY = 'mvchat_v3';
   var AGENTS = ['Priya', 'Anjali', 'Neha', 'Simran', 'Riya', 'Kavya', 'Pooja', 'Ishita', 'Meera', 'Sneha', 'Aarushi', 'Nisha'];
   var END_RE = /^\s*(bye|bye bye|goodbye|good bye|end chat|end|exit|quit|close chat|that'?s all|thats all|no thanks?|nothing else|ok bye|okay bye|thanks,? bye|alvida)\s*[.!]*\s*$/i;
   var WHO_RE = /\b(bot|robot|ai|a\.i\.?|artificial|human|real person|machine|chatgpt|automated)\b/i;
   var PHONE_SUPPORT = '+91 98969 30443';
 
-  // ---------- conversation script ----------
-  var CLASSES = ['Class 1-5', 'Class 6-8', 'Class 9-10', 'Class 11-12', 'College / Competitive'];
-  var SUBJECTS = ['Maths', 'Science', 'English', 'Physics', 'Chemistry', 'Hindi', 'Other'];
-  var CITIES = ['Chandigarh', 'Mohali', 'Panchkula', 'Ludhiana', 'Other'];
-  var MODES = ['Home tuition', 'Online classes', 'Either is fine'];
-
-  var Q = {
-    cls: { key: 'Class', text: 'Which class or level is the student in?', chips: CLASSES, other: true },
-    subject: { key: 'Subject', text: 'Which subject do you need?', chips: SUBJECTS, other: true },
-    mode: { key: 'Mode', text: 'Would you prefer home tuition or online classes?', chips: MODES },
-    city: { key: 'City', text: 'Which city are you in?', chips: CITIES, other: true },
-    teach: { key: 'Subjects you teach', text: 'Which subject do you want to teach?', chips: SUBJECTS, other: true },
-    exp: { key: 'Experience', text: 'How much teaching experience do you have?', chips: ['Fresher', '1-3 years', '3-5 years', '5+ years'] }
+  var CHIPS_BY_ROLE = {
+    student: ['Find a tutor', 'Book a demo class', 'Post my requirement', 'Fees & payments', 'Free notes & shop', 'Contact support'],
+    tutor: ['Student leads & coins', 'Membership & payment', 'Profile verification', 'Become a tutor', 'Login / account problem', 'Contact support'],
+    guest: ['Find a tutor', 'Book a demo class', 'Become a tutor', 'Tutor membership & coins', 'Fees & payments', 'Free notes & shop', 'Contact support']
   };
-  function topic(text, chips) { return { key: 'Topic', text: text, chips: chips }; }
 
-  var ISSUES = {
-    student: [
-      { label: 'Find a tutor', qs: [Q.cls, Q.subject, Q.mode, Q.city],
-        reply: 'Got it! You can browse verified tutors at modivs-find-tutor.html, or post your requirement at modivs-post-requirement.html and interested tutors will contact you. Our team will also call you to help match the right tutor.' },
-      { label: 'Book a demo class', qs: [Q.cls, Q.subject, Q.city],
-        reply: 'Great choice! Open a tutor profile at modivs-find-tutor.html and request a demo class. Our team will also call you to arrange it.' },
-      { label: 'Post my requirement', qs: [Q.cls, Q.subject, Q.city],
-        reply: 'You can post your full requirement at modivs-post-requirement.html. Once approved, tutors in your area can reach out to you.' },
-      { label: 'Fees & payments', qs: [topic('What is your question about?', ['Tutor fees', 'Refund', 'Payment failed / deducted'])],
-        reply: 'Thanks for the details. Refund rules are on modivs-refund-policy.html. For payment problems please keep your transaction ID handy; our team will call you to sort it out.' },
-      { label: "Tutor hasn't contacted me", qs: [topic('Since when are you waiting?', ['Today', '2-3 days', 'A week or more'])],
-        reply: "Sorry for the wait! We've noted this and our team will follow up with the tutors and call you soon." },
-      { label: 'Login / account problem', qs: [topic('What is going wrong?', ['Forgot password', "Can't sign up", 'Profile not updating', 'Other'])],
-        reply: 'You can try resetting your password from login.html. If it still does not work, our team will call you to fix it.' },
-      { label: 'Something else', qs: [], reply: 'Thanks for telling us. Our team will go through this and get back to you.' }
-    ],
-    tutor: [
-      { label: 'Become a tutor', qs: [Q.teach, Q.city, Q.exp],
-        reply: 'Wonderful! You can register for free at modivs-become-tutor.html. Complete your profile and documents so we can verify you quickly.' },
-      { label: 'Profile verification', qs: [topic('Where is your profile right now?', ['Just registered', 'Documents uploaded', 'Rejected / need help'])],
-        reply: 'Thanks! Our verification team will check your profile and call you if anything more is needed.' },
-      { label: 'Student leads & coins', qs: [topic('What do you need help with?', ['How unlocking works', 'Coins not added', 'Not getting leads'])],
-        reply: 'Noted. Our team will check your account and call you. For coin top-up problems, keep your payment details ready.' },
-      { label: 'Membership & payment', qs: [topic('What is your question about?', ['Which plan to choose', 'Payment deducted, plan not active', 'Refund'])],
-        reply: 'Thanks for the details. Our team will review your payment and call you shortly. Refund rules are on modivs-refund-policy.html.' },
-      { label: 'Login / account problem', qs: [topic('What is going wrong?', ['Forgot password', "Can't log in", 'Profile not updating', 'Other'])],
-        reply: 'You can try resetting your password from login.html. If it still does not work, our team will call you to fix it.' },
-      { label: 'Something else', qs: [], reply: 'Thanks for telling us. Our team will go through this and get back to you.' }
-    ]
-  };
+  // Custom knowledge base used when custom data is provided or the remote endpoint is unavailable.
+  var CUSTOM_DATA = [
+    {
+      keywords: ['find tutor', 'find a tutor', 'home tuition', 'online class', 'teacher', 'maths', 'science', 'english', 'physics', 'chemistry', 'chandigarh', 'mohali', 'panchkula', 'ludhiana'],
+      answer: 'You can browse verified tutors at modivs-find-tutor.html or post your exact class, subject, and city requirement at modivs-post-requirement.html. Interested tutors will reach out, and our team can also help match the right tutor on ' + PHONE_SUPPORT + '.'
+    },
+    {
+      keywords: ['demo', 'trial', 'book a demo', 'demo class'],
+      answer: 'To book a demo class, open any tutor profile on modivs-find-tutor.html and click Request Demo Class, or sign up at modivs-student-signup.html. Our team will coordinate the demo for you.'
+    },
+    {
+      keywords: ['post requirement', 'post my requirement', 'requirement'],
+      answer: 'Post your full tuition requirement (class, subjects, mode, and area) at modivs-post-requirement.html. Once approved, verified tutors in your area can contact you.'
+    },
+    {
+      keywords: ['become a tutor', 'register as tutor', 'teach', 'join as tutor', 'tutor registration'],
+      answer: 'You can register for free as a tutor at modivs-become-tutor.html. Complete your profile, subjects, and documents so our team can verify your account quickly.'
+    },
+    {
+      keywords: ['verification', 'verify', 'profile verification', 'document', 'rejected'],
+      answer: 'Profile verification is handled by our review team after you upload your details and documents on modivs-become-tutor.html. For urgent verification help, call ' + PHONE_SUPPORT + ' or email support@modivs.com.'
+    },
+    {
+      keywords: ['coin', 'coins', 'leads', 'student leads', 'unlock', 'membership', 'plan', 'subscription'],
+      answer: 'Tutors use membership plans or coins to unlock student leads from active-leads.html and the Tutor Dashboard (modivs-tutor-dashboard.html). If coins or a plan did not activate after payment, share your transaction ID with us at ' + PHONE_SUPPORT + ' or support@modivs.com.'
+    },
+    {
+      keywords: ['fee', 'fees', 'payment', 'refund', 'pay', 'price', 'charges', 'deducted'],
+      answer: 'Tuition fees depend on class, subject, and mode (home or online) and are discussed directly with the tutor. For platform payments or refund rules, check modivs-refund-policy.html or contact support@modivs.com with your transaction ID.'
+    },
+    {
+      keywords: ['notes', 'free notes', 'shop', 'study material', 'books', 'pdf'],
+      answer: 'You can access study materials, free notes, and resources on modivs-students-corner.html and modivs-shop.html.'
+    },
+    {
+      keywords: ['login', 'password', 'forgot', 'account', 'sign in', 'signup', 'sign up'],
+      answer: 'You can log in or reset your password on login.html (or create a new account at signup.html). If you still face trouble accessing your account, call ' + PHONE_SUPPORT + ' or email support@modivs.com.'
+    },
+    {
+      keywords: ['contact', 'support', 'call', 'phone', 'email', 'office', 'help', 'number'],
+      answer: "You can reach Modiv's Education support at " + PHONE_SUPPORT + ' or email support@modivs.com, or visit modivs-contact.html.'
+    },
+    {
+      keywords: ['vision', 'about', 'modiv', 'mission', 'who are you'],
+      answer: "Modiv's Education connects students and parents with verified home and online tutors across Chandigarh, Mohali, Panchkula, Ludhiana, and online. Learn more about our mission at our-vision.html."
+    }
+  ];
 
   // ---------- state ----------
-  var rec = null;       // the record that is saved to the database
-  var cur = null;       // current step: {id, chips, other, awaitOther, qi, issueIdx, placeholder}
+  var rec = null;
+  var cur = null;
   var agent = '';
   var busy = false, open = false, ended = false, sid = 0;
   var saveTimer = null;
@@ -101,19 +110,32 @@
     return /^[6-9]\d{9}$/.test(d) ? d : '';
   }
 
-  // Details of a logged-in user (name, mobile, email) are filled in automatically.
+  function inferRoleFromUser(u, email) {
+    var rk = String(u.roleKey || '').toLowerCase();
+    var r = String(u.role || '').toLowerCase();
+    if (rk === 'tutor' || r.indexOf('tutor') > -1 || rk === 'org') return 'tutor';
+    if (rk === 'student' || rk === 'parent' || r.indexOf('student') > -1 || r.indexOf('parent') > -1) return 'student';
+    var tk = ['modivs_current_tutor', 'modivs_tutor_profile', 'modivs_tutor_account'];
+    for (var i = 0; i < tk.length; i++) {
+      var to = rd(tk[i]);
+      if (to && typeof to === 'object' && (!to.email || String(to.email).toLowerCase() === email)) return 'tutor';
+    }
+    return 'student';
+  }
+
+  // Details of a logged-in user (name, mobile, email, designation) are filled in automatically.
   function knownUser() {
     var u = rd('modivs_auth_user');
     if (!u || !u.email || u.isAdmin || u.roleKey === 'admin') return null;
     var email = String(u.email).toLowerCase();
-    var phone = cleanPhone(u.phone || u.mobile);
+    var phone = cleanPhone(u.phone || u.mobile || u.contact);
     var name = String(u.name || '').trim();
     var users = rd('modivs_users');
     if (Array.isArray(users)) {
       for (var i = 0; i < users.length; i++) {
         var x = users[i];
         if (x && String(x.email || '').toLowerCase() === email) {
-          if (!phone) phone = cleanPhone(x.phone || x.mobile);
+          if (!phone) phone = cleanPhone(x.phone || x.mobile || x.contact);
           if (!name) name = String(x.name || '').trim();
         }
       }
@@ -125,7 +147,8 @@
         if (!name) name = String(o.name || o.student_name || '').trim();
       }
     });
-    return { name: name, phone: phone, email: email, uid: String(u.uid || ''), roleKey: String(u.roleKey || '').toLowerCase() };
+    if (!name) name = email.split('@')[0];
+    return { name: name, phone: phone, email: email, uid: String(u.uid || ''), role: inferRoleFromUser(u, email) };
   }
 
   function persist() {
@@ -141,7 +164,6 @@
   function saveNow() {
     if (!rec || !rec.sessionId) return;
     var body = payload();
-    var done = false;
     function viaFirestore() {
       try {
         var fb = window.EducationBFirebase;
@@ -308,7 +330,6 @@
   document.body.appendChild(panel);
   document.body.appendChild(btn);
 
-  // Turn URLs, emails, phone numbers and site pages into links, using DOM nodes only.
   var LINK_RE = /(https?:\/\/[^\s<>"')]+[^\s<>"').,;:!?])|([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})|(\+91[\s-]?\d{5}[\s-]?\d{5})|(\b[a-z][a-z0-9-]*\.html\b)/g;
   function fill(node, text) {
     var last = 0, m;
@@ -372,9 +393,9 @@
   function controls() {
     removeChips();
     if (!cur) return;
-    input.placeholder = cur.placeholder || (cur.chips && cur.chips.length ? 'Tap an option or type here...' : 'Type here...');
+    input.placeholder = cur.placeholder || (cur.chips && cur.chips.length ? 'Tap an option or type your question...' : 'Type here...');
     input.setAttribute('inputmode', cur.id === 'phone' ? 'numeric' : 'text');
-    showChips(cur.awaitOther ? [] : cur.chips);
+    showChips(cur.chips);
     setBusy(false);
   }
 
@@ -385,10 +406,9 @@
     if (!v && open && !ended) { try { input.focus(); } catch (e) {} }
   }
 
-  // Bot says something after a short "typing" pause, then runs next().
   function say(text, next, instant) {
     var mySid = sid;
-    var delay = instant ? 0 : Math.min(500 + text.length * 12, 1400);
+    var delay = instant ? 0 : Math.min(450 + text.length * 10, 1200);
     removeChips();
     setBusy(true);
     var typing = el('div', 'mvchat-typing');
@@ -404,132 +424,141 @@
     }, delay);
   }
 
-  // ---------- the script ----------
-  function firstName() { return (rec.name || '').split(/\s+/)[0] || ''; }
+  // ---------- custom data matching & endpoint ----------
+  function scoreMatch(query, entry) {
+    var q = query.toLowerCase();
+    var kws = entry.keywords || entry.tags || [];
+    if (typeof kws === 'string') kws = kws.split(',');
+    var score = 0;
+    for (var i = 0; i < kws.length; i++) {
+      var kw = String(kws[i] || '').trim().toLowerCase();
+      if (kw && q.indexOf(kw) > -1) score += kw.length > 4 ? 3 : 2;
+    }
+    var title = String(entry.q || entry.question || entry.title || '').toLowerCase();
+    if (title && (q.indexOf(title) > -1 || title.indexOf(q) > -1)) score += 4;
+    return score;
+  }
 
-  function askRole() {
-    cur = { id: 'role', chips: ['I am a Student / Parent', 'I am a Tutor'] };
-    say('Before we begin, are you a tutor or a student?', controls);
+  function matchCustomData(query, role) {
+    var external = Array.isArray(window.MODIVS_CHAT_DATA) ? window.MODIVS_CHAT_DATA : [];
+    var all = external.concat(CUSTOM_DATA);
+    var best = null, bestScore = 0;
+    for (var i = 0; i < all.length; i++) {
+      var item = all[i];
+      if (!item) continue;
+      if (item.role && role && item.role !== role) continue;
+      var s = scoreMatch(query, item);
+      if (s > bestScore) { bestScore = s; best = item; }
+    }
+    if (best && bestScore > 0) return best.answer || best.a || best.reply || '';
+    var namePart = firstName() ? ', ' + firstName() : '';
+    var phonePart = rec && rec.phone ? ' on ' + rec.phone : '';
+    return "Thanks for reaching out" + namePart + "! I have noted your enquiry. Our team will review it and reach out" + phonePart +
+      ' soon. For immediate help, call ' + PHONE_SUPPORT + ' or email support@modivs.com.';
   }
-  function askName() {
-    cur = { id: 'name', chips: [], placeholder: 'Type your full name...' };
-    say("Great! May I know your name, please?", controls);
-  }
-  function askPhone() {
-    cur = { id: 'phone', chips: [], placeholder: 'Type your 10-digit mobile number...' };
-    say('Thanks' + (firstName() ? ', ' + firstName() : '') + '! What is your mobile number? Our team will use it to call you back.', controls);
-  }
-  function askIssue(prefix) {
-    var list = ISSUES[rec.role] || ISSUES.student;
-    cur = { id: 'issue', chips: list.map(function (i) { return i.label; }) };
-    say((prefix || '') + 'How can we help you today?', controls);
-  }
-  function afterIdentity() {
-    if (!rec.name) return askName();
-    if (!rec.phone) return askPhone();
-    askIssue();
-  }
-  function askQuestion() {
-    var issue = ISSUES[rec.role][cur.issueIdx];
-    var q = issue.qs[cur.qi];
-    cur = { id: 'q', issueIdx: cur.issueIdx, qi: cur.qi, chips: q.chips.slice(), other: !!q.other, awaitOther: false };
-    say(q.text, controls);
-  }
-  function askDetails() {
-    cur = { id: 'details', issueIdx: cur.issueIdx, chips: ['Skip'], placeholder: 'Write anything else we should know...' };
-    say('Is there anything else you would like to tell us? You can type it below, or tap Skip.', controls);
-  }
-  function finish() {
-    var issue = ISSUES[rec.role][cur.issueIdx];
-    cur = { id: 'done', chips: ['I have another question', 'No, that is all'] };
-    say(issue.reply, function () {
-      var phone = rec.phone ? ' on ' + rec.phone : '';
-      say("Thank you" + (firstName() ? ', ' + firstName() : '') + "! I have noted everything. Our team will call you" + phone +
-        " soon. You can also reach us at " + PHONE_SUPPORT + " or support@modivs.com. Is there anything else?", controls);
+
+  function replyFromData(text) {
+    var mySid = sid;
+    removeChips();
+    setBusy(true);
+    var typing = el('div', 'mvchat-typing');
+    typing.innerHTML = '<i></i><i></i><i></i>';
+    log.appendChild(typing);
+    scroll(true);
+
+    var fallbackReply = function () { return matchCustomData(text, rec && rec.role); };
+
+    if (!ENDPOINT) {
+      setTimeout(function () {
+        if (typing.parentNode) typing.parentNode.removeChild(typing);
+        if (mySid !== sid) return;
+        addMsg('assistant', fallbackReply());
+        save();
+        controls();
+      }, 550);
+      return;
+    }
+
+    var history = (rec && Array.isArray(rec.transcript) ? rec.transcript : []).slice(-MAX_SEND).map(function (m) {
+      return { role: m.from === 'user' ? 'user' : 'assistant', content: m.text };
+    });
+    var ctrl = typeof AbortController !== 'undefined' ? new AbortController() : null;
+    var timer = ctrl ? setTimeout(function () { ctrl.abort(); }, 15000) : null;
+
+    fetch(ENDPOINT, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: history,
+        user: rec ? { loggedIn: rec.loggedIn, role: rec.role, name: rec.name } : null
+      }),
+      signal: ctrl ? ctrl.signal : undefined
+    }).then(function (r) {
+      return r.json().catch(function () { return {}; });
+    }).then(function (data) {
+      return (data && typeof data.reply === 'string' && data.reply.trim()) ? data.reply.trim() : fallbackReply();
+    }).catch(fallbackReply).then(function (reply) {
+      if (timer) clearTimeout(timer);
+      if (typing.parentNode) typing.parentNode.removeChild(typing);
+      if (mySid !== sid) return;
+      addMsg('assistant', reply);
+      save();
+      controls();
     });
   }
 
-  function matchChip(text, chips) {
-    var t = text.trim().toLowerCase();
-    for (var i = 0; i < chips.length; i++) { if (chips[i].toLowerCase() === t) return chips[i]; }
-    for (var j = 0; j < chips.length; j++) {
-      var c = chips[j].toLowerCase();
-      if (t.length >= 3 && (c.indexOf(t) > -1 || t.indexOf(c) > -1)) return chips[j];
+  // ---------- conversation flow ----------
+  function firstName() { return (rec && rec.name ? rec.name : '').split(/\s+/)[0] || ''; }
+  function chipsFor() { return CHIPS_BY_ROLE[(rec && rec.loggedIn && rec.role) ? rec.role : 'guest'] || CHIPS_BY_ROLE.guest; }
+
+  function askName() {
+    cur = { id: 'name', chips: [], placeholder: 'Type your full name...' };
+    say("Hi! I'm " + agent + " from Modiv's Education. \uD83D\uDE0A May I know your name, please?", controls, true);
+  }
+  function askPhone() {
+    cur = { id: 'phone', chips: [], placeholder: 'Type your 10-digit contact number...' };
+    say('Thanks' + (firstName() ? ', ' + firstName() : '') + '! What is your contact number?', controls);
+  }
+  function askEnquiry() {
+    cur = { id: 'enquiry', chips: chipsFor(), placeholder: 'Type which regarding your enquiry is...' };
+    say('Thank you! Which regarding is your enquiry? Tap an option below or type your question.', controls);
+  }
+
+  function recordEnquiry(text) {
+    if (!rec) return;
+    if (!rec.role) {
+      rec.role = /\b(become a tutor|teach|membership|coin|coins|leads|verification)\b/i.test(text) ? 'tutor' : 'student';
     }
-    return '';
+    rec.issues.push({ issue: text.slice(0, 120), answers: {}, details: text.slice(0, 1000), at: nowIso() });
+    save();
   }
 
   function handle(text) {
     if (!cur) return;
-    // Questions about who is chatting: answer honestly.
-    if (cur.id !== 'name' && cur.id !== 'phone' && cur.id !== 'details' && !cur.awaitOther && WHO_RE.test(text) && text.length < 60) {
-      say("I'm the Modiv's Education chat desk. I collect your details and pass them to our team, and a team member will call you personally to follow up.", controls);
+    if (cur.id !== 'name' && cur.id !== 'phone' && WHO_RE.test(text) && text.length < 60) {
+      say("I'm " + agent + " from the Modiv's Education chat desk. Ask me anything about tutors, demo classes, fees, or accounts!", controls);
       return;
     }
     switch (cur.id) {
-      case 'role': {
-        var m = matchChip(text, cur.chips) || (/tutor|teacher|teach/i.test(text) ? cur.chips[1] : (/student|parent|child|son|daughter/i.test(text) ? cur.chips[0] : ''));
-        if (!m) return say('Please tap one of the options: student / parent or tutor.', controls);
-        rec.role = m === cur.chips[1] ? 'tutor' : 'student';
-        save();
-        if (rec.name && rec.phone) {
-          return say("Thanks! I already have your details: " + rec.name + ' \u00b7 ' + rec.phone + '.', function () { askIssue(); });
-        }
-        return afterIdentity();
-      }
       case 'name': {
         var nm = text.replace(/[^A-Za-z\u0900-\u097F\u0A00-\u0A7F .'-]/g, '').replace(/\s+/g, ' ').trim();
         if (nm.length < 2) return say('Please type your name (letters only).', controls);
         rec.name = nm.slice(0, 80);
         save();
-        return afterIdentity();
+        return askPhone();
       }
       case 'phone': {
         var ph = cleanPhone(text);
-        if (!ph) return say('That does not look like a valid 10-digit mobile number. Please type it again, for example 98765 43210.', controls);
+        if (!ph) return say('Please enter a valid 10-digit mobile number, for example 98765 43210.', controls);
         rec.phone = ph;
         save();
-        return askIssue('Thank you! ');
+        return askEnquiry();
       }
-      case 'issue': {
-        var list = ISSUES[rec.role];
-        var label = matchChip(text, cur.chips);
-        if (!label) return say('Please tap one of the options below so I can help you better.', controls);
-        var idx = cur.chips.indexOf(label);
-        rec.issues.push({ issue: label, answers: {}, details: '', at: nowIso() });
-        save();
-        if (!list[idx].qs.length) { cur = { id: 'q', issueIdx: idx, qi: 0 }; return askDetails(); }
-        cur = { id: 'q', issueIdx: idx, qi: 0 };
-        return askQuestion();
-      }
-      case 'q': {
-        var issue = ISSUES[rec.role][cur.issueIdx];
-        var q = issue.qs[cur.qi];
-        var val = '';
-        if (cur.awaitOther) { val = text.trim().slice(0, 120); }
-        else {
-          val = matchChip(text, cur.chips);
-          if (val === 'Other' && cur.other) {
-            cur.awaitOther = true; persist();
-            return say('Sure, please type it below.', controls);
-          }
-          if (!val && cur.other && text.trim().length >= 2) val = text.trim().slice(0, 120);
-          if (!val) return say('Please tap one of the options below.', controls);
-        }
-        rec.issues[rec.issues.length - 1].answers[q.key] = val;
-        save();
-        cur = { id: 'q', issueIdx: cur.issueIdx, qi: cur.qi + 1 };
-        if (cur.qi < issue.qs.length) return askQuestion();
-        return askDetails();
-      }
-      case 'details': {
-        if (text.trim().toLowerCase() !== 'skip') rec.issues[rec.issues.length - 1].details = text.trim().slice(0, 1000);
-        save();
-        return finish();
-      }
-      case 'done': {
-        if (/another|more|yes|question/i.test(text) && !/no, that/i.test(text)) return askIssue('Sure! ');
-        return closeChat('Thank you for chatting with us! Have a great day. 😊');
+      case 'enquiry':
+      case 'chat': {
+        recordEnquiry(text);
+        cur = { id: 'chat', chips: chipsFor(), placeholder: 'Ask another question...' };
+        return replyFromData(text);
       }
     }
   }
@@ -538,11 +567,11 @@
     text = (text || '').trim().slice(0, MAX_CHARS);
     if (!text || busy || ended) return;
     removeChips();
-    if (END_RE.test(text) && cur && cur.id !== 'name' && cur.id !== 'details') {
+    if (END_RE.test(text) && cur && cur.id !== 'name' && cur.id !== 'phone') {
       addMsg('user', text);
       input.value = '';
       input.style.height = 'auto';
-      return closeChat('Thank you for chatting with us! Have a great day. 😊');
+      return closeChat('Thank you for chatting with us! Have a great day. \uD83D\uDE0A');
     }
     addMsg('user', text);
     input.value = '';
@@ -571,20 +600,28 @@
     applyAgent();
     rec = newRecord();
     var u = knownUser();
-    if (u) {
-      rec.loggedIn = true; rec.email = u.email; rec.uid = u.uid;
-      rec.name = u.name; rec.phone = u.phone;
-    }
     log.innerHTML = '';
     cur = null;
-    var hi = (u && u.name ? 'Hi ' + u.name.split(/\s+/)[0] + '! ' : 'Hi! ') + "I'm " + agent + " from Modiv's Education. \uD83D\uDE0A";
-    say(hi, askRole, true);
+    if (u) {
+      rec.loggedIn = true;
+      rec.email = u.email;
+      rec.uid = u.uid;
+      rec.name = u.name;
+      rec.phone = u.phone;
+      rec.role = u.role;
+      cur = { id: 'chat', chips: chipsFor(), placeholder: 'Ask your question or tap an option...' };
+      say('Hi ' + firstName() + "! I'm " + agent + " from Modiv's Education. \uD83D\uDE0A How can I help you today?", controls, true);
+      return;
+    }
+    askName();
   }
 
   function restore() {
     var s = null;
     try { s = JSON.parse(sessionStorage.getItem(STORE_KEY) || 'null'); } catch (e) {}
     if (!s || !s.rec || !s.rec.sessionId || !Array.isArray(s.rec.transcript) || !s.rec.transcript.length || !s.agent) return false;
+    var u = knownUser();
+    if (u && !s.rec.loggedIn) return false;
     rec = s.rec; cur = s.cur; agent = s.agent;
     applyAgent();
     log.innerHTML = '';
