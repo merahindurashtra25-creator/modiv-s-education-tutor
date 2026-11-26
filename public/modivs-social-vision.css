@@ -45,7 +45,8 @@
 .sv-bridge{background:var(--sv-panel);border-radius:16px;overflow:hidden}
 .sv-bridge-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:24px 28px 0}
 .sv-bridge-h h3{font-size:20px;font-weight:700;line-height:1.4}
-.sv-bridge svg{display:block;width:100%;height:auto}
+.sv-bridge svg,.sv-bridge img,.sv-bridge-img{display:block;width:100%;height:auto}
+.sv-bridge-img{margin-top:16px}
 .sv-promise{display:flex;align-items:center;gap:24px;padding:23px 28px;background:#F3ECD9}
 .sv-promise>b{font-size:40px;font-weight:800;line-height:1.5}
 .sv-promise h3{font-size:19px;font-weight:700;line-height:1.5}
