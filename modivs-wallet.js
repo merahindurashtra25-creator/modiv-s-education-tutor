@@ -236,24 +236,30 @@
             description: description || (amount >= 0 ? 'Coins added' : 'Coins deducted'),
             createdAt: ts()
           }, extra));
-          return next;
+          return { balance: next, fallback: false };
         });
       }).catch(function(txErr){
-        console.warn('Wallet transaction error (quota/network):', txErr && txErr.message);
+        console.warn('Wallet transaction error:', txErr && txErr.message);
         var cur = getCoins(em) || WELCOME_COINS;
         var next = Math.max(0, cur + amount);
         if(next < 0 && amount < 0) throw fail('insufficient_coins', 'Not enough coins.');
-        try { ref.set({ tutorEmail: em, coins: next, updatedAt: ts() }, { merge: true }).catch(function(){}); } catch(e){}
-        try {
+        return Promise.all([
+          ref.set({ tutorEmail: em, coins: next, updatedAt: ts() }, { merge: true }),
           txRef.set(Object.assign({
             tutorEmail: em, amount: amount, balanceAfter: next,
             type: amount >= 0 ? 'credit' : 'debit',
             description: description || (amount >= 0 ? 'Coins added' : 'Coins deducted'),
             createdAt: ts()
-          }, extra)).catch(function(){});
-        } catch(e){}
-        return next;
-      }).then(function(next){ setLocal(em, { coins: next, ready: true }); return { balance: next }; });
+          }, extra))
+        ]).then(function(){
+          setLocal(em, { coins: next, ready: true });
+          return { balance: next, fallback: false };
+        }).catch(function(writeErr){
+          console.warn('Wallet direct write failed (using local cache only):', writeErr && writeErr.message);
+          setLocal(em, { coins: next, ready: true });
+          return { balance: next, fallback: true, warning: (writeErr && writeErr.message) || (txErr && txErr.message) };
+        });
+      });
     }).catch(function(err){
       var cur = getCoins(em) || WELCOME_COINS;
       var next = Math.max(0, cur + amount);

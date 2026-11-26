@@ -4296,9 +4296,9 @@
           else if (v) x.tutorType = 'premium';
           x.badgeUpdatedBy = currentAdminEmail;
           x.badgeUpdatedAt = new Date().toISOString();
-          logAction(x.id, x.name, 'Admin Changed Badge', v ? v : 'automatic');
-          saveTutorsDb();
           var done = function () {
+            logAction(x.id, x.name, 'Admin Changed Badge', v ? v : 'automatic');
+            saveTutorsDb();
             try {
               var cur = JSON.parse(localStorage.getItem('modivs_current_tutor') || 'null');
               if (cur && cur.email === x.email) { cur.badgeOverride = v; if (x.tutorType) cur.tutorType = x.tutorType; localStorage.setItem('modivs_current_tutor', JSON.stringify(cur)); }
@@ -4307,7 +4307,7 @@
             detail();
           };
           if (window.ModivsFirebaseSync && ModivsFirebaseSync.saveTutor) {
-            Promise.resolve(ModivsFirebaseSync.saveTutor(x)).then(done, function (e) { toast('Could not save badge: ' + ((e && e.message) || 'try again')); });
+            Promise.resolve(ModivsFirebaseSync.saveTutor(x)).then(done, function (e) { toast('⚠️ Database save failed: ' + ((e && e.message) || 'please re-login as admin')); });
           } else done();
         });
 
@@ -4341,14 +4341,14 @@
           var custom = rbCard.querySelector('#admCustomBadge').value.replace(/\s+/g, ' ').trim().slice(0, 30);
           x.rating = rating; x.reviewCount = count; x.adminBadges = picked; x.customBadge = custom;
           x.ratingUpdatedBy = currentAdminEmail; x.ratingUpdatedAt = new Date().toISOString();
-          logAction(x.id, x.name, 'Admin Changed Rating/Badges', (rating || 'no rating') + ' / ' + count + ' reviews / ' + (picked.join(', ') || 'no badges') + (custom ? ' / ' + custom : ''));
-          saveTutorsDb();
           var done = function () {
+            logAction(x.id, x.name, 'Admin Changed Rating/Badges', (rating || 'no rating') + ' / ' + count + ' reviews / ' + (picked.join(', ') || 'no badges') + (custom ? ' / ' + custom : ''));
+            saveTutorsDb();
             toast('Ratings & badges saved for ' + x.name + '.');
             detail();
           };
           if (window.ModivsFirebaseSync && ModivsFirebaseSync.saveTutor) {
-            Promise.resolve(ModivsFirebaseSync.saveTutor(x)).then(done, function (e) { toast('Could not save: ' + ((e && e.message) || 'try again')); });
+            Promise.resolve(ModivsFirebaseSync.saveTutor(x)).then(done, function (e) { toast('⚠️ Database save failed: ' + ((e && e.message) || 'please re-login as admin')); });
           } else done();
         });
 
@@ -4357,13 +4357,27 @@
         var coinCard = el('div', 'phead');
         coinCard.style.cssText = 'background:#fff;border:1.5px solid var(--line);border-radius:12px;padding:14px;margin:10px 0;display:block;';
         coinCard.innerHTML = '<div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px;">' +
-          '<div><small>CURRENT BALANCE</small><b style="font-size:1.6rem;display:block;line-height:1.1;color:var(--navy);">' + coinsBalance + ' Coins</b>' +
+          '<div><small>CURRENT BALANCE</small><b id="admCoinBal" style="font-size:1.6rem;display:block;line-height:1.1;color:var(--navy);">' + coinsBalance + ' Coins</b>' +
           '<small>' + admUnlockCost() + ' coins required per student inquiry (change it under Lead Unlock Rate)</small></div>' +
           '<div style="display:flex;gap:8px;">' +
           '<button type="button" class="b ok" id="adminCreditCoins" style="padding:7px 14px;font-size:0.85rem;">+ Credit Coins</button>' +
           '<button type="button" class="b d" id="adminDebitCoins" style="padding:7px 14px;font-size:0.85rem;">- Debit Coins</button>' +
           '</div></div>';
         d.appendChild(coinCard);
+        if (window.ModivsWallet && x.email) {
+          if (ModivsWallet.refresh) ModivsWallet.refresh(x.email);
+          var balEl = coinCard.querySelector('#admCoinBal');
+          if (balEl && ModivsWallet.onChange) {
+            var unsubCoin = ModivsWallet.onChange(function (changedEm) {
+              if (!document.body.contains(balEl)) { try { unsubCoin(); } catch (e) { } return; }
+              if (String(changedEm || '').toLowerCase() === String(x.email || '').toLowerCase()) {
+                var liveBal = ModivsWallet.getCoins(x.email);
+                balEl.textContent = liveBal + ' Coins';
+                x.coins = liveBal;
+              }
+            });
+          }
+        }
 
         coinCard.querySelector('#adminCreditCoins').onclick = function () {
           var amt = prompt('Enter coins amount to credit to ' + x.name + ':', '50');

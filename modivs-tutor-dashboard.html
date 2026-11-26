@@ -4091,6 +4091,7 @@
               merged.subjects = cur.subs;
             }
 
+            if (typeof tutor === 'object' && tutor) Object.assign(tutor, merged);
             window.MY_TUTOR = merged;
             try {
               if (cur && String(cur.email || '').toLowerCase() === em) {
@@ -4120,6 +4121,8 @@
           if (SAFE[state.view] && !dlgOpen) { try { render() } catch (e) { } }
         });
         ModivsWallet.watch(em);
+        window.addEventListener('focus', function () { if (ModivsWallet.refresh) ModivsWallet.refresh(em); });
+        document.addEventListener('visibilitychange', function () { if (!document.hidden && ModivsWallet.refresh) ModivsWallet.refresh(em); });
       })();
       // Admin changed the unlock rate: update every price shown on this page
       function paintCost() {
