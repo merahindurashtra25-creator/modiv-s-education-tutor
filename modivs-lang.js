@@ -79,7 +79,65 @@
  'By continuing, you agree to Modiv’s':['आगे बढ़ने पर आप मोदिव्स की','ਅੱਗੇ ਵਧਣ \'ਤੇ ਤੁਸੀਂ ਮੋਦਿਵਜ਼ ਦੀਆਂ'],
  'Terms & Conditions':['नियम व शर्तें','ਨਿਯਮ ਅਤੇ ਸ਼ਰਤਾਂ'],'and':['और','ਅਤੇ'],'Privacy Policy':['गोपनीयता नीति','ਗੋਪਨੀਯਤਾ ਨੀਤੀ'],
  '.':[' से सहमत होते हैं।',' ਨਾਲ ਸਹਿਮਤ ਹੁੰਦੇ ਹੋ।'],
- 'Need help? Call':['मदद चाहिए? कॉल करें','ਮਦਦ ਚਾਹੀਦੀ ਹੈ? ਕਾਲ ਕਰੋ']
+ 'Need help? Call':['मदद चाहिए? कॉल करें','ਮਦਦ ਚਾਹੀਦੀ ਹੈ? ਕਾਲ ਕਰੋ'],
+ "Tuition":["ट्यूशन","ਟਿਊਸ਼ਨ"],
+ "₹0 registration fee · Start earning from home · Choose your own hours":["₹0 पंजीकरण शुल्क · घर से कमाई शुरू करें · अपना समय खुद चुनें","₹0 ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਫੀਸ · ਘਰੋਂ ਕਮਾਈ ਸ਼ੁਰੂ ਕਰੋ · ਆਪਣਾ ਸਮਾਂ ਆਪ ਚੁਣੋ"],
+ "Where it began":["जहाँ से शुरुआत हुई","ਜਿੱਥੋਂ ਸ਼ੁਰੂਆਤ ਹੋਈ"],
+ "Ten years of opening doors for women.":["महिलाओं के लिए दरवाज़े खोलते दस साल।","ਔਰਤਾਂ ਲਈ ਦਰਵਾਜ਼ੇ ਖੋਲ੍ਹਦੇ ਦਸ ਸਾਲ।"],
+ "Shri Narendra Modi Ji":["श्री नरेंद्र मोदी जी","ਸ਼੍ਰੀ ਨਰਿੰਦਰ ਮੋਦੀ ਜੀ"],
+ "Prime Minister of India":["भारत के प्रधानमंत्री","ਭਾਰਤ ਦੇ ਪ੍ਰਧਾਨ ਮੰਤਰੀ"],
+ "years of the mission":["मिशन के वर्ष","ਮਿਸ਼ਨ ਦੇ ਸਾਲ"],
+ "Modiv’s Social Vision & Mission":["मोदिव्स की सामाजिक सोच और मिशन","ਮੋਦਿਵਜ਼ ਦੀ ਸਮਾਜਿਕ ਸੋਚ ਅਤੇ ਮਿਸ਼ਨ"],
+ "This mission began a decade ago with one belief: a woman’s skills should never be limited by where she lives. Over ten years it has grown into an effort that follows the Viksit Bharat path shown by Shri Narendra Modi Ji, creating employment for women.":["यह मिशन एक दशक पहले एक विश्वास के साथ शुरू हुआ: किसी महिला के हुनर को इस बात से कभी सीमित नहीं होना चाहिए कि वह कहाँ रहती है। दस वर्षों में यह श्री नरेंद्र मोदी जी द्वारा दिखाए गए विकसित भारत के मार्ग पर चलते हुए महिलाओं के लिए रोज़गार बनाने के प्रयास में बदल गया है।","ਇਹ ਮਿਸ਼ਨ ਇੱਕ ਦਹਾਕਾ ਪਹਿਲਾਂ ਇੱਕ ਵਿਸ਼ਵਾਸ ਨਾਲ ਸ਼ੁਰੂ ਹੋਇਆ: ਕਿਸੇ ਔਰਤ ਦੇ ਹੁਨਰ ਨੂੰ ਇਸ ਗੱਲ ਨਾਲ ਕਦੇ ਸੀਮਤ ਨਹੀਂ ਹੋਣਾ ਚਾਹੀਦਾ ਕਿ ਉਹ ਕਿੱਥੇ ਰਹਿੰਦੀ ਹੈ। ਦਸ ਸਾਲਾਂ ਵਿੱਚ ਇਹ ਸ਼੍ਰੀ ਨਰਿੰਦਰ ਮੋਦੀ ਜੀ ਵੱਲੋਂ ਦਿਖਾਏ ਵਿਕਸਿਤ ਭਾਰਤ ਦੇ ਰਾਹ ’ਤੇ ਚੱਲਦਿਆਂ ਔਰਤਾਂ ਲਈ ਰੁਜ਼ਗਾਰ ਪੈਦਾ ਕਰਨ ਦੇ ਯਤਨ ਵਿੱਚ ਬਦਲ ਗਿਆ ਹੈ।"],
+ "Today that same vision lets women teach online from home, with free registration.":["आज वही सोच महिलाओं को घर से ऑनलाइन पढ़ाने का अवसर देती है, मुफ़्त पंजीकरण के साथ।","ਅੱਜ ਉਹੀ ਸੋਚ ਔਰਤਾਂ ਨੂੰ ਘਰੋਂ ਆਨਲਾਈਨ ਪੜ੍ਹਾਉਣ ਦਾ ਮੌਕਾ ਦਿੰਦੀ ਹੈ, ਮੁਫ਼ਤ ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਨਾਲ।"],
+ "Mr. Divyansh Dhiman":["श्री दिव्यांश धीमान","ਸ਼੍ਰੀ ਦਿਵਿਆਂਸ਼ ਧੀਮਾਨ"],
+ "Founder, Modiv’s Education":["संस्थापक, मोदिव्स एजुकेशन","ਸੰਸਥਾਪਕ, ਮੋਦਿਵਜ਼ ਐਜੂਕੇਸ਼ਨ"],
+ "Why the name “Modiv’s”":["“मोदिव्स” नाम क्यों","“ਮੋਦਿਵਜ਼” ਨਾਮ ਕਿਉਂ"],
+ "Our name, Modiv’s, is a tribute to the leadership of Shri Narendra Modi Ji. We walk his path of Atmanirbhar Bharat by helping rural women turn their knowledge into income, with free registration and no village left behind.":["हमारा नाम मोदिव्स श्री नरेंद्र मोदी जी के नेतृत्व को एक श्रद्धांजलि है। हम उनके आत्मनिर्भर भारत के मार्ग पर चलते हैं: ग्रामीण महिलाओं को उनके ज्ञान को आमदनी में बदलने में मदद करके, मुफ़्त पंजीकरण के साथ और किसी भी गाँव को पीछे छोड़े बिना।","ਸਾਡਾ ਨਾਮ ਮੋਦਿਵਜ਼ ਸ਼੍ਰੀ ਨਰਿੰਦਰ ਮੋਦੀ ਜੀ ਦੀ ਅਗਵਾਈ ਨੂੰ ਇੱਕ ਸ਼ਰਧਾਂਜਲੀ ਹੈ। ਅਸੀਂ ਉਨ੍ਹਾਂ ਦੇ ਆਤਮਨਿਰਭਰ ਭਾਰਤ ਦੇ ਰਾਹ ’ਤੇ ਚੱਲਦੇ ਹਾਂ: ਪੇਂਡੂ ਔਰਤਾਂ ਨੂੰ ਉਨ੍ਹਾਂ ਦੇ ਗਿਆਨ ਨੂੰ ਆਮਦਨ ਵਿੱਚ ਬਦਲਣ ਵਿੱਚ ਮਦਦ ਕਰਕੇ, ਮੁਫ਼ਤ ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਨਾਲ ਅਤੇ ਕਿਸੇ ਵੀ ਪਿੰਡ ਨੂੰ ਪਿੱਛੇ ਛੱਡੇ ਬਿਨਾਂ।"],
+ "The story of the mission":["मिशन की कहानी","ਮਿਸ਼ਨ ਦੀ ਕਹਾਣੀ"],
+ "From one belief to thousands of livelihoods.":["एक विश्वास से हज़ारों आजीविकाओं तक।","ਇੱਕ ਵਿਸ਼ਵਾਸ ਤੋਂ ਹਜ਼ਾਰਾਂ ਰੋਜ਼ੀ-ਰੋਟੀਆਂ ਤੱਕ।"],
+ "The mission begins":["मिशन की शुरुआत","ਮਿਸ਼ਨ ਦੀ ਸ਼ੁਰੂਆਤ"],
+ "A simple belief takes shape: a woman’s skills should never be limited by where she lives.":["एक सरल विश्वास आकार लेता है: किसी महिला के हुनर को इस बात से कभी सीमित नहीं होना चाहिए कि वह कहाँ रहती है।","ਇੱਕ ਸਧਾਰਨ ਵਿਸ਼ਵਾਸ ਆਕਾਰ ਲੈਂਦਾ ਹੈ: ਕਿਸੇ ਔਰਤ ਦੇ ਹੁਨਰ ਨੂੰ ਇਸ ਗੱਲ ਨਾਲ ਕਦੇ ਸੀਮਤ ਨਹੀਂ ਹੋਣਾ ਚਾਹੀਦਾ ਕਿ ਉਹ ਕਿੱਥੇ ਰਹਿੰਦੀ ਹੈ।"],
+ "The journey":["यात्रा","ਸਫ਼ਰ"],
+ "Walking the Viksit Bharat path":["विकसित भारत के मार्ग पर","ਵਿਕਸਿਤ ਭਾਰਤ ਦੇ ਰਾਹ ’ਤੇ"],
+ "Following the path shown by Shri Narendra Modi Ji to open employment opportunities for women.":["महिलाओं के लिए रोज़गार के अवसर खोलने के लिए श्री नरेंद्र मोदी जी द्वारा दिखाए गए मार्ग पर चलते हुए।","ਔਰਤਾਂ ਲਈ ਰੁਜ਼ਗਾਰ ਦੇ ਮੌਕੇ ਖੋਲ੍ਹਣ ਲਈ ਸ਼੍ਰੀ ਨਰਿੰਦਰ ਮੋਦੀ ਜੀ ਵੱਲੋਂ ਦਿਖਾਏ ਰਾਹ ’ਤੇ ਚੱਲਦਿਆਂ।"],
+ "On Modiv’s":["मोदिव्स पर","ਮੋਦਿਵਜ਼ ’ਤੇ"],
+ "Teaching from home":["घर से पढ़ाना","ਘਰੋਂ ਪੜ੍ਹਾਉਣਾ"],
+ "Women register free, become tutors on Modiv’s and teach online from their own homes.":["महिलाएँ मुफ़्त रजिस्टर करती हैं, मोदिव्स पर ट्यूटर बनती हैं और अपने घर से ऑनलाइन पढ़ाती हैं।","ਔਰਤਾਂ ਮੁਫ਼ਤ ਰਜਿਸਟਰ ਕਰਦੀਆਂ ਹਨ, ਮੋਦਿਵਜ਼ ’ਤੇ ਟਿਊਟਰ ਬਣਦੀਆਂ ਹਨ ਅਤੇ ਆਪਣੇ ਘਰੋਂ ਆਨਲਾਈਨ ਪੜ੍ਹਾਉਂਦੀਆਂ ਹਨ।"],
+ "Ten years on":["दस साल बाद","ਦਸ ਸਾਲ ਬਾਅਦ"],
+ "A decade of work, and thousands of women with a source of income of their own.":["एक दशक का काम, और हज़ारों महिलाएँ जिनके पास आमदनी का अपना स्रोत है।","ਇੱਕ ਦਹਾਕੇ ਦਾ ਕੰਮ, ਅਤੇ ਹਜ਼ਾਰਾਂ ਔਰਤਾਂ ਜਿਨ੍ਹਾਂ ਕੋਲ ਆਮਦਨ ਦਾ ਆਪਣਾ ਸਾਧਨ ਹੈ।"],
+ "women have found financial support by becoming tutors on Modiv’s.":["महिलाओं ने मोदिव्स पर ट्यूटर बनकर आर्थिक सहारा पाया है।","ਔਰਤਾਂ ਨੇ ਮੋਦਿਵਜ਼ ’ਤੇ ਟਿਊਟਰ ਬਣ ਕੇ ਆਰਥਿਕ ਸਹਾਰਾ ਪਾਇਆ ਹੈ।"],
+ "Join them, register free ↗":["उनसे जुड़ें, मुफ़्त रजिस्टर करें ↗","ਉਨ੍ਹਾਂ ਨਾਲ ਜੁੜੋ, ਮੁਫ਼ਤ ਰਜਿਸਟਰ ਕਰੋ ↗"],
+ "Teach more learners at once":["एक साथ ज़्यादा विद्यार्थियों को पढ़ाएँ","ਇੱਕ ਵਾਰ ਵਿੱਚ ਵੱਧ ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਪੜ੍ਹਾਓ"],
+ "Group tuitions,":["ग्रुप ट्यूशन,","ਗਰੁੱਪ ਟਿਊਸ਼ਨ,"],
+ "from your own home.":["अपने ही घर से।","ਆਪਣੇ ਹੀ ਘਰੋਂ।"],
+ "Small batches. Bigger reach.":["छोटे बैच। बड़ी पहुँच।","ਛੋਟੇ ਬੈਚ। ਵੱਡੀ ਪਹੁੰਚ।"],
+ "Alongside 1-on-1 classes, tutors on Modiv’s can also take group tuitions: one online class, a small batch of students learning together. Families pay less per student, and you can reach more learners in the same hour.":["1-ऑन-1 कक्षाओं के साथ-साथ मोदिव्स के ट्यूटर ग्रुप ट्यूशन भी ले सकते हैं: एक ऑनलाइन कक्षा, जिसमें विद्यार्थियों का एक छोटा बैच साथ सीखता है। परिवारों को प्रति विद्यार्थी कम फ़ीस देनी पड़ती है, और आप उसी घंटे में ज़्यादा सीखने वालों तक पहुँच सकती हैं।","1-ਆਨ-1 ਕਲਾਸਾਂ ਦੇ ਨਾਲ-ਨਾਲ ਮੋਦਿਵਜ਼ ਦੇ ਟਿਊਟਰ ਗਰੁੱਪ ਟਿਊਸ਼ਨ ਵੀ ਲੈ ਸਕਦੇ ਹਨ: ਇੱਕ ਆਨਲਾਈਨ ਕਲਾਸ, ਜਿਸ ਵਿੱਚ ਵਿਦਿਆਰਥੀਆਂ ਦਾ ਇੱਕ ਛੋਟਾ ਬੈਚ ਇਕੱਠੇ ਸਿੱਖਦਾ ਹੈ। ਪਰਿਵਾਰਾਂ ਨੂੰ ਪ੍ਰਤੀ ਵਿਦਿਆਰਥੀ ਘੱਟ ਫੀਸ ਦੇਣੀ ਪੈਂਦੀ ਹੈ, ਅਤੇ ਤੁਸੀਂ ਉਸੇ ਘੰਟੇ ਵਿੱਚ ਵੱਧ ਸਿੱਖਣ ਵਾਲਿਆਂ ਤੱਕ ਪਹੁੰਚ ਸਕਦੇ ਹੋ।"],
+ "Small batches":["छोटे बैच","ਛੋਟੇ ਬੈਚ"],
+ "Choose the largest batch you are comfortable teaching, from 4 students up to 10–12.":["वह सबसे बड़ा बैच चुनें जिसे पढ़ाने में आप सहज हों, 4 विद्यार्थियों से लेकर 10–12 तक।","ਉਹ ਸਭ ਤੋਂ ਵੱਡਾ ਬੈਚ ਚੁਣੋ ਜਿਸਨੂੰ ਪੜ੍ਹਾਉਣ ਵਿੱਚ ਤੁਸੀਂ ਸਹਿਜ ਹੋਵੋ, 4 ਵਿਦਿਆਰਥੀਆਂ ਤੋਂ ਲੈ ਕੇ 10–12 ਤੱਕ।"],
+ "Learn together":["साथ सीखें","ਇਕੱਠੇ ਸਿੱਖੋ"],
+ "Students of a similar class and subject study side by side, ask questions and learn from each other.":["एक जैसी कक्षा और विषय के विद्यार्थी साथ बैठकर पढ़ते हैं, सवाल पूछते हैं और एक-दूसरे से सीखते हैं।","ਇੱਕੋ ਜਿਹੀ ਜਮਾਤ ਅਤੇ ਵਿਸ਼ੇ ਦੇ ਵਿਦਿਆਰਥੀ ਇਕੱਠੇ ਪੜ੍ਹਦੇ ਹਨ, ਸਵਾਲ ਪੁੱਛਦੇ ਹਨ ਅਤੇ ਇੱਕ-ਦੂਜੇ ਤੋਂ ਸਿੱਖਦੇ ਹਨ।"],
+ "Affordable for families":["परिवारों के लिए किफ़ायती","ਪਰਿਵਾਰਾਂ ਲਈ ਕਿਫ਼ਾਇਤੀ"],
+ "Small groups cost less per student than 1-on-1 classes, so more families can say yes.":["छोटे समूहों की फ़ीस प्रति विद्यार्थी 1-ऑन-1 कक्षाओं से कम होती है, इसलिए ज़्यादा परिवार हाँ कह पाते हैं।","ਛੋਟੇ ਸਮੂਹਾਂ ਦੀ ਫੀਸ ਪ੍ਰਤੀ ਵਿਦਿਆਰਥੀ 1-ਆਨ-1 ਕਲਾਸਾਂ ਤੋਂ ਘੱਟ ਹੁੰਦੀ ਹੈ, ਇਸ ਲਈ ਵੱਧ ਪਰਿਵਾਰ ਹਾਂ ਕਹਿ ਪਾਉਂਦੇ ਹਨ।"],
+ "Your own timings":["आपका अपना समय","ਤੁਹਾਡਾ ਆਪਣਾ ਸਮਾਂ"],
+ "Set the days and hours that suit your home and family, then teach your batch online.":["अपने घर और परिवार के अनुसार दिन और घंटे तय करें, फिर अपने बैच को ऑनलाइन पढ़ाएँ।","ਆਪਣੇ ਘਰ ਅਤੇ ਪਰਿਵਾਰ ਮੁਤਾਬਕ ਦਿਨ ਅਤੇ ਘੰਟੇ ਤੈਅ ਕਰੋ, ਫਿਰ ਆਪਣੇ ਬੈਚ ਨੂੰ ਆਨਲਾਈਨ ਪੜ੍ਹਾਓ।"],
+ "Add “Group tuition (Small batches)” when you create your tutor profile.":["अपनी ट्यूटर प्रोफ़ाइल बनाते समय “ग्रुप ट्यूशन (छोटे बैच)” जोड़ें।","ਆਪਣੀ ਟਿਊਟਰ ਪ੍ਰੋਫਾਈਲ ਬਣਾਉਂਦੇ ਸਮੇਂ “ਗਰੁੱਪ ਟਿਊਸ਼ਨ (ਛੋਟੇ ਬੈਚ)” ਜੋੜੋ।"],
+ "Register for free ↗":["मुफ़्त रजिस्टर करें ↗","ਮੁਫ਼ਤ ਰਜਿਸਟਰ ਕਰੋ ↗"],
+ "Earn from home":["घर से कमाएँ","ਘਰੋਂ ਕਮਾਓ"],
+ "Start earning from":["उससे कमाई शुरू करें","ਉਸ ਤੋਂ ਕਮਾਈ ਸ਼ੁਰੂ ਕਰੋ"],
+ "what you already know.":["जो आप पहले से जानती हैं।","ਜੋ ਤੁਸੀਂ ਪਹਿਲਾਂ ਤੋਂ ਜਾਣਦੇ ਹੋ।"],
+ "You don’t need an office, a commute or a big investment. With a free registration and a tutor profile, your knowledge can become a source of income, right from your village.":["आपको दफ़्तर, रोज़ की यात्रा या बड़े निवेश की ज़रूरत नहीं। मुफ़्त पंजीकरण और एक ट्यूटर प्रोफ़ाइल के साथ आपका ज्ञान आमदनी का स्रोत बन सकता है, सीधे आपके गाँव से।","ਤੁਹਾਨੂੰ ਦਫ਼ਤਰ, ਰੋਜ਼ ਦੇ ਸਫ਼ਰ ਜਾਂ ਵੱਡੇ ਨਿਵੇਸ਼ ਦੀ ਲੋੜ ਨਹੀਂ। ਮੁਫ਼ਤ ਰਜਿਸਟ੍ਰੇਸ਼ਨ ਅਤੇ ਇੱਕ ਟਿਊਟਰ ਪ੍ਰੋਫਾਈਲ ਨਾਲ ਤੁਹਾਡਾ ਗਿਆਨ ਆਮਦਨ ਦਾ ਸਾਧਨ ਬਣ ਸਕਦਾ ਹੈ, ਸਿੱਧਾ ਤੁਹਾਡੇ ਪਿੰਡ ਤੋਂ।"],
+ "Start earning, register free →":["कमाई शुरू करें, मुफ़्त रजिस्टर करें →","ਕਮਾਈ ਸ਼ੁਰੂ ਕਰੋ, ਮੁਫ਼ਤ ਰਜਿਸਟਰ ਕਰੋ →"],
+ "Earnings depend on the students you teach. Not guaranteed.":["कमाई आपके पढ़ाए विद्यार्थियों पर निर्भर करती है। गारंटी नहीं।","ਕਮਾਈ ਤੁਹਾਡੇ ਪੜ੍ਹਾਏ ਵਿਦਿਆਰਥੀਆਂ ’ਤੇ ਨਿਰਭਰ ਕਰਦੀ ਹੈ। ਗਾਰੰਟੀ ਨਹੀਂ।"],
+ "₹0 registration. Create your account in a few minutes.":["₹0 पंजीकरण। कुछ ही मिनटों में अपना खाता बनाएँ।","₹0 ਰਜਿਸਟ੍ਰੇਸ਼ਨ। ਕੁਝ ਹੀ ਮਿੰਟਾਂ ਵਿੱਚ ਆਪਣਾ ਖਾਤਾ ਬਣਾਓ।"],
+ "Set your own fee":["अपनी फ़ीस खुद तय करें","ਆਪਣੀ ਫੀਸ ਆਪ ਤੈਅ ਕਰੋ"],
+ "Add the fee you prefer for 1-on-1 classes or small groups.":["1-ऑन-1 कक्षाओं या छोटे समूहों के लिए अपनी पसंदीदा फ़ीस जोड़ें।","1-ਆਨ-1 ਕਲਾਸਾਂ ਜਾਂ ਛੋਟੇ ਸਮੂਹਾਂ ਲਈ ਆਪਣੀ ਪਸੰਦੀਦਾ ਫੀਸ ਜੋੜੋ।"],
+ "Teach online":["ऑनलाइन पढ़ाएँ","ਆਨਲਾਈਨ ਪੜ੍ਹਾਓ"],
+ "Take classes from home, at the hours that suit your family.":["घर से कक्षाएँ लें, अपने परिवार के अनुकूल समय पर।","ਘਰੋਂ ਕਲਾਸਾਂ ਲਓ, ਆਪਣੇ ਪਰਿਵਾਰ ਦੇ ਅਨੁਕੂਲ ਸਮੇਂ ’ਤੇ।"],
+ "Earn and grow":["कमाएँ और आगे बढ़ें","ਕਮਾਓ ਅਤੇ ਅੱਗੇ ਵਧੋ"],
+ "Good teaching and a complete profile bring more student requests.":["अच्छा शिक्षण और पूरी प्रोफ़ाइल से विद्यार्थियों के ज़्यादा अनुरोध मिलते हैं।","ਚੰਗੀ ਪੜ੍ਹਾਈ ਅਤੇ ਪੂਰੀ ਪ੍ਰੋਫਾਈਲ ਨਾਲ ਵਿਦਿਆਰਥੀਆਂ ਦੀਆਂ ਵੱਧ ਬੇਨਤੀਆਂ ਮਿਲਦੀਆਂ ਹਨ।"],
+ "Can I teach more than one student at a time?":["क्या मैं एक समय में एक से ज़्यादा विद्यार्थियों को पढ़ा सकती हूँ?","ਕੀ ਮੈਂ ਇੱਕ ਸਮੇਂ ਇੱਕ ਤੋਂ ਵੱਧ ਵਿਦਿਆਰਥੀਆਂ ਨੂੰ ਪੜ੍ਹਾ ਸਕਦੀ ਹਾਂ?"],
+ "Yes. You can offer group tuitions in small batches, choosing the batch size you are comfortable with, as well as 1-on-1 classes.":["हाँ। आप 1-ऑन-1 कक्षाओं के साथ-साथ अपनी सुविधा के अनुसार बैच का आकार चुनकर छोटे बैचों में ग्रुप ट्यूशन दे सकती हैं।","ਹਾਂ। ਤੁਸੀਂ 1-ਆਨ-1 ਕਲਾਸਾਂ ਦੇ ਨਾਲ-ਨਾਲ ਆਪਣੀ ਸੁਵਿਧਾ ਮੁਤਾਬਕ ਬੈਚ ਦਾ ਆਕਾਰ ਚੁਣ ਕੇ ਛੋਟੇ ਬੈਚਾਂ ਵਿੱਚ ਗਰੁੱਪ ਟਿਊਸ਼ਨ ਦੇ ਸਕਦੇ ਹੋ।"]
  };
  var L={en:0,hi:1,pa:2},LBL={en:'EN',hi:'हिं',pa:'ਪੰ'},NAME={en:'English',hi:'हिन्दी',pa:'ਪੰਜਾਬੀ'};
  var nodes=null,cur='en',TITLE=document.title;
@@ -97,7 +155,7 @@
   if(!nodes)collect();
   cur=l;document.documentElement.lang=l;
   nodes.forEach(function(x){
-   var t=x.o.trim(),lead=x.o.match(/^\s*/)[0],trail=x.o.match(/\s*$/)[0];
+   var t=x.o.trim().replace(/\s+/g,' '),lead=x.o.match(/^\s*/)[0],trail=x.o.match(/\s*$/)[0];
    x.n.nodeValue=(l==='en'||!D[t])?x.o:(t==='.'?D[t][L[l]-1]:lead+D[t][L[l]-1]+trail);
   });
   [].forEach.call(document.querySelectorAll('[placeholder]'),function(e){
