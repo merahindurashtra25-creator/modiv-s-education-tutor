@@ -42,11 +42,15 @@
 .sv-h2{font-size:clamp(28px,2.7vw,38px);font-weight:800;line-height:1.25;letter-spacing:-.03em;margin-top:14px}
 .sv-why p{font-size:16px;color:var(--sv-grey);line-height:1.5}
 .sv-why p+p{margin-top:16px;color:var(--sv-navy);font-weight:500}
-.sv-bridge{background:var(--sv-panel);border-radius:16px;overflow:hidden}
-.sv-bridge-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:24px 28px 0}
+.sv-bridge{background:var(--sv-panel);border-radius:16px;overflow:hidden;border:1px solid var(--sv-line)}
+.sv-bridge-h{display:flex;flex-wrap:wrap;justify-content:space-between;align-items:center;gap:8px;padding:24px 28px 16px}
 .sv-bridge-h h3{font-size:20px;font-weight:700;line-height:1.4}
-.sv-bridge svg,.sv-bridge img,.sv-bridge-img{display:block;width:100%;height:auto}
-.sv-bridge-img{margin-top:16px}
+.sv-bridge svg{display:block;width:100%;height:auto}
+.sv-bridge-media{position:relative;width:100%;overflow:hidden;background:var(--sv-panel)}
+.sv-bridge-media::before,.sv-bridge-media::after{content:"";position:absolute;left:0;right:0;height:20px;z-index:1;pointer-events:none}
+.sv-bridge-media::before{top:0;background:linear-gradient(to bottom,var(--sv-panel),rgba(242,234,216,0))}
+.sv-bridge-media::after{bottom:0;background:linear-gradient(to top,#F3ECD9,rgba(243,236,217,0))}
+.sv-bridge-img{display:block;width:100%;height:auto;transform:scale(1.015);transform-origin:center}
 .sv-promise{display:flex;align-items:center;gap:24px;padding:23px 28px;background:#F3ECD9}
 .sv-promise>b{font-size:40px;font-weight:800;line-height:1.5}
 .sv-promise h3{font-size:19px;font-weight:700;line-height:1.5}
