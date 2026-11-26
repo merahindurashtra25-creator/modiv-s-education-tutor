@@ -262,7 +262,7 @@
 /* mission origin: leaders left & right, Modiv's vision centre */
 .sv-mission{background:var(--sv-bg);padding-top:80px;padding-bottom:80px}
 .sv-mhead{justify-content:center;text-align:center;margin-bottom:40px}
-.sv-mgrid{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr) minmax(0,300px);gap:32px;align-items:center}
+.sv-mgrid{display:grid;grid-template-columns:minmax(0,300px) minmax(0,1fr) minmax(0,300px);gap:32px;align-items:start}
 .sv-person{margin:0;text-align:center}
 .sv-pimg{position:relative;aspect-ratio:4/5;border-radius:120px 16px;overflow:hidden;background:linear-gradient(135deg,#F5E6B4,#E4DDC3);border:4px solid var(--sv-gold)}
 .sv-pimg img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;display:block}
@@ -270,7 +270,7 @@
 .sv-pimg img{z-index:1}
 .sv-person figcaption{margin-top:14px}
 .sv-person figcaption b{font-size:18px;font-weight:800}
-.sv-mvision{background:var(--sv-navy);color:var(--sv-bg);border-radius:20px;padding:40px 36px;text-align:center}
+.sv-mvision{align-self:center;background:var(--sv-navy);color:var(--sv-bg);border-radius:20px;padding:40px 36px;text-align:center}
 .sv-mvision h3{font-size:clamp(24px,2.4vw,32px);font-weight:800;letter-spacing:-.03em;margin:14px 0 12px;color:var(--sv-gold)}
 .sv-mvision p{font-size:15px;line-height:1.6;color:#E9E4D6}
 .sv-mvision p+p{margin-top:12px}
@@ -281,6 +281,7 @@
 @media (max-width:900px){.sv-mgrid{grid-template-columns:1fr 1fr;gap:20px}.sv-mvision{grid-column:1/-1;order:-1}.sv-mission{padding-top:48px;padding-bottom:48px}.sv-pimg{border-radius:60px 12px}.sv-ini{font-size:40px}}
 
 .sv-person figcaption span{display:block;margin-top:2px;font-size:13px;font-weight:600;color:var(--sv-green)}
+.sv-pcaption{margin:10px auto 0;font-size:13px;line-height:1.55;color:var(--sv-grey);max-width:300px}
 
 /* story timeline + impact */
 .sv-story{background:var(--sv-cream);padding-top:72px;padding-bottom:72px}
