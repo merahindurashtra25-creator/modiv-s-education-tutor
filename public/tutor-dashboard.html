@@ -5,7 +5,7 @@
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-firestore-compat.js"></script>
-  <script src="modivs.min.js?v=mwxeog4a-dv21t"></script>
+  <script src="modivs.min.js?v=mwxfedob-nzrr1"></script>
   
   <script>(function () { try { var u = JSON.parse(localStorage.getItem('modivs_auth_user') || 'null'); if (u && (u.role === 'Tutor' || u.roleKey === 'tutor' || String(u.role).toLowerCase().indexOf('tutor') > -1)) { var h = document.documentElement; h.style.visibility = 'hidden'; window.__mvShow = function () { h.style.visibility = '' }; setTimeout(window.__mvShow, 2500) } } catch (e) { } })();</script>
   <link rel="icon" type="image/png" href="favicon.png">
@@ -1538,10 +1538,10 @@
   
   
   
-  <link rel="stylesheet" href="modivs-menu.css?v=mwxeog4a-dv21t">
-  <link rel="stylesheet" href="modivs-mobile.css?v=mwxeog4a-dv21t">
-  <link rel="stylesheet" href="modivs-dashboard.css?v=mwxeog4a-dv21t">
-  <link rel="stylesheet" href="modivs-footer.css?v=mwxeog4a-dv21t">
+  <link rel="stylesheet" href="modivs-menu.css?v=mwxfedob-nzrr1">
+  <link rel="stylesheet" href="modivs-mobile.css?v=mwxfedob-nzrr1">
+  <link rel="stylesheet" href="modivs-dashboard.css?v=mwxfedob-nzrr1">
+  <link rel="stylesheet" href="modivs-footer.css?v=mwxfedob-nzrr1">
 </head>
 
 <body class="dash">
@@ -2125,6 +2125,34 @@
 
       function recharge(c, price, clickedBtn) { openCoinPayment(c, price, clickedBtn); }
 
+      function showCoinPendingPopup() {
+        var old = document.getElementById('mvCoinWaitPop');
+        if (old) old.remove();
+        var ov = document.createElement('div');
+        ov.id = 'mvCoinWaitPop';
+        ov.setAttribute('role', 'dialog');
+        ov.setAttribute('aria-modal', 'true');
+        ov.style.cssText = 'position:fixed;inset:0;background:rgba(26,32,53,.58);z-index:9999;display:flex;align-items:center;justify-content:center;padding:16px;';
+        ov.innerHTML = '<div style="background:#fff;color:#1A2035;max-width:400px;width:100%;border-radius:16px;padding:22px 22px 18px;box-shadow:0 20px 50px rgba(0,0,0,.28);position:relative;text-align:center;border:2px solid #EBB92E;">' +
+          '<button type="button" aria-label="Close popup" class="mv-cw-close" style="position:absolute;top:10px;right:12px;background:none;border:0;font-size:22px;line-height:1;cursor:pointer;color:#64748b;padding:4px 8px;">&times;</button>' +
+          '<div style="font-size:30px;margin-bottom:6px;">⏳</div>' +
+          '<h3 style="margin:0 0 8px;font-size:1.1rem;font-weight:800;color:#1A2035;">Please Wait up to 60 Minutes</h3>' +
+          '<p style="margin:0 0 14px;font-size:.9rem;line-height:1.45;color:#475569;">Your payment was received, but coins have not been credited yet. Please wait <strong>60 minutes</strong> for automatic verification and credit.</p>' +
+          '<button type="button" class="mv-cw-close" style="background:#1A2035;color:#FEF7EA;border:0;border-radius:10px;padding:9px 20px;font-weight:700;font-size:.88rem;cursor:pointer;">Close</button>' +
+          '</div>';
+        document.body.appendChild(ov);
+        var closed = false;
+        var timer = setTimeout(closePop, 5000);
+        function closePop() {
+          if (closed) return;
+          closed = true;
+          clearTimeout(timer);
+          if (ov.parentNode) ov.remove();
+        }
+        ov.addEventListener('click', function (e) { if (e.target === ov) closePop(); });
+        ov.querySelectorAll('.mv-cw-close').forEach(function (b) { b.addEventListener('click', closePop); });
+      }
+
       function payCoins(p, orderId, paymentId, signature) {
         var em = currentTutorEmail();
         if (!window.ModivsWallet || !em) return Promise.reject(new Error('Wallet unavailable. Please log in again.'));
@@ -2168,10 +2196,18 @@
             service: 'Tutor Coin Purchase'
           }
         }).then(function (paymentResult) {
-          return payCoins({ coins: coins, price: price }, paymentResult.orderId, paymentResult.paymentId, paymentResult.signature).then(function () {
-            toast('✓ Payment received! ' + coins + ' coins added to your wallet.');
+          return payCoins({ coins: coins, price: price }, paymentResult.orderId, paymentResult.paymentId, paymentResult.signature).then(function (res) {
+            if (res && res.fallback) {
+              showCoinPendingPopup();
+            } else {
+              toast('✓ Payment received! ' + coins + ' coins added to your wallet.');
+            }
             try { $('dlg').close(); } catch (e) { }
             render();
+          }, function () {
+            try { $('dlg').close(); } catch (e) { }
+            render();
+            showCoinPendingPopup();
           });
         }).catch(function (err) {
           console.warn('Coin payment notice:', err);
@@ -3802,10 +3838,10 @@
           var paid = mem.isValid && tiers[mem.planName];
           var type = ttGet();
           // admin override (set in the admin panel) always wins
-          var ov = tutor.badgeOverride || '';
+          var ov = (window.MY_TUTOR && window.MY_TUTOR.badgeOverride) || tutor.badgeOverride || '';
           try {
             var rec = (JSON.parse(localStorage.getItem('modivs_tutors_db') || '[]') || []).find(function (t) { return t && String(t.email || '').trim().toLowerCase() === email; });
-            if (rec) ov = rec.badgeOverride || '';
+            if (rec && rec.badgeOverride !== undefined) ov = rec.badgeOverride || '';
           } catch (x) { }
           var OVN = { free: 'Free', bronze: 'Bronze', silver: 'Silver', gold: 'Gold', platinum: 'Platinum' };
           var tier = OVN[ov] || paid || (type === 'premium' ? 'Bronze' : (type === 'free' ? 'Free' : ''));
@@ -4012,7 +4048,14 @@
 
       try { if (window.ModivsChat) ModivsChat.subscribe(render); } catch (e) { }
       try { if (window.ModivsNotifications) ModivsNotifications.subscribe(render); } catch (e) { }
-      try { if (window.ModivsNotifications && currentTutorEmail()) ModivsNotifications.listenForNotifications(currentTutorEmail(), render); } catch (e) { }
+      try {
+        if (window.ModivsNotifications && currentTutorEmail()) {
+          ModivsNotifications.listenForNotifications(currentTutorEmail(), function () {
+            if (window.ModivsWallet && ModivsWallet.refresh) ModivsWallet.refresh(currentTutorEmail());
+            try { render(); } catch (e) { }
+          });
+        }
+      } catch (e) { }
       if (window.ModivsFirebaseSync && ModivsFirebaseSync.onTutors && currentTutorEmail()) {
         ModivsFirebaseSync.onTutors(function (list) {
           var em = currentTutorEmail().toLowerCase();
@@ -4055,6 +4098,7 @@
               }
             } catch (e) { }
             if (window.updateTutorStatusUI) window.updateTutorStatusUI(window.MY_TUTOR);
+            if (window.mvPaintTier) window.mvPaintTier();
             try { render(); } catch (e) { }
           }
         });

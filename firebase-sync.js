@@ -939,12 +939,13 @@
               method: 'POST',
               headers: headers,
               credentials: 'include',
-              body: JSON.stringify(cleanPayload(Object.assign({}, payload, { create: true, tutorEmail: em, status: tutorData.status || 'pending' })))
+              body: JSON.stringify(cleanPayload(Object.assign({}, payload, { create: !isAdminSession(), tutorEmail: em, status: tutorData.status || 'pending' })))
             }).then(function (res) {
-              if (!res.ok) console.warn('API /api/tutors fallback response status:', res.status);
-              return tutorData;
-            }).catch(function (apiErr) {
-              console.warn('API /api/tutors fallback error:', apiErr);
+              if (!res.ok) {
+                return res.json().catch(function () { return {}; }).then(function (errBody) {
+                  throw new Error((errBody && errBody.error) || ('Server rejected tutor update (' + res.status + ')'));
+                });
+              }
               return tutorData;
             });
           });

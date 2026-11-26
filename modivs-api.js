@@ -17,6 +17,15 @@
     if (!options.headers['Authorization']) {
       try {
         var ra = getRealAuth();
+        if (ra && !ra.currentUser && typeof ra.onAuthStateChanged === 'function') {
+          await new Promise(function(resolve) {
+            var done = false, unsub = null;
+            var t = setTimeout(function() { if (!done) { done = true; if (unsub) try { unsub(); } catch(e){} resolve(); } }, 2500);
+            unsub = ra.onAuthStateChanged(function() {
+              if (!done) { done = true; clearTimeout(t); if (unsub) try { unsub(); } catch(e){} resolve(); }
+            });
+          });
+        }
         if (ra && ra.currentUser && typeof ra.currentUser.getIdToken === 'function') {
           var tok = await ra.currentUser.getIdToken().catch(() => '');
           if (tok) options.headers['Authorization'] = 'Bearer ' + tok;

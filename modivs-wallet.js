@@ -151,7 +151,10 @@
           // First time this tutor is seen: create the wallet once (transaction => no double welcome bonus)
           createWallet(em);
         }
-      }, function(err){ console.warn('Wallet listener error:', err); });
+      }, function(err){
+        console.warn('Wallet listener error:', err);
+        refresh(em);
+      });
 
       fs.collection('coin_transactions').where('tutorEmail', '==', em).onSnapshot(function(s){
         var rows = [];
