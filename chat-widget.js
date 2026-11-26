@@ -22,7 +22,22 @@
   var MAX_SEND = 10;
   var STORE_KEY = 'mvchat_v3';
   var CHAT_TTL_MS = 10 * 60 * 1000; // 10 minutes
-  var AGENTS = ['Priya', 'Anjali', 'Neha', 'Simran', 'Riya', 'Kavya', 'Pooja', 'Ishita', 'Meera', 'Sneha', 'Aarushi', 'Nisha'];
+  var AGENTS = ['Priya Sharma', 'Anjali Verma', 'Neha Gupta', 'Simran Kaur', 'Riya Sharma', 'Kavya Singh', 'Pooja Mehta', 'Ishita Malhotra', 'Meera Kapoor', 'Sneha Arora', 'Aarushi Bansal', 'Nisha Chauhan'];
+  // Profile photo (dp) for each agent name. Each name always shows the same photo; which name
+  // (and so which photo) appears changes randomly every new chat. Files: agent-dp-1.jpg ... agent-dp-5.jpg
+  var DP_COUNT = 5;
+  var AGENT_DP = { 'Priya Sharma': 3, 'Anjali Verma': 1, 'Neha Gupta': 4, 'Simran Kaur': 2, 'Riya Sharma': 5, 'Kavya Singh': 1,
+    'Pooja Mehta': 5, 'Ishita Malhotra': 2, 'Meera Kapoor': 4, 'Sneha Arora': 3, 'Aarushi Bansal': 2, 'Nisha Chauhan': 1 };
+  function dpFor(name) {
+    var n = AGENT_DP[name];
+    if (!n) { // any new name added to AGENTS later still gets a stable photo
+      var h = 0, t = String(name || '');
+      for (var i = 0; i < t.length; i++) h = (h * 31 + t.charCodeAt(i)) >>> 0;
+      n = (h % DP_COUNT) + 1;
+    }
+    var src = (script && script.getAttribute('src')) || 'chat-widget.js';
+    return src.replace(/[^\/]*$/, '').split('?')[0] + 'agent-dp-' + n + '.jpg';
+  }
   var END_RE = /^\s*(bye|bye bye|goodbye|good bye|end chat|end|exit|quit|close chat|that'?s all|thats all|no thanks?|nothing else|ok bye|okay bye|thanks,? bye|alvida)\s*[.!]*\s*$/i;
   var WHO_RE = /\b(bot|robot|ai|a\.i\.?|artificial|human|real person|machine|chatgpt|automated)\b/i;
   var PHONE_SUPPORT = '+91 98969 30443';
@@ -222,7 +237,7 @@
 
   // ---------- UI ----------
   var css = '' +
-    '.mvchat-av{width:36px;height:36px;border-radius:50%;background:#EBB92E;color:#1A2035;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;margin-right:10px;position:relative}' +
+    '.mvchat-av{width:40px;height:40px;border-radius:50%;background:#EBB92E center/cover no-repeat;color:#1A2035;font-weight:800;font-size:16px;display:flex;align-items:center;justify-content:center;flex:none;margin-right:10px;position:relative;border:2px solid #EBB92E;box-sizing:border-box}' +
     '.mvchat-av:after{content:"";position:absolute;right:-1px;bottom:-1px;width:10px;height:10px;border-radius:50%;background:#2fbf71;border:2px solid #1A2035}' +
     '.mvchat-who{display:flex;align-items:center;min-width:0}' +
     '.mvchat-chip[disabled]{opacity:.5;cursor:default}' +
@@ -622,7 +637,17 @@
   // ---------- start / restore / end ----------
   function applyAgent() {
     titleB.textContent = agent;
-    av.textContent = agent.charAt(0);
+    av.textContent = agent.charAt(0); // letter shows only if the photo cannot load
+    av.style.backgroundImage = '';
+    var url = dpFor(agent), probe = new Image(), mine = agent;
+    probe.onload = function () {
+      if (mine !== agent) return;
+      av.style.backgroundImage = 'url("' + url + '")';
+      av.textContent = '';
+    };
+    probe.src = url;
+    av.setAttribute('role', 'img');
+    av.setAttribute('aria-label', agent);
   }
 
   function start() {
