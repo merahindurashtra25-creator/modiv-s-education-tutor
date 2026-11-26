@@ -3201,37 +3201,36 @@
             students.forEach(function (s) { if (s.email && recipients.indexOf(s.email.toLowerCase()) === -1) recipients.push(s.email.toLowerCase()); });
           }
 
-          if (window.firebase && typeof firebase.functions === 'function') {
-            try {
-              var fn = firebase.functions().httpsCallable('adminSendNotification');
-              fn({
-                type: type,
-                title: title,
-                description: desc,
-                actionUrl: actionUrl,
-                target: target,
-                targetEmail: singleEmail
-              }).then(function (res) {
-                toast('Server notification dispatched to ' + ((res && res.data && res.data.recipientsCount) || recipients.length) + ' user(s).');
-              }).catch(function (err) {
-                console.warn('Callable cloud function fallback:', err);
-              });
-            } catch (e) { }
-          }
+          var sendViaApi = (window.ModivsAPI && ModivsAPI.notifications && ModivsAPI.notifications.send)
+            ? ModivsAPI.notifications.send({ type: type, title: title, description: desc, actionUrl: actionUrl, target: target, targetEmail: singleEmail })
+            : Promise.reject(new Error('API unavailable'));
 
-          if (window.ModivsNotifications && typeof ModivsNotifications.createNotification === 'function') {
-            recipients.forEach(function (recEmail) {
-              ModivsNotifications.createNotification({
-                recipientEmail: recEmail,
-                title: title,
-                description: desc,
-                type: type,
-                actionUrl: actionUrl
+          sendViaApi.then(function (res) {
+            toast('Notification saved & sent to ' + ((res && res.count) || recipients.length) + ' user(s).');
+          }).catch(function () {
+            if (window.firebase && typeof firebase.functions === 'function') {
+              try {
+                var fn = firebase.functions().httpsCallable('adminSendNotification');
+                fn({
+                  type: type, title: title, description: desc, actionUrl: actionUrl,
+                  target: target, targetEmail: singleEmail
+                }).then(function (res) {
+                  toast('Server notification dispatched to ' + ((res && res.data && res.data.count) || recipients.length) + ' user(s).');
+                }).catch(function (err) {
+                  console.warn('Callable cloud function fallback:', err);
+                });
+              } catch (e) { }
+            }
+            if (window.ModivsNotifications && typeof ModivsNotifications.createNotification === 'function') {
+              recipients.forEach(function (recEmail) {
+                ModivsNotifications.createNotification({
+                  recipientEmail: recEmail, title: title, description: desc, type: type, actionUrl: actionUrl
+                });
               });
-            });
-          }
+            }
+            toast('Notification sent to ' + recipients.length + ' recipient(s).');
+          });
 
-          toast('Notification sent to ' + recipients.length + ' recipient(s).');
           logAction('ADMIN_NOTIF', 'System', 'Notification Dispatched', title + ' -> ' + target + ' (' + recipients.length + ' users)');
           ov.remove();
         };
@@ -4370,30 +4369,35 @@
           var amt = prompt('Enter coins amount to credit to ' + x.name + ':', '50');
           if (!amt || isNaN(+amt) || +amt <= 0) return;
           var reason = prompt('Reason / audit note for credit:', 'Admin promotional adjustment') || 'Admin credit';
-          var applyLocalCredit = function() {
+          var applyLocalCredit = function(warnDb) {
             var cur = (+x.coins || 0) + (+amt);
             x.coins = cur;
             if (window.ModivsWallet && typeof ModivsWallet.setLocal === 'function') {
               ModivsWallet.setLocal(x.email, { coins: cur, ready: true });
             }
             logAction(x.id, x.name, 'Admin Credited Coins', '+' + amt + ' (' + reason + ')');
-            toast('Credited ' + amt + ' coins to ' + x.name);
+            toast(warnDb ? ('⚠️ Saved locally only (DB sync failed): ' + amt + ' coins for ' + x.name) : ('Credited ' + amt + ' coins to ' + x.name));
             detail();
           };
-          if (window.ModivsChat) {
-            Promise.resolve(ModivsChat.addTutorCoins(x.email, +amt, 'Admin credit: ' + reason).promise).then(function (res) {
+          var p = (window.ModivsWallet && typeof ModivsWallet.addCoins === 'function')
+            ? ModivsWallet.addCoins(x.email, +amt, 'Admin credit: ' + reason, { admin: true })
+            : (window.ModivsChat ? Promise.resolve(ModivsChat.addTutorCoins(x.email, +amt, 'Admin credit: ' + reason).promise) : null);
+          if (p) {
+            p.then(function (res) {
               if (res && res.fallback) {
-                applyLocalCredit();
+                applyLocalCredit(true);
               } else {
+                x.coins = (res && typeof res.balance === 'number') ? res.balance : ((+x.coins || 0) + (+amt));
+                saveTutorsDb();
                 logAction(x.id, x.name, 'Admin Credited Coins', '+' + amt + ' (' + reason + ')');
                 toast('Credited ' + amt + ' coins to ' + x.name);
                 detail();
               }
             }).catch(function () {
-              applyLocalCredit();
+              applyLocalCredit(true);
             });
           } else {
-            applyLocalCredit();
+            applyLocalCredit(false);
           }
         };
 
@@ -4401,30 +4405,35 @@
           var amt = prompt('Enter coins amount to debit from ' + x.name + ':', '10');
           if (!amt || isNaN(+amt) || +amt <= 0) return;
           var reason = prompt('Reason / audit note for debit:', 'Admin deduction') || 'Admin debit';
-          var applyLocalDebit = function() {
+          var applyLocalDebit = function(warnDb) {
             var cur = Math.max(0, (+x.coins || 0) - (+amt));
             x.coins = cur;
             if (window.ModivsWallet && typeof ModivsWallet.setLocal === 'function') {
               ModivsWallet.setLocal(x.email, { coins: cur, ready: true });
             }
             logAction(x.id, x.name, 'Admin Debited Coins', '-' + amt + ' (' + reason + ')');
-            toast('Debited ' + amt + ' coins from ' + x.name);
+            toast(warnDb ? ('⚠️ Saved locally only (DB sync failed): -' + amt + ' coins for ' + x.name) : ('Debited ' + amt + ' coins from ' + x.name));
             detail();
           };
-          if (window.ModivsChat) {
-            Promise.resolve(ModivsChat.addTutorCoins(x.email, -amt, 'Admin debit: ' + reason).promise).then(function (res) {
+          var p = (window.ModivsWallet && typeof ModivsWallet.addCoins === 'function')
+            ? ModivsWallet.addCoins(x.email, -amt, 'Admin debit: ' + reason, { admin: true })
+            : (window.ModivsChat ? Promise.resolve(ModivsChat.addTutorCoins(x.email, -amt, 'Admin debit: ' + reason).promise) : null);
+          if (p) {
+            p.then(function (res) {
               if (res && res.fallback) {
-                applyLocalDebit();
+                applyLocalDebit(true);
               } else {
+                x.coins = (res && typeof res.balance === 'number') ? res.balance : Math.max(0, (+x.coins || 0) - (+amt));
+                saveTutorsDb();
                 logAction(x.id, x.name, 'Admin Debited Coins', '-' + amt + ' (' + reason + ')');
                 toast('Debited ' + amt + ' coins from ' + x.name);
                 detail();
               }
             }).catch(function () {
-              applyLocalDebit();
+              applyLocalDebit(true);
             });
           } else {
-            applyLocalDebit();
+            applyLocalDebit(false);
           }
         };
 

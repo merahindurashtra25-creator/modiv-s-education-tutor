@@ -14,6 +14,15 @@
       options.headers['Content-Type'] = 'application/json';
     }
     options.headers['X-Requested-With'] = 'XMLHttpRequest';
+    if (!options.headers['Authorization']) {
+      try {
+        var ra = getRealAuth();
+        if (ra && ra.currentUser && typeof ra.currentUser.getIdToken === 'function') {
+          var tok = await ra.currentUser.getIdToken().catch(() => '');
+          if (tok) options.headers['Authorization'] = 'Bearer ' + tok;
+        }
+      } catch (e) {}
+    }
 
     try {
       const response = await fetch(endpoint, options);
@@ -139,9 +148,19 @@
           method: 'POST',
           body: JSON.stringify({ id, all })
         });
+      },
+      async send(payload) {
+        return apiFetch('/api/notifications?action=send', {
+          method: 'POST',
+          body: JSON.stringify(Object.assign({ action: 'send' }, payload || {}))
+        });
       }
     },
     payments: {
+      async getWallet(tutorEmail) {
+        const q = tutorEmail ? `&tutorEmail=${encodeURIComponent(tutorEmail)}` : '';
+        return apiFetch(`/api/payments?action=wallet${q}`);
+      },
       async createOrder(amountPaise, notes) {
         return apiFetch('/api/payments?action=create-order', {
           method: 'POST',
@@ -152,6 +171,24 @@
         return apiFetch('/api/payments?action=verify', {
           method: 'POST',
           body: JSON.stringify({ orderId, paymentId, signature })
+        });
+      },
+      async creditCoins(payload) {
+        return apiFetch('/api/payments?action=credit-coins', {
+          method: 'POST',
+          body: JSON.stringify(payload || {})
+        });
+      },
+      async activateMembership(payload) {
+        return apiFetch('/api/payments?action=activate-membership', {
+          method: 'POST',
+          body: JSON.stringify(payload || {})
+        });
+      },
+      async adminCoins(payload) {
+        return apiFetch('/api/payments?action=admin-coins', {
+          method: 'POST',
+          body: JSON.stringify(payload || {})
         });
       }
     }

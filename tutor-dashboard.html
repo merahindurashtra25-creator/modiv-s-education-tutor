@@ -2039,7 +2039,7 @@
             service: 'Teacher Membership'
           }
         }).then(function (paymentResult) {
-          return activateMembership(planName, days, price, bonusCoins, isUpgrade, paymentResult.orderId, paymentResult.paymentId).then(function () {
+          return activateMembership(planName, days, price, bonusCoins, isUpgrade, paymentResult.orderId, paymentResult.paymentId, paymentResult.signature).then(function () {
             toast('✓ Payment successful! ' + planName + ' is now active for ' + days + ' days.');
             try { $('memDlg').close(); } catch (e) { }
             render();
@@ -2125,11 +2125,11 @@
 
       function recharge(c, price, clickedBtn) { openCoinPayment(c, price, clickedBtn); }
 
-      function payCoins(p, orderId, paymentId) {
+      function payCoins(p, orderId, paymentId, signature) {
         var em = currentTutorEmail();
         if (!window.ModivsWallet || !em) return Promise.reject(new Error('Wallet unavailable. Please log in again.'));
         var ordId = orderId || ('MOD_' + Date.now().toString(36).toUpperCase());
-        return ModivsWallet.purchaseCoins(em, p.coins, p.price, ordId, { paymentId: paymentId || '', gateway: 'razorpay' }).then(function (res) { state.coins = res.balance; return res; });
+        return ModivsWallet.purchaseCoins(em, p.coins, p.price, ordId, { paymentId: paymentId || '', signature: signature || '', gateway: 'razorpay' }).then(function (res) { state.coins = res.balance; return res; });
       }
 
       function openCoinPayment(coins, price, clickedBtn) {
@@ -2168,7 +2168,7 @@
             service: 'Tutor Coin Purchase'
           }
         }).then(function (paymentResult) {
-          return payCoins({ coins: coins, price: price }, paymentResult.orderId, paymentResult.paymentId).then(function () {
+          return payCoins({ coins: coins, price: price }, paymentResult.orderId, paymentResult.paymentId, paymentResult.signature).then(function () {
             toast('✓ Payment received! ' + coins + ' coins added to your wallet.');
             try { $('dlg').close(); } catch (e) { }
             render();
@@ -2192,13 +2192,13 @@
       }
       window.openCoinPayment = openCoinPayment;
 
-      function activateMembership(planName, days, price, bonusCoins, isUpgrade, orderId, paymentId) {
+      function activateMembership(planName, days, price, bonusCoins, isUpgrade, orderId, paymentId, signature) {
         var em = currentTutorEmail();
         if (!window.ModivsWallet || !em) { toast('Wallet unavailable. Please log in again.'); return Promise.reject(new Error('no wallet')) }
         var cur = ModivsChat.getTutorMembership(em);
         var extend = cur.isValid && cur.planName === planName;
         var ordId = orderId || ('MOD_' + Date.now().toString(36).toUpperCase());
-        return ModivsWallet.setMembership(em, { planName: planName, days: days, price: price, bonusCoins: bonusCoins, extend: extend, orderId: ordId, paymentId: paymentId || '', gateway: 'razorpay' }).then(function (r) {
+        return ModivsWallet.setMembership(em, { planName: planName, days: days, price: price, bonusCoins: bonusCoins, extend: extend, orderId: ordId, paymentId: paymentId || '', signature: signature || '', gateway: 'razorpay' }).then(function (r) {
           state.coins = r.balance;
           if (window.ModivsChat) ModivsChat.onTutorMembershipPurchased(em);
           if (window.mvPaintTier) window.mvPaintTier();

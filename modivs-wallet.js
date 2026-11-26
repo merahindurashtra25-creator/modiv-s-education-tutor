@@ -122,10 +122,23 @@
     } catch(e){}
   }
 
+  function refresh(email){
+    var em = clean(email);
+    var api = apiPayments();
+    if(!em || !api || !api.getWallet) return Promise.resolve(null);
+    return api.getWallet(em).then(function(res){
+      if(res && res.success){
+        setLocal(em, { coins: Number(res.coins) || 0, membership: res.membership || null, ready: true });
+      }
+      return res;
+    }).catch(function(){ return null; });
+  }
+
   function watch(email){
     var em = clean(email);
     if(!em || watchers[em]) return;
     watchers[em] = true;
+    refresh(em);
     auth().then(function(){
       var fs = db();
       if(!fs) { watchers[em] = false; return; }
@@ -183,11 +196,28 @@
   function onChange(fn){ listeners.push(fn); return function(){ listeners = listeners.filter(function(x){ return x !== fn; }); }; }
 
   /* ---------- writes (all atomic with offline/quota fallback) ---------- */
+  function apiPayments(){ return (typeof window !== 'undefined' && window.ModivsAPI && window.ModivsAPI.payments) ? window.ModivsAPI.payments : null; }
+
   function addCoins(email, amount, description, extra){
     var em = clean(email);
     amount = Number(amount) || 0;
     extra = extra || {};
     watch(em);
+    var api = apiPayments();
+    if(api && api.adminCoins && (amount > 0 || extra.admin)){
+      return api.adminCoins({ tutorEmail: em, amount: amount, description: description || '' }).then(function(res){
+        var next = Number(res && res.balance) || 0;
+        setLocal(em, { coins: next, ready: true });
+        return { balance: next };
+      }).catch(function(apiErr){
+        console.warn('API adminCoins fallback:', apiErr && apiErr.message);
+        return addCoinsFirestore(em, amount, description, extra);
+      });
+    }
+    return addCoinsFirestore(em, amount, description, extra);
+  }
+
+  function addCoinsFirestore(em, amount, description, extra){
     return auth().then(function(){
       var fs = db(); if(!fs) throw fail('offline', 'Firebase is not available.');
       var ref = walletRef(em), txRef = fs.collection('coin_transactions').doc();
@@ -264,6 +294,21 @@
   function setMembership(email, plan){
     var em = clean(email);
     watch(em);
+    var api = apiPayments();
+    if(api && api.activateMembership){
+      return api.activateMembership(Object.assign({ tutorEmail: em }, plan || {})).then(function(r){
+        setLocal(em, { coins: r.balance, membership: r.membership, ready: true });
+        publishTier(em, r.membership);
+        return { membership: r.membership, balance: r.balance };
+      }).catch(function(err){
+        console.warn('API activateMembership fallback:', err && err.message);
+        return setMembershipFirestore(em, plan);
+      });
+    }
+    return setMembershipFirestore(em, plan);
+  }
+
+  function setMembershipFirestore(em, plan){
     return auth().then(function(){
       var fs = db(); if(!fs) throw fail('offline', 'Firebase is not available.');
       var ref = walletRef(em), hRef = fs.collection('membership_history').doc();
@@ -322,8 +367,30 @@
 
   /** Buy a coin pack. */
   function purchaseCoins(email, coins, price, orderId, extraData){
-    var txData = Object.assign({ type: 'purchase', price: price, orderId: orderId || '', gateway: 'razorpay' }, extraData || {});
-    return addCoins(email, coins, 'Purchased ' + coins + ' coins (' + price + ')', txData);
+    var em = clean(email);
+    var extra = extraData || {};
+    watch(em);
+    var api = apiPayments();
+    if(api && api.creditCoins){
+      return api.creditCoins({
+        tutorEmail: em,
+        coins: Number(coins) || 0,
+        price: price || '',
+        orderId: orderId || '',
+        paymentId: extra.paymentId || '',
+        signature: extra.signature || ''
+      }).then(function(res){
+        var next = Number(res && res.balance) || 0;
+        setLocal(em, { coins: next, ready: true });
+        return { balance: next };
+      }).catch(function(err){
+        console.warn('API creditCoins fallback:', err && err.message);
+        var txData = Object.assign({ type: 'purchase', price: price, orderId: orderId || '', gateway: 'razorpay' }, extra);
+        return addCoins(em, coins, 'Purchased ' + coins + ' coins (' + price + ')', txData);
+      });
+    }
+    var txData = Object.assign({ type: 'purchase', price: price, orderId: orderId || '', gateway: 'razorpay' }, extra);
+    return addCoins(em, coins, 'Purchased ' + coins + ' coins (' + price + ')', txData);
   }
 
   /**
@@ -426,6 +493,7 @@
     onUnlockCost: onUnlockCost,
     saveUnlockCost: saveUnlockCost,
     watch: watch,
+    refresh: refresh,
     onChange: onChange,
     getCoins: getCoins,
     getMembershipRaw: getMembershipRaw,

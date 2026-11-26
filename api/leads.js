@@ -184,24 +184,28 @@ module.exports = async function handler(req, res) {
 
     if (!leadId) return res.status(400).json({ error: 'leadId is required' });
 
-    const docKey = tutorEmail.replace(/[^a-z0-9_-]/g, '_');
+    const docKey = tutorEmail.replace(/[\/\\#?]/g, '_');
+    const legacyDocKey = tutorEmail.replace(/[^a-z0-9_-]/g, '_');
     const walletRef = db.collection('tutor_wallets').doc(docKey);
+    const legacyWalletRef = legacyDocKey !== docKey ? db.collection('tutor_wallets').doc(legacyDocKey) : null;
     const unlockRef = db.collection('unlocks').doc(`${docKey}__${leadId}`);
     const txRef = db.collection('coin_transactions').doc();
 
     try {
       const result = await db.runTransaction(async (transaction) => {
-        const [walletDoc, unlockDoc] = await Promise.all([
+        const [walletDoc, legacyDoc, unlockDoc] = await Promise.all([
           transaction.get(walletRef),
+          legacyWalletRef ? transaction.get(legacyWalletRef) : Promise.resolve(null),
           transaction.get(unlockRef)
         ]);
+        const activeWallet = walletDoc.exists ? walletDoc : (legacyDoc && legacyDoc.exists ? legacyDoc : walletDoc);
 
         if (unlockDoc.exists) {
-          const curCoins = walletDoc.exists ? (Number(walletDoc.data().coins) || 0) : 0;
+          const curCoins = activeWallet.exists ? (Number(activeWallet.data().coins) || 0) : 0;
           return { already: true, balance: curCoins };
         }
 
-        const walletData = walletDoc.exists ? walletDoc.data() : {};
+        const walletData = activeWallet.exists ? activeWallet.data() : {};
         const mem = walletData.membership;
         const isMemValid = Boolean(
           mem &&
